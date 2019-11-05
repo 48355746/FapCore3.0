@@ -1,7 +1,5 @@
-﻿using Fap.Core.DataAccess.BaseAccess;
-using Fap.Core.DataAccess.DbContext;
-using Fap.Core.Platform.Domain;
-using Fap.Model.MetaData;
+﻿using Fap.Core.DataAccess;
+using Fap.Core.MetaData;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -15,18 +13,12 @@ namespace Fap.Core.Rbac.AC
         private IEnumerable<FapDict> _allDicts = new List<FapDict>();
         private static readonly object Locker = new object();
         private bool _initialized;
-        private readonly IPlatformDomain _fapDomain;
-        private readonly ISessionFactory _sessionFactory;
+        private readonly IDbSession _dbSession;
         
 
-        internal DictSet(IPlatformDomain fapDomain, ISessionFactory sessionFactory)
+        internal DictSet(IDbSession dbSession)
         {
-            if (fapDomain == null)
-            {
-                throw new ArgumentNullException("fapDomain");
-            }
-            _fapDomain = fapDomain;
-            _sessionFactory = sessionFactory;
+            _dbSession = dbSession;
             Init();
         }
         public void Refresh()
@@ -41,14 +33,12 @@ namespace Fap.Core.Rbac.AC
             if (_initialized) return;
             lock (Locker)
             {
-                using (var session = _sessionFactory.CreateSession())
-                {
-                    _allDicts = session.QueryAll<FapDict>();
-                }
+                    _allDicts = _dbSession.Query<FapDict>("select * from FapDict");
+                
                 _initialized = true;
             }
         }
-        public bool TryGetValue(string fid, out Fap.Model.MetaData.FapDict fapDict)
+        public bool TryGetValue(string fid, out FapDict fapDict)
         {
             if (!_initialized)
             {
@@ -64,7 +54,7 @@ namespace Fap.Core.Rbac.AC
             return false;
         }
 
-        public IEnumerator<Fap.Model.MetaData.FapDict> GetEnumerator()
+        public IEnumerator<FapDict> GetEnumerator()
         {
             if (!_initialized)
             {

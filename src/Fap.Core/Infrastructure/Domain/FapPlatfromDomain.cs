@@ -1,34 +1,38 @@
-﻿using Fap.Core.Configuration;
-using Fap.Core.DataAccess.BaseAccess;
-using Fap.Core.Platform.Domain;
-using Fap.Core.Platform.License;
+﻿using Fap.Core.DataAccess;
+using Fap.Core.Infrastructure.Config;
+using Fap.Core.Infrastructure.License;
 using Fap.Core.Rbac.AC;
 using Fap.Core.Utility;
-using Fap.Core.Rbac.Model;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
+using System.Text;
 
-namespace Fap.Core.Rbac
+namespace Fap.Core.Infrastructure.Domain
 {
-    [Serializable]
-    public class FapRbacDomain : PlatformDomainBase
+    public class FapPlatfromDomain:IFapPlatformDomain
     {
-        private FapOption _fapOption;
+        public string Product { get; set; } = "HCM";
         private IDbSession _dbSession;
-
-        public FapRbacDomain(IOptions<FapOption> option, ILoggerFactory loggerFactory, IDbSession sessionFactory, string product)
+        private readonly ILogger<FapPlatfromDomain> _logger;
+        public FapRbacDomain(ILoggerFactory loggerFactory, IDbSession dbSession)
         {
-            this.Product = product;
-            _fapOption = option.Value;
-            _logger = loggerFactory.CreateLogger<FapRbacDomain>();
-            _dbSession = sessionFactory;
+            _logger = loggerFactory.CreateLogger<FapPlatfromDomain>();
+            _dbSession = dbSession;
             //加载注册码信息
             string name = System.Net.Dns.GetHostName();
             LoadRegisterInfo();
-            Construct();
+            InitFap();
         }
-        //public override IButtonSet ButtonSet
+        /// <summary>
+        /// 产品注册码信息
+        /// </summary>
+        public RegisterInfo ServiceRegisterInfo
+        {
+            get;
+            internal set;
+        }
+        //public  IButtonSet ButtonSet
         //{
         //    get;
         //    protected set;
@@ -36,7 +40,7 @@ namespace Fap.Core.Rbac
         /// <summary>
         /// 所有表元数据
         /// </summary>
-        public override ITableSet TableSet
+        public  ITableSet TableSet
         {
             get;
             protected set;
@@ -44,7 +48,7 @@ namespace Fap.Core.Rbac
         ///// <summary>
         ///// 所有系统列元数据
         ///// </summary>
-        public override IColumnSet ColumnSet
+        public  IColumnSet ColumnSet
         {
             get;
             protected set;
@@ -52,7 +56,7 @@ namespace Fap.Core.Rbac
         /// <summary>
         /// 多语集
         /// </summary>
-        public override IMultiLang MultiLangSet
+        public  IMultiLang MultiLangSet
         {
             get;
             protected set;
@@ -60,17 +64,17 @@ namespace Fap.Core.Rbac
         /// <summary>
         /// 所有系统模块
         /// </summary>
-        public override IModuleSet ModuleSet { get; protected set; }
+        public  IModuleSet ModuleSet { get; protected set; }
         /// <summary>
         /// 所有系统菜单
         /// </summary>
-        public override IMenuSet MenuSet
+        public  IMenuSet MenuSet
         {
             get;
             protected set;
         }
 
-        public override IOrgDeptSet OrgDeptSet
+        public  IOrgDeptSet OrgDeptSet
         {
             get;
             protected set;
@@ -78,7 +82,7 @@ namespace Fap.Core.Rbac
         /// <summary>
         /// 所有系统参数
         /// </summary>
-        public override ISysParamSet SysParamSet
+        public  ISysParamSet SysParamSet
         {
             get;
             protected set;
@@ -87,7 +91,7 @@ namespace Fap.Core.Rbac
         /// <summary>
         /// 所有系统用户
         /// </summary>
-        public override ISysUserSet SysUserSet
+        public  ISysUserSet SysUserSet
         {
             get;
             protected set;
@@ -95,7 +99,7 @@ namespace Fap.Core.Rbac
         /// <summary>
         /// 所有角色
         /// </summary>
-        public override IRoleSet RoleSet
+        public  IRoleSet RoleSet
         {
             get;
             protected set;
@@ -103,7 +107,7 @@ namespace Fap.Core.Rbac
         /// <summary>
         /// 所有编码
         /// </summary>
-        public override IDictSet DictSet
+        public  IDictSet DictSet
         {
             get;
             protected set;
@@ -111,27 +115,27 @@ namespace Fap.Core.Rbac
         /// <summary>
         /// 角色列
         /// </summary>
-        public override IRoleColumnSet RoleColumnSet { get; protected set; }
+        public  IRoleColumnSet RoleColumnSet { get; protected set; }
         /// <summary>
         /// 角色部门
         /// </summary>
-        public override IRoleDeptSet RoleDeptSet { get; protected set; }
+        public  IRoleDeptSet RoleDeptSet { get; protected set; }
         /// <summary>
         /// 角色菜单
         /// </summary>
-        public override IRoleMenuSet RoleMenuSet { get; protected set; }
+        public  IRoleMenuSet RoleMenuSet { get; protected set; }
         /// <summary>
         /// 角色报表
         /// </summary>
-        public override IRoleReportSet RoleReportSet { get; protected set; }
+        public  IRoleReportSet RoleReportSet { get; protected set; }
         /// <summary>
         /// 角色数据
         /// </summary>
-        public override IRoleDataSet RoleDataSet { get; protected set; }
+        public  IRoleDataSet RoleDataSet { get; protected set; }
         /// <summary>
         /// 角色角色
         /// </summary>
-        public override IRoleRoleSet RoleRoleSet { get; protected set; }
+        public  IRoleRoleSet RoleRoleSet { get; protected set; }
         private object obj = new object();
         /// <summary>
         /// 重置服务注册状态
@@ -161,11 +165,7 @@ namespace Fap.Core.Rbac
                 //        }
                 //    }
                 //}
-                FapConfig config = null;
-                using (var dbSessin = _dbSession.CreateSession())
-                {
-                    config = dbSessin.QueryFirstOrDefault<FapConfig>("select * from FapConfig where ParamKey = 'sys.web.name'");
-                }
+                FapConfig config =  _dbSession.QueryFirstOrDefault<FapConfig>("select * from FapConfig where ParamKey = 'sys.web.name'");
                 //项目名称
                 string projectName = string.Empty;
                 if (config != null)
@@ -180,7 +180,7 @@ namespace Fap.Core.Rbac
                     return;
                 }
 
-                string currentDateTime = PublicUtils.CurrentDateTimeStr;
+                string currentDateTime =DateTimeUtils.CurrentDateTimeStr;
                 RegFileData regFileData = TGljZW5zZQTool.GetTGljZW5zZQDataFromReg();
                 string TGljZW5zZQ = regFileData.TGljZW5zZQ;
                 string trialExpire = regFileData.TrialExpire;
@@ -207,47 +207,47 @@ namespace Fap.Core.Rbac
                 }
             }
         }
-        private void Construct()
+        private void InitFap()
         {
             //this.ButtonSet = new ButtonSet(this);
             _logger.LogInformation("初始化元数据");
-            this.TableSet = new TableSet(this, _dbSession);
-            this.ColumnSet = new ColumnSet(this, _dbSession);
+            this.TableSet = new TableSet( _dbSession);
+            this.ColumnSet = new ColumnSet( _dbSession);
             _logger.LogInformation("初始化元数据结束");
 
-            this.MultiLangSet = new MultiLangSet(this, _dbSession);
+            this.MultiLangSet = new MultiLangSet( _dbSession);
             _logger.LogInformation("初始化多语结束");
-            this.DictSet = new DictSet(this, _dbSession);
+            this.DictSet = new DictSet( _dbSession);
             _logger.LogInformation("初始化字典结束");
-            this.ModuleSet = new ModuleSet(this,_dbSession);
+            this.ModuleSet = new ModuleSet( _dbSession,this);
             _logger.LogInformation("初始化模块结束");
-            this.MenuSet = new MenuSet(this, _dbSession);
+            this.MenuSet = new MenuSet( _dbSession);
             _logger.LogInformation("初始化菜单结束");
-            this.OrgDeptSet = new OrgDeptSet(this, _dbSession);
+            this.OrgDeptSet = new OrgDeptSet(_dbSession);
             _logger.LogInformation("初始化组织部门结束");
-            this.RoleSet = new RoleSet(this, _dbSession);
+            this.RoleSet = new RoleSet( _dbSession);
             _logger.LogInformation("初始化角色结束");
-            this.SysParamSet = new SysParamSet(this, _dbSession);
+            this.SysParamSet = new SysParamSet( _dbSession);
             _logger.LogInformation("初始化系统设置结束");
-            this.SysUserSet = new SysUserSet(this, _dbSession);
+            this.SysUserSet = new SysUserSet( _dbSession);
             _logger.LogInformation("初始化用户结束");
-            this.RoleColumnSet = new RoleColumnSet(this, _dbSession);
+            this.RoleColumnSet = new RoleColumnSet(_dbSession);
             _logger.LogInformation("初始化角色列结束");
-            this.RoleDeptSet = new RoleDeptSet(this, _dbSession);
+            this.RoleDeptSet = new RoleDeptSet( _dbSession,this);
             _logger.LogInformation("初始化角色部门结束");
-            this.RoleMenuSet = new RoleMenuSet(this, _dbSession);
+            this.RoleMenuSet = new RoleMenuSet( _dbSession);
             _logger.LogInformation("初始化角色菜单结束");
-            this.RoleReportSet = new RoleReportSet(this, _dbSession);
+            this.RoleReportSet = new RoleReportSet( _dbSession);
             _logger.LogInformation("初始化角色报表结束");
-            this.RoleDataSet = new RoleDataSet(this, _dbSession);
+            this.RoleDataSet = new RoleDataSet( _dbSession);
             _logger.LogInformation("初始化角色数据结束");
-            this.RoleRoleSet = new RoleRoleSet(this, _dbSession);
+            this.RoleRoleSet = new RoleRoleSet( _dbSession);
             _logger.LogInformation("初始化角色角色结束");
         }
         /// <summary>
         /// 清空所有权限相关缓存
         /// </summary>
-        public override void Refresh()
+        public  void Refresh()
         {
             //this.ButtonSet.Refresh();
             this.ColumnSet.Refresh();
@@ -267,9 +267,8 @@ namespace Fap.Core.Rbac
             this.RoleRoleSet.Refresh();
             this.SysParamSet.Refresh();
         }
-        public override void Configure()
+        public  void Configure()
         {
         }
-
     }
 }

@@ -1,6 +1,4 @@
-﻿using Fap.Core.DataAccess.BaseAccess;
-using Fap.Core.DataAccess.DbContext;
-using Fap.Core.Platform.Domain;
+﻿using Fap.Core.DataAccess;
 using Fap.Core.Rbac.Model;
 using System;
 using System.Collections.Generic;
@@ -14,19 +12,13 @@ namespace Fap.Core.Rbac.AC
     [Serializable]
     public class SysUserSet : ISysUserSet
     {
-        private List<FapUser> _allUsers = new List<FapUser>();
+        private IEnumerable<FapUser> _allUsers = new List<FapUser>();
         private static readonly object Locker = new object();
         private bool _initialized;
-        private readonly IPlatformDomain _fapDomain;
-        private ISessionFactory _sessionFactory;
-        internal SysUserSet(IPlatformDomain fapDomain, ISessionFactory sessionFactory)
+        private IDbSession _dbSession;
+        internal SysUserSet(IDbSession dbSession)
         {
-            if (fapDomain == null)
-            {
-                throw new ArgumentNullException("fapDomain");
-            }
-            _sessionFactory = sessionFactory;
-            _fapDomain = fapDomain;
+            _dbSession = dbSession;
             Init();
         }
         public void Refresh()
@@ -41,14 +33,12 @@ namespace Fap.Core.Rbac.AC
             if (_initialized) return;
             lock (Locker)
             {
-                using (var session = _sessionFactory.CreateSession())
-                {
-                    _allUsers = session.QueryAll<FapUser>().ToList();
-                }
+               _allUsers = _dbSession.Query<FapUser>("select * from FapUser");
+              
                 _initialized = true;
             }
         }
-        public IEnumerator<Fap.Core.Rbac.Model.FapUser> GetEnumerator()
+        public IEnumerator<FapUser> GetEnumerator()
         {
             if (!_initialized)
             {
@@ -66,7 +56,7 @@ namespace Fap.Core.Rbac.AC
             return _allUsers.GetEnumerator();
         }
 
-        public bool TryGetValue(string fid, out Fap.Core.Rbac.Model.FapUser fapUser)
+        public bool TryGetValue(string fid, out FapUser fapUser)
         {
             if (!_initialized)
             {

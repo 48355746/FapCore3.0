@@ -1,29 +1,21 @@
-﻿using Fap.Core.DataAccess.BaseAccess;
-using Fap.Core.DataAccess.DbContext;
-using Fap.Core.Platform.Domain;
-using Fap.Model.MetaData;
+﻿using Fap.Core.DataAccess;
+using Fap.Core.DI;
+using Fap.Core.MetaData;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Fap.Core.Rbac.AC
 {
-    [Serializable]
     public class TableSet : ITableSet
     {
-        private List<FapTable> _allTables = new List<FapTable>();
+        private IEnumerable<FapTable> _allTables = new List<FapTable>();
         private static readonly object Locker = new object();
         private bool _initialized;
-        private readonly IPlatformDomain _fapDomain;
-        private ISessionFactory _sessionFactory;
-        internal TableSet(IPlatformDomain fapDomain, ISessionFactory sessionFactory)
+        private IDbSession _dbSession;
+        internal TableSet(IDbSession dbSession)
         {
-            if (fapDomain == null)
-            {
-                throw new ArgumentNullException("fapDomain");
-            }
-            _sessionFactory = sessionFactory;
-            _fapDomain = fapDomain;
+            _dbSession = dbSession;
             Init();
         }
         public void Refresh()
@@ -38,14 +30,13 @@ namespace Fap.Core.Rbac.AC
             if (_initialized) return;
             lock (Locker)
             {
-                using (var session = _sessionFactory.CreateSession())
-                {
-                    _allTables = session.QueryWhere<FapTable>($"ProductUid in('FAP','{_fapDomain.Product }')").ToList();
-                }
+               
+                    _allTables = _dbSession.Query<FapTable>($"select * from FapTable where ProductUid in('FAP','HCM')").ToList();
+               
                 _initialized = true;
             }
         }
-        public IEnumerator<Fap.Model.MetaData.FapTable> GetEnumerator()
+        public IEnumerator<FapTable> GetEnumerator()
         {
             if (!_initialized)
             {
@@ -63,7 +54,7 @@ namespace Fap.Core.Rbac.AC
             return _allTables.GetEnumerator();
         }
 
-        public bool TryGetValue(string fid, out Fap.Model.MetaData.FapTable fapTable)
+        public bool TryGetValue(string fid, out FapTable fapTable)
         {
             if (!_initialized)
             {

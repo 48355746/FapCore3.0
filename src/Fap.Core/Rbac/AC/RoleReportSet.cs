@@ -1,6 +1,4 @@
-﻿using Fap.Core.DataAccess.BaseAccess;
-using Fap.Core.DataAccess.DbContext;
-using Fap.Core.Platform.Domain;
+﻿using Fap.Core.DataAccess;
 using Fap.Core.Rbac.Model;
 /* ==============================================================================
  * 功能描述：  
@@ -14,21 +12,16 @@ using System.Linq;
 namespace Fap.Core.Rbac.AC
 {
     [Serializable]
-    public class RoleReportSet:IRoleReportSet
+    public class RoleReportSet : IRoleReportSet
     {
-        private List<FapRoleReport> _allRoleRpt = new List<FapRoleReport>();
+        private IEnumerable<FapRoleReport> _allRoleRpt = new List<FapRoleReport>();
         private static readonly object Locker = new object();
         private bool _initialized;
-        private readonly IPlatformDomain _fapDomain;
-        private ISessionFactory _sessionFactory;
-        internal RoleReportSet(IPlatformDomain fapDomain, ISessionFactory sessionFactory)
+        private IDbSession _dbSession;
+        internal RoleReportSet(IDbSession dbSession)
         {
-            if (fapDomain == null)
-            {
-                throw new ArgumentNullException("fapDomain");
-            }
-            _sessionFactory = sessionFactory;
-            _fapDomain = fapDomain;
+
+            _dbSession = dbSession;
             Init();
         }
         public void Refresh()
@@ -44,15 +37,14 @@ namespace Fap.Core.Rbac.AC
             lock (Locker)
             {
                 #region 获取所有FapRoleReport
-                using (var session = _sessionFactory.CreateSession())
-                {
-                    _allRoleRpt = session.QueryAll<FapRoleReport>().ToList();
-                }
+
+                _allRoleRpt = _dbSession.Query<FapRoleReport>("select * from FapRoleReport").ToList();
+
                 #endregion
                 _initialized = true;
             }
         }
-        public bool TryGetValue(string fid, out Model.Infrastructure.FapRoleReport roleRpt)
+        public bool TryGetValue(string fid, out FapRoleReport roleRpt)
         {
             if (!_initialized)
             {
@@ -68,7 +60,7 @@ namespace Fap.Core.Rbac.AC
             return false;
         }
 
-        public bool TryGetValueByRole(string roleUid, out IEnumerable<Model.Infrastructure.FapRoleReport> roleRpts)
+        public bool TryGetValueByRole(string roleUid, out IEnumerable<FapRoleReport> roleRpts)
         {
             if (!_initialized)
             {
@@ -84,7 +76,7 @@ namespace Fap.Core.Rbac.AC
             return false;
         }
 
-        public IEnumerator<Model.Infrastructure.FapRoleReport> GetEnumerator()
+        public IEnumerator<FapRoleReport> GetEnumerator()
         {
             if (!_initialized)
             {

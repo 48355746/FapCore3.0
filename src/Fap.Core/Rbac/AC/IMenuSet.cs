@@ -1,4 +1,5 @@
 ﻿using Fap.Core.Rbac.Model;
+using Fap.Model.Infrastructure;
 using System.Collections.Generic;
 
 namespace Fap.Core.Rbac.AC

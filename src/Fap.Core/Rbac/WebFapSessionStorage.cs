@@ -33,7 +33,7 @@ namespace Fap.Core.Rbac
         private ISession _webSession => _httpContextAccessor?.HttpContext == null ? null : _httpContextAccessor?.HttpContext.Session;
         private FapOption _fapOption;
         private ICacheService _cache;
-        private ISessionFactory _sessionFactory;
+        private IDbSession _dbSession;
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -41,12 +41,12 @@ namespace Fap.Core.Rbac
         /// <param name="sessionFactory"></param>
         /// <param name="options"></param>
         /// <param name="cache"></param>
-        public WebFapSessionStorage(IHttpContextAccessor httpContextAccessor, ISessionFactory sessionFactory, IOptions<FapOption> options, ICacheService cache)
+        public WebFapSessionStorage(IHttpContextAccessor httpContextAccessor, IDbSession sessionFactory, IOptions<FapOption> options, ICacheService cache)
         {
             _httpContextAccessor = httpContextAccessor;
             _fapOption = options.Value;
             _cache = cache;
-            _sessionFactory = sessionFactory;
+            _dbSession = sessionFactory;
         }
         private HttpContext _context;
         public HttpContext Context
@@ -140,7 +140,7 @@ namespace Fap.Core.Rbac
 
                 if (acSession == null && user != null && user.Identity.IsAuthenticated)
                 {
-                    using (var dbSession = _sessionFactory.CreateSession())
+                    using (var dbSession = _dbSession.CreateSession())
                     {
                         FapUser fapUser = dbSession.Get<FapUser>(UserUid);
                         Employee employee = dbSession.Get<Employee>(EmpUid);

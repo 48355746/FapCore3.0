@@ -1,6 +1,4 @@
-﻿using Fap.Core.DataAccess.BaseAccess;
-using Fap.Core.DataAccess.DbContext;
-using Fap.Core.Platform.Domain;
+﻿using Fap.Core.DataAccess;
 using Fap.Core.Rbac.Model;
 /* ==============================================================================
  * 功能描述：全局角色菜单
@@ -14,21 +12,15 @@ using System.Linq;
 namespace Fap.Core.Rbac.AC
 {
     [Serializable]
-    public class RoleMenuSet:IRoleMenuSet
+    public class RoleMenuSet : IRoleMenuSet
     {
-        private List<FapRoleMenu> _allRoleMenu = new List<FapRoleMenu>();
+        private IEnumerable<FapRoleMenu> _allRoleMenu = new List<FapRoleMenu>();
         private static readonly object Locker = new object();
         private bool _initialized;
-        private readonly IPlatformDomain _fapDomain;
-        private ISessionFactory _sessionFactory;
-        internal RoleMenuSet(IPlatformDomain fapDomain, ISessionFactory sessionFactory)
+        private IDbSession _dbSession;
+        internal RoleMenuSet(IDbSession dbSession)
         {
-            if (fapDomain == null)
-            {
-                throw new ArgumentNullException("fapDomain");
-            }
-            _sessionFactory = sessionFactory;
-            _fapDomain = fapDomain;
+            _dbSession = dbSession;
             Init();
         }
         public void Refresh()
@@ -44,15 +36,14 @@ namespace Fap.Core.Rbac.AC
             lock (Locker)
             {
                 #region 获取所有FapRoleMenu
-                using (var session = _sessionFactory.CreateSession())
-                {
-                    _allRoleMenu = session.QueryAll<FapRoleMenu>().ToList();
-                }
+
+                _allRoleMenu = _dbSession.Query<FapRoleMenu>("select * from FapRoleMenu");
+
                 #endregion
                 _initialized = true;
             }
         }
-        public bool TryGetValue(string fid, out Model.Infrastructure.FapRoleMenu roleMenu)
+        public bool TryGetValue(string fid, out FapRoleMenu roleMenu)
         {
             if (!_initialized)
             {
@@ -68,14 +59,14 @@ namespace Fap.Core.Rbac.AC
             return false;
         }
 
-        public bool TryGetValueByRole(string roleUid, out IEnumerable<Model.Infrastructure.FapRoleMenu> roleMenus)
+        public bool TryGetValueByRole(string roleUid, out IEnumerable<FapRoleMenu> roleMenus)
         {
             if (!_initialized)
             {
                 Init();
             }
             var result = _allRoleMenu.Where<FapRoleMenu>(f => f.RoleUid == roleUid);
-            if (result != null&&result.Any())
+            if (result != null && result.Any())
             {
                 roleMenus = result;
                 return true;
@@ -84,7 +75,7 @@ namespace Fap.Core.Rbac.AC
             return false;
         }
 
-        public IEnumerator<Model.Infrastructure.FapRoleMenu> GetEnumerator()
+        public IEnumerator<FapRoleMenu> GetEnumerator()
         {
             if (!_initialized)
             {

@@ -1,5 +1,5 @@
-﻿using Fap.Core.DataAccess.DbContext;
-using Fap.Core.Platform.Domain;
+﻿using Fap.Core.DataAccess;
+using Fap.Core.DI;
 using Fap.Core.Rbac.Model;
 using System;
 using System.Collections.Generic;
@@ -7,22 +7,15 @@ using System.Linq;
 
 namespace Fap.Core.Rbac.AC
 {
-    [Serializable]
     public class ButtonSet : IButtonSet
     {
-        private List<FapButton> _allButtons = new List<FapButton>();
+        private IEnumerable<FapButton> _allButtons = new List<FapButton>();
         private static readonly object Locker = new object();
         private bool _initialized;
-        private readonly IPlatformDomain _fapDomain;
-        private IDbContext _db;
-        internal ButtonSet(IPlatformDomain fapDomain,IDbContext db)
+        private readonly IDbSession _dbSession;
+        internal ButtonSet(IDbSession dbSession)
         {
-            if (fapDomain == null)
-            {
-                throw new ArgumentNullException("fapDomain");
-            }
-            _fapDomain = fapDomain;
-            _db = db;
+            _dbSession = dbSession;
             Init();
         }
         public void Refresh()

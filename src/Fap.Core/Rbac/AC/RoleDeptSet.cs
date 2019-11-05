@@ -1,6 +1,5 @@
-﻿using Fap.Core.DataAccess.BaseAccess;
-using Fap.Core.DataAccess.DbContext;
-using Fap.Core.Platform.Domain;
+﻿using Fap.Core.DataAccess;
+using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Rbac.Model;
 /* ==============================================================================
  * 功能描述：  
@@ -16,20 +15,16 @@ namespace Fap.Core.Rbac.AC
     [Serializable]
     public class RoleDeptSet : IRoleDeptSet
     {
-        private List<FapRoleDept> _allRoleDept = new List<FapRoleDept>();
+        private IEnumerable<FapRoleDept> _allRoleDept = new List<FapRoleDept>();
         private static readonly object Locker = new object();
         private bool _initialized;
-        private readonly IPlatformDomain _fapDomain;
         private const string POWERORGDEPT = "POWERORGDEPT";
-        private ISessionFactory _sessionFactory;
-        internal RoleDeptSet(IPlatformDomain fapDomain, ISessionFactory sessionFactory)
+        private IDbSession _dbSession;
+        private IFapPlatformDomain _fapPlatformDomain;
+        internal RoleDeptSet(IDbSession dbSession,IFapPlatformDomain fapPlatformDomain)
         {
-            if (fapDomain == null)
-            {
-                throw new ArgumentNullException("fapDomain");
-            }
-            _fapDomain = fapDomain;
-            _sessionFactory = sessionFactory;
+            _dbSession = dbSession;
+            _fapPlatformDomain = fapPlatformDomain;
             Init();
         }
         public void Refresh()
@@ -46,15 +41,14 @@ namespace Fap.Core.Rbac.AC
                 if (_initialized) return;
 
                 #region 获取所有FapRoleDept
-                using (var session = _sessionFactory.CreateSession())
-                {
-                    _allRoleDept = session.QueryAll<FapRoleDept>().ToList();
-                }
+
+                _allRoleDept = _dbSession.Query<FapRoleDept>("select * from FapRoleDept");
+
                 #endregion
                 _initialized = true;
             }
         }
-        public bool TryGetValue(string fid, out Model.Infrastructure.FapRoleDept roleColumn)
+        public bool TryGetValue(string fid, out FapRoleDept roleColumn)
         {
             if (!_initialized)
             {
@@ -70,7 +64,7 @@ namespace Fap.Core.Rbac.AC
             return false;
         }
 
-        public bool TryGetValueByRole(string roleUid, out IEnumerable<Model.Infrastructure.FapRoleDept> roleColumns)
+        public bool TryGetValueByRole(string roleUid, out IEnumerable<FapRoleDept> roleColumns)
         {
             if (!_initialized)
             {
@@ -106,8 +100,8 @@ namespace Fap.Core.Rbac.AC
             //   return true;
             //}
             var result = _allRoleDept.Where<FapRoleDept>(f => f.RoleUid == roleUid);
-            FapRbacDomain domain = _fapDomain as FapRbacDomain;
-            List<OrgDept> allDepts = domain.OrgDeptSet.ToList();
+          
+            IEnumerable<OrgDept> allDepts = _fapPlatformDomain.OrgDeptSet;
             OrgDept rootDept = allDepts.FirstOrDefault(d => string.IsNullOrWhiteSpace(d.Pid) || d.Pid == "#" || d.Pid == "~" || d.Pid == "");
             if (result != null && result.Any())
             {
@@ -137,7 +131,7 @@ namespace Fap.Core.Rbac.AC
             roleDepts = null;
             return false;
         }
-        private void AddParentOrgDept(List<FapRoleDept> rds, List<OrgDept> allDepts, List<OrgDept> powerDepts, OrgDept tempDept)
+        private void AddParentOrgDept(List<FapRoleDept> rds, IEnumerable<OrgDept> allDepts, List<OrgDept> powerDepts, OrgDept tempDept)
         {
             if (tempDept != null && !(string.IsNullOrWhiteSpace(tempDept.Pid) || tempDept.Pid == "#" || tempDept.Pid == "~" || tempDept.Pid == ""))
             {
@@ -151,12 +145,12 @@ namespace Fap.Core.Rbac.AC
                         tempDeptParent.HasPartPower = true;
                         powerDepts.Add(tempDeptParent);
                     }
-                    
+
                     AddParentOrgDept(rds, allDepts, powerDepts, tempDeptParent);
-                }                
+                }
             }
         }
-        public IEnumerator<Model.Infrastructure.FapRoleDept> GetEnumerator()
+        public IEnumerator<FapRoleDept> GetEnumerator()
         {
             if (!_initialized)
             {

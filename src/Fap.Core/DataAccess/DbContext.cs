@@ -19,7 +19,7 @@ namespace Fap.Core.DataAccess
                 {
                     if (dbSession == null)
                     {
-                        using (dbSession = _sessionFactory.CreateSession())
+                        using (dbSession = _dbSession.CreateSession())
                         {
                             result = func(dbSession, sql);
                         }
@@ -38,7 +38,7 @@ namespace Fap.Core.DataAccess
                 {
                     if (dbSession == null)
                     {
-                        using (dbSession = _sessionFactory.CreateSession())
+                        using (dbSession = _dbSession.CreateSession())
                         {
                             return await func(dbSession, sql);
                         }

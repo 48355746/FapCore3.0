@@ -1,29 +1,21 @@
-﻿using Fap.Core.DataAccess.BaseAccess;
-using Fap.Core.DataAccess.DbContext;
-using Fap.Core.Platform.Domain;
-using Fap.Core.Rbac.Model;
+﻿using Fap.Core.DataAccess;
+using Fap.Core.DI;
+using Fap.Model.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Fap.Core.Rbac.AC
 {
-    [Serializable]
     public class MenuSet : IMenuSet
     {
-        private List<FapMenu> _allMenus = new List<FapMenu>();
+        private IEnumerable<FapMenu> _allMenus = new List<FapMenu>();
         private static readonly object Locker = new object();
         private bool _initialized;
-        private readonly IPlatformDomain _fapDomain;
-        private readonly ISessionFactory _sessionFactory;
-        internal MenuSet(IPlatformDomain fapDomain, ISessionFactory sessionFactory)
+        private readonly IDbSession _dbSession;
+        internal MenuSet(IDbSession dbSession)
         {
-            if (fapDomain == null)
-            {
-                throw new ArgumentNullException("fapDomain");
-            }
-            _sessionFactory = sessionFactory;
-            _fapDomain = fapDomain;
+            _dbSession = dbSession;
             Init();
         }
         public void Refresh()
@@ -39,15 +31,14 @@ namespace Fap.Core.Rbac.AC
             lock (Locker)
             {
                 #region 获取所有menu
-                using (var session = _sessionFactory.CreateSession())
-                {
-                    _allMenus = session.QueryWhere<FapMenu>($"ActiveFlag=1").ToList();
-                }
+
+                _allMenus = _dbSession.Query<FapMenu>($"select * from FapMenu where ActiveFlag=1");
+
                 #endregion
                 _initialized = true;
             }
         }
-        public IEnumerator<Fap.Core.Rbac.Model.FapMenu> GetEnumerator()
+        public IEnumerator<FapMenu> GetEnumerator()
         {
             if (!_initialized)
             {
@@ -65,7 +56,7 @@ namespace Fap.Core.Rbac.AC
             return _allMenus.GetEnumerator();
         }
 
-        public bool TryGetValue(string fid, out Fap.Core.Rbac.Model.FapMenu fapMenu)
+        public bool TryGetValue(string fid, out FapMenu fapMenu)
         {
             if (!_initialized)
             {

@@ -1,29 +1,24 @@
-﻿using Fap.Core.DataAccess.BaseAccess;
-using Fap.Core.DataAccess.DbContext;
-using Fap.Core.Platform.Domain;
-using Fap.Core.Rbac.Model;
+﻿using Fap.Core.DataAccess;
+using Fap.Core.DI;
+using Fap.Core.Infrastructure.Domain;
+using Fap.Core.MetaData;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Fap.Core.Rbac.AC
 {
-    [Serializable]
     public class ModuleSet : IModuleSet
     {
         private List<FapModule> _allModules = new List<FapModule>();
         private static readonly object Locker = new object();
         private bool _initialized;
-        private readonly IPlatformDomain _fapDomain;
-        private readonly ISessionFactory _sessionFactory;
-        internal ModuleSet(IPlatformDomain fapDomain, ISessionFactory sessionFactory)
+        private readonly IDbSession _dbSession;
+        private readonly IFapPlatformDomain _fapPlatformDomain;
+        internal ModuleSet(IDbSession dbSession,IFapPlatformDomain fapPlatformDomain)
         {
-            if (fapDomain == null)
-            {
-                throw new ArgumentNullException("fapDomain");
-            }
-            _fapDomain = fapDomain;
-            _sessionFactory = sessionFactory;
+            _dbSession = dbSession;
+            _fapPlatformDomain = fapPlatformDomain;
             Init();
         }
         public void Refresh()
@@ -39,24 +34,23 @@ namespace Fap.Core.Rbac.AC
             lock (Locker)
             {
                 #region 获取所有module
-                using (var session = _sessionFactory.CreateSession())
-                {
-                    List<FapModule> allModules = session.QueryWhere<FapModule>($"ActiveFlag=1 and ProductUid in('FAP','{_fapDomain.Product }')").ToList();
+               
+                    List<FapModule> allModules = _dbSession.Query<FapModule>($"select * from FapModule where ActiveFlag=1 and ProductUid in('FAP','HCM')").ToList();
 
                     //根据注册码中的授权模块进行过滤
-                    List<string> authoredModules = _fapDomain.ServiceRegisterInfo.AuthoredModules;
+                    List<string> authoredModules = _fapPlatformDomain.ServiceRegisterInfo.AuthoredModules;
                     if (authoredModules != null)
                     {
                         _allModules.Clear();
                         List<FapModule> modules = allModules.Where(m => authoredModules.Contains(m.ModuleCode)).ToList();
                         _allModules.AddRange(modules);
                     }
-                }
+               
                 #endregion
                 _initialized = true;
             }
         }
-        public IEnumerator<Fap.Core.Rbac.Model.FapModule> GetEnumerator()
+        public IEnumerator<FapModule> GetEnumerator()
         {
             if (!_initialized)
             {
@@ -74,7 +68,7 @@ namespace Fap.Core.Rbac.AC
             return _allModules.GetEnumerator();
         }
 
-        public bool TryGetValue(string fid, out Fap.Core.Rbac.Model.FapModule fapModule)
+        public bool TryGetValue(string fid, out FapModule fapModule)
         {
             if (!_initialized)
             {

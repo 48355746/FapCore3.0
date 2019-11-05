@@ -15,7 +15,7 @@ namespace Fap.Core.Rbac
     public class FapDomain : FapRbacDomain
     {
         private static object obj = new object();      
-        public FapDomain(IOptions<FapOption> option,ILoggerFactory logger,ISessionFactory sessionFactory, string product="HCM")
+        public FapDomain(IOptions<FapOption> option,ILoggerFactory logger,IDbSession sessionFactory, string product="HCM")
             : base(option, logger, sessionFactory, product)
         {
             Init();

@@ -47,5 +47,15 @@ namespace Fap.Core.Extensions
         {
             return !string.IsNullOrWhiteSpace(value);
         }
+        /// <summary>
+        /// 转化为整形
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        [DebuggerStepThrough]
+        public static int ToInt(this string value)
+        {
+            return Convert.ToInt32(value);
+        }
     }
 }

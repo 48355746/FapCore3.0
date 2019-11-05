@@ -116,7 +116,7 @@ namespace Fap.Core.MetaData
         public override bool Equals(object obj)
         {
             FapTable fapTable = obj as FapTable;
-            return fapTable.Id == this.Id && fapTable.Fid == this.Fid
+            return fapTable.Id = this.Id && fapTable.Fid == this.Fid
                 &&fapTable.TableName == this.TableName;
         }
         public override int GetHashCode()

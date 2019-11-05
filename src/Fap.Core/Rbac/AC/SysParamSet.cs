@@ -1,7 +1,5 @@
-﻿using Fap.Core.DataAccess.BaseAccess;
-using Fap.Core.DataAccess.DbContext;
-using Fap.Core.Platform.Domain;
-using Fap.Core.Rbac.Model;
+﻿using Fap.Core.DataAccess;
+using Fap.Core.Infrastructure.Config;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,19 +9,14 @@ namespace Fap.Core.Rbac.AC
     [Serializable]
     public class SysParamSet : ISysParamSet
     {
-        private List<FapConfig> _allParams = new List<FapConfig>();
+        private IEnumerable<FapConfig> _allParams = new List<FapConfig>();
         private static readonly object Locker = new object();
         private bool _initialized;
-        private readonly IPlatformDomain _fapDomain;
-        private ISessionFactory _sessionFactory;
-        internal SysParamSet(IPlatformDomain fapDomain, ISessionFactory sessionFactory)
+        private IDbSession _dbSession;
+        internal SysParamSet(IDbSession dbSession)
         {
-            if (fapDomain == null)
-            {
-                throw new ArgumentNullException("fapDomain");
-            }
-            _sessionFactory = sessionFactory;
-            _fapDomain = fapDomain;
+           
+            _dbSession = dbSession;
             Init();
         }
         public void Refresh()
@@ -39,15 +32,12 @@ namespace Fap.Core.Rbac.AC
             lock (Locker)
             {
                 #region 获取所有FapConfig
-                using (var session = _sessionFactory.CreateSession())
-                {
-                    _allParams = session.QueryAll<FapConfig>().ToList();
-                }
+                    _allParams = _dbSession.Query<FapConfig>("select * from FapConfig");
                 #endregion
                 _initialized = true;
             }
         }
-        public IEnumerator<Fap.Core.Rbac.Model.FapConfig> GetEnumerator()
+        public IEnumerator<FapConfig> GetEnumerator()
         {
             if (!_initialized)
             {
@@ -65,7 +55,7 @@ namespace Fap.Core.Rbac.AC
             return _allParams.GetEnumerator();
         }
 
-        public bool TryGetValue(string fid, out Fap.Core.Rbac.Model.FapConfig fapParam)
+        public bool TryGetValue(string fid, out FapConfig fapParam)
         {
             if (!_initialized)
             {

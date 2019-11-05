@@ -1,6 +1,5 @@
-﻿using Fap.Core.DataAccess.BaseAccess;
-using Fap.Core.DataAccess.DbContext;
-using Fap.Core.Platform.Domain;
+﻿using Fap.Core.DataAccess;
+using Fap.Core.DI;
 using Fap.Core.Rbac.Model;
 /* ==============================================================================
  * 功能描述：  
@@ -14,22 +13,15 @@ using System.Linq;
 
 namespace Fap.Core.Rbac.AC
 {
-    [Serializable]
-    public class MultiLangSet:IMultiLang
+    public class MultiLangSet : IMultiLang
     {
-        private List<FapResMultiLang> _allMultiLangs = new List<FapResMultiLang>();
+        private IEnumerable<FapResMultiLang> _allMultiLangs = new List<FapResMultiLang>();
         private static readonly object Locker = new object();
         private bool _initialized;
-        private readonly IPlatformDomain _fapDomain;
-        private ISessionFactory _sessionFactory;
-        internal MultiLangSet(IPlatformDomain fapDomain, ISessionFactory sessionFactory)
+        private IDbSession _dbSession;
+        internal MultiLangSet(IDbSession dbSession)
         {
-            if (fapDomain == null)
-            {
-                throw new ArgumentNullException("fapDomain");
-            }
-            _sessionFactory = sessionFactory;
-            _fapDomain = fapDomain;
+            _dbSession = dbSession;
             Init();
         }
         public void Refresh()
@@ -44,10 +36,8 @@ namespace Fap.Core.Rbac.AC
             if (_initialized) return;
             lock (Locker)
             {
-                using (var session = _sessionFactory.CreateSession())
-                {
-                    _allMultiLangs = session.QueryAll<FapResMultiLang>().ToList();
-                }
+                _allMultiLangs = _dbSession.Query<FapResMultiLang>("select * from FapResMultiLang");
+
                 _initialized = true;
             }
         }
@@ -92,7 +82,7 @@ namespace Fap.Core.Rbac.AC
             {
                 Init();
             }
-            var result = _allMultiLangs.FirstOrDefault<FapResMultiLang>(f => f.ResCode.Equals(code,StringComparison.CurrentCultureIgnoreCase));
+            var result = _allMultiLangs.FirstOrDefault<FapResMultiLang>(f => f.ResCode.Equals(code, StringComparison.CurrentCultureIgnoreCase));
             if (result != null)
             {
                 fapMultiLang = result;

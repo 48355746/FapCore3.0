@@ -1,7 +1,6 @@
-﻿using Fap.Core.DataAccess.BaseAccess;
-using Fap.Core.DataAccess.DbContext;
-using Fap.Core.Platform.Domain;
-using Fap.Model.MetaData;
+﻿using Fap.Core.DataAccess;
+using Fap.Core.DI;
+using Fap.Core.MetaData;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -9,22 +8,15 @@ using System.Linq;
 
 namespace Fap.Core.Rbac.AC
 {
-    [Serializable]
     public class ColumnSet:IColumnSet
     {
-        private List<FapColumn> _allColumns = new List<FapColumn>();
+        private IEnumerable<FapColumn> _allColumns = new List<FapColumn>();
         private static readonly object Locker = new object();
         private bool _initialized;
-        private readonly IPlatformDomain _fapDomain;
-        private ISessionFactory _sessionFactory;
-        internal ColumnSet(IPlatformDomain fapDomain, ISessionFactory sessionFactory)
+        private IDbSession _dbSession;
+        internal ColumnSet(IDbSession dbSession)
         {
-            if (fapDomain == null)
-            {
-                throw new ArgumentNullException("fapDomain");
-            }
-            _sessionFactory = sessionFactory;
-            _fapDomain = fapDomain;
+            _dbSession = dbSession;
             Init();
         }
         public void Refresh()
@@ -39,14 +31,13 @@ namespace Fap.Core.Rbac.AC
             if (_initialized) return;
             lock (Locker)
             {
-                using (var session = _sessionFactory.CreateSession())
-                {
-                    _allColumns = session.QueryAll<FapColumn>().ToList();
-                }
+              
+                    _allColumns = _dbSession.Query<FapColumn>("select * from FapColumn");
+              
                 _initialized = true;
             }
         }
-        public IEnumerator<Fap.Model.MetaData.FapColumn> GetEnumerator()
+        public IEnumerator<FapColumn> GetEnumerator()
         {
             if (!_initialized)
             {
@@ -64,7 +55,7 @@ namespace Fap.Core.Rbac.AC
             return _allColumns.GetEnumerator();
         }
 
-        public bool TryGetValue(string fid, out Fap.Model.MetaData.FapColumn fapColumn)
+        public bool TryGetValue(string fid, out FapColumn fapColumn)
         {
             if (!_initialized)
             {
