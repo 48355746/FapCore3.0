@@ -1,0 +1,60 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29418.71
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F090AD1C-246B-49B8-A787-0BC76378B0BC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fap.Core", "src\Fap.Core\Fap.Core.csproj", "{DBAAC8A0-0E4D-4786-B1F1-FAB26F282CCE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "product", "product", "{5290071D-CB5C-46C9-AD47-1061743FA3DA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "hcm", "hcm", "{B10864B6-D325-4345-AB3F-BF37B1379878}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fap.Hcm.Web", "product\hcm\Fap.Hcm.Web\Fap.Hcm.Web.csproj", "{3DC57A2A-C9F1-4BCA-A5D3-56926A5D9B0A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{79664383-D816-4900-9074-D8A98F9C8712}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XUnitTestFapCore", "tests\XUnitTestFapCore\XUnitTestFapCore.csproj", "{FB5D1BF6-6309-4E4D-8A4D-E16C8D8EF01B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "thirdparty", "thirdparty", "{CFA4CB9A-8CBF-4F54-914B-5F2B96CAC57C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SQLGeneration", "thirdparty\SQLGeneration\SQLGeneration.csproj", "{044E9C02-3FBF-40CA-8F98-C2F05923D814}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DBAAC8A0-0E4D-4786-B1F1-FAB26F282CCE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DBAAC8A0-0E4D-4786-B1F1-FAB26F282CCE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DBAAC8A0-0E4D-4786-B1F1-FAB26F282CCE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DBAAC8A0-0E4D-4786-B1F1-FAB26F282CCE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3DC57A2A-C9F1-4BCA-A5D3-56926A5D9B0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DC57A2A-C9F1-4BCA-A5D3-56926A5D9B0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DC57A2A-C9F1-4BCA-A5D3-56926A5D9B0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DC57A2A-C9F1-4BCA-A5D3-56926A5D9B0A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB5D1BF6-6309-4E4D-8A4D-E16C8D8EF01B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB5D1BF6-6309-4E4D-8A4D-E16C8D8EF01B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB5D1BF6-6309-4E4D-8A4D-E16C8D8EF01B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB5D1BF6-6309-4E4D-8A4D-E16C8D8EF01B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{044E9C02-3FBF-40CA-8F98-C2F05923D814}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{044E9C02-3FBF-40CA-8F98-C2F05923D814}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{044E9C02-3FBF-40CA-8F98-C2F05923D814}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{044E9C02-3FBF-40CA-8F98-C2F05923D814}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{DBAAC8A0-0E4D-4786-B1F1-FAB26F282CCE} = {F090AD1C-246B-49B8-A787-0BC76378B0BC}
+		{B10864B6-D325-4345-AB3F-BF37B1379878} = {5290071D-CB5C-46C9-AD47-1061743FA3DA}
+		{3DC57A2A-C9F1-4BCA-A5D3-56926A5D9B0A} = {B10864B6-D325-4345-AB3F-BF37B1379878}
+		{FB5D1BF6-6309-4E4D-8A4D-E16C8D8EF01B} = {79664383-D816-4900-9074-D8A98F9C8712}
+		{044E9C02-3FBF-40CA-8F98-C2F05923D814} = {CFA4CB9A-8CBF-4F54-914B-5F2B96CAC57C}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {44AE87F0-7178-43D6-81AB-3D9AB237BD1C}
+	EndGlobalSection
+EndGlobal
