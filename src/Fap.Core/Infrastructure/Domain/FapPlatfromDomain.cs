@@ -15,7 +15,7 @@ namespace Fap.Core.Infrastructure.Domain
         public string Product { get; set; } = "HCM";
         private IDbSession _dbSession;
         private readonly ILogger<FapPlatfromDomain> _logger;
-        public FapRbacDomain(ILoggerFactory loggerFactory, IDbSession dbSession)
+        public FapPlatfromDomain(ILoggerFactory loggerFactory, IDbSession dbSession)
         {
             _logger = loggerFactory.CreateLogger<FapPlatfromDomain>();
             _dbSession = dbSession;

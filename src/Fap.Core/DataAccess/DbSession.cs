@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace Fap.Core.DataAccess
 {
-    [Service(ServiceLifetime.Scoped, InterfaceType = typeof(IDbSession))]
+    [Service(ServiceLifetime.Singleton, InterfaceType = typeof(IDbSession))]
     public class DbSession : IDbSession
     {
         private ILogger<DbSession> _logger;

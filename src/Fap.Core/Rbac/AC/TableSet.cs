@@ -30,9 +30,9 @@ namespace Fap.Core.Rbac.AC
             if (_initialized) return;
             lock (Locker)
             {
-               
-                    _allTables = _dbSession.Query<FapTable>($"select * from FapTable where ProductUid in('FAP','HCM')").ToList();
-               
+
+                _allTables = _dbSession.Query<FapTable>($"select * from FapTable where ProductUid in('FAP','HCM')").ToList();
+
                 _initialized = true;
             }
         }
@@ -77,7 +77,7 @@ namespace Fap.Core.Rbac.AC
             {
                 Init();
             }
-            var result = _allTables.FirstOrDefault<FapTable>(f => f.TableName.Equals(tableName,StringComparison.CurrentCultureIgnoreCase));
+            var result = _allTables.FirstOrDefault<FapTable>(f => f.TableName.Equals(tableName, StringComparison.CurrentCultureIgnoreCase));
             if (result != null)
             {
                 fapTable = result;

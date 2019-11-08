@@ -11,14 +11,14 @@ namespace Fap.Core.Infrastructure.Domain
     /// </summary>
     public interface IFapPlatformDomain
     {
-        /// <summary>
-        /// 宿主标识
-        /// </summary>
-        Guid Id { get; }
-        /// <summary>
-        /// 宿主名称
-        /// </summary>
-        string Name { get; }
+        ///// <summary>
+        ///// 宿主标识
+        ///// </summary>
+        //Guid Id { get; }
+        ///// <summary>
+        ///// 宿主名称
+        ///// </summary>
+        //string Name { get; }
         /// <summary>
         /// 产品
         /// </summary>
