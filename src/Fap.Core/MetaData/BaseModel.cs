@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Fap.Core.MetaData
+namespace Fap.Core.Metadata
 {
 
     [Serializable]

@@ -1,5 +1,5 @@
 ﻿using Dapper.Contrib.Extensions;
-using Fap.Core.MetaData;
+using Fap.Core.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Text;

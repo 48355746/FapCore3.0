@@ -1,5 +1,5 @@
 ﻿using Dapper.Contrib.Extensions;
-using Fap.Core.MetaData;
+using Fap.Core.Metadata;
 /* ==============================================================================
 * 功能描述：  
 * 创 建 者：wyf

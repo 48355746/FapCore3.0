@@ -1,7 +1,13 @@
-﻿using Fap.Core.DI;
+﻿using Dapper;
+using Fap.Core.DataAccess;
+using Fap.Core.DI;
+using Fap.Core.Extensions;
+using Fap.Core.Infrastructure.Domain;
+using Fap.Core.Utility;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Fap.Core.Infrastructure.Config
@@ -15,10 +21,11 @@ namespace Fap.Core.Infrastructure.Config
     {
         private  object obj = new object();
         private readonly ILogger<FapConfigService> _logger;
-        private IPlatformDomain _appDomain;
-        public FapConfigService(IDbContext accessor, ILogger<FapConfigService> logger, IPlatformDomain appDomain)
+        private IFapPlatformDomain _appDomain;
+        private IDbContext _dbContext;
+        public FapConfigService(IDbContext accessor, ILogger<FapConfigService> logger, IFapPlatformDomain appDomain)
         {
-            _dataAccessor = accessor;
+            _dbContext = accessor;
             _logger = logger;
             _appDomain = appDomain;
         }
@@ -48,18 +55,18 @@ namespace Fap.Core.Infrastructure.Config
             {
                 //DynamicParameters param = new DynamicParameters();
                 //param.Add("SeqName", seqName);
-                CfgSequenceRule sr = _dataAccessor.QueryFirstOrDefault<CfgSequenceRule>("select * from CfgSequenceRule where SeqName=@SeqName", new DynamicParameters(new { SeqName = seqName }));
+                CfgSequenceRule sr = _dbContext.QueryFirstOrDefault<CfgSequenceRule>("select * from CfgSequenceRule where SeqName=@SeqName", new DynamicParameters(new { SeqName = seqName }));
                 if (sr != null)
                 {
                     int currValue = sr.CurrValue + sr.StepBy;
                     string sql = $"update CfgSequenceRule set CurrValue={currValue} where id={sr.Id}";
-                    _dataAccessor.Execute(sql);
+                    _dbContext.Execute(sql);
                     return sr.CurrValue;
                 }
                 else
                 {
                     CfgSequenceRule cs = new CfgSequenceRule { SeqName = seqName, MinValue = 0, StepBy = stepBy, CurrValue = 1 };
-                    _dataAccessor.Insert<CfgSequenceRule>(sr);
+                    _dbContext.Insert<CfgSequenceRule>(sr);
                     return 1;
                 }
             }
@@ -76,7 +83,7 @@ namespace Fap.Core.Infrastructure.Config
 
             DynamicParameters param = new DynamicParameters();
             param.Add("TableName", tableName);
-            IEnumerable<CfgBillCodeRule> bcs = _dataAccessor.QueryWhere<CfgBillCodeRule>("BillEntity=@TableName", param);
+            IEnumerable<CfgBillCodeRule> bcs = _dbContext.QueryWhere<CfgBillCodeRule>("BillEntity=@TableName", param);
             if (bcs == null)
             {
                 bcs = new List<CfgBillCodeRule>();
@@ -88,24 +95,24 @@ namespace Fap.Core.Infrastructure.Config
                     string prefix = bc.Prefix;
                     string date = string.Empty;
                     string dateformat = bc.DateFormat;
-                    if (dateformat.IsNotNullOrEmpty())
+                    if (dateformat.IsPresent())
                     {
-                        date = PublicUtils.NowTime().ToString(dateformat);
+                        date =DateTime.Now.ToString(dateformat);
                     }
                     string seqName = bc.BillEntity + "_" + bc.FieldName;
-                    if (bc.ReCountContidion.IsNotNullOrEmpty())
+                    if (bc.ReCountContidion.IsPresent())
                     {
                         if (bc.ReCountContidion.EqualsWithIgnoreCase("year"))
                         {
-                            seqName += PublicUtils.NowTime().ToString("yyyy");
+                            seqName += DateTime.Now.ToString("yyyy");
                         }
                         else if (bc.ReCountContidion.EqualsWithIgnoreCase("month"))
                         {
-                            seqName += PublicUtils.NowTime().ToString("yyyyMM");
+                            seqName += DateTime.Now.ToString("yyyyMM");
                         }
                         else
                         {
-                            seqName += PublicUtils.NowTime().ToString("yyyyMMdd");
+                            seqName += DateTime.Now.ToString("yyyyMMdd");
                         }
                     }
                     int seq = GetSequence(seqName);
@@ -115,7 +122,7 @@ namespace Fap.Core.Infrastructure.Config
                         totalWidth = bc.SequenceLen;
                     }
                     string symbol = bc.Symbol;
-                    if (symbol.IsNullOrEmpty())
+                    if (symbol.IsMissing())
                     {
                         symbol = "0";
                     }

@@ -3,7 +3,7 @@
  * 创 建 者：wyf
  * 创建日期：2017-03-24 15:01:40
  * ==============================================================================*/
-using Fap.Core.MetaData;
+using Fap.Core.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Linq;

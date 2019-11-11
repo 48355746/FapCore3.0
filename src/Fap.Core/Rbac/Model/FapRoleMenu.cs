@@ -1,6 +1,6 @@
 ﻿using System;
 using Dapper.Contrib.Extensions;
-using Fap.Core.MetaData;
+using Fap.Core.Metadata;
 
 namespace Fap.Core.Rbac.Model
 {

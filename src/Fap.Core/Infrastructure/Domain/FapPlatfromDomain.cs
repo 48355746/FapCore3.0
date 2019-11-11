@@ -136,6 +136,10 @@ namespace Fap.Core.Infrastructure.Domain
         /// 角色角色
         /// </summary>
         public  IRoleRoleSet RoleRoleSet { get; protected set; }
+        /// <summary>
+        /// 单据编码配置规则集
+        /// </summary>
+        public ICfgBillCodeRuleSet CfgBillCodeRuleSet { get; protected set; }
         private object obj = new object();
         /// <summary>
         /// 重置服务注册状态
@@ -243,6 +247,9 @@ namespace Fap.Core.Infrastructure.Domain
             _logger.LogInformation("初始化角色数据结束");
             this.RoleRoleSet = new RoleRoleSet( _dbSession);
             _logger.LogInformation("初始化角色角色结束");
+
+            this.CfgBillCodeRuleSet = new CfgBillCodeRuleSet(_dbSession);
+            _logger.LogInformation("初始化单据编码规则集结束");
         }
         /// <summary>
         /// 清空所有权限相关缓存
@@ -266,6 +273,7 @@ namespace Fap.Core.Infrastructure.Domain
             this.RoleDataSet.Refresh();
             this.RoleRoleSet.Refresh();
             this.SysParamSet.Refresh();
+            this.CfgBillCodeRuleSet.Refresh();
         }
         public  void Configure()
         {

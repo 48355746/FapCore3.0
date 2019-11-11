@@ -5,8 +5,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="DataAccess\Interceptor\Support\EmployeeDataInterceptor.cs" />
+    <Compile Remove="DataAccess\Interceptor\Support\FapMenuDataInterceptor.cs" />
+    <Compile Remove="DataAccess\Interceptor\Support\FapRoleDataInterceptor.cs" />
+    <Compile Remove="DataAccess\Interceptor\Support\FapUserDataInterceptor.cs" />
+    <Compile Remove="DataAccess\Interceptor\Support\OrgDeptDataInterceptor.cs" />
+    <Compile Remove="DataAccess\Interceptor\Support\PartJobDataInterceptor.cs" />
+    <Compile Remove="DataAccess\Interceptor\Support\PositionDataInterceptor.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Ardalis.GuardClauses" Version="1.2.9" />
+    <PackageReference Include="Castle.Core" Version="4.4.0" />
     <PackageReference Include="Dapper.Contrib" Version="2.0.30" />
+    <PackageReference Include="IdGen" Version="2.0.3" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="3.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.0.0" />
       <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
@@ -20,6 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="DataAccess\Interceptor\Support\" />
     <Folder Include="Rbac\Utils\" />
   </ItemGroup>
 

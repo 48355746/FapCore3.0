@@ -1,7 +1,7 @@
 ﻿using Fap.Core.DataAccess;
 using Fap.Core.DI;
 using Fap.Core.Infrastructure.Domain;
-using Fap.Core.MetaData;
+using Fap.Core.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Linq;

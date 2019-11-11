@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Text;
 
-namespace Fap.Core.MetaData
+namespace Fap.Core.Metadata
 {
     /// <summary>
     /// 动态类型对象，用来获取动态数据

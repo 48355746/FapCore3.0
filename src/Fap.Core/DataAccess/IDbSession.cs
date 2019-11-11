@@ -47,5 +47,12 @@ namespace Fap.Core.DataAccess
         void TransactionProxy(Action<IDbConnection, IDbTransaction> execAction);
         bool Update<T>(T entityToUpdate) where T : class;
         Task<bool> UpdateAsync<T>(T entityToUpdate) where T : class;
+
+        public void BeginTransaction();
+
+        public void Commit();
+
+        public void Rollback();
+        public void Dispose();
     }
 }

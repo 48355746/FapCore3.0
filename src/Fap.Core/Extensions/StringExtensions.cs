@@ -47,6 +47,10 @@ namespace Fap.Core.Extensions
         {
             return !string.IsNullOrWhiteSpace(value);
         }
+        public static bool EqualsWithIgnoreCase(this string value, string target)
+        {
+            return value.Equals(target, StringComparison.OrdinalIgnoreCase);
+        }
         /// <summary>
         /// 转化为整形
         /// </summary>

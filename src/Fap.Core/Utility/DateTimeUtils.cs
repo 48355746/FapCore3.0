@@ -22,6 +22,13 @@ namespace Fap.Core.Utility
                 return string.Format("{0:yyyy-MM-dd HH:mm:ss}", DateTime.Now);
             }
         }
+        public static string LastSecondDateTimeStr
+        {
+            get
+            {
+                return string.Format("{0:yyyy-MM-dd HH:mm:ss}", DateTime.Now.AddSeconds(-1));
+            }
+        }
         public static string CurrentDateStr
         {
             get

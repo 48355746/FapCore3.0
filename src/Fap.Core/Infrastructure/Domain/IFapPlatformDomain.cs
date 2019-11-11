@@ -44,7 +44,7 @@ namespace Fap.Core.Infrastructure.Domain
         ISysParamSet SysParamSet { get; }
         ISysUserSet SysUserSet { get; }
         ITableSet TableSet { get; }
-
+        ICfgBillCodeRuleSet CfgBillCodeRuleSet { get; }
         void Refresh();
     }
 }

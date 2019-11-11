@@ -42,5 +42,46 @@ namespace Fap.Core.DataAccess
         //参数
         public const string FAPCOLUMN_PARAM_CurrentDate = "@CurrentDate";
         public const string FAPCOLUMN_PARAM_Dr = "@Dr";
+
+        #region 默认值常量
+        /// <summary>
+        /// 当前日期默认值
+        /// </summary>
+        public const string CurrentDate = "${FAP::CURRENTDATE}";
+        /// <summary>
+        /// 当前登录员工UID默认值
+        /// </summary>
+        public const string CurrentEmployee = "${FAP::CURRENTEMPLOYEE}";
+        /// <summary>
+        /// 当前登录用户UID
+        /// </summary>
+        public const string CurrentUser = "${FAP::CURRENTUSER}";
+        /// <summary>
+        /// 当前登录员工所在部门UID
+        /// </summary>
+        public const string CurrentDept = "${FAP::CURRENTDEPT}";
+        /// <summary>
+        /// 当前登录员工所在部门编码
+        /// </summary>
+        public const string CurrentDeptCode = "${FAP::CURRENTDEPTCODE}";
+        /// <summary>
+        /// 员工不带权限标识符
+        /// </summary>
+        public const string EmployeeNoPower = "${FAP::EMPLOYEENOPOWER}";
+        #endregion
+
+        /// <summary>
+        /// 变量替换正则表达式${Variable}
+        /// </summary>
+        public const string VariablePattern = @"\$\{\S+?\}";
+        /// <summary>
+        /// 集合替换正则表达式
+        /// </summary>
+        public const string CollectionPattern = @"\{\{\S+?\}\}";
+        /// <summary>
+        ///部门权限替换字符
+        /// </summary>
+
+        public const string DepartmentAuthority = "FAP::&&DEPTAUTHORITY&&";
     }
 }

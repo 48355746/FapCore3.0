@@ -1,4 +1,4 @@
-﻿using Fap.Core.MetaData;
+﻿using Fap.Core.Metadata;
 using System.Collections.Generic;
 
 namespace Fap.Core.Rbac.AC

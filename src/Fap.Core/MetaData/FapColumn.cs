@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Fap.Core.MetaData
+namespace Fap.Core.Metadata
 {
     /// <summary>
     /// 字段元数据定义

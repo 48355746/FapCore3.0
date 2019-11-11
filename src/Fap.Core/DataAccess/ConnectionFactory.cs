@@ -17,7 +17,7 @@ namespace Fap.Core.DataAccess
     public class ConnectionFactory : IConnectionFactory
     {
         private readonly ILogger _logger;
-        private ThreadLocal<DataSourceEnum> threadLocal = new ThreadLocal<DataSourceEnum>();
+        private static ThreadLocal<DataSourceEnum> threadLocal = new ThreadLocal<DataSourceEnum>();
         static ConnectionFactory()
         {
             //设置dapper的tableName取值
