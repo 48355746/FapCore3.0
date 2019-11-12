@@ -133,7 +133,7 @@ namespace Fap.Core.Infrastructure.Config
             else
             {
                 //单据没有配置的时候 返回默认的值
-                if (_dataAccessor.Table(tableName).TableFeature.Contains("BillFeature"))
+                if (_appDomain.TableSet.FirstOrDefault(t=>t.TableName==tableName).TableFeature.Contains("BillFeature"))
                 {
                     //CfgBillCodeRule bc = new CfgBillCodeRule();
                     //bc.FieldName = "BillCode";

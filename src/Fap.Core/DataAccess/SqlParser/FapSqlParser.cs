@@ -57,9 +57,9 @@ namespace Fap.Core.DataAccess.SqlParser
                     SelectBuilder sbi = pi as SelectBuilder;
                     FilterGroup topFilter =
                    new FilterGroup(Conjunction.And,
-                       new LessThanEqualToFilter(new Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CURRENTDATETIME)),
-                       new GreaterThanEqualToFilter(new Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CURRENTDATETIME)),
-                       new EqualToFilter(new Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_DR)));
+                       new LessThanEqualToFilter(new Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
+                       new GreaterThanEqualToFilter(new Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
+                       new EqualToFilter(new Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_Dr)));
                     sbi.AddWhere(topFilter);
                 }
             }
@@ -126,9 +126,9 @@ namespace Fap.Core.DataAccess.SqlParser
             BuilderWhere(where);
             //添加有效期验证
             FilterGroup validFilter = new FilterGroup(Conjunction.And,
-               new LessThanEqualToFilter(table.Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CURRENTDATETIME)),
-               new GreaterThanEqualToFilter(table.Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CURRENTDATETIME)),
-               new EqualToFilter(table.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_DR)));
+               new LessThanEqualToFilter(table.Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
+               new GreaterThanEqualToFilter(table.Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
+               new EqualToFilter(table.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_Dr)));
             delete.AddWhere(validFilter);
         }
         private void RepackUpdateSQL(UpdateBuilder update)
@@ -138,9 +138,9 @@ namespace Fap.Core.DataAccess.SqlParser
             BuilderWhere(where);
             //添加有效期验证
             FilterGroup validFilter = new FilterGroup(Conjunction.And,
-               new LessThanEqualToFilter(table.Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CURRENTDATETIME)),
-               new GreaterThanEqualToFilter(table.Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CURRENTDATETIME)),
-               new EqualToFilter(table.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_DR)));
+               new LessThanEqualToFilter(table.Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
+               new GreaterThanEqualToFilter(table.Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
+               new EqualToFilter(table.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_Dr)));
             update.AddWhere(validFilter);
         }
 
@@ -163,9 +163,9 @@ namespace Fap.Core.DataAccess.SqlParser
                                 {
                                     //添加有效期验证
                                     FilterGroup inFilter = new FilterGroup(Conjunction.And,
-                                       new LessThanEqualToFilter(tb.Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CURRENTDATETIME)),
-                                       new GreaterThanEqualToFilter(tb.Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CURRENTDATETIME)),
-                                       new EqualToFilter(tb.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_DR)));
+                                       new LessThanEqualToFilter(tb.Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
+                                       new GreaterThanEqualToFilter(tb.Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
+                                       new EqualToFilter(tb.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_Dr)));
                                     inSel.AddWhere(inFilter);
                                 }
                             }
@@ -216,9 +216,9 @@ namespace Fap.Core.DataAccess.SqlParser
             {
                 //添加有效期验证
                 FilterGroup validFilter = new FilterGroup(Conjunction.And,
-                   new LessThanEqualToFilter(tb.Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CURRENTDATETIME)),
-                   new GreaterThanEqualToFilter(tb.Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CURRENTDATETIME)),
-                   new EqualToFilter(tb.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_DR)));
+                   new LessThanEqualToFilter(tb.Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
+                   new GreaterThanEqualToFilter(tb.Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
+                   new EqualToFilter(tb.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_Dr)));
                 select.AddWhere(validFilter);
             }
 
@@ -351,9 +351,9 @@ namespace Fap.Core.DataAccess.SqlParser
             }
             FilterGroup joinFilter = new FilterGroup(Conjunction.And,
                 new EqualToFilter(innerTable.Column($"{column.RefID}"), table.Column(column.ColName)),
-                new LessThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CURRENTDATETIME)),
-                new GreaterThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CURRENTDATETIME)),
-                new EqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_DR)));
+                new LessThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
+                new GreaterThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
+                new EqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_Dr)));
             inner.AddWhere(joinFilter);
             select.AddProjection(inner, $"{column.ColName}MCID");
         }
@@ -369,9 +369,9 @@ namespace Fap.Core.DataAccess.SqlParser
             }
             FilterGroup joinFilter = new FilterGroup(Conjunction.And,
                 new EqualToFilter(innerTable.Column($"{column.RefID}"), table.Column(column.ColName)),
-                new LessThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CURRENTDATETIME)),
-                new GreaterThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CURRENTDATETIME)),
-                new EqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_DR)));
+                new LessThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
+                new GreaterThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
+                new EqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_Dr)));
             inner.AddWhere(joinFilter);
             select.AddProjection(inner, $"{column.ColName}MC");
 
@@ -393,9 +393,9 @@ namespace Fap.Core.DataAccess.SqlParser
             FilterGroup joinFilter = new FilterGroup(Conjunction.And,
                 new EqualToFilter(innerTable.Column("Code"), table.Column(column.ColName)),
                 new EqualToFilter(innerTable.Column("Category"), new StringLiteral(column.RefTable)),
-                new LessThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CURRENTDATETIME)),
-                new GreaterThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CURRENTDATETIME)),
-                new EqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_DR)));
+                new LessThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
+                new GreaterThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
+                new EqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_Dr)));
             inner.AddWhere(joinFilter);
             select.AddProjection(inner, $"{column.ColName}MC");
             if (column.MultiAble == 1) //是否多选

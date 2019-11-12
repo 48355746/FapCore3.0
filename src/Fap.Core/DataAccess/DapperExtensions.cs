@@ -1,7 +1,10 @@
-﻿using Dapper;
+﻿using Ardalis.GuardClauses;
+using Dapper;
+using Fap.Core.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -49,6 +52,42 @@ namespace Fap.Core.DataAccess
             if (wasClosed) connection.Close();
             return returnVal;
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="sbColumnList"></param>
+        /// <param name="sbParamterList"></param>
+        /// <param name="dynamicToUpdate"></param>
+        /// <param name="isTrace">可跟踪历史</param>
+        /// <param name="transaction"></param>
+        /// <param name="commandTimeout"></param>
+        /// <returns></returns>
+        public static bool Update(this IDbConnection connection,string tableName,dynamic dynamicToUpdate, IDbTransaction transaction = null, int? commandTimeout = null)
+        {
+            var id = dynamicToUpdate.Get("Id");
+            if (id == null)
+            {
+                Guard.Against.NullOrEmpty("更新数据Id必须设置.", nameof(dynamicToUpdate));
+            }
+            var adapter = GetFormatter(connection);
+            StringBuilder sqlBuilder = new StringBuilder();
+            sqlBuilder.Append(" UPDATE ").Append(tableName).Append(" SET ");
+            foreach (var fildName in dynamicToUpdate.Keys())
+            {
+                adapter.AppendColumnNameEqualsValue(sqlBuilder, fildName);
+                sqlBuilder.Append(",");
+            }
+            sqlBuilder.Remove(sqlBuilder.Length - 1, 1);
+            sqlBuilder.Append(" where ");
+            adapter.AppendColumnNameEqualsValue(sqlBuilder, "Id");
+            DynamicParameters parameters= dynamicToUpdate.Parameters();
+            int updated= connection.Execute(sqlBuilder.ToString(), parameters, transaction, commandTimeout);
+            return updated > 0;
+        }
+       
+
+
         private static readonly Dictionary<string, ISqlAdapter> AdapterDictionary
            = new Dictionary<string, ISqlAdapter>
            {
@@ -67,5 +106,7 @@ namespace Fap.Core.DataAccess
                 ? new SqlServerAdapter()
                 : AdapterDictionary[name];
         }
+
+
     }
 }

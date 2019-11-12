@@ -61,5 +61,11 @@ namespace Fap.Core.Extensions
         {
             return Convert.ToInt32(value);
         }
+        public static bool ToBool(this string value)
+        {
+            return value.EqualsWithIgnoreCase("y") || value.EqualsWithIgnoreCase("yes")
+                        || value.EqualsWithIgnoreCase("1") || value.EqualsWithIgnoreCase("true")
+                        || value.EqualsWithIgnoreCase("t");
+        }
     }
 }

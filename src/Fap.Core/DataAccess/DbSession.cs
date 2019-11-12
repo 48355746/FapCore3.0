@@ -4,6 +4,7 @@ using Dapper.Contrib.Extensions;
 using Fap.Core.DI;
 using Fap.Core.Exceptions;
 using Fap.Core.Extensions;
+using Fap.Core.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -11,6 +12,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -186,11 +188,51 @@ namespace Fap.Core.DataAccess
         }
         public Task<T> ExecuteScalarAsync<T>(string sql, DynamicParameters parameters = null, CommandType? commandType = null)
         {
+            if (CurrentTransaction != null)
+            {
+                return DbExecProxyAsync<T>((param) => CurrentConnection.ExecuteScalarAsync<T>(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+            }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
             return DbExecProxyAsync<T>((param) => connection.ExecuteScalarAsync<T>(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
         }
         #endregion
         #region query
+        public T Get<T>(int id) where T : class
+        {
+            if (CurrentTransaction != null)
+            {
+                return DbExecProxy<T>((param) => CurrentConnection.Get<T>(id, CurrentTransaction, _commandTimeout), "get by id", null);
+            }
+            using var connection = GetDbConnection(DataSourceEnum.SLAVE);
+            return DbExecProxy<T>((param) => connection.Get<T>(id, CurrentTransaction, _commandTimeout), "get by id", null);
+        }
+        public IEnumerable<T> GetAll<T>() where T : class
+        {
+            if (CurrentTransaction != null)
+            {
+                return DbExecProxy<IEnumerable<T>>((param) => CurrentConnection.GetAll<T>(CurrentTransaction, _commandTimeout), "get all", null);
+            }
+            using var connection = GetDbConnection(DataSourceEnum.SLAVE);
+            return DbExecProxy<IEnumerable<T>>((param) => connection.GetAll<T>(CurrentTransaction, _commandTimeout), "get all", null);
+        }
+        public Task<T> GetAsync<T>(int id) where T : class
+        {
+            if (CurrentTransaction != null)
+            {
+                return DbExecProxyAsync<T>((param) => CurrentConnection.GetAsync<T>(id, CurrentTransaction, _commandTimeout), "get by id", null);
+            }
+            using var connection = GetDbConnection(DataSourceEnum.SLAVE);
+            return DbExecProxyAsync<T>((param) => connection.GetAsync<T>(id, CurrentTransaction, _commandTimeout), "get by id", null);
+        }
+        public Task<IEnumerable<T>> GetAllAsync<T>() where T : class
+        {
+            if (CurrentTransaction != null)
+            {
+                return DbExecProxyAsync<IEnumerable<T>>((param) => CurrentConnection.GetAllAsync<T>(CurrentTransaction, _commandTimeout), "get all", null);
+            }
+            using var connection = GetDbConnection(DataSourceEnum.SLAVE);
+            return DbExecProxyAsync<IEnumerable<T>>((param) => connection.GetAllAsync<T>(CurrentTransaction, _commandTimeout), "get all", null);
+        }
         /// <summary>
         /// 返回具有与列匹配的属性的动态对象。
         /// </summary>
@@ -515,7 +557,24 @@ namespace Fap.Core.DataAccess
             return Task.FromResult(connection.Insert(tableName, sbColumnList, sbParameterList, entityToInsert, CurrentTransaction, _commandTimeout));
         }
 
-
+        public bool Update(FapDynamicObject keyValues)
+        {
+            if (keyValues.TableName.IsMissing())
+            {
+                Guard.Against.NullOrEmpty("Update（FapDynamicObject keyValues）异常，tableName不能为null", nameof(FapDynamicObject));
+            }
+            dynamic d= keyValues as dynamic;
+            if (d.Get("Id") == null)
+            {
+                Guard.Against.NullOrEmpty("Update（FapDynamicObject keyValues）异常，tableName不能为null", nameof(FapDynamicObject));
+            }
+            if (CurrentTransaction != null)
+            {
+                return CurrentConnection.Update(keyValues.TableName, keyValues, CurrentTransaction, _commandTimeout);
+            }
+            using var connection = GetDbConnection(DataSourceEnum.MASTER);
+            return connection.Update(keyValues.TableName, keyValues,  CurrentTransaction, _commandTimeout);
+        }
         /// <summary>
         /// 内部方法，sql不处理
         /// </summary>

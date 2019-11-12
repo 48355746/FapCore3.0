@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
 using Dapper;
+using Fap.Core.Metadata;
 
 namespace Fap.Core.DataAccess
 {
@@ -24,10 +25,16 @@ namespace Fap.Core.DataAccess
         long Insert<T>(T entityToInsert) where T : class;
         Task<long> InsertAsync(string tableName, string sbColumnList, string sbParameterList, object entityToInsert);
         Task<int> InsertAsync<T>(T entityToInsert) where T : class;
+
+        T Get<T>(int id) where T : class;
+        IEnumerable<T> GetAll<T>() where T : class;
+        Task<T> GetAsync<T>(int id) where T : class;
+        Task<IEnumerable<T>> GetAllAsync<T>() where T : class;
         IEnumerable<dynamic> Query(string sql, DynamicParameters parameters = null, bool buffered = true, CommandType? commandType = null);
         IEnumerable<T> Query<T>(string sql, DynamicParameters parameters = null, bool buffered = true, CommandType? commandType = null);
         Task<IEnumerable<dynamic>> QueryAsync(string sql, DynamicParameters parameters = null, CommandType? commandType = null);
         Task<IEnumerable<T>> QueryAsync<T>(string sql, DynamicParameters parameters = null, CommandType? commandType = null);
+        
         dynamic QueryFirst(string sql, DynamicParameters parameters = null, CommandType? commandType = null);
         T QueryFirst<T>(string sql, DynamicParameters parameters = null, CommandType? commandType = null);
         Task<dynamic> QueryFirstAsync(string sql, DynamicParameters parameters = null, CommandType? commandType = null);
@@ -45,6 +52,7 @@ namespace Fap.Core.DataAccess
         Task<dynamic> QuerySingleOrDefaultAsync(string sql, DynamicParameters parameters = null, CommandType? commandType = null);
         Task<T> QuerySingleOrDefaultAsync<T>(string sql, DynamicParameters parameters = null, CommandType? commandType = null);
         void TransactionProxy(Action<IDbConnection, IDbTransaction> execAction);
+        bool Update(FapDynamicObject keyValues);
         bool Update<T>(T entityToUpdate) where T : class;
         Task<bool> UpdateAsync<T>(T entityToUpdate) where T : class;
 

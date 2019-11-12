@@ -1,8 +1,7 @@
 ﻿using Dapper;
-using Fap.Core.DataAccess.DbContext;
+using Fap.Core.DataAccess;
 using Fap.Core.Extensions;
-using Fap.Core.Infrastructure.Constants;
-using Fap.Core.Platform.Domain;
+using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Rbac.Model;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,14 +15,14 @@ namespace Fap.Core.Rbac
         /// 这样写，RbacServcie就不暴露Commonservice的方法。RbacServcie只实现自己的内部方法
         /// </summary>
         private IDbContext _dataAccessor;
-        private IPlatformDomain _appDomain;
-        private IFapSessionStorage _session;
+        private IFapPlatformDomain _appDomain;
+        private IFapApplicationContext _applicationContext;
         private ILoginService _loginService;
-        public RbacService(IDbContext db, IPlatformDomain appDomain, IFapSessionStorage session, ILoginService loginService)
+        public RbacService(IDbContext db, IFapPlatformDomain appDomain, IFapApplicationContext applicationContext, ILoginService loginService)
         {
             _dataAccessor = db;
             _appDomain = appDomain;
-            _session = session;
+            _applicationContext = applicationContext;
             _loginService = loginService;
         }
 
@@ -50,18 +49,17 @@ namespace Fap.Core.Rbac
             //}
             //IEnumerable<string> roles =_loginService.GetUserRoles(_session.UserUid).Select(r => r.Fid);
             IEnumerable<OrgDept> roleOrgDepts = new List<OrgDept>();
-            string roleId = _session.AcSession.Role.Fid;
-            if (historyDate.IsNotNullOrEmpty())
+            string roleId = _applicationContext.CurrentRoleUid;
+            if (historyDate.IsPresent())
             {
                 IEnumerable<OrgDept> roleDepts = null;
                 List<OrgDept> powerDepts = new List<OrgDept>();
                 var result = _appDomain.RoleDeptSet.Where<FapRoleDept>(f => f.RoleUid == roleId);
                 IEnumerable<OrgDept> allDepts = null;
-                _dataAccessor.DbTransaction(session =>
-                 {
-                     session.HistoryTime = historyDate;
-                     allDepts = session.QueryAll<OrgDept>();
-                 });
+
+                _dataAccessor.HistoryDateTime = historyDate;
+                allDepts = _dataAccessor.QueryAll<OrgDept>();
+
                 if (allDepts.Any())
                 {
                     OrgDept rootDept = allDepts.FirstOrDefault(d => string.IsNullOrWhiteSpace(d.Pid) || d.Pid == "#" || d.Pid == "~" || d.Pid == "");
@@ -99,7 +97,7 @@ namespace Fap.Core.Rbac
 
             }
             else
-            {                
+            {
                 IEnumerable<OrgDept> depts = new List<OrgDept>();
                 if (_appDomain.RoleDeptSet.TryGetValueByRole(roleId, out depts))
                 {
@@ -109,13 +107,13 @@ namespace Fap.Core.Rbac
                     }
                 }
                 //管辖部门，作为部门经理或直属领导
-                var myDepts= _appDomain.OrgDeptSet.Where(d => d.DeptManager == _session.EmpUid || d.Director == _session.EmpUid);
-                if(myDepts.Any())
+                var myDepts = _appDomain.OrgDeptSet.Where(d => d.DeptManager == _applicationContext.EmpUid || d.Director == _applicationContext.EmpUid);
+                if (myDepts.Any())
                 {
                     foreach (var mydept in myDepts)
                     {
-                       var myAllDepts=  _appDomain.OrgDeptSet.Where(d => d.DeptCode.StartsWith(mydept.DeptCode)).ToList();
-                       roleOrgDepts= roleOrgDepts.Union(myAllDepts);
+                        var myAllDepts = _appDomain.OrgDeptSet.Where(d => d.DeptCode.StartsWith(mydept.DeptCode)).ToList();
+                        roleOrgDepts = roleOrgDepts.Union(myAllDepts);
                     }
                 }
             }
@@ -188,7 +186,7 @@ namespace Fap.Core.Rbac
         public string GetRoleDataWhere(string tableName)
         {
             string where = string.Empty;
-            string roleUid = _session.AcSession.Role.Fid;
+            string roleUid = _applicationContext.CurrentRoleUid;
             IEnumerable<FapRoleData> roleDatas = null;
             if (_appDomain.RoleDataSet.TryGetValueByRole(roleUid, out roleDatas))
             {
@@ -208,18 +206,18 @@ namespace Fap.Core.Rbac
                             string colName = mtch.ToString().Substring(2, length);
                             if (colName.EqualsWithIgnoreCase("DeptUid"))
                             {
-                                where = where.Replace(mtch.ToString(), _session.AcSession.Employee.DeptUid);
+                                where = where.Replace(mtch.ToString(),_applicationContext.DeptUid);
                             }
                             else if (colName.EqualsWithIgnoreCase("EmpUid"))
                             {
-                                where = where.Replace(mtch.ToString(), _session.AcSession.Employee.Fid);
+                                where = where.Replace(mtch.ToString(), _applicationContext.EmpUid);
                             }
                             else if (colName.EqualsWithIgnoreCase("DeptCode"))
                             {
-                                string deptCode = _session.AcSession.Employee.DeptCode;
-                                if (deptCode.IsNullOrEmpty())
+                                string deptCode = _applicationContext.DeptCode;
+                                if (deptCode.IsMissing())
                                 {
-                                    OrgDept dept = _dataAccessor.Get<OrgDept>(_session.AcSession.Employee.DeptUid);
+                                    OrgDept dept = _dataAccessor.Get<OrgDept>(_applicationContext.DeptUid);
                                     deptCode = dept.DeptCode;
                                 }
                                 where = where.Replace(mtch.ToString(), deptCode);
@@ -239,7 +237,7 @@ namespace Fap.Core.Rbac
         public IEnumerable<FapRoleReport> GetUserReportList()
         {
             IEnumerable<FapRoleReport> roleReports = new List<FapRoleReport>();
-            if (_appDomain.RoleReportSet.TryGetValueByRole(_session.AcSession.Role.Fid, out roleReports))
+            if (_appDomain.RoleReportSet.TryGetValueByRole(_applicationContext.CurrentRoleUid, out roleReports))
             {
                 return roleReports;
             }
@@ -254,7 +252,7 @@ namespace Fap.Core.Rbac
         public IEnumerable<FapRoleMenu> GetUserMenuList()
         {
             IEnumerable<FapRoleMenu> roleMenuUids = new List<FapRoleMenu>();
-            if (_appDomain.RoleMenuSet.TryGetValueByRole(_session.AcSession.Role.Fid, out roleMenuUids))
+            if (_appDomain.RoleMenuSet.TryGetValueByRole(_applicationContext.CurrentRoleUid, out roleMenuUids))
             {
                 return roleMenuUids;
             }
@@ -271,7 +269,7 @@ namespace Fap.Core.Rbac
         public IEnumerable<FapRoleColumn> GetUserColumnList()
         {
             IEnumerable<FapRoleColumn> columns = new List<FapRoleColumn>();
-            if (_appDomain.RoleColumnSet.TryGetValueByRole(_session.AcSession.Role.Fid, out columns))
+            if (_appDomain.RoleColumnSet.TryGetValueByRole(_applicationContext.CurrentRoleUid, out columns))
             {
                 return columns;
             }
@@ -289,7 +287,7 @@ namespace Fap.Core.Rbac
         {
             string sql = "select * from FapRole where Fid in(select RoleUid  from FapRoleUser where UserUid=@UserUid)";
             DynamicParameters param = new DynamicParameters();
-            param.Add("UserUid", _session.AcSession.Account.Fid);
+            param.Add("UserUid",_applicationContext.UserUid);
             var list = _dataAccessor.Query<FapRole>(sql, param).AsList();
             if (list == null)
             {

@@ -1,17 +1,19 @@
-﻿using Fap.Core.DataAccess.DbContext;
-using Fap.Core.Utility;
+﻿using Fap.Core.Utility;
 using Fap.Core.Rbac.Model;
 using System.Collections.Generic;
 using Dapper;
 using System;
-using Fap.Core.DataAccess.BaseAccess;
 using Dapper.Contrib.Extensions;
+using Fap.Core.DataAccess;
+using Fap.Core.DI;
+
 namespace Fap.Core.Rbac
 {
     /// <summary>
     /// 在线用户管理类
     /// </summary>
-    public class OnlineUserManager
+    [Service(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton)]
+    public class OnlineUserManager : IOnlineUserManager
     {
         private readonly IDbContext _dbContext;
         public OnlineUserManager(IDbContext dbContext)
@@ -19,26 +21,24 @@ namespace Fap.Core.Rbac
             _dbContext = dbContext;
         }
 
-
         /// <summary>
         /// 添加一个用户到在线用户表
         /// </summary>
         /// <param name="session"></param>
         /// <param name="user"></param>
+        [Transactional]
         public FapOnlineUser AddOnlineUser(FapOnlineUser onlineUser)
         {
-            _dbContext.DbTransaction(session => {
-                //开启了事务，所以原始操作要有事务
-                //更新之前的在线用户状态
-                session.Connection.Execute($"update FapOnlineUser set OnlineState='{FapOnlineUser.CONST_LOGOUT}' where UserUid=@UserUid", new { UserUid = onlineUser.UserUid }, session.Transaction);
-                //insert 新在线用户
-                long id = session.Connection.Insert<FapOnlineUser>(onlineUser,session.Transaction);
-                onlineUser.Id = id;
-            });
+            //开启了事务，所以原始操作要有事务
+            //更新之前的在线用户状态
+            _dbContext.Execute($"update FapOnlineUser set OnlineState='{FapOnlineUser.CONST_LOGOUT}' where UserUid=@UserUid", new DynamicParameters(new { UserUid = onlineUser.UserUid }) { });
+            //insert 新在线用户
+            long id = _dbContext.Insert<FapOnlineUser>(onlineUser);
+            onlineUser.Id = id;
 
             return onlineUser;
         }
-        public bool UpdateOnlineUser(string onlineUserUid,string roleUid)
+        public bool UpdateOnlineUser(string onlineUserUid, string roleUid)
         {
             FapOnlineUser onlineUser = _dbContext.Get<FapOnlineUser>(onlineUserUid);
             if (onlineUser != null)
@@ -60,7 +60,7 @@ namespace Fap.Core.Rbac
             if (onlineUser != null)
             {
                 onlineUser.OnlineState = FapOnlineUser.CONST_LOGOUT;
-                onlineUser.LogoutTime = PublicUtils.GetSysDateTimeStr();
+                onlineUser.LogoutTime = DateTimeUtils.CurrentDateTimeStr;
                 _dbContext.Update<FapOnlineUser>(onlineUser);
             }
         }

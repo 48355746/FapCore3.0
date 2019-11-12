@@ -1,5 +1,8 @@
 ﻿
+using Fap.Core.DataAccess;
+using Fap.Core.Infrastructure.Cache;
 using Fap.Core.Infrastructure.Enums;
+using Fap.Core.Rbac.Model;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -12,9 +15,13 @@ namespace Fap.Core.Infrastructure.Domain
     public class FapApplicationContext : IFapApplicationContext
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public FapApplicationContext(IHttpContextAccessor httpContextAccessor)
+        private readonly IDbContext _dbContext;
+        private readonly ICacheService _cacheService;
+        public FapApplicationContext(IHttpContextAccessor httpContextAccessor, IDbContext dbContext, ICacheFactory cacheFactory)
         {
             _httpContextAccessor = httpContextAccessor;
+            _dbContext = dbContext;
+            _cacheService = cacheFactory.GetCacheService(CacheEnum.Memory);
         }
         /// <summary>
         /// 员工Fid
@@ -69,5 +76,41 @@ namespace Fap.Core.Infrastructure.Domain
         /// 所有角色UID
         /// </summary>
         public IEnumerable<string> Roles => _httpContextAccessor?.HttpContext == null ? Array.Empty<string>() : _httpContextAccessor?.HttpContext.User.FindAll(c => c.Type == ClaimTypes.Role)?.Select(r => r.Value);
+
+        public FapRole Role { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        public FapUser Account
+        {
+            get
+            {
+                string key = $"user_{UserUid}";
+                var user = _cacheService.Get<FapUser>(key);
+                if (user == null)
+                {
+                    user = _dbContext.Get<FapUser>(UserUid, true);
+                    _cacheService.Add(key, user);
+                }
+                return user;
+            }
+        }
+
+        public FapOnlineUser OnlineUser => throw new NotImplementedException();
+
+        public Employee Employee
+        {
+            get
+            {
+                string key = $"employee_{EmpUid}";
+                var employee = _cacheService.Get<Employee>(key);
+                if (employee == null)
+                {
+                    employee = _dbContext.Get<Employee>(EmpUid, true);
+                    _cacheService.Add(key, employee);
+                }
+                return employee;
+            }
+        }
+
+        public string CurrentRoleUid { get; set; } = PlatformConstants.CommonUserRoleFid;
     }
 }

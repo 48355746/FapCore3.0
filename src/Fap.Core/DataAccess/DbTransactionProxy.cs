@@ -20,11 +20,11 @@ namespace Fap.Core.DataAccess
             {
                 _dbContext.BeginTransaction();
                 action?.Invoke(_dbContext);
-                _dbContext.CommitTransaction();
+                _dbContext.Commit();
             }
             catch (Exception ex)
             {
-                _dbContext.RollbackTransction();
+                _dbContext.Rollback();
                 _logger.LogError(ex.Message);
             }
             finally

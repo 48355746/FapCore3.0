@@ -1,7 +1,6 @@
 ﻿using Dapper;
-using Fap.Core.DataAccess.DbContext;
-using Fap.Core.Infrastructure.Constants;
-using Fap.Core.Platform.Domain;
+using Fap.Core.DataAccess;
+using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Rbac.Model;
 using System.Collections.Generic;
 using System.Linq;

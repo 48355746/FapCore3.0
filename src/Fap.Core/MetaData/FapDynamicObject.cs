@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dapper;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -12,13 +13,16 @@ namespace Fap.Core.Metadata
     /// </summary>
     [Serializable]
     public class FapDynamicObject : System.Dynamic.DynamicObject, IEnumerable<KeyValuePair<string, object>>
-    {        
-        private IDictionary<string, object> map = new Dictionary<string, object>();     
+    {
+        private IDictionary<string, object> map = new Dictionary<string, object>();
         /// <summary>
         /// 表名
         /// </summary>
         public string TableName { get; set; }
-
+        /// <summary>
+        /// 主键
+        /// </summary>
+        public string PrimaryKey { get; set; } = "ID";
         public override IEnumerable<string> GetDynamicMemberNames()
         {
             return map.Keys;
@@ -82,6 +86,7 @@ namespace Fap.Core.Metadata
         public const string OperRemove = "Remove";
         public const string OperParamKeys = "ParamKeys";
         public const string OperColumnKeys = "ColumnKeys";
+        public const string OperParameters = "Parameters";
         public override bool TryInvokeMember(System.Dynamic.InvokeMemberBinder binder, object[] args, out object result)
         {
             if (binder.Name == OperAdd && binder.CallInfo.ArgumentCount == 2)
@@ -109,7 +114,7 @@ namespace Fap.Core.Metadata
                 return true;
 
             }
-            else if (binder.Name ==OperGet && binder.CallInfo.ArgumentCount == 1)
+            else if (binder.Name == OperGet && binder.CallInfo.ArgumentCount == 1)
             {
                 string key = args[0] as string;
                 if (map.TryGetValue(key, out object obj))
@@ -178,6 +183,16 @@ namespace Fap.Core.Metadata
                 result = columnKeys;
                 return true;
             }
+            else if (binder.Name == OperParameters && binder.CallInfo.ArgumentCount == 0)
+            {
+                DynamicParameters parameters = new DynamicParameters();
+                foreach (var entry in map)
+                {
+                    parameters.Add(entry.Key, entry.Value);
+                }
+                result= parameters;
+                return true;
+            }
             return base.TryInvokeMember(binder, args, out result);
         }
 
@@ -203,6 +218,6 @@ namespace Fap.Core.Metadata
             return map.GetEnumerator();
         }
 
-       
+
     }
 }
