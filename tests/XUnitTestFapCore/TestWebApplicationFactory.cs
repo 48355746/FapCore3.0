@@ -11,7 +11,7 @@ namespace XUnitTestFapCore
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-            builder.UseSetting(WebHostDefaults.HostingStartupAssembliesKey, "Fap.Core").ConfigureServices(services =>
+            builder.ConfigureServices(services =>
             {
                 // Create a new service provider.
                 var serviceProvider = new ServiceCollection()
@@ -49,7 +49,7 @@ namespace XUnitTestFapCore
                 //            "database with test messages. Error: {ex.Message}");
                 //    }
                 //}
-            }).UseDefaultServiceProvider(options => { options.ValidateScopes = false; });
+            }).UseDefaultServiceProvider(options => { options.ValidateScopes = false; });//.UseSetting(WebHostDefaults.HostingStartupAssembliesKey, "Fap.Core");
         }
     }
 }

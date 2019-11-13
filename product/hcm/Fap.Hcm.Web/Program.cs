@@ -14,10 +14,9 @@ namespace Fap.Hcm.Web
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    //增加外部启动项Fap.Core.DI.ServicesInjection，初始化所有service
-                    webBuilder.UseSetting(WebHostDefaults.HostingStartupAssembliesKey, "Fap.Core")
+                    webBuilder.UseStartup<Startup>();
+                  
 
-                    .UseStartup<Startup>();
-                });
+                }).UseDefaultServiceProvider(options => { options.ValidateScopes = false; });
     }
 }

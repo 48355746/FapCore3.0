@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Fap.Core.Infrastructure.Domain;
+using Fap.Core.DI;
 
 namespace Fap.Hcm.Web
 {
@@ -24,7 +26,9 @@ namespace Fap.Hcm.Web
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
-        {
+        {            
+            var fapBuilder= services.AddFapService().AddAutoInjection();
+
             services.AddControllersWithViews();
         }
 

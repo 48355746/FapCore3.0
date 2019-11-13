@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Fap.Core.DataAccess;
+using Fap.Core.DI;
 using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Rbac.Model;
@@ -9,6 +10,7 @@ using System.Text.RegularExpressions;
 
 namespace Fap.Core.Rbac
 {
+    [Service(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton)]
     public class RbacService : IRbacService
     {
         /// <summary>

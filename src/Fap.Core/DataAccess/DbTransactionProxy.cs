@@ -7,14 +7,14 @@ namespace Fap.Core.DataAccess
 {
     public class DbTransactionProxy
     {
-        private readonly DbContext _dbContext;
+        private readonly IDbContext _dbContext;
         private readonly ILogger<DbTransactionProxy> _logger;
-        public DbTransactionProxy(DbContext dbContext,ILogger<DbTransactionProxy> logger)
+        public DbTransactionProxy(IDbContext dbContext,ILogger<DbTransactionProxy> logger)
         {
             _dbContext = dbContext;
             _logger = logger;
         }
-        public void DbTransaction(Action<DbContext> action)
+        public void DbTransaction(Action<IDbContext> action)
         {
             try
             {

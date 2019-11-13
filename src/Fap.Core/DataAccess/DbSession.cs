@@ -18,11 +18,10 @@ using System.Threading.Tasks;
 
 namespace Fap.Core.DataAccess
 {
-    [Service(ServiceLifetime.Singleton, InterfaceType = typeof(IDbSession))]
     public class DbSession : IDbSession
     {
         private ILogger<DbSession> _logger;
-        private int? _commandTimeout;
+        public int? CommandTimeout { get; set; }
         /// <summary>
         /// 数据库连接工厂
         /// </summary>
@@ -49,7 +48,7 @@ namespace Fap.Core.DataAccess
         {
             _logger = loggerFactory.CreateLogger<DbSession>();
             ConnectionFactory = connectionFactory;
-            // _commandTimeout = commandTimeOut;
+            // CommandTimeout = commandTimeOut;
         }
         #region private
         Stopwatch timer = new Stopwatch();
@@ -164,10 +163,10 @@ namespace Fap.Core.DataAccess
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxyAsync<object>((param) => CurrentConnection.ExecuteScalarAsync(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+                return DbExecProxyAsync<object>((param) => CurrentConnection.ExecuteScalarAsync(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxyAsync<object>((param) => connection.ExecuteScalarAsync(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+            return DbExecProxyAsync<object>((param) => connection.ExecuteScalarAsync(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
         }
         /// <summary>
         /// 执行选择单个值的参数化SQL。
@@ -181,19 +180,19 @@ namespace Fap.Core.DataAccess
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxy<T>((param) => CurrentConnection.ExecuteScalar<T>(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+                return DbExecProxy<T>((param) => CurrentConnection.ExecuteScalar<T>(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxy<T>((param) => connection.ExecuteScalar<T>(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+            return DbExecProxy<T>((param) => connection.ExecuteScalar<T>(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
         }
         public Task<T> ExecuteScalarAsync<T>(string sql, DynamicParameters parameters = null, CommandType? commandType = null)
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxyAsync<T>((param) => CurrentConnection.ExecuteScalarAsync<T>(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+                return DbExecProxyAsync<T>((param) => CurrentConnection.ExecuteScalarAsync<T>(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxyAsync<T>((param) => connection.ExecuteScalarAsync<T>(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+            return DbExecProxyAsync<T>((param) => connection.ExecuteScalarAsync<T>(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
         }
         #endregion
         #region query
@@ -201,37 +200,37 @@ namespace Fap.Core.DataAccess
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxy<T>((param) => CurrentConnection.Get<T>(id, CurrentTransaction, _commandTimeout), "get by id", null);
+                return DbExecProxy<T>((param) => CurrentConnection.Get<T>(id, CurrentTransaction, CommandTimeout), "get by id", null);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxy<T>((param) => connection.Get<T>(id, CurrentTransaction, _commandTimeout), "get by id", null);
+            return DbExecProxy<T>((param) => connection.Get<T>(id, CurrentTransaction, CommandTimeout), "get by id", null);
         }
         public IEnumerable<T> GetAll<T>() where T : class
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxy<IEnumerable<T>>((param) => CurrentConnection.GetAll<T>(CurrentTransaction, _commandTimeout), "get all", null);
+                return DbExecProxy<IEnumerable<T>>((param) => CurrentConnection.GetAll<T>(CurrentTransaction, CommandTimeout), "get all", null);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxy<IEnumerable<T>>((param) => connection.GetAll<T>(CurrentTransaction, _commandTimeout), "get all", null);
+            return DbExecProxy<IEnumerable<T>>((param) => connection.GetAll<T>(CurrentTransaction, CommandTimeout), "get all", null);
         }
         public Task<T> GetAsync<T>(int id) where T : class
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxyAsync<T>((param) => CurrentConnection.GetAsync<T>(id, CurrentTransaction, _commandTimeout), "get by id", null);
+                return DbExecProxyAsync<T>((param) => CurrentConnection.GetAsync<T>(id, CurrentTransaction, CommandTimeout), "get by id", null);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxyAsync<T>((param) => connection.GetAsync<T>(id, CurrentTransaction, _commandTimeout), "get by id", null);
+            return DbExecProxyAsync<T>((param) => connection.GetAsync<T>(id, CurrentTransaction, CommandTimeout), "get by id", null);
         }
         public Task<IEnumerable<T>> GetAllAsync<T>() where T : class
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxyAsync<IEnumerable<T>>((param) => CurrentConnection.GetAllAsync<T>(CurrentTransaction, _commandTimeout), "get all", null);
+                return DbExecProxyAsync<IEnumerable<T>>((param) => CurrentConnection.GetAllAsync<T>(CurrentTransaction, CommandTimeout), "get all", null);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxyAsync<IEnumerable<T>>((param) => connection.GetAllAsync<T>(CurrentTransaction, _commandTimeout), "get all", null);
+            return DbExecProxyAsync<IEnumerable<T>>((param) => connection.GetAllAsync<T>(CurrentTransaction, CommandTimeout), "get all", null);
         }
         /// <summary>
         /// 返回具有与列匹配的属性的动态对象。
@@ -245,10 +244,10 @@ namespace Fap.Core.DataAccess
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxy<IEnumerable<dynamic>>((param) => CurrentConnection.Query(sql, param, CurrentTransaction, buffered, _commandTimeout, commandType), sql, parameters);
+                return DbExecProxy<IEnumerable<dynamic>>((param) => CurrentConnection.Query(sql, param, CurrentTransaction, buffered, CommandTimeout, commandType), sql, parameters);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxy<IEnumerable<dynamic>>((param) => connection.Query(sql, param, CurrentTransaction, buffered, _commandTimeout, commandType), sql, parameters);
+            return DbExecProxy<IEnumerable<dynamic>>((param) => connection.Query(sql, param, CurrentTransaction, buffered, CommandTimeout, commandType), sql, parameters);
         }
         /// <summary>
         /// 返回具有与列匹配的属性的动态对象。
@@ -261,10 +260,10 @@ namespace Fap.Core.DataAccess
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxyAsync<IEnumerable<dynamic>>((param) => CurrentConnection.QueryAsync(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+                return DbExecProxyAsync<IEnumerable<dynamic>>((param) => CurrentConnection.QueryAsync(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxyAsync<IEnumerable<dynamic>>((param) => connection.QueryAsync(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+            return DbExecProxyAsync<IEnumerable<dynamic>>((param) => connection.QueryAsync(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
         }
         /// <summary>
         /// 返回具有与列匹配的属性的动态对象。
@@ -279,19 +278,19 @@ namespace Fap.Core.DataAccess
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxy((param) => CurrentConnection.QueryFirst(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+                return DbExecProxy((param) => CurrentConnection.QueryFirst(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxy((param) => connection.QueryFirst(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+            return DbExecProxy((param) => connection.QueryFirst(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
         }
         public Task<dynamic> QueryFirstAsync(string sql, DynamicParameters parameters = null, CommandType? commandType = null)
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxyAsync((param) => CurrentConnection.QueryFirstAsync(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+                return DbExecProxyAsync((param) => CurrentConnection.QueryFirstAsync(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxyAsync((param) => connection.QueryFirstAsync(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+            return DbExecProxyAsync((param) => connection.QueryFirstAsync(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
         }
         /// <summary>
         /// Return a dynamic object with properties matching the columns.
@@ -305,19 +304,19 @@ namespace Fap.Core.DataAccess
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxy((param) => CurrentConnection.QueryFirstOrDefault(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+                return DbExecProxy((param) => CurrentConnection.QueryFirstOrDefault(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxy((param) => connection.QueryFirstOrDefault(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+            return DbExecProxy((param) => connection.QueryFirstOrDefault(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
         }
         public Task<dynamic> QueryFirstOrDefaultAsync(string sql, DynamicParameters parameters = null, CommandType? commandType = null)
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxyAsync((param) => CurrentConnection.QueryFirstOrDefaultAsync(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+                return DbExecProxyAsync((param) => CurrentConnection.QueryFirstOrDefaultAsync(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxyAsync((param) => connection.QueryFirstOrDefaultAsync(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+            return DbExecProxyAsync((param) => connection.QueryFirstOrDefaultAsync(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
         }
         /// <summary>
         ///  Return a dynamic object with properties matching the columns.
@@ -331,19 +330,19 @@ namespace Fap.Core.DataAccess
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxy((param) => CurrentConnection.QuerySingle(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+                return DbExecProxy((param) => CurrentConnection.QuerySingle(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxy((param) => connection.QuerySingle(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+            return DbExecProxy((param) => connection.QuerySingle(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
         }
         public Task<dynamic> QuerySingleAsync(string sql, DynamicParameters parameters = null, CommandType? commandType = null)
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxyAsync((param) => CurrentConnection.QuerySingleAsync(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+                return DbExecProxyAsync((param) => CurrentConnection.QuerySingleAsync(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxyAsync((param) => connection.QuerySingleAsync(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+            return DbExecProxyAsync((param) => connection.QuerySingleAsync(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
         }
         /// <summary>
         /// 内部方法，sql不处理，param会处理
@@ -356,19 +355,19 @@ namespace Fap.Core.DataAccess
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxy((param) => CurrentConnection.QuerySingleOrDefault(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+                return DbExecProxy((param) => CurrentConnection.QuerySingleOrDefault(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxy((param) => connection.QuerySingleOrDefault(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+            return DbExecProxy((param) => connection.QuerySingleOrDefault(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
         }
         public Task<dynamic> QuerySingleOrDefaultAsync(string sql, DynamicParameters parameters = null, CommandType? commandType = null)
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxyAsync((param) => CurrentConnection.QuerySingleOrDefaultAsync(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+                return DbExecProxyAsync((param) => CurrentConnection.QuerySingleOrDefaultAsync(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxyAsync((param) => connection.QuerySingleOrDefaultAsync(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+            return DbExecProxyAsync((param) => connection.QuerySingleOrDefaultAsync(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
         }
         /// <summary>
         /// 外部方法，sql不处理，param会处理
@@ -383,19 +382,19 @@ namespace Fap.Core.DataAccess
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxy<IEnumerable<T>>((param) => CurrentConnection.Query<T>(sql, param, CurrentTransaction, buffered, _commandTimeout, commandType), sql, parameters);
+                return DbExecProxy<IEnumerable<T>>((param) => CurrentConnection.Query<T>(sql, param, CurrentTransaction, buffered, CommandTimeout, commandType), sql, parameters);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxy<IEnumerable<T>>((param) => connection.Query<T>(sql, param, CurrentTransaction, buffered, _commandTimeout, commandType), sql, parameters);
+            return DbExecProxy<IEnumerable<T>>((param) => connection.Query<T>(sql, param, CurrentTransaction, buffered, CommandTimeout, commandType), sql, parameters);
         }
         public Task<IEnumerable<T>> QueryAsync<T>(string sql, DynamicParameters parameters = null, CommandType? commandType = null)
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxyAsync<IEnumerable<T>>((param) => CurrentConnection.QueryAsync<T>(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+                return DbExecProxyAsync<IEnumerable<T>>((param) => CurrentConnection.QueryAsync<T>(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxyAsync<IEnumerable<T>>((param) => connection.QueryAsync<T>(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+            return DbExecProxyAsync<IEnumerable<T>>((param) => connection.QueryAsync<T>(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
         }
         /// <summary>
         /// 内部方法，sql不处理，param会处理
@@ -409,19 +408,19 @@ namespace Fap.Core.DataAccess
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxy<T>((param) => CurrentConnection.QueryFirst<T>(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+                return DbExecProxy<T>((param) => CurrentConnection.QueryFirst<T>(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxy<T>((param) => connection.QueryFirst<T>(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+            return DbExecProxy<T>((param) => connection.QueryFirst<T>(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
         }
         public Task<T> QueryFirstAsync<T>(string sql, DynamicParameters parameters = null, CommandType? commandType = null)
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxyAsync<T>((param) => CurrentConnection.QueryFirstAsync<T>(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+                return DbExecProxyAsync<T>((param) => CurrentConnection.QueryFirstAsync<T>(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxyAsync<T>((param) => connection.QueryFirstAsync<T>(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+            return DbExecProxyAsync<T>((param) => connection.QueryFirstAsync<T>(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
         }
         /// <summary>
         /// 内部方法，sql不处理，param会处理
@@ -435,19 +434,19 @@ namespace Fap.Core.DataAccess
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxy<T>((param) => CurrentConnection.QueryFirstOrDefault<T>(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+                return DbExecProxy<T>((param) => CurrentConnection.QueryFirstOrDefault<T>(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxy<T>((param) => connection.QueryFirstOrDefault<T>(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+            return DbExecProxy<T>((param) => connection.QueryFirstOrDefault<T>(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
         }
         public Task<T> QueryFirstOrDefaultAsync<T>(string sql, DynamicParameters parameters = null, CommandType? commandType = null)
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxyAsync<T>((param) => CurrentConnection.QueryFirstOrDefaultAsync<T>(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+                return DbExecProxyAsync<T>((param) => CurrentConnection.QueryFirstOrDefaultAsync<T>(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxyAsync<T>((param) => connection.QueryFirstOrDefaultAsync<T>(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+            return DbExecProxyAsync<T>((param) => connection.QueryFirstOrDefaultAsync<T>(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
         }
         /// <summary>
         /// 内部方法，sql不处理，param会处理
@@ -461,19 +460,19 @@ namespace Fap.Core.DataAccess
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxy<T>((param) => CurrentConnection.QuerySingle<T>(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+                return DbExecProxy<T>((param) => CurrentConnection.QuerySingle<T>(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxy<T>((param) => connection.QuerySingle<T>(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+            return DbExecProxy<T>((param) => connection.QuerySingle<T>(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
         }
         public Task<T> QuerySingleAsync<T>(string sql, DynamicParameters parameters = null, CommandType? commandType = null)
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxyAsync<T>((param) => CurrentConnection.QuerySingleAsync<T>(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+                return DbExecProxyAsync<T>((param) => CurrentConnection.QuerySingleAsync<T>(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxyAsync<T>((param) => connection.QuerySingleAsync<T>(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+            return DbExecProxyAsync<T>((param) => connection.QuerySingleAsync<T>(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
         }
         /// <summary>
         /// 内部方法，sql不处理，param会处理
@@ -487,19 +486,19 @@ namespace Fap.Core.DataAccess
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxy<T>((param) => CurrentConnection.QuerySingleOrDefault<T>(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+                return DbExecProxy<T>((param) => CurrentConnection.QuerySingleOrDefault<T>(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxy<T>((param) => connection.QuerySingleOrDefault<T>(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+            return DbExecProxy<T>((param) => connection.QuerySingleOrDefault<T>(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
         }
         public Task<T> QuerySingleOrDefaultAsync<T>(string sql, DynamicParameters parameters = null, CommandType? commandType = null)
         {
             if (CurrentTransaction != null)
             {
-                return DbExecProxyAsync<T>((param) => CurrentConnection.QuerySingleOrDefaultAsync<T>(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+                return DbExecProxyAsync<T>((param) => CurrentConnection.QuerySingleOrDefaultAsync<T>(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
             }
             using var connection = GetDbConnection(DataSourceEnum.SLAVE);
-            return DbExecProxyAsync<T>((param) => connection.QuerySingleOrDefaultAsync<T>(sql, param, CurrentTransaction, _commandTimeout, commandType), sql, parameters);
+            return DbExecProxyAsync<T>((param) => connection.QuerySingleOrDefaultAsync<T>(sql, param, CurrentTransaction, CommandTimeout, commandType), sql, parameters);
         }
 
 
@@ -516,19 +515,19 @@ namespace Fap.Core.DataAccess
         {
             if (CurrentTransaction != null)
             {
-                return CurrentConnection.Insert<T>(entityToInsert, CurrentTransaction, _commandTimeout);
+                return CurrentConnection.Insert<T>(entityToInsert, CurrentTransaction, CommandTimeout);
             }
             using var connection = GetDbConnection(DataSourceEnum.MASTER);
-            return connection.Insert<T>(entityToInsert, CurrentTransaction, _commandTimeout);
+            return connection.Insert<T>(entityToInsert, CurrentTransaction, CommandTimeout);
         }
         public Task<int> InsertAsync<T>(T entityToInsert) where T : class
         {
             if (CurrentTransaction != null)
             {
-                return CurrentConnection.InsertAsync<T>(entityToInsert, CurrentTransaction, _commandTimeout);
+                return CurrentConnection.InsertAsync<T>(entityToInsert, CurrentTransaction, CommandTimeout);
             }
             using var connection = GetDbConnection(DataSourceEnum.MASTER);
-            return connection.InsertAsync<T>(entityToInsert, CurrentTransaction, _commandTimeout);
+            return connection.InsertAsync<T>(entityToInsert, CurrentTransaction, CommandTimeout);
         }
         /// <summary>
         /// 内部方法，sql不处理
@@ -542,19 +541,19 @@ namespace Fap.Core.DataAccess
         {
             if (CurrentTransaction != null)
             {
-                return CurrentConnection.Insert(tableName, sbColumnList, sbParameterList, entityToInsert, CurrentTransaction, _commandTimeout);
+                return CurrentConnection.Insert(tableName, sbColumnList, sbParameterList, entityToInsert, CurrentTransaction, CommandTimeout);
             }
             using var connection = GetDbConnection(DataSourceEnum.MASTER);
-            return connection.Insert(tableName, sbColumnList, sbParameterList, entityToInsert, CurrentTransaction, _commandTimeout);
+            return connection.Insert(tableName, sbColumnList, sbParameterList, entityToInsert, CurrentTransaction, CommandTimeout);
         }
         public Task<long> InsertAsync(string tableName, string sbColumnList, string sbParameterList, object entityToInsert)
         {
             if (CurrentTransaction != null)
             {
-                return Task.FromResult(CurrentConnection.Insert(tableName, sbColumnList, sbParameterList, entityToInsert, CurrentTransaction, _commandTimeout));
+                return Task.FromResult(CurrentConnection.Insert(tableName, sbColumnList, sbParameterList, entityToInsert, CurrentTransaction, CommandTimeout));
             }
             using var connection = GetDbConnection(DataSourceEnum.MASTER);
-            return Task.FromResult(connection.Insert(tableName, sbColumnList, sbParameterList, entityToInsert, CurrentTransaction, _commandTimeout));
+            return Task.FromResult(connection.Insert(tableName, sbColumnList, sbParameterList, entityToInsert, CurrentTransaction, CommandTimeout));
         }
 
         public bool Update(FapDynamicObject keyValues)
@@ -563,17 +562,17 @@ namespace Fap.Core.DataAccess
             {
                 Guard.Against.NullOrEmpty("Update（FapDynamicObject keyValues）异常，tableName不能为null", nameof(FapDynamicObject));
             }
-            dynamic d= keyValues as dynamic;
+            dynamic d = keyValues as dynamic;
             if (d.Get("Id") == null)
             {
                 Guard.Against.NullOrEmpty("Update（FapDynamicObject keyValues）异常，tableName不能为null", nameof(FapDynamicObject));
             }
             if (CurrentTransaction != null)
             {
-                return CurrentConnection.Update(keyValues.TableName, keyValues, CurrentTransaction, _commandTimeout);
+                return CurrentConnection.Update(keyValues.TableName, keyValues, CurrentTransaction, CommandTimeout);
             }
             using var connection = GetDbConnection(DataSourceEnum.MASTER);
-            return connection.Update(keyValues.TableName, keyValues,  CurrentTransaction, _commandTimeout);
+            return connection.Update(keyValues.TableName, keyValues, CurrentTransaction, CommandTimeout);
         }
         /// <summary>
         /// 内部方法，sql不处理
@@ -585,19 +584,19 @@ namespace Fap.Core.DataAccess
         {
             if (CurrentTransaction != null)
             {
-                return CurrentConnection.Update<T>(entityToUpdate, CurrentTransaction, _commandTimeout);
+                return CurrentConnection.Update<T>(entityToUpdate, CurrentTransaction, CommandTimeout);
             }
             using var connection = GetDbConnection(DataSourceEnum.MASTER);
-            return connection.Update<T>(entityToUpdate, CurrentTransaction, _commandTimeout);
+            return connection.Update<T>(entityToUpdate, CurrentTransaction, CommandTimeout);
         }
         public Task<bool> UpdateAsync<T>(T entityToUpdate) where T : class
         {
             if (CurrentTransaction != null)
             {
-                return CurrentConnection.UpdateAsync<T>(entityToUpdate, CurrentTransaction, _commandTimeout);
+                return CurrentConnection.UpdateAsync<T>(entityToUpdate, CurrentTransaction, CommandTimeout);
             }
             using var connection = GetDbConnection(DataSourceEnum.MASTER);
-            return connection.UpdateAsync<T>(entityToUpdate, CurrentTransaction, _commandTimeout);
+            return connection.UpdateAsync<T>(entityToUpdate, CurrentTransaction, CommandTimeout);
         }
         /// <summary>
         /// 内部方法，sql不处理
@@ -609,20 +608,20 @@ namespace Fap.Core.DataAccess
         {
             if (CurrentTransaction != null)
             {
-                return CurrentConnection.Delete<T>(entityToDelete, CurrentTransaction, _commandTimeout);
+                return CurrentConnection.Delete<T>(entityToDelete, CurrentTransaction, CommandTimeout);
             }
             using var connection = GetDbConnection(DataSourceEnum.MASTER);
 
-            return connection.Delete<T>(entityToDelete, CurrentTransaction, _commandTimeout);
+            return connection.Delete<T>(entityToDelete, CurrentTransaction, CommandTimeout);
         }
         public Task<bool> DeleteAsync<T>(T entityToDelete) where T : class
         {
             if (CurrentTransaction != null)
             {
-                return CurrentConnection.DeleteAsync<T>(entityToDelete, CurrentTransaction, _commandTimeout);
+                return CurrentConnection.DeleteAsync<T>(entityToDelete, CurrentTransaction, CommandTimeout);
             }
             using var connection = GetDbConnection(DataSourceEnum.MASTER);
-            return connection.DeleteAsync<T>(entityToDelete, CurrentTransaction, _commandTimeout);
+            return connection.DeleteAsync<T>(entityToDelete, CurrentTransaction, CommandTimeout);
         }
         /// <summary>
         /// 内部方法，sql不处理
@@ -633,19 +632,19 @@ namespace Fap.Core.DataAccess
         {
             if (CurrentTransaction != null)
             {
-                return CurrentConnection.DeleteAll<T>(CurrentTransaction, _commandTimeout);
+                return CurrentConnection.DeleteAll<T>(CurrentTransaction, CommandTimeout);
             }
             using var connection = GetDbConnection(DataSourceEnum.MASTER);
-            return connection.DeleteAll<T>(CurrentTransaction, _commandTimeout);
+            return connection.DeleteAll<T>(CurrentTransaction, CommandTimeout);
         }
         public Task<bool> DeleteAllAsync<T>() where T : class
         {
             if (CurrentTransaction != null)
             {
-                return CurrentConnection.DeleteAllAsync<T>(CurrentTransaction, _commandTimeout);
+                return CurrentConnection.DeleteAllAsync<T>(CurrentTransaction, CommandTimeout);
             }
             using var connection = GetDbConnection(DataSourceEnum.MASTER);
-            return connection.DeleteAllAsync<T>(CurrentTransaction, _commandTimeout);
+            return connection.DeleteAllAsync<T>(CurrentTransaction, CommandTimeout);
 
         }
         #endregion
@@ -673,6 +672,10 @@ namespace Fap.Core.DataAccess
         public void BeginTransaction()
         {
             CurrentConnection = GetDbConnection(DataSourceEnum.MASTER);
+            if(CurrentConnection.State== ConnectionState.Closed)
+            {
+                CurrentConnection.Open();
+            }
             CurrentTransaction = CurrentConnection.BeginTransaction();
         }
         public void Commit()
@@ -698,6 +701,10 @@ namespace Fap.Core.DataAccess
         public void Dispose()
         {
             CurrentTransaction?.Dispose();
+            if (CurrentConnection?.State != ConnectionState.Closed)
+            {
+                CurrentConnection?.Close();
+            }
             CurrentConnection?.Dispose();
             CurrentConnection = null;
             CurrentTransaction = null;

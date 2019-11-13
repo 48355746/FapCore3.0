@@ -8,24 +8,24 @@ using Microsoft.Extensions.Logging;
 using Fap.Hcm.Web.Models;
 using Fap.Core;
 using Fap.Core.DataAccess;
+using Fap.Core.Rbac;
 
 namespace Fap.Hcm.Web.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly IConnectionFactory _userService1;
-        private readonly IUser _userService;
-        public HomeController(ILogger<HomeController> logger,IConnectionFactory userService1,IUser user)
+        private readonly ILoginService _userService1;
+       
+        public HomeController(ILogger<HomeController> logger, ILoginService userService1)
         {
             _logger = logger;
             _userService1 = userService1;
-            _userService = user;
         }
 
         public IActionResult Index()
         {
-            ViewBag.CC = _userService.Get("zhangsan");
+            ViewBag.CC = _userService1.Login("hr");
             return View();
         }
 

@@ -43,31 +43,27 @@ namespace Fap.Core.Infrastructure.Domain
         }
         public static IFapBuilder AddFap(this IFapBuilder builder)
         {
-            
-            //应用程序域，需要初始化为单例
-            builder.Services.AddSingleton<IFapPlatformDomain, FapPlatfromDomain>();
-            //增加动态代理
+            builder.Services.AddHttpContextAccessor();
+            //数据库访问
+            builder.Services.AddSingleton<IConnectionFactory, ConnectionFactory>();
+            builder.Services.AddSingleton<IDbSession, DbSession>();
+            builder.Services.AddSingleton<IDbContext, DbContext>();
+            //AOP代理
             builder.Services.AddSingleton<ProxyGenerator>();
-            builder.Services.AddScoped<DbContext>((services)=>services.GetService<ProxyGenerator>().CreateClassProxy<DbContext>());
+            builder.Services.AddScoped<IInterceptor, TransactionalInterceptor>();
+            //应用程序域，需要初始化为单例
+            builder.Services.AddSingleton<IFapPlatformDomain, FapPlatfromDomain>();           
             //Fap应用上下文
             builder.Services.AddSingleton<IFapApplicationContext, FapApplicationContext>();
-            //services.AddSingleton<IPlatformDomain,FapDomain>(_serviceProvider=> {
-            //    var option= _serviceProvider.GetService<IOptions<FapOption>>();
-            //    var loggerFac = _serviceProvider.GetService<ILoggerFactory>();
-            //    var sessionFac = _serviceProvider.GetService<ISessionFactory>();
-            //    return new FapDomain(option, loggerFac,sessionFac);
-            //});
+     
             //业务配置
             //builder.Services.AddSingleton<IFapConfigService, FapConfigService>();
             ////多语服务类
-            //builder.Services.AddSingleton<IMultiLangService, MultiLangService>();
-            ////数据访问
-            //builder.Services.AddScoped<IDbContext, DbContext>();
+            //builder.Services.AddSingleton<IMultiLangService, MultiLangService>();           
             ////统计图表
             //builder.Services.AddScoped<IStatisticService, StatisticService>();
             ////Rbac
-            ////使用session，获取acsession
-            //builder.Services.AddTransient<IFapSessionStorage, WebFapSessionStorage>();
+            ////使用session，获取acsession           
             //builder.Services.AddTransient<IRbacService, RbacService>();
             //builder.Services.AddTransient<ILoginService, LoginService>();
             ////信息发送

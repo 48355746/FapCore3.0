@@ -1,6 +1,6 @@
 ﻿using Ardalis.GuardClauses;
 using Dapper;
-using Fap.Core.Metadata;
+using Fap.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -73,8 +73,12 @@ namespace Fap.Core.DataAccess
             var adapter = GetFormatter(connection);
             StringBuilder sqlBuilder = new StringBuilder();
             sqlBuilder.Append(" UPDATE ").Append(tableName).Append(" SET ");
-            foreach (var fildName in dynamicToUpdate.Keys())
+            foreach (string fildName in dynamicToUpdate.Keys())
             {
+                if ("Id".EqualsWithIgnoreCase(fildName))
+                {
+                    continue;
+                }
                 adapter.AppendColumnNameEqualsValue(sqlBuilder, fildName);
                 sqlBuilder.Append(",");
             }

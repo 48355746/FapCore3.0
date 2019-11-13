@@ -13,7 +13,6 @@ using Dapper.Contrib.Extensions;
 
 namespace Fap.Core.DataAccess
 {
-    [Service(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton)]
     public class ConnectionFactory : IConnectionFactory
     {
         private readonly ILogger _logger;

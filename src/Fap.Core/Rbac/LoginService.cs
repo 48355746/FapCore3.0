@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Fap.Core.DataAccess;
+using Fap.Core.DI;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Rbac.Model;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using System.Linq;
 
 namespace Fap.Core.Rbac
 {
+    [Service(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton)]
     public class LoginService:ILoginService
     {
         IDbContext _dbContext = null;
@@ -14,7 +16,8 @@ namespace Fap.Core.Rbac
         {
             _dbContext = dbContext;
         }
-        public Fap.Core.Rbac.Model.FapUser Login(string userName)
+        //[Transactional]
+        public FapUser Login(string userName)
         {
            string where = "UserName=@UserName";
             DynamicParameters param=new  DynamicParameters();

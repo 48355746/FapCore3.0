@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Fap.Core.DataAccess
@@ -326,6 +327,7 @@ namespace Fap.Core.DataAccess
         /// <param name="seqName">唯一名称</param>
         /// <param name="stepBy">步长</param>
         /// <returns></returns>
+        private object obj = new object();
         private int GetSequence(string seqName)
         {
             lock (obj)
@@ -336,14 +338,14 @@ namespace Fap.Core.DataAccess
                 if (sr != null)
                 {
                     sr.CurrValue += sr.StepBy;
-                    InitEntityToUpdate(sr);
+                    //InitEntityToUpdate(sr);
                     _dbSession.Update<CfgSequenceRule>(sr);
                     return sr.CurrValue;
                 }
                 else
                 {
                     sr = new CfgSequenceRule { SeqName = seqName, MinValue = 0, StepBy = 1, CurrValue = 1 };
-                    InitEntityToInsert(sr);
+                    //InitEntityToInsert(sr);
                     _dbSession.Insert<CfgSequenceRule>(sr);
                     return 1;
                 }
@@ -385,7 +387,7 @@ namespace Fap.Core.DataAccess
             return dataInterceptor;
         }
 
-        private object obj = new object();
+
         private void BeforeInsert<T>(T entity, IDataInterceptor dataInterceptor) where T : BaseModel
         {
             if (dataInterceptor != null)
@@ -479,8 +481,8 @@ namespace Fap.Core.DataAccess
             {
                 //设置旧数据的失效时间
                 oldEntity.DisableDate = DateTimeUtils.LastSecondDateTimeStr;
-                oldEntity.UpdateDate = DateTimeUtils.CurrentDateTimeStr;
-                oldEntity.Ts = DateTimeUtils.Ts;
+                //oldEntity.UpdateDate = DateTimeUtils.CurrentDateTimeStr;
+                //oldEntity.Ts = DateTimeUtils.Ts;
             }
             try
             {
@@ -489,7 +491,6 @@ namespace Fap.Core.DataAccess
                 long newId = _dbSession.Insert<T>(newEntity);
                 Commit();
                 newEntity.Id = newId;
-
             }
             catch (Exception)
             {
@@ -563,10 +564,11 @@ namespace Fap.Core.DataAccess
                         oldUpdate.TableName = tableName;
                         oldUpdate.Id = oldData.Id;
                         oldUpdate.DisableDate = currDate;
-                        oldUpdate.Ts = DateTimeUtils.Ts;
-                        oldUpdate.UpdateDate = currDate;
-                        oldUpdate.UpdateBy = _applicationContext.EmpUid;
-                        oldUpdate.UpdateName = _applicationContext.EmpName;
+                        //老数据修改人保持之前不变
+                        //oldUpdate.Ts = DateTimeUtils.Ts;
+                        //oldUpdate.UpdateDate = currDate;
+                        //oldUpdate.UpdateBy = _applicationContext.EmpUid;
+                        //oldUpdate.UpdateName = _applicationContext.EmpName;
                         _dbSession.Update(oldUpdate);
 
                         //更新新数据
@@ -1005,19 +1007,20 @@ namespace Fap.Core.DataAccess
 
         #region Transaction
         //活动事务数量,防止重复提交
-        private int ActiveTransactionNumber = 0;
+        private static ThreadLocal<int> ActiveTransactionNumber = new ThreadLocal<int>(() => 0);
+        // private int ActiveTransactionNumber = 0;
         public void BeginTransaction()
         {
-            if (ActiveTransactionNumber == 0)
+            if (ActiveTransactionNumber.Value == 0)
             {
                 _dbSession.BeginTransaction();
             }
-            ActiveTransactionNumber++;
+            ActiveTransactionNumber.Value++;
         }
         public void Commit()
         {
-            ActiveTransactionNumber--;
-            if (ActiveTransactionNumber == 0)
+            ActiveTransactionNumber.Value--;
+            if (ActiveTransactionNumber.Value == 0)
             {
                 try
                 {
@@ -1038,9 +1041,9 @@ namespace Fap.Core.DataAccess
         }
         public void Rollback()
         {
-            if (ActiveTransactionNumber > 0)
+            if (ActiveTransactionNumber.Value > 0)
             {
-                ActiveTransactionNumber = 0;
+                ActiveTransactionNumber.Value = 0;
                 try
                 {
                     _dbSession.Rollback();
@@ -1413,7 +1416,7 @@ namespace Fap.Core.DataAccess
             return tResult;
 
         }
-        private T UpdateEntity<T>(T entityToUpdate, FapTable table, bool logic) where T : BaseModel
+        private T UpdateEntity<T>(T entityToUpdate, FapTable table, bool isTrace) where T : BaseModel
         {
             T tResult;
             //预处理
@@ -1421,7 +1424,7 @@ namespace Fap.Core.DataAccess
             //更新前，通过数据拦截器处理数据
             IDataInterceptor interceptor = GetTableInterceptor(table.DataInterceptor);
             BeforeUpdate(entityToUpdate, interceptor);
-            if (logic)
+            if (isTrace)
             {
                 T oldEntity = Get<T>(entityToUpdate.Fid);
                 tResult = TraceUpdate<T>(entityToUpdate, oldEntity);

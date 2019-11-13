@@ -9,7 +9,6 @@ namespace Fap.Core.DataAccess.Interceptor
     public class DataInterceptorBase : IDataInterceptor
     {
         protected readonly IDbContext _dbContext;
-        protected readonly DbSession _dbSession;
         protected readonly IFapPlatformDomain _appDomain;
         protected readonly IFapApplicationContext _applicationContext;
         protected readonly ILoggerFactory _loggerFactory;

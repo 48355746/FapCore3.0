@@ -25,20 +25,20 @@ namespace Fap.Core.Infrastructure.Domain
         /// 主会话在用户第一次登录使用系统的时候创建并持久跟踪，非主会话由安全管理员按需创建。用户登录成功时该用户的会话列表会加载进应用系统内存，然后由会话激活策略基于会话的属性取其中之一激活。
         /// </remarks>
         /// </summary>
-        FapRole Role { get; set; }
+        //FapRole Role { get; set; }
         /// <summary>
         /// 当前会话所属的 账户 = 用户。
         /// </summary>
         /// <returns></returns>
-        FapUser Account { get; }
+        //FapUser Account { get; }
         /// <summary>
         /// 在线用户
         /// </summary>
-        FapOnlineUser OnlineUser { get; }
+        //FapOnlineUser OnlineUser { get; }
         /// <summary>
         /// 员工信息
         /// </summary>
-        Employee Employee { get; }
+        //Employee Employee { get; }
 
 
         /// <summary>

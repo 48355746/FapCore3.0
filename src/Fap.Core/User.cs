@@ -1,4 +1,6 @@
-﻿using Fap.Core.DI;
+﻿using Fap.Core.DataAccess;
+using Fap.Core.DI;
+using Fap.Core.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -6,17 +8,25 @@ using System.Text;
 namespace Fap.Core
 {
     [Service(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton)]
-    public class User : IUser,IUser1
+    public class User : IUser
     {
-        private string s = Guid.NewGuid().ToString();
-        public string Get(string userName)
+        private IDbContext _dbContext;
+        public User(IDbContext dbContext)
         {
-            return $"{s}===={userName}";
+            _dbContext = dbContext;
+        }
+        [Transactional]
+        public bool ModifyEmployee(string pinyin)
+        {
+            var emp= _dbContext.Get("Employee", "3534239003521843200");
+            dynamic keyValuePairs = new FapDynamicObject();
+            keyValuePairs.TableName = "Employee";
+            keyValuePairs.Id = emp.Id;
+            keyValuePairs.EmpPinYin = pinyin;
+            keyValuePairs.Fid = emp.Fid;
+            var b= _dbContext.UpdateDynamicData(keyValuePairs);
+            return b;
         }
 
-        public string Get1(string userName)
-        {
-            return s;
-        }
     }
 }

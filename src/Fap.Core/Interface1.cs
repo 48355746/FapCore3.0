@@ -6,7 +6,7 @@ namespace Fap.Core
 {
     public interface IUser
     {
-        string Get(string userName);
+        bool ModifyEmployee(string pinyin);
     }
     public interface IUser1
     {
