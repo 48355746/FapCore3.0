@@ -24,7 +24,7 @@ namespace Fap.Core.DataAccess.Interceptor
             var method = invocation.MethodInvocationTarget;
             if (method?.GetCustomAttribute<TransactionalAttribute>() != null)
             {
-                _logger.LogInformation($"{invocation.Method.Name}事务拦截前");
+                //_logger.LogInformation($"{invocation.Method.Name}事务拦截前");
 
                 _dbContext.BeginTransaction();
             }
@@ -50,7 +50,7 @@ namespace Fap.Core.DataAccess.Interceptor
             var method = invocation.MethodInvocationTarget;
             if (method?.GetCustomAttribute<TransactionalAttribute>() != null)
             {
-                _logger.LogInformation($"{invocation.Method.Name}事务拦截后");
+                //_logger.LogInformation($"{invocation.Method.Name}事务拦截后");
                 _dbContext.Commit();
             }
             stopwatch.Stop();

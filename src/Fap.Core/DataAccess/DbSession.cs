@@ -62,15 +62,13 @@ namespace Fap.Core.DataAccess
                 timer.Restart();//开始计算时间
                 var result = func(parameters);
                 timer.Stop();//结束点
-                message = $"SQL语句为：{sql},{Environment.NewLine}参数:{(parameters != null ? parameters.ToString() : "")}";
-                message += $"{Environment.NewLine}执行时间：{ timer.ElapsedMilliseconds}毫秒";
-                System.Diagnostics.Debug.WriteLine(message);
-                _logger.LogInformation(message);
+                message = $"SQL语句为：{sql},{Environment.NewLine}参数:{(parameters != null ?string.Join("," ,parameters.ParameterNames.Select((key)=>$"{key}={parameters.Get<object>(key)}")) : "")}{Environment.NewLine}执行时间：{ timer.ElapsedMilliseconds}毫秒";
+                _logger.LogTrace(message);
                 return result;
             }
             catch (Exception ex)
             {
-                message = $"查询SQL异常：{ ex.Message },{Environment.NewLine}SQL语句为：{sql}{Environment.NewLine}参数:{(parameters != null ? parameters.ToString() : "")}";
+                message = $"查询SQL异常：{ ex.Message },{Environment.NewLine}SQL语句为：{sql}{Environment.NewLine}参数:{(parameters != null ? string.Join(",", parameters.ParameterNames.Select((key) => $"{key}={parameters.Get<object>(key)}")) : "")}";
                 _logger.LogError(message);
                 Guard.Against.FapRuntime(message, ex);
             }
@@ -88,8 +86,7 @@ namespace Fap.Core.DataAccess
                 timer.Stop();//结束点
                 message = $"SQL语句为：{sql},{Environment.NewLine}参数:{(parameters != null ? parameters.ToString() : "")}";
                 message += $"{Environment.NewLine}执行时间：{ timer.ElapsedMilliseconds}毫秒";
-                System.Diagnostics.Debug.WriteLine(message);
-                _logger.LogInformation(message);
+                _logger.LogTrace(message);
                 return tsv;
             }
             catch (Exception ex)

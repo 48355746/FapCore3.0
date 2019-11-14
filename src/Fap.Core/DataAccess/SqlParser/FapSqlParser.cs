@@ -19,7 +19,7 @@ namespace Fap.Core.DataAccess.SqlParser
         private bool _withMC = false; //是否取参照的名称
         private bool _withId = false; //是否取参照的ID
         private IFapPlatformDomain _appDomain;
-     
+
         /// <summary>
         /// 构造方法
         /// </summary>
@@ -78,6 +78,7 @@ namespace Fap.Core.DataAccess.SqlParser
             //解析SQL语句
             CommandBuilder commandBuilder = new CommandBuilder();
             ICommand command = commandBuilder.GetCommand(_sql);
+
             if (command is SelectBuilder)
             {
                 SelectBuilder select = command as SelectBuilder;
@@ -288,7 +289,7 @@ namespace Fap.Core.DataAccess.SqlParser
         /// <returns></returns>
         private FapColumn GetSingleColumnOfTable(string table, string column)
         {
-            return GetColumnsOfTable(table).FirstOrDefault<FapColumn>(c => c.ColName.Equals(column,StringComparison.OrdinalIgnoreCase));
+            return GetColumnsOfTable(table).FirstOrDefault<FapColumn>(c => c.ColName.Equals(column, StringComparison.OrdinalIgnoreCase));
         }
 
 

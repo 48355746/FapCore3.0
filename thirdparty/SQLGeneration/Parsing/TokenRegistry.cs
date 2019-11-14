@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -14,7 +15,7 @@ namespace SQLGeneration.Parsing
     {
         private readonly List<string> tokenNames;
         private readonly Dictionary<string, TokenDefinition> definitionLookup;
-        private Dictionary<string, Regex> checks;
+        private ConcurrentDictionary<string, Regex> checks = new ConcurrentDictionary<string, Regex>();
 
         /// <summary>
         /// Initializes a new instance of a TokenRegistry.
@@ -71,7 +72,7 @@ namespace SQLGeneration.Parsing
         /// <returns>The extracted token -or- null if no token is found.</returns>
         internal TokenResult ExtractToken(string input, ref int index)
         {
-            Dictionary<string, Regex> checks = getRegex();
+            ConcurrentDictionary<string, Regex> checks = getRegex();
             foreach (string tokenName in tokenNames)
             {
                 Regex regex = checks[tokenName];
@@ -88,7 +89,7 @@ namespace SQLGeneration.Parsing
 
         private string GetTokenType(string token)
         {
-            Dictionary<string, Regex> checks = getRegex();
+            ConcurrentDictionary<string, Regex> checks = getRegex();
             foreach (string name in tokenNames)
             {
                 Regex regex = checks[name];
@@ -100,20 +101,25 @@ namespace SQLGeneration.Parsing
             }
             return null;
         }
-
-        private Dictionary<string, Regex> getRegex()
+        private object lockObj = new object();
+        private ConcurrentDictionary<string, Regex> getRegex()
         {
-            if (checks == null)
+            lock (lockObj)
             {
-                checks = new Dictionary<string, Regex>();
-                foreach (string tokenName in definitionLookup.Keys)
+                if (checks.Count < 1)
                 {
-                    string pattern = getTokenRegex(definitionLookup[tokenName]);
-                    Regex regex = new Regex(pattern, RegexOptionsHelper.DefaultOptions | RegexOptions.ExplicitCapture);
-                    checks.Add(tokenName, regex);
+                    foreach (string tokenName in definitionLookup.Keys)
+                    {
+                        string pattern = getTokenRegex(definitionLookup[tokenName]);
+                        Regex regex = new Regex(pattern, RegexOptionsHelper.DefaultOptions | RegexOptions.ExplicitCapture);
+                        checks.TryAdd(tokenName, regex);
+                    }
                 }
+
+                return checks;
+
+
             }
-            return checks;
         }
 
         private string getTokenRegex(TokenDefinition definition)

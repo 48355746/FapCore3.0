@@ -41,10 +41,9 @@ namespace Fap.Core.DataAccess
         public string HistoryDateTime { get; set; }
         #region private
         private static Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
-        private string WrapSqlAndParam(string sqlOri, DynamicParameters parameters, bool withMC = false, bool withId = false)
+        private (string, DynamicParameters) WrapSqlAndParam(string sqlOri, DynamicParameters parameters, bool withMC = false, bool withId = false)
         {
-            InitParamers(parameters);
-            return ParseFapSql(sqlOri, withMC, withId);
+            return (ParseFapSql(sqlOri, withMC, withId), InitParamers(parameters));
             DynamicParameters InitParamers(DynamicParameters parameters)
             {
                 if (parameters == null)
@@ -66,21 +65,15 @@ namespace Fap.Core.DataAccess
                 {
                     parameters.Add(FapDbConstants.FAPCOLUMN_FIELD_Dr, 0);
                 }
-
-                //日志
-                foreach (var paramName in parameters.ParameterNames)
-                {
-                    _logger.LogInformation($"{parameters}={parameters.Get<object>(paramName)}");
-                }
-
                 return parameters;
             }
             string ParseFapSql(string sqlOri, bool withMC = false, bool withId = false)
             {
-                _logger.LogInformation($"wrap前的sql:{sqlOri}");
+                _logger.LogTrace($"wrap前的sql:{sqlOri}");
                 FapSqlParser parse = new FapSqlParser(_fapPlatformDomain, sqlOri, withMC, withId);
+
                 var sql = parse.GetCompletedSql();
-                _logger.LogInformation($"wrap后的sql:{sql}");
+                _logger.LogTrace($"wrap后的sql:{sql}");
                 return sql;
             }
         }
@@ -127,7 +120,6 @@ namespace Fap.Core.DataAccess
                     object cv = GetFieldDefaultValue(column);
                     propertyInfo.SetValue(entity, cv, null); //给对应属性赋值
                 }
-
             }
             //是否有配置的编码
             if (tableName.ToLower().StartsWith("cfg") || tableName.ToLower().StartsWith("fap"))
@@ -469,8 +461,6 @@ namespace Fap.Core.DataAccess
         /// <returns></returns>
         private T TraceUpdate<T>(T newEntity, T oldEntity) where T : BaseModel
         {
-            newEntity.UpdateDate = DateTimeUtils.CurrentDateTimeStr;
-            newEntity.EnableDate = DateTimeUtils.LastSecondDateTimeStr;
             if (string.IsNullOrWhiteSpace(newEntity.DisableDate))
             {
                 newEntity.DisableDate = DateTimeUtils.PermanentTimeStr;
@@ -504,8 +494,6 @@ namespace Fap.Core.DataAccess
         }
         private async Task<T> TraceUpdateAsync<T>(T newEntity, T oldEntity) where T : BaseModel
         {
-            newEntity.UpdateDate = DateTimeUtils.CurrentDateTimeStr;
-            newEntity.EnableDate = DateTimeUtils.LastSecondDateTimeStr;
             if (string.IsNullOrWhiteSpace(newEntity.DisableDate))
             {
                 newEntity.DisableDate = DateTimeUtils.PermanentTimeStr;
@@ -602,10 +590,11 @@ namespace Fap.Core.DataAccess
 
         private T TraceDelete<T>(T newEntity, T oldEntity) where T : BaseModel
         {
+            var currDate = DateTimeUtils.CurrentDateTimeStr;
             //设置新entity为删除状态
-            InitEntityToDelete<T>(newEntity);
+            SetNewEntityToDelete<T>(newEntity, currDate);
             //设置旧entity为失效态
-            SetEntityInvalid(oldEntity);
+            SetOldEntityInvalid(oldEntity, currDate);
             try
             {
                 BeginTransaction();
@@ -622,9 +611,11 @@ namespace Fap.Core.DataAccess
         }
         private async Task<T> TraceDeleteAsync<T>(T newEntity, T oldEntity) where T : BaseModel
         {
+
+            var currDate = DateTimeUtils.CurrentDateTimeStr;
             //设置新entity为删除状态
-            InitEntityToDelete<T>(newEntity);
-            SetEntityInvalid(oldEntity);
+            SetNewEntityToDelete<T>(newEntity, currDate);
+            SetOldEntityInvalid(oldEntity, currDate);
             try
             {
                 BeginTransaction();
@@ -639,9 +630,8 @@ namespace Fap.Core.DataAccess
             }
             return newEntity;
         }
-        private int TraceDynamicDelete(dynamic dynamicData, bool isTrace)
+        private long TraceDynamicDelete(dynamic dynamicData, bool isTrace)
         {
-
             if (!dynamicData.ContainsKey("Fid") && !dynamicData.ContainsKey("Id"))
             {
                 Guard.Against.NullOrEmpty("请指定数据的Fid或者Id", "dynamicData");
@@ -652,16 +642,14 @@ namespace Fap.Core.DataAccess
                 Guard.Against.NullOrEmpty("请指定表名", "dynamicData");
                 //throw new FapException("请指定表名");
             }
-            //if (!dynamicData.ContainsKey("Fid"))
-            //{
-            //    string sql = $"select Fid from {dynamicData.TableName} where Id={dynamicData.Id}";
-
-            //    dynamicData.Fid = _dbSession.ExecuteScalar<string>(sql);
-
-            //}
+            if (!dynamicData.ContainsKey("Fid"))
+            {
+                string sql = $"select Fid from {dynamicData.TableName} where Id={dynamicData.Id}";
+                dynamicData.Fid = _dbSession.ExecuteScalar<string>(sql);
+            }
             try
             {
-                int id = dynamicData.Get("Id");
+                long id = dynamicData.Get("Id");
                 string tableName = dynamicData.TableName;
                 List<string> fieldList = _fapPlatformDomain.ColumnSet.Where(c => c.TableName == dynamicData.TableName).Select(c => c.ColName).ToList();
                 if (isTrace) //逻辑删除(历史追溯)
@@ -669,15 +657,14 @@ namespace Fap.Core.DataAccess
                     try
                     {
                         BeginTransaction();
-                        //insert new data
                         var currDate = DateTimeUtils.CurrentDateTimeStr;
+                        //insert new data
                         var newData = Get(dynamicData.TableName, id);
-                        newData.EnableDate = currDate;
-                        newData.UpdateDate = currDate;
-                        newData.UpdateBy = _applicationContext.EmpUid;
-                        newData.UpdateName = _applicationContext.EmpName;
-                        newData.Ts = DateTimeUtils.Ts;
-                        newData.Dr = 1;
+                        if (newData == null)
+                        {
+                            Guard.Against.Null("要删除的数据不能为null", "deleteData");
+                        }
+                        SetNewDynamicToDelete(newData, currDate);
                         string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
                         string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
                         long newId = _dbSession.Insert(tableName, columnList, paramList, newData);
@@ -685,14 +672,10 @@ namespace Fap.Core.DataAccess
                         dynamic dyData = new FapDynamicObject();
                         dyData.TableName = tableName;
                         dyData.Id = id;
-                        dyData.DisableDate = DateTimeUtils.PermanentTimeStr;
-                        dyData.UpdateDate = currDate;
-                        dyData.UpdateBy = _applicationContext.EmpUid;
-                        dyData.UpdateName = _applicationContext.EmpName;
-                        dyData.Ts = DateTimeUtils.Ts;
+                        SetOldDynamicInvalid(dyData, currDate);
                         _dbSession.Update(dyData);
                         Commit();
-                        return id;
+                        return newId;
 
                     }
                     catch (Exception)
@@ -701,23 +684,18 @@ namespace Fap.Core.DataAccess
                         throw;
                     }
 
-
                 }
                 else //逻辑删除
                 {
                     dynamic dyData = new FapDynamicObject();
                     dyData.TableName = tableName;
                     dyData.Id = id;
-                    dyData.Dr = 1;
-                    dyData.UpdateDate = DateTimeUtils.CurrentDateTimeStr;
-                    dyData.UpdateBy = _applicationContext.EmpUid;
-                    dyData.UpdateName = _applicationContext.EmpName;
-                    dyData.Ts = DateTimeUtils.Ts;
+
+                    SetDynamicToLogicDelete(dyData);
+
                     _dbSession.Update(dyData);
                     return id;
                 }
-
-
             }
             catch (Exception ex)
             {
@@ -725,34 +703,89 @@ namespace Fap.Core.DataAccess
             }
             return 0;
         }
-
-        private void InitEntityToDelete<T>(T entity) where T : BaseModel
+        /// <summary>
+        /// 设置新的数据有效期状态有效，且删除状态Dr为1
+        /// </summary>
+        /// <typeparam name="newData">DapperRow</typeparam>
+        /// <param name="currDate"></param>
+        private void SetNewDynamicToDelete(dynamic newData, string currDate)
         {
-            entity.UpdateDate = DateTimeUtils.CurrentDateTimeStr;
+            var nd = newData as IDictionary<string, object>;
+            nd[FapDbConstants.FAPCOLUMN_FIELD_EnableDate] = currDate;
+            nd[FapDbConstants.FAPCOLUMN_FIELD_DisableDate] = DateTimeUtils.PermanentTimeStr;
+            nd[FapDbConstants.FAPCOLUMN_FIELD_Ts] = DateTimeUtils.Ts;
+            nd[FapDbConstants.FAPCOLUMN_FIELD_Dr] = 1;
+            nd[FapDbConstants.FAPCOLUMN_FIELD_UpdateBy] = _applicationContext.EmpUid;
+            nd[FapDbConstants.FAPCOLUMN_FIELD_UpdateDate] = currDate;
+            nd[FapDbConstants.FAPCOLUMN_FIELD_UpdateName] = _applicationContext.EmpName;
+
+        }
+        /// <summary>
+        /// 逻辑删除，不设置EnableDate
+        /// </summary>
+        /// <param name="newData">FapDynamicObject</param>
+        private void SetDynamicToLogicDelete(FapDynamicObject newData)
+        {
+            var currDate = DateTimeUtils.CurrentDateTimeStr;
+            dynamic nd = newData;
+            nd.DisableDate = DateTimeUtils.PermanentTimeStr;
+            nd.Ts = DateTimeUtils.Ts;
+            nd.Dr = 1;
+            nd.UpdateBy = _applicationContext.EmpUid;
+            nd.UpdateDate = currDate;
+            nd.UpdateName = _applicationContext.EmpName;
+
+        }
+        /// <summary>
+        /// 设置新的数据有效期状态有效，且删除状态Dr为1
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="entity"></param>
+        private void SetNewEntityToDelete<T>(T entity, string currDate) where T : BaseModel
+        {
+            entity.EnableDate = currDate;
+            entity.DisableDate = DateTimeUtils.PermanentTimeStr;
             entity.Ts = DateTimeUtils.Ts;
             entity.Dr = 1;
             entity.UpdateBy = _applicationContext.EmpUid;
             entity.UpdateName = _applicationContext.EmpName;
-            entity.UpdateDate = DateTimeUtils.CurrentDateTimeStr;
+            entity.UpdateDate = currDate;
         }
-        private void SetEntityInvalid<T>(T oldEntity) where T : BaseModel
+        /// <summary>
+        /// 逻辑删除，不设置EnableDate
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="entity"></param>
+        private void SetEntityToLogicDelete<T>(T entity, string currDate) where T : BaseModel
+        {
+            entity.DisableDate = DateTimeUtils.PermanentTimeStr;
+            entity.Ts = DateTimeUtils.Ts;
+            entity.Dr = 1;
+            entity.UpdateBy = _applicationContext.EmpUid;
+            entity.UpdateName = _applicationContext.EmpName;
+            entity.UpdateDate = currDate;
+        }
+        /// <summary>
+        /// 删除逻辑，设置旧数据过期即可，其他信息保持不变
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="oldEntity"></param>
+        private void SetOldEntityInvalid<T>(T oldEntity, string currDate) where T : BaseModel
         {
             //设置旧entity为失效态
             oldEntity.Dr = 0;
-            oldEntity.DisableDate = DateTimeUtils.LastSecondDateTimeStr;
-            oldEntity.Ts = DateTimeUtils.Ts;
-            oldEntity.UpdateBy = _applicationContext.EmpUid;
-            oldEntity.UpdateName = _applicationContext.EmpName;
-            oldEntity.UpdateDate = DateTimeUtils.CurrentDateTimeStr;
+            oldEntity.DisableDate = currDate;
         }
-        private void InitDynamicToDelete(dynamic dynEntity)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="oldEntity">FapDynamicObject</param>
+        /// <param name="currDate"></param>
+        private void SetOldDynamicInvalid(dynamic oldEntity, string currDate)
         {
-            dynEntity.UpdateDate = DateTimeUtils.CurrentDateTimeStr;
-            dynEntity.Ts = DateTimeUtils.Ts;
-            dynEntity.Dr = 1;
-            dynEntity.UpdateBy = _applicationContext.EmpUid;
-            dynEntity.UpdateName = _applicationContext.EmpName;
-            dynEntity.UpdateDate = DateTimeUtils.CurrentDateTimeStr;
+            //设置旧entity为失效态
+            oldEntity.Dr = 0;
+            oldEntity.DisableDate = currDate;
         }
         private void BeforeDelete<T>(T model, IDataInterceptor dataInterceptor) where T : BaseModel
         {
@@ -787,54 +820,54 @@ namespace Fap.Core.DataAccess
         #region 基础操作
         public int Execute(string sqlOri, DynamicParameters parameters = null)
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters);
-            return _dbSession.Execute(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters);
+            return _dbSession.Execute(sql, dynParams);
         }
         public Task<int> ExecuteAsync(string sqlOri, DynamicParameters parameters = null)
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters);
-            return _dbSession.ExecuteAsync(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters);
+            return _dbSession.ExecuteAsync(sql, dynParams);
         }
         public object ExecuteScalar(string sqlOri, DynamicParameters parameters = null)
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters);
-            return _dbSession.ExecuteScalar(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters);
+            return _dbSession.ExecuteScalar(sql, dynParams);
         }
         public Task<object> ExecuteScalarAsync(string sqlOri, DynamicParameters parameters = null)
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters);
-            return _dbSession.ExecuteScalarAsync(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters);
+            return _dbSession.ExecuteScalarAsync(sql, dynParams);
         }
         public T ExecuteScalar<T>(string sqlOri, DynamicParameters parameters = null)
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters);
-            return _dbSession.ExecuteScalar<T>(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters);
+            return _dbSession.ExecuteScalar<T>(sql, dynParams);
         }
         public Task<T> ExecuteScalarAsync<T>(string sqlOri, DynamicParameters parameters = null)
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters);
-            return _dbSession.ExecuteScalarAsync<T>(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters);
+            return _dbSession.ExecuteScalarAsync<T>(sql, dynParams);
         }
         public IEnumerable<dynamic> Query(string sqlOri, DynamicParameters parameters = null, bool withMC = false)
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters, withMC);
-            return _dbSession.Query(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
+            return _dbSession.Query(sql, dynParams);
         }
         public Task<IEnumerable<dynamic>> QueryAsync(string sqlOri, DynamicParameters parameters = null, bool withMC = false)
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters, withMC);
-            return _dbSession.QueryAsync(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
+            return _dbSession.QueryAsync(sql, dynParams);
         }
 
         public IEnumerable<T> Query<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : BaseModel
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters, withMC);
-            return _dbSession.Query<T>(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
+            return _dbSession.Query<T>(sql, dynParams);
         }
         public Task<IEnumerable<T>> QueryAsync<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : BaseModel
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters, withMC);
-            return _dbSession.QueryAsync<T>(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
+            return _dbSession.QueryAsync<T>(sql, dynParams);
         }
         public IEnumerable<T> QueryAll<T>(bool withMC = false) where T : BaseModel
         {
@@ -848,88 +881,210 @@ namespace Fap.Core.DataAccess
             string sql = $"select * from {tableName}";
             return QueryAsync<T>(sql);
         }
+        /// <summary>
+        /// 仅当元素个数大于等于1时返回第一个元素，否则抛异常InvalidOperationException: Sequence contains no elements
+        /// </summary>
+        /// <param name="sqlOri"></param>
+        /// <param name="parameters"></param>
+        /// <param name="withMC"></param>
+        /// <returns></returns>
+        /// <remarks>InvalidOperationException: Sequence contains no elements</remarks>
         public dynamic QueryFirst(string sqlOri, DynamicParameters parameters = null, bool withMC = false)
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters, withMC);
-            return _dbSession.QueryFirst(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
+            return _dbSession.QueryFirst(sql, dynParams);
         }
+        /// <summary>
+        /// 仅当元素个数大于等于1时返回第一个元素，否则抛异常InvalidOperationException: Sequence contains no elements
+        /// </summary>
+        /// <param name="sqlOri"></param>
+        /// <param name="parameters"></param>
+        /// <param name="withMC"></param>
+        /// <returns></returns>
+        /// <remarks>InvalidOperationException: Sequence contains no elements</remarks>
         public Task<dynamic> QueryFirstAsync(string sqlOri, DynamicParameters parameters = null, bool withMC = false)
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters, withMC);
-            return _dbSession.QueryFirstAsync(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
+            return _dbSession.QueryFirstAsync(sql, dynParams);
         }
-
+        /// <summary>
+        /// 当元素大于等于1个时，返回第一个元素，否则返回null
+        /// </summary>
+        /// <param name="sqlOri"></param>
+        /// <param name="parameters"></param>
+        /// <param name="withMC"></param>
+        /// <returns></returns>
         public dynamic QueryFirstOrDefault(string sqlOri, DynamicParameters parameters = null, bool withMC = false)
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters, withMC);
-            return _dbSession.QueryFirstOrDefault(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
+            return _dbSession.QueryFirstOrDefault(sql, dynParams);
         }
+        /// <summary>
+        /// 当元素大于等于1个时，返回第一个元素，否则返回null
+        /// </summary>
+        /// <param name="sqlOri"></param>
+        /// <param name="parameters"></param>
+        /// <param name="withMC"></param>
+        /// <returns></returns>
         public Task<dynamic> QueryFirstOrDefaultAsync(string sqlOri, DynamicParameters parameters = null, bool withMC = false)
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters, withMC);
-            return _dbSession.QueryFirstOrDefaultAsync(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
+            return _dbSession.QueryFirstOrDefaultAsync(sql, dynParams);
         }
-
+        /// <summary>
+        /// 仅仅存在单个数据的时候返回，否则抛异常InvalidOperationException
+        /// </summary>
+        /// <param name="sqlOri">查询语句</param>
+        /// <param name="parameters">参数</param>
+        /// <param name="withMC">是否编码关联名称</param>
+        /// <returns>dynamic,可通过IDictionary<string,object>访问</returns>
+        /// <remarks>InvalidOperationException:Sequence contains no elements,InvalidOperationException: Sequence contains more than one element</remarks>
         public dynamic QuerySingle(string sqlOri, DynamicParameters parameters = null, bool withMC = false)
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters, withMC);
-            return _dbSession.QuerySingle(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
+            return _dbSession.QuerySingle(sql, dynParams);
         }
+        /// <summary>
+        /// 仅仅存在单个数据的时候返回，否则抛异常InvalidOperationException
+        /// </summary>
+        /// <param name="sqlOri">查询语句</param>
+        /// <param name="parameters">参数</param>
+        /// <param name="withMC">是否编码关联名称</param>
+        /// <returns>dynamic,可通过IDictionary<string,object>访问</returns>
+        /// <remarks>InvalidOperationException:Sequence contains no elements,InvalidOperationException: Sequence contains more than one element</remarks>
         public Task<dynamic> QuerySingleAsync(string sqlOri, DynamicParameters parameters = null, bool withMC = false)
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters, withMC);
-            return _dbSession.QuerySingleAsync(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
+            return _dbSession.QuerySingleAsync(sql, dynParams);
         }
+        /// <summary>
+        /// 仅仅存在单个或0个数据的时候返回，否则抛异常InvalidOperationException
+        /// </summary>
+        /// <param name="sqlOri">查询语句</param>
+        /// <param name="parameters">参数</param>
+        /// <param name="withMC">是否编码关联名称</param>
+        /// <returns>dynamic,可通过IDictionary<string,object>访问</returns>
+        /// <remarks>InvalidOperationException: Sequence contains more than one element</remarks>
         public dynamic QuerySingleOrDefault(string sqlOri, DynamicParameters parameters = null, bool withMC = false)
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters, withMC);
-            return _dbSession.QuerySingleOrDefault(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
+            return _dbSession.QuerySingleOrDefault(sql, dynParams);
         }
+        /// <summary>
+        /// 仅仅存在单个或0个数据的时候返回，否则抛异常InvalidOperationException
+        /// </summary>
+        /// <param name="sqlOri">查询语句</param>
+        /// <param name="parameters">参数</param>
+        /// <param name="withMC">是否编码关联名称</param>
+        /// <returns>dynamic,可通过IDictionary<string,object>访问</returns>
+        /// <remarks>InvalidOperationException: Sequence contains more than one element</remarks>
         public Task<dynamic> QuerySingleOrDefaultAsync(string sqlOri, DynamicParameters parameters = null, bool withMC = false)
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters, withMC);
-            return _dbSession.QuerySingleOrDefaultAsync(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
+            return _dbSession.QuerySingleOrDefaultAsync(sql, dynParams);
         }
+        /// <summary>
+        /// 仅当元素个数大于等于1时返回第一个元素，否则抛异常InvalidOperationException: Sequence contains no elements
+        /// </summary>
+        /// <param name="sqlOri"></param>
+        /// <param name="parameters"></param>
+        /// <param name="withMC"></param>
+        /// <returns></returns>
+        /// <remarks>InvalidOperationException: Sequence contains no elements</remarks>
         public T QueryFirst<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : BaseModel
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters, withMC);
-            return _dbSession.QueryFirst<T>(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
+            return _dbSession.QueryFirst<T>(sql, dynParams);
         }
+        /// <summary>
+        /// 仅当元素个数大于等于1时返回第一个元素，否则抛异常InvalidOperationException: Sequence contains no elements
+        /// </summary>
+        /// <param name="sqlOri"></param>
+        /// <param name="parameters"></param>
+        /// <param name="withMC"></param>
+        /// <returns></returns>
+        /// <remarks>InvalidOperationException: Sequence contains no elements</remarks>
         public Task<T> QueryFirstAsync<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : BaseModel
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters, withMC);
-            return _dbSession.QueryFirstAsync<T>(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
+            return _dbSession.QueryFirstAsync<T>(sql, dynParams);
         }
+        /// <summary>
+        /// 当元素大于等于1个时，返回第一个元素，否则返回null
+        /// </summary>
+        /// <param name="sqlOri"></param>
+        /// <param name="parameters"></param>
+        /// <param name="withMC"></param>
+        /// <returns></returns>
         public T QueryFirstOrDefault<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : BaseModel
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters, withMC);
-            return _dbSession.QueryFirstOrDefault<T>(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
+            return _dbSession.QueryFirstOrDefault<T>(sql, dynParams);
         }
+        /// <summary>
+        /// 当元素大于等于1个时，返回第一个元素，否则返回null
+        /// </summary>
+        /// <param name="sqlOri"></param>
+        /// <param name="parameters"></param>
+        /// <param name="withMC"></param>
+        /// <returns></returns>
         public Task<T> QueryFirstOrDefaultAsync<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : BaseModel
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters, withMC);
-            return _dbSession.QueryFirstOrDefaultAsync<T>(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
+            return _dbSession.QueryFirstOrDefaultAsync<T>(sql, dynParams);
         }
+        /// <summary>
+        /// 仅仅存在单个数据的时候返回，否则抛异常InvalidOperationException
+        /// </summary>
+        /// <param name="sqlOri">查询语句</param>
+        /// <param name="parameters">参数</param>
+        /// <param name="withMC">是否编码关联名称</param>
+        /// <returns>dynamic,可通过IDictionary<string,object>访问</returns>
+        /// <remarks>InvalidOperationException:Sequence contains no elements,InvalidOperationException: Sequence contains more than one element</remarks>
         public T QuerySingle<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : BaseModel
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters, withMC);
-            return _dbSession.QuerySingle<T>(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
+            return _dbSession.QuerySingle<T>(sql, dynParams);
 
         }
+        /// <summary>
+        /// 仅仅存在单个数据的时候返回，否则抛异常InvalidOperationException
+        /// </summary>
+        /// <param name="sqlOri">查询语句</param>
+        /// <param name="parameters">参数</param>
+        /// <param name="withMC">是否编码关联名称</param>
+        /// <returns>dynamic,可通过IDictionary<string,object>访问</returns>
+        /// <remarks>InvalidOperationException:Sequence contains no elements,InvalidOperationException: Sequence contains more than one element</remarks>
         public Task<T> QuerySingleAsync<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : BaseModel
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters, withMC);
-            return _dbSession.QuerySingleAsync<T>(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
+            return _dbSession.QuerySingleAsync<T>(sql, dynParams);
         }
+        /// <summary>
+        /// 仅仅存在单个或0个数据的时候返回，否则抛异常InvalidOperationException
+        /// </summary>
+        /// <param name="sqlOri">查询语句</param>
+        /// <param name="parameters">参数</param>
+        /// <param name="withMC">是否编码关联名称</param>
+        /// <returns>dynamic,可通过IDictionary<string,object>访问</returns>
+        /// <remarks>InvalidOperationException: Sequence contains more than one element</remarks>
         public T QuerySingleOrDefault<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : BaseModel
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters, withMC);
-            return _dbSession.QuerySingleOrDefault<T>(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
+            return _dbSession.QuerySingleOrDefault<T>(sql, dynParams);
         }
+        /// <summary>
+        /// 仅仅存在单个或0个数据的时候返回，否则抛异常InvalidOperationException
+        /// </summary>
+        /// <param name="sqlOri">查询语句</param>
+        /// <param name="parameters">参数</param>
+        /// <param name="withMC">是否编码关联名称</param>
+        /// <returns>dynamic,可通过IDictionary<string,object>访问</returns>
+        /// <remarks>InvalidOperationException: Sequence contains more than one element</remarks>
         public Task<T> QuerySingleOrDefaultAsync<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : BaseModel
         {
-            var sql = WrapSqlAndParam(sqlOri, parameters, withMC);
-            return _dbSession.QuerySingleOrDefaultAsync<T>(sql, parameters);
+            var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
+            return _dbSession.QuerySingleOrDefaultAsync<T>(sql, dynParams);
         }
         public IEnumerable<T> QueryWhere<T>(string where, DynamicParameters parameters = null, bool withMC = false) where T : BaseModel
         {
@@ -967,6 +1122,13 @@ namespace Fap.Core.DataAccess
             }
             return QueryAsync(sql, parameters, withMC);
         }
+        /// <summary>
+        /// 当元素大于等于1个时，返回第一个元素，否则返回null
+        /// </summary>
+        /// <param name="sqlOri"></param>
+        /// <param name="parameters"></param>
+        /// <param name="withMC"></param>
+        /// <returns></returns>
         public dynamic QueryFirstOrDefaultWhere(string tableName, string where, DynamicParameters parameters = null, bool withMC = false)
         {
             string sql = $"select * from {tableName}";
@@ -976,6 +1138,13 @@ namespace Fap.Core.DataAccess
             }
             return QueryFirstOrDefault(sql, parameters, withMC);
         }
+        /// <summary>
+        /// 当元素大于等于1个时，返回第一个元素，否则返回null
+        /// </summary>
+        /// <param name="sqlOri"></param>
+        /// <param name="parameters"></param>
+        /// <param name="withMC"></param>
+        /// <returns></returns>
         public Task<dynamic> QueryFirstOrDefaultWhereAsync(string tableName, string where, DynamicParameters parameters = null, bool withMC = false)
         {
             string sql = $"select * from {tableName}";
@@ -985,6 +1154,13 @@ namespace Fap.Core.DataAccess
             }
             return QueryFirstOrDefaultAsync(sql, parameters, withMC);
         }
+        /// <summary>
+        /// 当元素大于等于1个时，返回第一个元素，否则返回null
+        /// </summary>
+        /// <param name="sqlOri"></param>
+        /// <param name="parameters"></param>
+        /// <param name="withMC"></param>
+        /// <returns></returns>
         public T QueryFirstOrDefaultWhere<T>(string where, DynamicParameters parameters = null, bool withMC = false) where T : BaseModel
         {
             string sql = $"select * from {typeof(T).Name}";
@@ -994,6 +1170,13 @@ namespace Fap.Core.DataAccess
             }
             return QueryFirstOrDefault<T>(sql, parameters, withMC);
         }
+        /// <summary>
+        /// 当元素大于等于1个时，返回第一个元素，否则返回null
+        /// </summary>
+        /// <param name="sqlOri"></param>
+        /// <param name="parameters"></param>
+        /// <param name="withMC"></param>
+        /// <returns></returns>
         public Task<T> QueryFirstOrDefaultWhereAsync<T>(string where, DynamicParameters parameters = null, bool withMC = false) where T : BaseModel
         {
             string sql = $"select * from {typeof(T).Name}";
@@ -1013,6 +1196,7 @@ namespace Fap.Core.DataAccess
         {
             if (ActiveTransactionNumber.Value == 0)
             {
+                _logger.LogTrace($"当前线程ID{Thread.CurrentThread.ManagedThreadId},开启事务");
                 _dbSession.BeginTransaction();
             }
             ActiveTransactionNumber.Value++;
@@ -1024,6 +1208,7 @@ namespace Fap.Core.DataAccess
             {
                 try
                 {
+                    _logger.LogTrace($"当前线程ID{Thread.CurrentThread.ManagedThreadId},提交事务");
                     _dbSession.Commit();
 
                 }
@@ -1046,6 +1231,7 @@ namespace Fap.Core.DataAccess
                 ActiveTransactionNumber.Value = 0;
                 try
                 {
+                    _logger.LogTrace($"当前线程ID{Thread.CurrentThread.ManagedThreadId},回滚事务");
                     _dbSession.Rollback();
 
                 }
@@ -1062,19 +1248,22 @@ namespace Fap.Core.DataAccess
         }
         public void Dispose()
         {
-            _dbSession.Dispose();
+            if (ActiveTransactionNumber.Value == 0)
+            {
+                _dbSession.Dispose();
+            }
         }
         #endregion
 
         #region Get
-        public dynamic Get(string tableName, int id, bool withMC = false)
+        public dynamic Get(string tableName, long id, bool withMC = false)
         {
             string sqlOri = $"select * from {tableName} where id=@Id";
             DynamicParameters param = new DynamicParameters();
             param.Add("Id", id);
             return QueryFirstOrDefault(sqlOri, param, withMC);
         }
-        public Task<dynamic> GetAsync(string tableName, int id, bool withMC = false)
+        public Task<dynamic> GetAsync(string tableName, long id, bool withMC = false)
         {
             string sqlOri = $"select * from {tableName} where id=@Id";
             DynamicParameters param = new DynamicParameters();
@@ -1095,7 +1284,7 @@ namespace Fap.Core.DataAccess
             param.Add("Fid", fid);
             return QueryFirstOrDefaultAsync(sqlOri, param, withMC);
         }
-        public T Get<T>(int id, bool withMC = false) where T : BaseModel
+        public T Get<T>(long id, bool withMC = false) where T : BaseModel
         {
             string tableName = typeof(T).Name;
             string sqlOri = $"select * from {tableName} where Id=@Id";
@@ -1103,7 +1292,7 @@ namespace Fap.Core.DataAccess
             parameters.Add("Id", id);
             return QueryFirstOrDefault<T>(sqlOri, parameters, withMC);
         }
-        public Task<T> GetAsync<T>(int id, bool withMC = false) where T : BaseModel
+        public Task<T> GetAsync<T>(long id, bool withMC = false) where T : BaseModel
         {
             string tableName = typeof(T).Name;
             string sqlOri = $"select * from {tableName} where Id=@Id";
@@ -1565,8 +1754,6 @@ namespace Fap.Core.DataAccess
             FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
             //是否历史追溯
             bool isTrace = table.TraceAble == 1;
-
-
             DeleteEntity(entityToDelete, table, isTrace);
             return true;
 
@@ -1622,30 +1809,30 @@ namespace Fap.Core.DataAccess
             T entity = Get<T>(fid, false);
             return DeleteAsync<T>(entity);
         }
-        public bool Delete<T>(int id) where T : BaseModel
+        public bool Delete<T>(long id) where T : BaseModel
         {
             T entity = Get<T>(id, false);
             return Delete<T>(entity);
         }
-        public async Task<bool> DeleteAsync<T>(int id) where T : BaseModel
+        public async Task<bool> DeleteAsync<T>(long id) where T : BaseModel
         {
             T entity = await GetAsync<T>(id, false);
             return await DeleteAsync<T>(entity);
         }
         private void DeleteEntity<T>(T entityToDelete, FapTable table, bool isTrace) where T : BaseModel
         {
-            InitEntityToDelete<T>(entityToDelete);
             //删除前，通过数据拦截器处理数据
             IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
             BeforeDelete<T>(entityToDelete, dataInterceptor);
             if (isTrace)
             {
                 T oldEntity = Get<T>(entityToDelete.Fid);
-                TraceUpdate<T>(entityToDelete, oldEntity);
+                TraceDelete<T>(entityToDelete, oldEntity);
             }
             else
             {
                 //逻辑删除
+                SetEntityToLogicDelete<T>(entityToDelete, DateTimeUtils.CurrentDateStr);
                 _dbSession.Update<T>(entityToDelete);
             }
             //删除后
@@ -1654,7 +1841,6 @@ namespace Fap.Core.DataAccess
         }
         private async Task DeleteEntityAsync<T>(T entityToDelete, FapTable table, bool isTrace) where T : BaseModel
         {
-            InitEntityToDelete<T>(entityToDelete);
             //删除前，通过数据拦截器处理数据
             IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
             BeforeDelete<T>(entityToDelete, dataInterceptor);
@@ -1666,6 +1852,7 @@ namespace Fap.Core.DataAccess
             else
             {
                 //逻辑删除
+                SetEntityToLogicDelete<T>(entityToDelete, DateTimeUtils.CurrentDateStr);
                 await _dbSession.UpdateAsync<T>(entityToDelete);
             }
             //删除后
@@ -1708,25 +1895,22 @@ namespace Fap.Core.DataAccess
         {
             //删除前，通过数据拦截器处理数据
             IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
-            foreach (var entity in entityListToDelete)
+            foreach (var newEntity in entityListToDelete)
             {
-                InitEntityToDelete(entity);
-                BeforeDelete(entity, dataInterceptor);
+                BeforeDelete(newEntity, dataInterceptor);
                 if (isTrace)
                 {
-                    T oldEntity = Get<T>(entity.Fid);
-                    TraceUpdate(entity, oldEntity);
+                    T oldEntity = Get<T>(newEntity.Fid);
+                    TraceDelete<T>(newEntity, oldEntity);
                 }
-            }
-            if (!isTrace)
-            {
-                //逻辑删除
-                _dbSession.Update(entityListToDelete);
-            }
-            foreach (var entity in entityListToDelete)
-            {
+                else
+                {
+                    //逻辑删除
+                    SetEntityToLogicDelete(newEntity, DateTimeUtils.CurrentDateStr);
+                    _dbSession.Update(newEntity);
+                }
                 //删除后
-                AfterDelete<T>(entity, dataInterceptor);
+                AfterDelete<T>(newEntity, dataInterceptor);
 
             }
             //RemoveCache(table.TableName);
@@ -1735,27 +1919,24 @@ namespace Fap.Core.DataAccess
         {
             //删除前，通过数据拦截器处理数据
             IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
-            foreach (var entity in entityListToDelete)
+            foreach (var newEntity in entityListToDelete)
             {
-                InitEntityToDelete(entity);
-                BeforeDelete(entity, dataInterceptor);
+                BeforeDelete(newEntity, dataInterceptor);
                 if (isTrace)
                 {
-                    T oldEntity = Get<T>(entity.Fid);
-                    await TraceUpdateAsync(entity, oldEntity);
+                    T oldEntity = Get<T>(newEntity.Fid);
+                    await TraceDeleteAsync(newEntity, oldEntity);
                 }
-            }
-            if (!isTrace)
-            {
-                //逻辑删除
-                await _dbSession.UpdateAsync(entityListToDelete);
-            }
-            foreach (var entity in entityListToDelete)
-            {
+                else
+                {
+                    //逻辑删除
+                    SetEntityToLogicDelete(newEntity, DateTimeUtils.CurrentDateStr);
+                    await _dbSession.UpdateAsync(newEntity);
+                }
                 //删除后
-                AfterDelete<T>(entity, dataInterceptor);
-
+                AfterDelete<T>(newEntity, dataInterceptor);
             }
+
             //RemoveCache(table.TableName);
         }
         #endregion
@@ -1771,7 +1952,6 @@ namespace Fap.Core.DataAccess
 
             long id = InsertDynamicData(fapDynData, table);
             return id;
-
         }
 
         private long InsertDynamicData(dynamic fapDynData, FapTable table)
@@ -1955,7 +2135,7 @@ namespace Fap.Core.DataAccess
             return i;
         }
 
-        public int DeleteDynamicData(dynamic dataObject)
+        public long DeleteDynamicData(dynamic dataObject)
         {
             if (dataObject.TableName == null)
             {
@@ -1963,21 +2143,19 @@ namespace Fap.Core.DataAccess
             }
             FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == dataObject.TableName);
 
-            int i = DeleteDynamicData(dataObject, table);
+            long i = DeleteDynamicData(dataObject, table);
             return i;
 
 
         }
 
-        private int DeleteDynamicData(dynamic dataObject, FapTable table)
+        private long DeleteDynamicData(dynamic dataObject, FapTable table)
         {
-            //预处理：默认字段
-            InitDynamicToDelete(dataObject);
             //删除前，通过数据拦截器处理数据
             IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
             BeforeDynamicDelete(dataObject, dataInterceptor);
 
-            int i = TraceDynamicDelete(dataObject, table.TraceAble.ToString().ToBool());
+            long i = TraceDynamicDelete(dataObject, table.TraceAble.ToString().ToBool());
             AfterDynamicDelete(dataObject, dataInterceptor);
             //RemoveCache(table.TableName);
             return i;
@@ -1996,13 +2174,11 @@ namespace Fap.Core.DataAccess
         {
             foreach (var dataObject in dataObjects)
             {
-                //预处理：默认字段
-                InitDynamicToDelete(dataObject);
                 //删除前，通过数据拦截器处理数据
                 IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
                 BeforeDynamicDelete(dataObject, dataInterceptor);
 
-                int i = TraceDynamicDelete(dataObject, table.TraceAble.ToString().ToBool());
+                TraceDynamicDelete(dataObject, table.TraceAble.ToString().ToBool());
                 AfterDynamicDelete(dataObject, dataInterceptor);
             }
             // RemoveCache(table.TableName);
