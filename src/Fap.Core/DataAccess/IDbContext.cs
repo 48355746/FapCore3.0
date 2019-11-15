@@ -231,10 +231,10 @@ namespace Fap.Core.DataAccess
         Task<IEnumerable<dynamic>> QueryWhereAsync(string tableName, string where, DynamicParameters parameters = null, bool withMC = false);
         Task<IEnumerable<T>> QueryWhereAsync<T>(string where, DynamicParameters parameters = null, bool withMC = false) where T : BaseModel;
         void Rollback();
-        int Sum(string tableName, string colName, string where = "", DynamicParameters parameters = null);
-        int Sum<T>(string colName, string where = "", DynamicParameters parameters = null);
-        Task<int> SumAsync(string tableName, string colName, string where = "", DynamicParameters parameters = null);
-        Task<int> SumAsync<T>(string colName, string where = "", DynamicParameters parameters = null);
+        decimal Sum(string tableName, string colName, string where = "", DynamicParameters parameters = null);
+        decimal Sum<T>(string colName, string where = "", DynamicParameters parameters = null);
+        Task<decimal> SumAsync(string tableName, string colName, string where = "", DynamicParameters parameters = null);
+        Task<decimal> SumAsync<T>(string colName, string where = "", DynamicParameters parameters = null);
         T Update<T>(T entityToUpdate) where T : BaseModel;
         Task<T> UpdateAsync<T>(T entityToUpdate) where T : BaseModel;
         bool UpdateBatch<T>(IEnumerable<T> entityListToUpdate) where T : BaseModel;

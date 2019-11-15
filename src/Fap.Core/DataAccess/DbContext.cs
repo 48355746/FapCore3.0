@@ -551,12 +551,7 @@ namespace Fap.Core.DataAccess
                         dynamic oldUpdate = new FapDynamicObject();
                         oldUpdate.TableName = tableName;
                         oldUpdate.Id = oldData.Id;
-                        oldUpdate.DisableDate = currDate;
-                        //老数据修改人保持之前不变
-                        //oldUpdate.Ts = DateTimeUtils.Ts;
-                        //oldUpdate.UpdateDate = currDate;
-                        //oldUpdate.UpdateBy = _applicationContext.EmpUid;
-                        //oldUpdate.UpdateName = _applicationContext.EmpName;
+                        oldUpdate.DisableDate = currDate;                        
                         _dbSession.Update(oldUpdate);
 
                         //更新新数据
@@ -588,8 +583,12 @@ namespace Fap.Core.DataAccess
             }
         }
 
-        private T TraceDelete<T>(T newEntity, T oldEntity) where T : BaseModel
+
+        #region delete
+
+        private T TraceDelete<T>(T newEntity) where T : BaseModel
         {
+            T oldEntity = Get<T>(newEntity.Fid);
             var currDate = DateTimeUtils.CurrentDateTimeStr;
             //设置新entity为删除状态
             SetNewEntityToDelete<T>(newEntity, currDate);
@@ -609,9 +608,9 @@ namespace Fap.Core.DataAccess
             }
             return newEntity;
         }
-        private async Task<T> TraceDeleteAsync<T>(T newEntity, T oldEntity) where T : BaseModel
+        private async Task<T> TraceDeleteAsync<T>(T newEntity) where T : BaseModel
         {
-
+            T oldEntity =await GetAsync<T>(newEntity.Fid);
             var currDate = DateTimeUtils.CurrentDateTimeStr;
             //设置新entity为删除状态
             SetNewEntityToDelete<T>(newEntity, currDate);
@@ -815,6 +814,10 @@ namespace Fap.Core.DataAccess
                 dataInterceptor.AfterDynamicObjectDelete(dynEntity);
             }
         }
+
+        #endregion
+
+
         #endregion
 
         #region 基础操作
@@ -1354,25 +1357,25 @@ namespace Fap.Core.DataAccess
             }
             return ExecuteScalarAsync<int>(sqlOri, parameters);
         }
-        public int Sum(string tableName, string colName, string where = "", DynamicParameters parameters = null)
+        public decimal Sum(string tableName, string colName, string where = "", DynamicParameters parameters = null)
         {
             string sqlOri = $"select sum({colName}) from {tableName}";
             if (where.IsPresent())
             {
                 sqlOri += $" where {where}";
             }
-            return ExecuteScalar<int>(sqlOri, parameters);
+            return ExecuteScalar<decimal>(sqlOri, parameters);
         }
-        public Task<int> SumAsync(string tableName, string colName, string where = "", DynamicParameters parameters = null)
+        public Task<decimal> SumAsync(string tableName, string colName, string where = "", DynamicParameters parameters = null)
         {
             string sqlOri = $"select sum({colName}) from {tableName}";
             if (where.IsPresent())
             {
                 sqlOri += $" where {where}";
             }
-            return ExecuteScalarAsync<int>(sqlOri, parameters);
+            return ExecuteScalarAsync<decimal>(sqlOri, parameters);
         }
-        public int Sum<T>(string colName, string where = "", DynamicParameters parameters = null)
+        public decimal Sum<T>(string colName, string where = "", DynamicParameters parameters = null)
         {
             string tableName = typeof(T).Name;
             string sqlOri = $"select sum({colName}) from {tableName}";
@@ -1380,9 +1383,9 @@ namespace Fap.Core.DataAccess
             {
                 sqlOri += $" where {where}";
             }
-            return ExecuteScalar<int>(sqlOri, parameters);
+            return ExecuteScalar<decimal>(sqlOri, parameters);
         }
-        public Task<int> SumAsync<T>(string colName, string where = "", DynamicParameters parameters = null)
+        public Task<decimal> SumAsync<T>(string colName, string where = "", DynamicParameters parameters = null)
         {
             string tableName = typeof(T).Name;
             string sqlOri = $"select sum({colName}) from {tableName}";
@@ -1390,7 +1393,7 @@ namespace Fap.Core.DataAccess
             {
                 sqlOri += $" where {where}";
             }
-            return ExecuteScalarAsync<int>(sqlOri, parameters);
+            return ExecuteScalarAsync<decimal>(sqlOri, parameters);
         }
 
 
@@ -1507,8 +1510,6 @@ namespace Fap.Core.DataAccess
             {
                 Dispose();
             }
-
-
         }
         public async Task<long> InsertBatchAsync<T>(IEnumerable<T> entityListToInsert) where T : BaseModel
         {
@@ -1825,9 +1826,8 @@ namespace Fap.Core.DataAccess
             IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
             BeforeDelete<T>(entityToDelete, dataInterceptor);
             if (isTrace)
-            {
-                T oldEntity = Get<T>(entityToDelete.Fid);
-                TraceDelete<T>(entityToDelete, oldEntity);
+            {                
+                TraceDelete<T>(entityToDelete);
             }
             else
             {
@@ -1899,9 +1899,8 @@ namespace Fap.Core.DataAccess
             {
                 BeforeDelete(newEntity, dataInterceptor);
                 if (isTrace)
-                {
-                    T oldEntity = Get<T>(newEntity.Fid);
-                    TraceDelete<T>(newEntity, oldEntity);
+                {                    
+                    TraceDelete<T>(newEntity);
                 }
                 else
                 {
@@ -1923,9 +1922,8 @@ namespace Fap.Core.DataAccess
             {
                 BeforeDelete(newEntity, dataInterceptor);
                 if (isTrace)
-                {
-                    T oldEntity = Get<T>(newEntity.Fid);
-                    await TraceDeleteAsync(newEntity, oldEntity);
+                {                    
+                    await TraceDeleteAsync(newEntity);
                 }
                 else
                 {
