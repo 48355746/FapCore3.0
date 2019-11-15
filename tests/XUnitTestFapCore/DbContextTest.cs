@@ -32,7 +32,7 @@ namespace XUnitTestFapCore
             Assert.True(c == sss.Count());
             Assert.True(c == s.Count());
             Assert.NotNull(ssss);
-            Assert.Equal(0,ssss?.Count());
+            Assert.Equal(0, ssss?.Count());
         }
         [Fact]
         public void QueryFirst()
@@ -107,10 +107,10 @@ namespace XUnitTestFapCore
         public void Delete()
         {
             _dbContext.BeginTransaction();
-            long id= _dbContext.Insert<Employee>(new Employee { EmpName = "test" });
+            long id = _dbContext.Insert<Employee>(new Employee { EmpName = "test" });
             _dbContext.Delete<Employee>(id);
             _dbContext.Commit();
-            var employee= _dbContext.QueryWhere<Employee>($"Id={id}");
+            var employee = _dbContext.QueryWhere<Employee>($"Id={id}");
             Assert.NotNull(employee);
             Assert.Equal(0, employee?.Count());
 
@@ -118,24 +118,24 @@ namespace XUnitTestFapCore
         [Fact]
         public void DeleteLogic()
         {
-           
-            var b= _dbContext.Delete<FapUser>(42);
-            
+
+            var b = _dbContext.Delete<FapUser>(42);
+
             Assert.True(b);
 
         }
         [Fact]
         public void DeleteTraceDynamic()
         {
-            dynamic obj = new FapDynamicObject();
-            obj.TableName = "Employee";
-            obj.Id = 89;
-            long id= _dbContext.DeleteDynamicData(obj);
+            dynamic obj = new FapDynamicObject("Employee", 89);
+            //obj.TableName = "Employee";
+            //obj.Id = 89;
+            long id = _dbContext.DeleteDynamicData(obj);
             Assert.NotEqual(89, id);
 
-            dynamic obj1 = new FapDynamicObject();
-            obj1.TableName = "FapUser";
-            obj1.Id = 90;
+            dynamic obj1 = new FapDynamicObject("FapUser", 90);
+            //obj1.TableName = "FapUser";
+            //obj1.Id = 90;
             var uid = _dbContext.DeleteDynamicData(obj1);
             Assert.Equal(90, id);
 
@@ -143,9 +143,9 @@ namespace XUnitTestFapCore
         [Fact]
         public void DeleteLogicDynamic()
         {
-            dynamic obj1 = new FapDynamicObject();
-            obj1.TableName = "FapUser";
-            obj1.Id = 90;
+            dynamic obj1 = new FapDynamicObject("FapUser", 90);
+            //obj1.TableName = "FapUser";
+            //obj1.Id = 90;
             var uid = _dbContext.DeleteDynamicData(obj1);
             Assert.Equal(90, uid);
 
@@ -153,11 +153,57 @@ namespace XUnitTestFapCore
         [Fact]
         public void UpdateTrace()
         {
-            var emp= _dbContext.QueryFirst<Employee>("select * from employee where id=74");
-            emp.EmpPinYin = "liyoujun";
-            emp= _dbContext.Update<Employee>(emp);
-            Assert.Equal("liyoujun", emp.EmpPinYin);
+            var emp = _dbContext.QueryFirst<Employee>("select * from employee where id=2474");
+            emp.EmpPinYin = "gaoyuan1";
+            emp = _dbContext.Update<Employee>(emp);
+            Assert.Equal("gaoyuan1", emp.EmpPinYin);
         }
-
+        [Fact]
+        public void UpdateDyncTrace()
+        {
+            dynamic emp = new FapDynamicObject("Employee", 2475);
+            //emp.Id = 2475;
+            emp.EmpPinYin = "gaoyuan2";
+            var boo = _dbContext.UpdateDynamicData(emp);
+            Assert.True(boo);
+        }
+        [Fact]
+        public void Update()
+        {
+            var emp = _dbContext.QueryFirst<FapUser>("select * from FapUser where id=35");
+            emp.UserEmail = "gaoyuan1@fda.com";
+            emp = _dbContext.Update<FapUser>(emp);
+            Assert.Equal("gaoyuan1@fda.com", emp.UserEmail);
+        }
+        [Fact]
+        public void UpdateDync()
+        {
+            dynamic emp = new FapDynamicObject("FapUser", 35);
+            //emp.Id = 2475;
+            emp.UserEmail = "gaoyuan2@fda.com";
+            var boo = _dbContext.UpdateDynamicData(emp);
+            Assert.True(boo);
+        }
+        [Fact]
+        public void InsertEntity()
+        {
+            Employee emp = new Employee();
+            emp.EmpName = "jeke";
+            emp.EmpCode = "jeke zhang";
+            emp.Age = 20;
+            long id = _dbContext.Insert<Employee>(emp);
+            Assert.Equal(id, emp.Id);
+        }
+        [Fact]
+        public void InsertDynamic()
+        {
+            dynamic emp = new FapDynamicObject("FapUser", 0);
+            emp.UserName = "jeke";
+            emp.UserCode = "jeke zhang";
+            emp.UserEmail = "jeke@leo.com";
+            emp.UserPassword = "AQAAAAEAAAPoAAAAEPyzGOp9bSEKLsUrTKsxb/dYCuil0xALUPFogrbMCTuTfDb/w3YuWxhqlFTCYhGUow==";
+            long id = _dbContext.InsertDynamicData(emp);
+            Assert.Equal(id, emp.Id);
+        }
     }
 }

@@ -19,8 +19,6 @@ namespace Fap.Core.DataAccess
         /// </summary>
         internal static string DB_DIALECT_ORACLE = "oracle";
 
-
-
     }
     internal class FapDbConstants
     {
@@ -68,6 +66,10 @@ namespace Fap.Core.DataAccess
         /// 员工不带权限标识符
         /// </summary>
         public const string EmployeeNoPower = "${FAP::EMPLOYEENOPOWER}";
+        /// <summary>
+        /// UUID 
+        /// </summary>
+        public const string UUID = "${FAP::UUID}";
         #endregion
 
         /// <summary>

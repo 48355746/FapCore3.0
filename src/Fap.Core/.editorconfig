@@ -1,0 +1,4 @@
+﻿[*.cs]
+
+# CS8387: 类型参数与外部方法中的类型参数有相同的类型。
+dotnet_diagnostic.CS8387.severity = none

@@ -19,9 +19,9 @@ namespace Fap.Core
         public bool ModifyEmployee(string pinyin)
         {
             var emp= _dbContext.Get("Employee", "3534239003521843200");
-            dynamic keyValuePairs = new FapDynamicObject();
-            keyValuePairs.TableName = "Employee";
-            keyValuePairs.Id = emp.Id;
+            dynamic keyValuePairs = new FapDynamicObject("Employee",emp.Id);
+            //keyValuePairs.TableName = "Employee";
+            //keyValuePairs.Id = emp.Id;
             keyValuePairs.EmpPinYin = pinyin;
             keyValuePairs.Fid = emp.Fid;
             var b= _dbContext.UpdateDynamicData(keyValuePairs);

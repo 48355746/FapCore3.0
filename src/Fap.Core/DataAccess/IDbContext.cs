@@ -44,10 +44,10 @@ namespace Fap.Core.DataAccess
         Task<T> GetAsync<T>(string fid, bool withMC = false) where T : BaseModel;
         long Insert<T>(T entityToInsert) where T : BaseModel;
         Task<long> InsertAsync<T>(T entityToInsert) where T : BaseModel;
-        long InsertBatch<T>(IEnumerable<T> entityListToInsert) where T : BaseModel;
-        Task<long> InsertBatchAsync<T>(IEnumerable<T> entityListToInsert) where T : BaseModel;
-        long InsertDynamicData(dynamic fapDynData);
-        int InsertDynamicDataBatch(IEnumerable<FapDynamicObject> dataObjects);
+        List<long> InsertBatch<T>(IEnumerable<T> entityListToInsert) where T : BaseModel;
+        Task<List<long>> InsertBatchAsync<T>(IEnumerable<T> entityListToInsert) where T : BaseModel;
+        long InsertDynamicData(FapDynamicObject fapDynData);
+        List<long> InsertDynamicDataBatch(IEnumerable<FapDynamicObject> dataObjects);
         IEnumerable<dynamic> Query(string sqlOri, DynamicParameters parameters = null, bool withMC = false);
         IEnumerable<T> Query<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : BaseModel;
         IEnumerable<T> QueryAll<T>(bool withMC = false) where T : BaseModel;
@@ -239,7 +239,7 @@ namespace Fap.Core.DataAccess
         Task<T> UpdateAsync<T>(T entityToUpdate) where T : BaseModel;
         bool UpdateBatch<T>(IEnumerable<T> entityListToUpdate) where T : BaseModel;
         Task<bool> UpdateBatchAsync<T>(IEnumerable<T> entityListToUpdate) where T : BaseModel;
-        bool UpdateDynamicData(dynamic fapDynData);
-        int UpdateDynamicDataBatch(IEnumerable<dynamic> dataObjects);
+        bool UpdateDynamicData(FapDynamicObject fapDynData);
+        void UpdateDynamicDataBatch(IEnumerable<FapDynamicObject> dataObjects);
     }
 }

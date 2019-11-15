@@ -14,6 +14,11 @@ namespace Fap.Core.Metadata
     [Serializable]
     public class FapDynamicObject : System.Dynamic.DynamicObject, IEnumerable<KeyValuePair<string, object>>
     {
+        public FapDynamicObject(string tableName,long id)
+        {
+            TableName = tableName;
+            ((dynamic)this).Id = id;
+        }
         private IDictionary<string, object> map = new Dictionary<string, object>();
         /// <summary>
         /// 表名

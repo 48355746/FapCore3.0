@@ -188,6 +188,13 @@ namespace Fap.Core.DataAccess
                     return _applicationContext.UserUid;
                 }
             }
+            else if (column.ColDefault.EqualsWithIgnoreCase(FapDbConstants.UUID))
+            {
+                if (!column.ColName.EndsWith("MC"))
+                {
+                    return UUIDUtils.Fid;
+                }
+            }
             else
             {
                 return column.ColDefault;
@@ -249,6 +256,8 @@ namespace Fap.Core.DataAccess
                 }
             }
         }
+
+        private object lockSequence = new object();
         private Dictionary<string, string> GetBillCode(string tableName)
         {
             Dictionary<string, string> dictCodes = new Dictionary<string, string>();
@@ -312,49 +321,52 @@ namespace Fap.Core.DataAccess
             }
 
             return dictCodes;
-        }
-        /// <summary>
-        /// 获取自增序号
-        /// </summary>
-        /// <param name="seqName">唯一名称</param>
-        /// <param name="stepBy">步长</param>
-        /// <returns></returns>
-        private object obj = new object();
-        private int GetSequence(string seqName)
-        {
-            lock (obj)
+            bool IsBill(string tableName)
             {
-                DynamicParameters param = new DynamicParameters();
-                param.Add("SeqName", seqName);
-                CfgSequenceRule sr = _dbSession.QueryFirstOrDefault<CfgSequenceRule>("select * from CfgSequenceRule where SeqName=@SeqName", param);
-                if (sr != null)
+                FapTable tb = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
+                if (tb != null && tb.TableFeature != null && tb.TableFeature.Contains("BillFeature"))
                 {
-                    sr.CurrValue += sr.StepBy;
-                    //InitEntityToUpdate(sr);
-                    _dbSession.Update<CfgSequenceRule>(sr);
-                    return sr.CurrValue;
+                    return true;
                 }
                 else
                 {
-                    sr = new CfgSequenceRule { SeqName = seqName, MinValue = 0, StepBy = 1, CurrValue = 1 };
-                    //InitEntityToInsert(sr);
-                    _dbSession.Insert<CfgSequenceRule>(sr);
-                    return 1;
+                    return false;
+                }
+            }
+            /// <summary>
+            /// 获取自增序号
+            /// </summary>
+            /// <param name="seqName">唯一名称</param>
+            /// <returns></returns>
+            int GetSequence(string seqName)
+            {
+                lock (lockSequence)
+                {
+                    DynamicParameters param = new DynamicParameters();
+                    param.Add("SeqName", seqName);
+                    CfgSequenceRule sr = _dbSession.QueryFirstOrDefault<CfgSequenceRule>("select * from CfgSequenceRule where SeqName=@SeqName", param);
+                    if (sr != null)
+                    {
+                        sr.CurrValue += sr.StepBy;
+                        //InitEntityToUpdate(sr);
+                        _dbSession.Update<CfgSequenceRule>(sr);
+                        return sr.CurrValue;
+                    }
+                    else
+                    {
+                        sr = new CfgSequenceRule { SeqName = seqName, MinValue = 0, StepBy = 1, CurrValue = 1 };
+                        //InitEntityToInsert(sr);
+                        _dbSession.Insert<CfgSequenceRule>(sr);
+                        return 1;
+                    }
                 }
             }
         }
-        private bool IsBill(string tableName)
-        {
-            FapTable tb = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
-            if (tb != null && tb.TableFeature != null && tb.TableFeature.Contains("BillFeature"))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
+
+
+
+        #region Interceptor
+
         private IDataInterceptor GetTableInterceptor(string dataInterceptorClass)
         {
             IDataInterceptor dataInterceptor = null;
@@ -378,8 +390,6 @@ namespace Fap.Core.DataAccess
 
             return dataInterceptor;
         }
-
-
         private void BeforeInsert<T>(T entity, IDataInterceptor dataInterceptor) where T : BaseModel
         {
             if (dataInterceptor != null)
@@ -410,7 +420,6 @@ namespace Fap.Core.DataAccess
         }
         private void InitEntityToUpdate<T>(T model) where T : BaseModel
         {
-            //这里更新只是以ID为条件，没有加并发控制
             model.Ts = DateTimeUtils.Ts;
             model.UpdateBy = _applicationContext.EmpUid;
             model.UpdateName = _applicationContext.EmpName;
@@ -451,139 +460,137 @@ namespace Fap.Core.DataAccess
                 dataInterceptor.AfterDynamicObjectUpdate(dynEntity);
             }
         }
-        /// <summary>
-        /// 历史追踪更新
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="newEntity"></param>
-        /// <param name="oldEntity"></param>
-        /// <param name="session"></param>
-        /// <returns></returns>
-        private T TraceUpdate<T>(T newEntity, T oldEntity) where T : BaseModel
+
+        #endregion
+        #region update
+        private T UpdateEntity<T>(T entityToUpdate, FapTable table) where T : BaseModel
         {
-            if (string.IsNullOrWhiteSpace(newEntity.DisableDate))
-            {
-                newEntity.DisableDate = DateTimeUtils.PermanentTimeStr;
-            }
-            newEntity.Ts = DateTimeUtils.Ts;
-
-            if (oldEntity != null)
-            {
-                //设置旧数据的失效时间
-                oldEntity.DisableDate = DateTimeUtils.LastSecondDateTimeStr;
-                //oldEntity.UpdateDate = DateTimeUtils.CurrentDateTimeStr;
-                //oldEntity.Ts = DateTimeUtils.Ts;
-            }
-            try
-            {
-                BeginTransaction();
-                _dbSession.Update<T>(oldEntity);
-                long newId = _dbSession.Insert<T>(newEntity);
-                Commit();
-                newEntity.Id = newId;
-            }
-            catch (Exception)
-            {
-                Rollback();
-                throw;
-            }
-
-            newEntity.UpdateDate = DateTimeUtils.CurrentDateTimeStr;
-            newEntity.Ts = DateTimeUtils.Ts;
-            return newEntity;
-        }
-        private async Task<T> TraceUpdateAsync<T>(T newEntity, T oldEntity) where T : BaseModel
-        {
-            if (string.IsNullOrWhiteSpace(newEntity.DisableDate))
-            {
-                newEntity.DisableDate = DateTimeUtils.PermanentTimeStr;
-            }
-            newEntity.Ts = DateTimeUtils.Ts;
-
-            if (oldEntity != null)
-            {
-                //设置旧数据的失效时间
-                oldEntity.DisableDate = DateTimeUtils.LastSecondDateTimeStr;
-                oldEntity.UpdateDate = DateTimeUtils.CurrentDateTimeStr;
-                oldEntity.Ts = DateTimeUtils.Ts;
-            }
-            try
-            {
-                BeginTransaction();
-                await _dbSession.UpdateAsync<T>(oldEntity);
-                long newId = await _dbSession.InsertAsync<T>(newEntity);
-                Commit();
-                newEntity.Id = newId;
-
-            }
-            catch (Exception)
-            {
-                Rollback();
-                throw;
-            }
-
-            newEntity.UpdateDate = DateTimeUtils.CurrentDateTimeStr;
-            newEntity.Ts = DateTimeUtils.Ts;
-            return newEntity;
-        }
-        private long TraceDynamicUpdate(dynamic dynamicData, bool isTrace)
-        {
-            var fieldList = _fapPlatformDomain.ColumnSet.Where(c => c.TableName == dynamicData.TableName).Select(c => c.ColName);
-            string fid = dynamicData.Fid;
-            string tableName = dynamicData.TableName;
-            dynamic oldData = Get(tableName, fid);
+            T tResult = default(T);
+            //预处理
+            InitEntityToUpdate<T>(entityToUpdate);
+            //更新前，通过数据拦截器处理数据
+            IDataInterceptor interceptor = GetTableInterceptor(table.DataInterceptor);
+            BeforeUpdate(entityToUpdate, interceptor);
+            //逻辑处理时，还需要根据是否要历史追溯来判断是否逻辑            
+            bool isTrace = table.TraceAble == 1;
             if (isTrace)
-            {   //将旧数据变成历史数据， 更新后的数据为最新数据
+            {
+                tResult = TraceUpdate<T>(entityToUpdate, table);
+            }
+            else
+            {
+                _dbSession.Update<T>(entityToUpdate);
+                tResult = entityToUpdate;
+            }
+            AfterUpdate(tResult, interceptor);
+            //RemoveCache(table.TableName);
+            return tResult;
+            /// <summary>
+            /// 历史追踪更新
+            /// </summary>
+            /// <typeparam name="T"></typeparam>
+            /// <param name="newEntity"></param>
+            /// <returns></returns>
+            /// <remarks>修改老数据失效，clone老数据并更新</remarks>
+            T TraceUpdate<T>(T newEntity, FapTable table) where T : BaseModel
+            {
+                string tableName = table.TableName;
+                dynamic oldDataClone = Get(tableName, newEntity.Id);
+                var fieldList = _fapPlatformDomain.ColumnSet.Where(t => t.TableName == tableName).Select(f => f.ColName);
+                string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
+                string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
+                //设置clone数据的enabledate为当前时间
+                var currDate = DateTimeUtils.CurrentDateTimeStr;
                 try
                 {
                     BeginTransaction();
-                    if (oldData != null)
-                    {
-                        var currDate = DateTimeUtils.CurrentDateTimeStr;
-                        //复制一份old data 形成新数据，修改EnableDate为当前日期
-                        var newData = oldData;
-                        newData.EnableDate = currDate;
-                        string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
-                        string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
-                        long newId = _dbSession.Insert(tableName, columnList, paramList, newData);
-
-                        //修改老数据过期时间
-                        dynamic oldUpdate = new FapDynamicObject();
-                        oldUpdate.TableName = tableName;
-                        oldUpdate.Id = oldData.Id;
-                        oldUpdate.DisableDate = currDate;                        
-                        _dbSession.Update(oldUpdate);
-
-                        //更新新数据
-                        dynamicData.Id = newId;
-                        dynamicData.UpdateDate = currDate;
-                        dynamicData.UpdateBy = _applicationContext.EmpUid;
-                        dynamicData.UpdateName = _applicationContext.EmpName;
-                        bool result = _dbSession.Update(dynamicData);
-                        Commit();
-                        return newId;
-                    }
-                    else
-                    {
-                        _logger.LogError("没查询到任何要更新的数据");
-                        throw new FapException("没查询到任何要更新的数据");
-                    }
+                    //clone老数据到新数据
+                    long newId = _dbSession.Insert(tableName, columnList, paramList, oldDataClone);
+                    //修改老数据失效
+                    _dbSession.Execute($"update {tableName} set DisableDate=@DisableDate where Id=@Id", new DynamicParameters(new { DisableDate = currDate, Id = newEntity.Id }));
+                    //根据传值更新新数据
+                    newEntity.Id = newId;
+                    newEntity.EnableDate = currDate;
+                    _dbSession.Update(newEntity);
+                    Commit();
                 }
                 catch (Exception)
                 {
                     Rollback();
                     throw;
                 }
-            }
-            else
-            {    //直接更新数据
-                dynamicData.Id = oldData.Id;
-                bool result = _dbSession.Update(dynamicData);
-                return Convert.ToInt32(dynamicData.Id);
+                finally
+                {
+                    Dispose();
+                }
+                return newEntity;
             }
         }
+        private async Task<T> UpdateEntityAsync<T>(T entityToUpdate, FapTable table) where T : BaseModel
+        {
+            T tResult = default(T);
+            //预处理
+            InitEntityToUpdate<T>(entityToUpdate);
+            //更新前，通过数据拦截器处理数据
+            IDataInterceptor interceptor = GetTableInterceptor(table.DataInterceptor);
+            BeforeUpdate(entityToUpdate, interceptor);
+            //逻辑处理时，还需要根据是否要历史追溯来判断是否逻辑            
+            bool isTrace = table.TraceAble == 1;
+            if (isTrace)
+            {
+                tResult = await TraceUpdateAsync<T>(entityToUpdate, table);
+            }
+            else
+            {
+                await _dbSession.UpdateAsync<T>(entityToUpdate);
+                tResult = entityToUpdate;
+            }
+            AfterUpdate(tResult, interceptor);
+            //RemoveCache(table.TableName);
+            return tResult;
+            /// <summary>
+            /// 历史追踪更新
+            /// </summary>
+            /// <typeparam name="T"></typeparam>
+            /// <param name="newEntity"></param>
+            /// <returns></returns>
+            /// <remarks>修改老数据失效，clone老数据并更新</remarks>
+            async Task<T> TraceUpdateAsync<T>(T newEntity, FapTable table) where T : BaseModel
+            {
+                string tableName = table.TableName;
+                dynamic oldDataClone = Get(tableName, newEntity.Id);
+                var fieldList = _fapPlatformDomain.ColumnSet.Where(t => t.TableName == tableName).Select(f => f.ColName);
+                string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
+                string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
+                //设置clone数据的enabledate为当前时间
+                var currDate = DateTimeUtils.CurrentDateTimeStr;
+                try
+                {
+                    BeginTransaction();
+                    //clone老数据到新数据
+                    long newId = await _dbSession.InsertAsync(tableName, columnList, paramList, oldDataClone);
+                    //修改老数据失效
+                    await _dbSession.ExecuteAsync($"update {tableName} set DisableDate=@DisableDate where Id=@Id", new DynamicParameters(new { DisableDate = currDate, Id = newEntity.Id }));
+                    //根据传值更新新数据
+                    newEntity.Id = newId;
+                    newEntity.EnableDate = currDate;
+                    await _dbSession.UpdateAsync(newEntity);
+                    Commit();
+                }
+                catch (Exception)
+                {
+                    Rollback();
+                    throw;
+                }
+                finally
+                {
+                    Dispose();
+                }
+                return newEntity;
 
-
+            }
+        }
+        #endregion
         #region delete
 
         private T TraceDelete<T>(T newEntity) where T : BaseModel
@@ -610,7 +617,7 @@ namespace Fap.Core.DataAccess
         }
         private async Task<T> TraceDeleteAsync<T>(T newEntity) where T : BaseModel
         {
-            T oldEntity =await GetAsync<T>(newEntity.Fid);
+            T oldEntity = await GetAsync<T>(newEntity.Fid);
             var currDate = DateTimeUtils.CurrentDateTimeStr;
             //设置新entity为删除状态
             SetNewEntityToDelete<T>(newEntity, currDate);
@@ -668,9 +675,8 @@ namespace Fap.Core.DataAccess
                         string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
                         long newId = _dbSession.Insert(tableName, columnList, paramList, newData);
                         //update old data invalid
-                        dynamic dyData = new FapDynamicObject();
-                        dyData.TableName = tableName;
-                        dyData.Id = id;
+                        dynamic dyData = new FapDynamicObject(tableName, id);
+                        //dyData.Id = id;
                         SetOldDynamicInvalid(dyData, currDate);
                         _dbSession.Update(dyData);
                         Commit();
@@ -686,10 +692,8 @@ namespace Fap.Core.DataAccess
                 }
                 else //逻辑删除
                 {
-                    dynamic dyData = new FapDynamicObject();
-                    dyData.TableName = tableName;
-                    dyData.Id = id;
-
+                    dynamic dyData = new FapDynamicObject(tableName, id);
+                    //dyData.Id = id;
                     SetDynamicToLogicDelete(dyData);
 
                     _dbSession.Update(dyData);
@@ -1404,11 +1408,10 @@ namespace Fap.Core.DataAccess
 
         public long Insert<T>(T entityToInsert) where T : BaseModel
         {
-            string tableName = typeof(T).Name;
             try
             {
                 BeginTransaction();
-                long id = InsertEntity(entityToInsert, tableName);
+                long id = InsertEntity(entityToInsert);
                 Commit();
                 return id;
             }
@@ -1423,15 +1426,28 @@ namespace Fap.Core.DataAccess
                 Dispose();
             }
 
-
+            long InsertEntity<T>(T entityToInsert) where T : BaseModel
+            {
+                string tableName = typeof(T).Name;
+                FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
+                //初始化基础数据以及默认值
+                InitEntityToInsert<T>(entityToInsert);
+                IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
+                //insert前事件
+                BeforeInsert<T>(entityToInsert, dataInterceptor);
+                long id = _dbSession.Insert<T>(entityToInsert);
+                //insert 后事件            
+                AfterInsert<T>(entityToInsert, dataInterceptor);
+                //RemoveCache(tableName);
+                return id;
+            }
         }
         public async Task<long> InsertAsync<T>(T entityToInsert) where T : BaseModel
         {
-            string tableName = typeof(T).Name;
             try
             {
                 BeginTransaction();
-                long id = await InsertEntityAsync(entityToInsert, tableName);
+                long id = await InsertEntityAsync(entityToInsert);
                 Commit();
                 return id;
             }
@@ -1445,211 +1461,90 @@ namespace Fap.Core.DataAccess
             {
                 Dispose();
             }
+            async Task<long> InsertEntityAsync<T>(T entityToInsert) where T : BaseModel
+            {
+                string tableName = typeof(T).Name;
+                FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
+                //初始化基础数据以及默认值
+                InitEntityToInsert<T>(entityToInsert);
+                IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
+                //insert前事件
+                BeforeInsert<T>(entityToInsert, dataInterceptor);
+                long id = await _dbSession.InsertAsync<T>(entityToInsert);
+                //insert 后事件            
+                AfterInsert<T>(entityToInsert, dataInterceptor);
+                //RemoveCache(tableName);
+                return id;
+            }
+        }
 
-
-        }
-        private long InsertEntity<T>(T entityToInsert, string tableName) where T : BaseModel
-        {
-            FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
-            //初始化基础数据以及默认值
-            InitEntityToInsert<T>(entityToInsert);
-            IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
-            //insert前事件
-            BeforeInsert<T>(entityToInsert, dataInterceptor);
-            long id = _dbSession.Insert<T>(entityToInsert);
-            entityToInsert.Id = id;
-            //insert 后事件            
-            AfterInsert<T>(entityToInsert, dataInterceptor);
-            //RemoveCache(tableName);
-            return id;
-        }
-        private async Task<long> InsertEntityAsync<T>(T entityToInsert, string tableName) where T : BaseModel
-        {
-            FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
-            //初始化基础数据以及默认值
-            InitEntityToInsert<T>(entityToInsert);
-            IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
-            //insert前事件
-            BeforeInsert<T>(entityToInsert, dataInterceptor);
-            long id = await _dbSession.InsertAsync<T>(entityToInsert);
-            entityToInsert.Id = id;
-            //insert 后事件            
-            AfterInsert<T>(entityToInsert, dataInterceptor);
-            //RemoveCache(tableName);
-            return id;
-        }
         /// <summary>
         /// 批量新增，返回影响行数
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="entityListToInsert"></param>
         /// <returns></returns>
-        public long InsertBatch<T>(IEnumerable<T> entityListToInsert) where T : BaseModel
+        public List<long> InsertBatch<T>(IEnumerable<T> entityListToInsert) where T : BaseModel
         {
             if (entityListToInsert == null || !entityListToInsert.Any())
             {
-                return 0;
+                return Array.Empty<long>().ToList();
             }
-            string tableName = typeof(T).Name;
-            FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
-
-            try
+            List<long> vsid = new List<long>();
+            foreach (var entity in entityListToInsert)
             {
-                BeginTransaction();
-                long result = InsertEntityBatch(entityListToInsert, table);
-                Commit();
-                return result;
+                try
+                {
+                    long result = Insert(entity);
+                    vsid.Add(result);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"insertBatch entities method throw exception:{ex.Message}");
+                    continue;
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError($"insertBatch entities method throw exception:{ex.Message}");
-                Rollback();
-                throw;
-            }
-            finally
-            {
-                Dispose();
-            }
+            return vsid;
         }
-        public async Task<long> InsertBatchAsync<T>(IEnumerable<T> entityListToInsert) where T : BaseModel
+        public async Task<List<long>> InsertBatchAsync<T>(IEnumerable<T> entityListToInsert) where T : BaseModel
         {
             if (entityListToInsert == null || !entityListToInsert.Any())
             {
-                return 0;
+                return Array.Empty<long>().ToList();
             }
-            string tableName = typeof(T).Name;
-            FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
-
-            try
-            {
-                BeginTransaction();
-                long result = InsertEntityBatch(entityListToInsert, table);
-                Commit();
-                return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"insertBatch entities method throw exception:{ex.Message}");
-                Rollback();
-                throw;
-            }
-            finally
-            {
-                Dispose();
-            }
-
-
-        }
-        private long InsertEntityBatch<T>(IEnumerable<T> entityListToInsert, FapTable table) where T : BaseModel
-        {
-            IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
+            List<long> vsid = new List<long>();
             foreach (var entity in entityListToInsert)
             {
-                //预处理
-                InitEntityToInsert<T>(entity);
-                BeforeInsert(entity, dataInterceptor);
-            }
-            //批量insert，返回影响行数
-            var result = _dbSession.Insert<IEnumerable<T>>(entityListToInsert);
-            if (dataInterceptor != null)
-            {
-                foreach (var entity in entityListToInsert)
+                try
                 {
-                    AfterInsert(entity, dataInterceptor);
+                    long result = await InsertAsync(entity);
+                    vsid.Add(result);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"insertBatch entities method throw exception:{ex.Message}");
+                    continue;
                 }
             }
-            //RemoveCache(table.TableName);
-            return result;
+            return vsid;
         }
-        private async Task<long> InsertEntityBatchAsync<T>(IEnumerable<T> entityListToInsert, FapTable table) where T : BaseModel
-        {
-            IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
-            foreach (var entity in entityListToInsert)
-            {
-                //预处理
-                InitEntityToInsert<T>(entity);
-                BeforeInsert(entity, dataInterceptor);
-            }
-            //批量insert，返回影响行数
-            var result = await _dbSession.InsertAsync<IEnumerable<T>>(entityListToInsert);
-            if (dataInterceptor != null)
-            {
-                foreach (var entity in entityListToInsert)
-                {
-                    AfterInsert(entity, dataInterceptor);
-                }
-            }
-            //RemoveCache(table.TableName);
-            return result;
-        }
+
         public T Update<T>(T entityToUpdate) where T : BaseModel
         {
             string tableName = typeof(T).Name;
             FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
-            //逻辑处理时，还需要根据是否要历史追溯来判断是否逻辑            
-            bool logic = table.TraceAble == 1;
-            T tResult = default(T);
 
-            tResult = UpdateEntity(entityToUpdate, table, logic);
-            return tResult;
-
+            return UpdateEntity(entityToUpdate, table);
         }
         public async Task<T> UpdateAsync<T>(T entityToUpdate) where T : BaseModel
         {
             string tableName = typeof(T).Name;
             FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
-            //逻辑处理时，还需要根据是否要历史追溯来判断是否逻辑            
-            bool logic = table.TraceAble == 1;
-            T tResult = default(T);
 
-            tResult = await UpdateEntityAsync(entityToUpdate, table, logic);
-            return tResult;
+            return await UpdateEntityAsync(entityToUpdate, table);
 
         }
-        private T UpdateEntity<T>(T entityToUpdate, FapTable table, bool isTrace) where T : BaseModel
-        {
-            T tResult;
-            //预处理
-            InitEntityToUpdate<T>(entityToUpdate);
-            //更新前，通过数据拦截器处理数据
-            IDataInterceptor interceptor = GetTableInterceptor(table.DataInterceptor);
-            BeforeUpdate(entityToUpdate, interceptor);
-            if (isTrace)
-            {
-                T oldEntity = Get<T>(entityToUpdate.Fid);
-                tResult = TraceUpdate<T>(entityToUpdate, oldEntity);
-            }
-            else
-            {
-                var success = _dbSession.Update<T>(entityToUpdate);
-                tResult = entityToUpdate;
-            }
-            AfterUpdate(tResult, interceptor);
-            //RemoveCache(table.TableName);
-            return tResult;
-        }
-        private async Task<T> UpdateEntityAsync<T>(T entityToUpdate, FapTable table, bool logic) where T : BaseModel
-        {
-            T tResult;
-            //预处理
-            InitEntityToUpdate<T>(entityToUpdate);
-            //更新前，通过数据拦截器处理数据
-            IDataInterceptor interceptor = GetTableInterceptor(table.DataInterceptor);
-            BeforeUpdate(entityToUpdate, interceptor);
-            if (logic)
-            {
-                T oldEntity = await GetAsync<T>(entityToUpdate.Fid);
-                tResult = await TraceUpdateAsync<T>(entityToUpdate, oldEntity);
-            }
-            else
-            {
-                var success = await _dbSession.UpdateAsync<T>(entityToUpdate);
-                tResult = entityToUpdate;
-            }
-            AfterUpdate(tResult, interceptor);
-            //RemoveCache(table.TableName);
-            return tResult;
-        }
+
         public bool UpdateBatch<T>(IEnumerable<T> entityListToUpdate) where T : BaseModel
         {
             if (entityListToUpdate == null || entityListToUpdate.Count() < 1) return false;
@@ -1657,10 +1552,10 @@ namespace Fap.Core.DataAccess
             string tableName = typeof(T).Name;
             FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
 
-            //逻辑处理时，还需要根据是否要历史追溯来判断是否逻辑            
-            bool isTrace = table.TraceAble == 1;
-
-            UpdateEntityBatch(entityListToUpdate, table, isTrace);
+            foreach (var entity in entityListToUpdate)
+            {
+                UpdateEntity(entity, table);
+            }
             return true;
 
         }
@@ -1670,77 +1565,12 @@ namespace Fap.Core.DataAccess
 
             string tableName = typeof(T).Name;
             FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
-
-            //逻辑处理时，还需要根据是否要历史追溯来判断是否逻辑            
-            bool isTrace = table.TraceAble == 1;
-
-            await UpdateEntityBatchAsync(entityListToUpdate, table, isTrace);
+            foreach (var entity in entityListToUpdate)
+            {
+                await UpdateEntityAsync(entity, table);
+            }
             return true;
 
-        }
-        private void UpdateEntityBatch<T>(IEnumerable<T> entityListToUpdate, FapTable table, bool isTrace) where T : BaseModel
-        {
-            IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
-            //更新前，通过数据拦截器处理数据
-            foreach (var entity in entityListToUpdate)
-            {
-                //预处理
-                InitEntityToUpdate<T>(entity);
-                BeforeUpdate(entity, dataInterceptor);
-            }
-            if (isTrace)
-            {
-                //历史追溯
-                foreach (var entity in entityListToUpdate)
-                {
-                    T oldEntity = Get<T>(entity.Fid);
-                    TraceUpdate<T>(entity, oldEntity);
-                }
-            }
-            else
-            {
-                var result = _dbSession.Update(entityListToUpdate);
-            }
-            if (dataInterceptor != null)
-            {
-                foreach (var entity in entityListToUpdate)
-                {
-                    AfterUpdate(entity, dataInterceptor);
-                }
-            }
-            //RemoveCache(table.TableName);
-        }
-        private async Task UpdateEntityBatchAsync<T>(IEnumerable<T> entityListToUpdate, FapTable table, bool isTrace) where T : BaseModel
-        {
-            IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
-            //更新前，通过数据拦截器处理数据
-            foreach (var entity in entityListToUpdate)
-            {
-                //预处理
-                InitEntityToUpdate<T>(entity);
-                BeforeUpdate(entity, dataInterceptor);
-            }
-            if (isTrace)
-            {
-                //历史追溯
-                foreach (var entity in entityListToUpdate)
-                {
-                    T oldEntity = await GetAsync<T>(entity.Fid);
-                    await TraceUpdateAsync<T>(entity, oldEntity);
-                }
-            }
-            else
-            {
-                var result = await _dbSession.UpdateAsync(entityListToUpdate);
-            }
-            if (dataInterceptor != null)
-            {
-                foreach (var entity in entityListToUpdate)
-                {
-                    AfterUpdate(entity, dataInterceptor);
-                }
-            }
-            //RemoveCache(table.TableName);
         }
         /// <summary>
         /// 逻辑删除，彻底删除请使用exec
@@ -1757,7 +1587,25 @@ namespace Fap.Core.DataAccess
             bool isTrace = table.TraceAble == 1;
             DeleteEntity(entityToDelete, table, isTrace);
             return true;
-
+            void DeleteEntity<T>(T entityToDelete, FapTable table, bool isTrace) where T : BaseModel
+            {
+                //删除前，通过数据拦截器处理数据
+                IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
+                BeforeDelete<T>(entityToDelete, dataInterceptor);
+                if (isTrace)
+                {
+                    TraceDelete<T>(entityToDelete);
+                }
+                else
+                {
+                    //逻辑删除
+                    SetEntityToLogicDelete<T>(entityToDelete, DateTimeUtils.CurrentDateStr);
+                    _dbSession.Update<T>(entityToDelete);
+                }
+                //删除后
+                AfterDelete<T>(entityToDelete, dataInterceptor);
+                //RemoveCache(table.TableName);
+            }
         }
         public async Task<bool> DeleteAsync<T>(T entityToDelete) where T : BaseModel
         {
@@ -1768,7 +1616,25 @@ namespace Fap.Core.DataAccess
 
             await DeleteEntityAsync(entityToDelete, table, isTrace);
             return true;
-
+            async Task DeleteEntityAsync<T>(T entityToDelete, FapTable table, bool isTrace) where T : BaseModel
+            {
+                //删除前，通过数据拦截器处理数据
+                IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
+                BeforeDelete<T>(entityToDelete, dataInterceptor);
+                if (isTrace)
+                {
+                    await TraceDeleteAsync<T>(entityToDelete);
+                }
+                else
+                {
+                    //逻辑删除
+                    SetEntityToLogicDelete<T>(entityToDelete, DateTimeUtils.CurrentDateStr);
+                    await _dbSession.UpdateAsync<T>(entityToDelete);
+                }
+                //删除后
+                AfterDelete<T>(entityToDelete, dataInterceptor);
+                //RemoveCache(table.TableName);
+            }
         }
         /// <summary>
         /// 直接语句删除
@@ -1820,45 +1686,7 @@ namespace Fap.Core.DataAccess
             T entity = await GetAsync<T>(id, false);
             return await DeleteAsync<T>(entity);
         }
-        private void DeleteEntity<T>(T entityToDelete, FapTable table, bool isTrace) where T : BaseModel
-        {
-            //删除前，通过数据拦截器处理数据
-            IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
-            BeforeDelete<T>(entityToDelete, dataInterceptor);
-            if (isTrace)
-            {                
-                TraceDelete<T>(entityToDelete);
-            }
-            else
-            {
-                //逻辑删除
-                SetEntityToLogicDelete<T>(entityToDelete, DateTimeUtils.CurrentDateStr);
-                _dbSession.Update<T>(entityToDelete);
-            }
-            //删除后
-            AfterDelete<T>(entityToDelete, dataInterceptor);
-            //RemoveCache(table.TableName);
-        }
-        private async Task DeleteEntityAsync<T>(T entityToDelete, FapTable table, bool isTrace) where T : BaseModel
-        {
-            //删除前，通过数据拦截器处理数据
-            IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
-            BeforeDelete<T>(entityToDelete, dataInterceptor);
-            if (isTrace)
-            {
-                T oldEntity = await GetAsync<T>(entityToDelete.Fid);
-                await TraceUpdateAsync<T>(entityToDelete, oldEntity);
-            }
-            else
-            {
-                //逻辑删除
-                SetEntityToLogicDelete<T>(entityToDelete, DateTimeUtils.CurrentDateStr);
-                await _dbSession.UpdateAsync<T>(entityToDelete);
-            }
-            //删除后
-            AfterDelete<T>(entityToDelete, dataInterceptor);
-            //RemoveCache(table.TableName);
-        }
+
         public bool DeleteBatch<T>(IEnumerable<T> entityListToDelete) where T : BaseModel
         {
             if (entityListToDelete == null || !entityListToDelete.Any())
@@ -1873,7 +1701,29 @@ namespace Fap.Core.DataAccess
             DeleteEntityBatch(entityListToDelete, table, isTrace);
 
             return true;
+            void DeleteEntityBatch<T>(IEnumerable<T> entityListToDelete, FapTable table, bool isTrace) where T : BaseModel
+            {
+                //删除前，通过数据拦截器处理数据
+                IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
+                foreach (var newEntity in entityListToDelete)
+                {
+                    BeforeDelete(newEntity, dataInterceptor);
+                    if (isTrace)
+                    {
+                        TraceDelete<T>(newEntity);
+                    }
+                    else
+                    {
+                        //逻辑删除
+                        SetEntityToLogicDelete(newEntity, DateTimeUtils.CurrentDateStr);
+                        _dbSession.Update(newEntity);
+                    }
+                    //删除后
+                    AfterDelete<T>(newEntity, dataInterceptor);
 
+                }
+                //RemoveCache(table.TableName);
+            }
         }
         public async Task<bool> DeleteBatchAsync<T>(IEnumerable<T> entityListToDelete) where T : BaseModel
         {
@@ -1889,152 +1739,115 @@ namespace Fap.Core.DataAccess
             await DeleteEntityBatchAsync(entityListToDelete, table, isTrace);
 
             return true;
-
-        }
-        private void DeleteEntityBatch<T>(IEnumerable<T> entityListToDelete, FapTable table, bool isTrace) where T : BaseModel
-        {
-            //删除前，通过数据拦截器处理数据
-            IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
-            foreach (var newEntity in entityListToDelete)
+            async Task DeleteEntityBatchAsync<T>(IEnumerable<T> entityListToDelete, FapTable table, bool isTrace) where T : BaseModel
             {
-                BeforeDelete(newEntity, dataInterceptor);
-                if (isTrace)
-                {                    
-                    TraceDelete<T>(newEntity);
-                }
-                else
+                //删除前，通过数据拦截器处理数据
+                IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
+                foreach (var newEntity in entityListToDelete)
                 {
-                    //逻辑删除
-                    SetEntityToLogicDelete(newEntity, DateTimeUtils.CurrentDateStr);
-                    _dbSession.Update(newEntity);
+                    BeforeDelete(newEntity, dataInterceptor);
+                    if (isTrace)
+                    {
+                        await TraceDeleteAsync(newEntity);
+                    }
+                    else
+                    {
+                        //逻辑删除
+                        SetEntityToLogicDelete(newEntity, DateTimeUtils.CurrentDateStr);
+                        await _dbSession.UpdateAsync(newEntity);
+                    }
+                    //删除后
+                    AfterDelete<T>(newEntity, dataInterceptor);
                 }
-                //删除后
-                AfterDelete<T>(newEntity, dataInterceptor);
 
+                //RemoveCache(table.TableName);
             }
-            //RemoveCache(table.TableName);
-        }
-        private async Task DeleteEntityBatchAsync<T>(IEnumerable<T> entityListToDelete, FapTable table, bool isTrace) where T : BaseModel
-        {
-            //删除前，通过数据拦截器处理数据
-            IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
-            foreach (var newEntity in entityListToDelete)
-            {
-                BeforeDelete(newEntity, dataInterceptor);
-                if (isTrace)
-                {                    
-                    await TraceDeleteAsync(newEntity);
-                }
-                else
-                {
-                    //逻辑删除
-                    SetEntityToLogicDelete(newEntity, DateTimeUtils.CurrentDateStr);
-                    await _dbSession.UpdateAsync(newEntity);
-                }
-                //删除后
-                AfterDelete<T>(newEntity, dataInterceptor);
-            }
-
-            //RemoveCache(table.TableName);
         }
         #endregion
 
         #region CRUD dynamic
-        public long InsertDynamicData(dynamic fapDynData)
+        public long InsertDynamicData(FapDynamicObject fapDynData)
         {
             if (fapDynData.TableName == null)
             {
-                throw new FapException("请指定表名");
+                Guard.Against.NullOrWhiteSpace("tableName不能为null", nameof(FapDynamicObject));
             }
             FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == fapDynData.TableName);
+            if (table == null)
+            {
+                Guard.Against.Null("实体元数据未发现或未注册", nameof(FapTable));
+            }
 
-            long id = InsertDynamicData(fapDynData, table);
-            return id;
+            try
+            {
+                BeginTransaction();
+                long id = InsertDynamicData(fapDynData, table);
+                Commit();
+                return id;
+            }
+            catch (Exception ex)
+            {
+                Rollback();
+                _logger.LogError($"insert dynamic error:{ex.Message}");
+                throw;
+            }
+            finally
+            {
+                Dispose();
+            }
+            long InsertDynamicData(dynamic fapDynData, FapTable table)
+            {
+                InitDynamicToInsert(fapDynData);
+                //新增前，通过数据拦截器处理数据
+                IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
+                BeforeDynamicInsert(fapDynData, dataInterceptor);
+                //新增数据
+                string columnList = string.Join(',', fapDynData.ColumnKeys());
+                string paramList = string.Join(',', fapDynData.ParamKeys());
+                long id = _dbSession.Insert(table.TableName, columnList, paramList, fapDynData);// obj);
+                //动态需要手动设置Id的值，实体InsertEntity不需要
+                fapDynData.Id = id;
+                //新增后，通过数据拦截器处理数据
+                AfterDynamicInsert(fapDynData, dataInterceptor);
+                //RemoveCache(table.TableName);
+                return id;
+            }
         }
-
-        private long InsertDynamicData(dynamic fapDynData, FapTable table)
-        {
-            InitDynamicToInsert(fapDynData);
-            //新增前，通过数据拦截器处理数据
-            IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
-            BeforeDynamicInsert(fapDynData, dataInterceptor);
-            //新增数据
-            //object obj = fapDynData.ToObject();
-            string tableName = fapDynData.TableName;
-            string columnList = string.Join(',', fapDynData.ColumnKeys());
-            string paramList = string.Join(',', fapDynData.ParamKeys());
-            long id = _dbSession.Insert(tableName, columnList, paramList, fapDynData);// obj);
-
-            fapDynData.Id = id;
-            //新增后，通过数据拦截器处理数据
-            AfterDynamicInsert(fapDynData, dataInterceptor);
-            //RemoveCache(table.TableName);
-            return id;
-        }
-
-        public int InsertDynamicDataBatch(IEnumerable<FapDynamicObject> dataObjects)
+        public List<long> InsertDynamicDataBatch(IEnumerable<FapDynamicObject> dataObjects)
         {
             if (dataObjects == null || dataObjects.Count() < 1)
             {
-                return 0;
+                return Array.Empty<long>().ToList();
             }
-            string tableName = dataObjects.First().TableName;
-            if (tableName == null)
+            List<long> vsid = new List<long>();
+            foreach (var dyEntity in dataObjects)
             {
-                throw new FapException("请指定表名");
+                try
+                {
+                    long id = InsertDynamicData(dyEntity);
+                    vsid.Add(id);
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
+            }
+            // RemoveCache(table.TableName);
+            return vsid;
+        }
+
+        public bool UpdateDynamicData(FapDynamicObject fapDynData)
+        {
+            string tableName = fapDynData.TableName;
+            if (tableName.IsMissing())
+            {
+                Guard.Against.Null("请指定表名", "UpdateDynamicData");
             }
             FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
-            Parallel.ForEach(dataObjects, dynamicData =>
+            if (table == null)
             {
-
-                InsertDynamicDataBatch(dynamicData, tableName, table);
-
-
-            });
-            // RemoveCache(table.TableName);
-            return dataObjects.Count();
-        }
-
-        private void InsertDynamicDataBatch(dynamic dynamicData, string tableName, FapTable table)
-        {
-
-            IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
-
-            dynamic dynData = dynamicData;
-            InitDynamicToInsert(dynData);
-            //新增前，通过数据拦截器处理数据
-            BeforeDynamicInsert(dynData, dataInterceptor);
-            //新增数据
-            object obj = dynamicData.ToObject();
-            string columnList = string.Join(',', dynamicData.ColumnKeys());
-            string paramList = string.Join(',', dynamicData.ParamKeys());
-            long id = _dbSession.Insert(tableName, columnList, paramList, obj);
-
-            dynData.Id = id;
-            //新增后，通过数据拦截器处理数据
-            AfterDynamicInsert(dynData, dataInterceptor);
-
-            //foreach (var dynamicData in dataObjects)
-            //{
-            //    dynamic dynData = dynamicData;
-            //    InitDynamicToInsert(dynData, session);
-            //    //新增前，通过数据拦截器处理数据
-            //    BeforeDynamicInsert(dynData, dataInterceptor);
-            //    //新增数据
-            //    object obj = dynamicData.ToObject();
-            //    string columnList =string.Join(',', fapDynData.ColumnKeys());
-            //    string paramList =string.join(',', dynamicData.ParamKeys());
-            //    long id = session.Insert(tableName, columnList, paramList, obj);
-
-            //    dynData.Id = id;
-            //    //新增后，通过数据拦截器处理数据
-            //    AfterDynamicInsert(dynData, dataInterceptor);
-            //}
-
-        }
-
-        public bool UpdateDynamicData(dynamic fapDynData)
-        {
+                Guard.Against.Null($"未找到实体{tableName}元数据", nameof(FapDynamicObject));
+            }
             string fid = string.Empty;
             long Id = 0;
             dynamic dataObject = fapDynData;
@@ -2044,93 +1857,119 @@ namespace Fap.Core.DataAccess
                 if (dataObject.ContainsKey("Id") && dataObject.Id != null)
                 {
                     Id = Convert.ToInt64(dataObject.Get("Id"));
-                    fid = ExecuteScalar($"select Fid from {dataObject.TableName} where Id={Id}").ToString();
+                    fid = ExecuteScalar($"select Fid from {dataObject.TableName} where Id=@Id", new DynamicParameters(new { Id = Id })).ToString();
                     dataObject.Add("Fid", fid);
                 }
                 else
                 {
-                    throw new FapException("更新数据，请设置Key的值,Id or Fid");
+                    Guard.Against.Null($"更新数据，请设置Key的值,Id or Fid", nameof(FapDynamicObject));
                 }
             }
             else
             {
                 fid = dataObject.Fid;
             }
-
-            if (dataObject.TableName == null)
-            {
-                throw new FapException("请指定表名");
-            }
             if (fid.IsMissing() && Id == 0)
             {
-                throw new FapException("更新数据，请设置Key的值");
+                Guard.Against.Null("更新数据，请设置Key的值", nameof(FapDynamicObject));
             }
             if (fid.IsMissing() && Id > 0)
             {
-                throw new FapException("更新数据，请设置Key的值,Id or Fid");
+                Guard.Against.Null("更新数据，请设置Key的值", nameof(FapDynamicObject));
             }
-
-            FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == dataObject.TableName);
-            bool isTrace = table.TraceAble.ToString().ToBool();
-            InitDynamicToUpdate(dataObject);
-
-            UpdateDynamicData(dataObject, table, isTrace);
+            UpdateDynamicData(dataObject, table);
             return true;
+            void UpdateDynamicData(FapDynamicObject dataObject, FapTable table)
+            {
+                InitDynamicToUpdate(dataObject);
+                IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
+                BeforeDynamicUpdate(dataObject, dataInterceptor);
+                bool isTrace = table.TraceAble.ToString().ToBool();
+                if (isTrace)
+                {
+                    TraceDynamicUpdate(dataObject, table.TableName);
+                }
+                else
+                {
+                    DynamicObjectUpdate(dataObject, table.TableName);
+                }
+                AfterDynamicUpdate(dataObject, dataInterceptor);
+                //RemoveCache(table.TableName);
+
+                void DynamicObjectUpdate(dynamic dynamicData, string tableName)
+                {
+                    //直接更新数据
+                    long? id = dynamicData.Id;
+                    if (id < 1)
+                    {
+                        dynamic oldData = Get(tableName, dynamicData.Fid);
+                        dynamicData.Id = oldData.Id;
+                    }
+                    _dbSession.Update(dynamicData);
+                }
+                long TraceDynamicUpdate(dynamic dynamicData, string tableName)
+                {
+                    var fieldList = _fapPlatformDomain.ColumnSet.Where(c => c.TableName == tableName).Select(c => c.ColName);
+                    string fid = dynamicData.Fid;
+                    dynamic oldData = Get(tableName, fid);
+                    //将旧数据变成历史数据， 更新后的数据为最新数据
+                    try
+                    {
+                        BeginTransaction();
+                        if (oldData != null)
+                        {
+                            var currDate = DateTimeUtils.CurrentDateTimeStr;
+                            //复制一份old data 形成新数据，修改EnableDate为当前日期
+                            var newData = oldData;
+                            newData.EnableDate = currDate;
+                            string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
+                            string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
+                            long newId = _dbSession.Insert(tableName, columnList, paramList, newData);
+
+                            //修改老数据过期时间
+                            dynamic oldUpdate = new FapDynamicObject(tableName, oldData.Id);
+                            //oldUpdate.TableName = tableName;
+                            //oldUpdate.Id = oldData.Id;
+                            oldUpdate.DisableDate = currDate;
+                            _dbSession.Update(oldUpdate);
+
+                            //更新新数据
+                            dynamicData.Id = newId;
+                            dynamicData.UpdateDate = currDate;
+                            dynamicData.UpdateBy = _applicationContext.EmpUid;
+                            dynamicData.UpdateName = _applicationContext.EmpName;
+                            bool result = _dbSession.Update(dynamicData);
+                            Commit();
+                            return newId;
+                        }
+                        else
+                        {
+                            _logger.LogError("没查询到任何要更新的数据");
+                            throw new FapException("没查询到任何要更新的数据");
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        Rollback();
+                        throw;
+                    }
+
+                }
 
 
+            }
         }
 
-        private void UpdateDynamicData(dynamic dataObject, FapTable table, bool isTrace)
-        {
-            IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
-            BeforeDynamicUpdate(dataObject, dataInterceptor);
-            TraceDynamicUpdate(dataObject, isTrace);
-            AfterDynamicUpdate(dataObject, dataInterceptor);
-            //RemoveCache(table.TableName);
-        }
-
-        public int UpdateDynamicDataBatch(IEnumerable<dynamic> dataObjects)
+        public void UpdateDynamicDataBatch(IEnumerable<FapDynamicObject> dataObjects)
         {
             if (dataObjects == null || dataObjects.Count() == 0)
             {
-                return 0;
+                return;
             }
-            string tableName = dataObjects.First().TableName;
-            FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
-            bool isTrace = table.TraceAble.ToString().ToBool();
-
-            int i = UpdateDynamicDataBatch(dataObjects, table, isTrace);
-            return i;
-
-
-
-        }
-
-        private int UpdateDynamicDataBatch(IEnumerable<dynamic> dataObjects, FapTable table, bool isTrace)
-        {
-            //更新前，通过数据拦截器处理数据
-            IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
-            int i = 0;
-            foreach (var dataObject in dataObjects)
+            foreach (var d in dataObjects)
             {
-                //更新根据Fid
-                if (dataObject.Fid == null)
-                {
-                    throw new FapException("请指定数据的FID");
-                }
-                if (dataObject.TableName == null)
-                {
-                    throw new FapException("请指定表名");
-                }
-                InitDynamicToUpdate(dataObject);
-                BeforeDynamicUpdate(dataObject, dataInterceptor);
-                UpdateDynamicData(dataObject, table, isTrace);
-                AfterDynamicUpdate(dataObject, dataInterceptor);
-                i++;
+                UpdateDynamicData(d);
             }
-
-
-            return i;
         }
 
         public long DeleteDynamicData(dynamic dataObject)
@@ -2143,21 +1982,19 @@ namespace Fap.Core.DataAccess
 
             long i = DeleteDynamicData(dataObject, table);
             return i;
+            long DeleteDynamicData(dynamic dataObject, FapTable table)
+            {
+                //删除前，通过数据拦截器处理数据
+                IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
+                BeforeDynamicDelete(dataObject, dataInterceptor);
 
-
+                long i = TraceDynamicDelete(dataObject, table.TraceAble.ToString().ToBool());
+                AfterDynamicDelete(dataObject, dataInterceptor);
+                //RemoveCache(table.TableName);
+                return i;
+            }
         }
 
-        private long DeleteDynamicData(dynamic dataObject, FapTable table)
-        {
-            //删除前，通过数据拦截器处理数据
-            IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
-            BeforeDynamicDelete(dataObject, dataInterceptor);
-
-            long i = TraceDynamicDelete(dataObject, table.TraceAble.ToString().ToBool());
-            AfterDynamicDelete(dataObject, dataInterceptor);
-            //RemoveCache(table.TableName);
-            return i;
-        }
 
         public bool DeleteDynamicDataBatch(IEnumerable<dynamic> dataObjects)
         {
@@ -2165,21 +2002,19 @@ namespace Fap.Core.DataAccess
 
             DeleteDynamicDataBatch(dataObjects, table);
             return true;
-
-        }
-
-        private void DeleteDynamicDataBatch(IEnumerable<dynamic> dataObjects, FapTable table)
-        {
-            foreach (var dataObject in dataObjects)
+            void DeleteDynamicDataBatch(IEnumerable<dynamic> dataObjects, FapTable table)
             {
-                //删除前，通过数据拦截器处理数据
-                IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
-                BeforeDynamicDelete(dataObject, dataInterceptor);
+                foreach (var dataObject in dataObjects)
+                {
+                    //删除前，通过数据拦截器处理数据
+                    IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
+                    BeforeDynamicDelete(dataObject, dataInterceptor);
 
-                TraceDynamicDelete(dataObject, table.TraceAble.ToString().ToBool());
-                AfterDynamicDelete(dataObject, dataInterceptor);
+                    TraceDynamicDelete(dataObject, table.TraceAble.ToString().ToBool());
+                    AfterDynamicDelete(dataObject, dataInterceptor);
+                }
+                // RemoveCache(table.TableName);
             }
-            // RemoveCache(table.TableName);
         }
         #endregion
 
