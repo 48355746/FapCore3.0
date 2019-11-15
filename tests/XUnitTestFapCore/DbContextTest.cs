@@ -116,6 +116,15 @@ namespace XUnitTestFapCore
 
         }
         [Fact]
+        public void DeleteLogic()
+        {
+           
+            var b= _dbContext.Delete<FapUser>(42);
+            
+            Assert.True(b);
+
+        }
+        [Fact]
         public void DeleteTraceDynamic()
         {
             dynamic obj = new FapDynamicObject();
@@ -141,5 +150,14 @@ namespace XUnitTestFapCore
             Assert.Equal(90, uid);
 
         }
+        [Fact]
+        public void UpdateTrace()
+        {
+            var emp= _dbContext.QueryFirst<Employee>("select * from employee where id=74");
+            emp.EmpPinYin = "liyoujun";
+            emp= _dbContext.Update<Employee>(emp);
+            Assert.Equal("liyoujun", emp.EmpPinYin);
+        }
+
     }
 }
