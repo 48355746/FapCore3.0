@@ -14,10 +14,17 @@ namespace Fap.Core.Metadata
     [Serializable]
     public class FapDynamicObject : System.Dynamic.DynamicObject, IEnumerable<KeyValuePair<string, object>>
     {
-        public FapDynamicObject(string tableName,long id)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tableName">table name</param>
+        /// <param name="id">primarykey value</param>
+        /// <param name="ts">timestamp</param>
+        public FapDynamicObject(string tableName,long id,long ts)
         {
             TableName = tableName;
             ((dynamic)this).Id = id;
+            ((dynamic)this).Ts = ts;
         }
         private IDictionary<string, object> map = new Dictionary<string, object>();
         /// <summary>
@@ -91,7 +98,7 @@ namespace Fap.Core.Metadata
         public const string OperRemove = "Remove";
         public const string OperParamKeys = "ParamKeys";
         public const string OperColumnKeys = "ColumnKeys";
-        public const string OperParameters = "Parameters";
+        public const string OperParameters = "DynamicParameters";
         public override bool TryInvokeMember(System.Dynamic.InvokeMemberBinder binder, object[] args, out object result)
         {
             if (binder.Name == OperAdd && binder.CallInfo.ArgumentCount == 2)

@@ -21,10 +21,10 @@ namespace Fap.Core.DataAccess
         Task<bool> DeleteAsync<T>(long id) where T : BaseModel;
         Task<bool> DeleteAsync<T>(string fid) where T : BaseModel;
         Task<bool> DeleteAsync<T>(T entityToDelete) where T : BaseModel;
-        bool DeleteBatch<T>(IEnumerable<T> entityListToDelete) where T : BaseModel;
-        Task<bool> DeleteBatchAsync<T>(IEnumerable<T> entityListToDelete) where T : BaseModel;
-        long DeleteDynamicData(dynamic dataObject);
-        bool DeleteDynamicDataBatch(IEnumerable<dynamic> dataObjects);
+        void DeleteBatch<T>(IEnumerable<T> entityListToDelete) where T : BaseModel;
+        Task DeleteBatchAsync<T>(IEnumerable<T> entityListToDelete) where T : BaseModel;
+        bool DeleteDynamicData(FapDynamicObject dataObject);
+        void DeleteDynamicDataBatch(IEnumerable<FapDynamicObject> dataObjects);
         int DeleteExec(string tableName, string where = "", DynamicParameters parameters = null);
         Task<int> DeleteExecAsync(string tableName, string where = "", DynamicParameters parameters = null);
         void Dispose();

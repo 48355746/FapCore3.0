@@ -8,6 +8,8 @@ namespace XUnitTestFapCore
     {
         bool ModifyEmployee(string pinyin);
         bool ModifyUser(string pinyin);
+        bool ModifyEmployeeDynamic(string pinyin);
+        bool ModifyUserDynamic(string pinyin);
     }
     public interface IUser1
     {

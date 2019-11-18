@@ -10,11 +10,11 @@ using System.Threading.Tasks;
 
 namespace XUnitTestFapCore
 {
-    public class LoginServiceTests : IClassFixture<TestWebApplicationFactory<Startup>>
+    public class ConcurrentDbContextTests : IClassFixture<TestWebApplicationFactory<Startup>>
     {
         private readonly ILoginService _loginService;
         private readonly IUser _userService;
-        public LoginServiceTests(TestWebApplicationFactory<Startup> factory)
+        public ConcurrentDbContextTests(TestWebApplicationFactory<Startup> factory)
         {
             _loginService = factory.Services.GetService<ILoginService>();
             _userService = factory.Services.GetService<IUser>();
@@ -28,7 +28,7 @@ namespace XUnitTestFapCore
             Assert.Equal("hr",user.UserName);
         }
         [Fact]
-        public void AddEmployee()
+        public void ConcurrentUpdateEntityTrace()
         {
             Action<string> a1 = (s) =>
             {
@@ -47,18 +47,18 @@ namespace XUnitTestFapCore
             Assert.True(true);
         }
         [Fact]
-        public void UpdateEmployee()
+        public void UpdateEntityTrace()
         {
             var s= _userService.ModifyEmployee("zhangsan");
             Assert.True(s);
         }
 
         [Fact]
-        public void AddUser()
+        public void ConcurrentUpdateDynamicTrace()
         {
             Action<string> a1 = (s) =>
             {
-                _userService.ModifyUser(s);
+                _userService.ModifyEmployeeDynamic(s);
             };
             Parallel.Invoke(() => a1("gaoya1"), () =>
                 a1("gaoya2"), () => a1("gaoya3"),
@@ -69,6 +69,12 @@ namespace XUnitTestFapCore
               () => a1("gaoya8"),
               () => a1("gaoya9"));
             Assert.True(true);
+        }
+        [Fact]
+        public void UpdateDynamicTrace()
+        {
+            var b= _userService.ModifyEmployeeDynamic("lisi");
+            Assert.True(b);
         }
     }
 }

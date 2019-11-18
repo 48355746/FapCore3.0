@@ -84,7 +84,7 @@ namespace Fap.Core.DataAccess
             sqlBuilder.Append(" UPDATE ").Append(tableName).Append(" SET ");
             foreach (string fildName in dynamicToUpdate.Keys())
             {
-                if ("Id".EqualsWithIgnoreCase(fildName) || "Ts".EqualsWithIgnoreCase(fildName))
+                if ("Id".EqualsWithIgnoreCase(fildName))
                 {
                     continue;
                 }
@@ -95,9 +95,11 @@ namespace Fap.Core.DataAccess
             sqlBuilder.Append(" where ");
             adapter.AppendColumnNameEqualsValue(sqlBuilder, "Id");
             sqlBuilder.Append(" and ");
-            adapter.AppendColumnNameEqualsValue(sqlBuilder, "Ts");
-            DynamicParameters parameters = dynamicToUpdate.Parameters();
-            Console.WriteLine(sqlBuilder.ToString());
+            adapter.AppendColumnName(sqlBuilder, "Ts");
+            sqlBuilder.Append($" = {ts}");
+            DynamicParameters parameters = dynamicToUpdate.DynamicParameters();
+            parameters.Add("Ts", UUIDUtils.Ts);
+            //Console.WriteLine(sqlBuilder.ToString());
             int updated = connection.Execute(sqlBuilder.ToString(), parameters, transaction, commandTimeout);
             return updated > 0;
         }

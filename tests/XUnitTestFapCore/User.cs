@@ -31,6 +31,15 @@ namespace XUnitTestFapCore
             var b = _dbContext.Update(emp);
             return b;
         }
+
+        public bool ModifyEmployeeDynamic(string pinyin)
+        {
+            var emp= _dbContext.Get("Employee", 2504);
+            var empd = new FapDynamicObject("Employee", 2504, emp.Ts);
+            emp.PinYin = pinyin;
+            return _dbContext.UpdateDynamicData(empd);
+        }
+
         [Transactional]
         public bool ModifyUser(string pinyin)
         {
@@ -45,6 +54,11 @@ namespace XUnitTestFapCore
 
             var b = _dbContext.Update(emp);
             return b;
+        }
+
+        public bool ModifyUserDynamic(string pinyin)
+        {
+            throw new NotImplementedException();
         }
     }
 }
