@@ -60,20 +60,58 @@ namespace XUnitTestFapCore
             {
                 _userService.ModifyEmployeeDynamic(s);
             };
-            Parallel.Invoke(() => a1("gaoya1"), () =>
-                a1("gaoya2"), () => a1("gaoya3"),
+            Parallel.Invoke(() => a1("gaoya1")
+            , () =>a1("gaoya2"), () => a1("gaoya3"),
              () => a1("gaoya4"),
               () => a1("gaoya5"),
              () => a1("gaoya6"),
               () => a1("gaoya7"),
               () => a1("gaoya8"),
-              () => a1("gaoya9"));
+              () => a1("gaoya9")
+              );
             Assert.True(true);
         }
         [Fact]
         public void UpdateDynamicTrace()
         {
             var b= _userService.ModifyEmployeeDynamic("lisi");
+            Assert.True(b);
+        }
+        [Fact]
+        public void UpdateDynamicLogic()
+        {
+            var b = _userService.ModifyUserDynamic("111-222");
+            Assert.True(b);
+        }
+        [Fact]
+        public void ConcurrentUpdateDynamicLogic()
+        {
+            Action<string> a1 = (s) =>
+            {
+                _userService.ModifyUserDynamic(s);
+            };
+            Parallel.Invoke(() => a1("gaoya1")
+            , () => a1("gaoya2"), () => a1("gaoya3"),
+             () => a1("gaoya4"),
+              () => a1("gaoya5"),
+             () => a1("gaoya6"),
+              () => a1("gaoya7"),
+              () => a1("gaoya8"),
+              () => a1("gaoya9")
+              );
+            Assert.True(true);
+        }
+
+        [Fact]
+        public void DeleteLogic()
+        {
+            var b = _userService.DeleteLogic();
+            Assert.True(b);
+        }
+        [Fact]
+        public void DeleteTrace()
+        {
+            var b = _userService.DeleteTrace();
             Assert.True(b);
         }
     }

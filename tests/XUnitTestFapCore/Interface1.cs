@@ -10,6 +10,8 @@ namespace XUnitTestFapCore
         bool ModifyUser(string pinyin);
         bool ModifyEmployeeDynamic(string pinyin);
         bool ModifyUserDynamic(string pinyin);
+        bool DeleteTrace();
+        bool DeleteLogic();
     }
     public interface IUser1
     {

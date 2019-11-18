@@ -16,6 +16,17 @@ namespace XUnitTestFapCore
         {
             _dbContext = dbContext;
         }
+
+        public bool DeleteLogic()
+        {
+            return _dbContext.Delete<FapUser>(152);
+        }
+
+        public bool DeleteTrace()
+        {
+            return _dbContext.Delete<Employee>(3068);
+        }
+
         [Transactional]
         public bool ModifyEmployee(string pinyin)
         {
@@ -31,12 +42,12 @@ namespace XUnitTestFapCore
             var b = _dbContext.Update(emp);
             return b;
         }
-
+        [Transactional]
         public bool ModifyEmployeeDynamic(string pinyin)
         {
-            var emp= _dbContext.Get("Employee", 2504);
-            var empd = new FapDynamicObject("Employee", 2504, emp.Ts);
-            emp.PinYin = pinyin;
+            var emp= _dbContext.Get("Employee", 3094);
+            dynamic empd = new FapDynamicObject("Employee", emp.Id, emp.Ts);
+            empd.EmpPinYin = pinyin;
             return _dbContext.UpdateDynamicData(empd);
         }
 
@@ -58,7 +69,10 @@ namespace XUnitTestFapCore
 
         public bool ModifyUserDynamic(string pinyin)
         {
-            throw new NotImplementedException();
+            var emp = _dbContext.Get("FapUser", 152);
+            dynamic empd = new FapDynamicObject("FapUser", emp.Id, emp.Ts);
+            empd.UserPhone = pinyin;
+            return _dbContext.UpdateDynamicData(empd);
         }
     }
 }

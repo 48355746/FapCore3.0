@@ -569,7 +569,7 @@ namespace Fap.Core.DataAccess
             /// <param name="newEntity"></param>
             /// <returns></returns>
             /// <remarks>修改老数据失效，clone老数据并更新</remarks>
-            bool TraceUpdate<T>(T newEntity, T oldDataClone, FapTable table) where T : BaseModel
+            bool TraceUpdate<T1>(T1 newEntity, T1 oldDataClone, FapTable table) where T1 : BaseModel
             {
                 string tableName = table.TableName;
                 var fieldList = _fapPlatformDomain.ColumnSet.Where(t => t.TableName == tableName).Select(f => f.ColName);
@@ -588,7 +588,7 @@ namespace Fap.Core.DataAccess
                     _dbSession.Update(newEntity);
                     //修改老数据失效
                     oldDataClone.DisableDate = currDate;
-                    return _dbSession.UpdateWithTimestamp<T>(oldDataClone);
+                    return _dbSession.UpdateWithTimestamp<T1>(oldDataClone);
                 }
                 catch (Exception ex)
                 {
@@ -659,7 +659,7 @@ namespace Fap.Core.DataAccess
             /// <param name="newEntity"></param>
             /// <returns></returns>
             /// <remarks>修改老数据失效，clone老数据并更新</remarks>
-            async Task<bool> TraceUpdateAsync<T>(T newEntity, T oldDataClone, FapTable table) where T : BaseModel
+            async Task<bool> TraceUpdateAsync<T1>(T1 newEntity, T1 oldDataClone, FapTable table) where T1 : BaseModel
             {
                 string tableName = table.TableName;
                 var fieldList = _fapPlatformDomain.ColumnSet.Where(t => t.TableName == tableName).Select(f => f.ColName);
@@ -677,7 +677,7 @@ namespace Fap.Core.DataAccess
                     await _dbSession.UpdateAsync(newEntity);
                     //修改老数据失效
                     oldDataClone.DisableDate = currDate;
-                    return _dbSession.UpdateWithTimestamp<T>(oldDataClone);
+                    return _dbSession.UpdateWithTimestamp<T1>(oldDataClone);
                 }
                 catch (Exception ex)
                 {
@@ -731,7 +731,6 @@ namespace Fap.Core.DataAccess
         {
             entity.EnableDate = currDate;
             entity.DisableDate = DateTimeUtils.PermanentTimeStr;
-            entity.Ts = DateTimeUtils.Ts;
             entity.Dr = 1;
             entity.UpdateBy = _applicationContext.EmpUid;
             entity.UpdateName = _applicationContext.EmpName;
@@ -754,12 +753,12 @@ namespace Fap.Core.DataAccess
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="oldEntity"></param>
-        private void SetOldEntityInvalid<T>(T oldEntity, string currDate) where T : BaseModel
-        {
-            //设置旧entity为失效态
-            oldEntity.Dr = 0;
-            oldEntity.DisableDate = currDate;
-        }
+        //private void SetOldEntityInvalid<T>(T oldEntity, string currDate) where T : BaseModel
+        //{
+        //    //设置旧entity为失效态
+        //    oldEntity.Dr = 0;
+        //    oldEntity.DisableDate = currDate;
+        //}
         /// <summary>
         /// 
         /// </summary>
@@ -1567,7 +1566,7 @@ namespace Fap.Core.DataAccess
             //是否历史追溯
             bool isTrace = table.TraceAble == 1;
             return DeleteEntity(entityToDelete, table, isTrace);
-            bool DeleteEntity<T>(T entityToDelete, FapTable table, bool isTrace) where T : BaseModel
+            bool DeleteEntity<T1>(T1 entityToDelete, FapTable table, bool isTrace) where T1 : BaseModel
             {
                 bool execResult = false;
                 try
@@ -1575,16 +1574,16 @@ namespace Fap.Core.DataAccess
                     BeginTransaction();
                     //删除前，通过数据拦截器处理数据
                     IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
-                    BeforeDelete<T>(entityToDelete, dataInterceptor);
+                    BeforeDelete<T1>(entityToDelete, dataInterceptor);
                     if (isTrace)
                     {
-                        execResult = TraceDelete<T>(entityToDelete);
+                        execResult = TraceDelete<T1>(entityToDelete);
                     }
                     else
                     {
                         //逻辑删除
-                        SetEntityToLogicDelete<T>(entityToDelete);
-                        execResult = _dbSession.UpdateWithTimestamp<T>(entityToDelete);
+                        SetEntityToLogicDelete<T1>(entityToDelete);
+                        execResult = _dbSession.UpdateWithTimestamp<T1>(entityToDelete);
                     }
                     if (!execResult)
                     {
@@ -1593,7 +1592,7 @@ namespace Fap.Core.DataAccess
                     else
                     {
                         //删除后
-                        AfterDelete<T>(entityToDelete, dataInterceptor);
+                        AfterDelete<T1>(entityToDelete, dataInterceptor);
                         Commit();
                     }
                 }
@@ -1607,17 +1606,34 @@ namespace Fap.Core.DataAccess
                     Dispose();
                 }
                 return execResult;
-                bool TraceDelete<T>(T newEntity) where T : BaseModel
+                bool TraceDelete<T2>(T2 newEntity) where T2 : BaseModel
                 {
-                    T oldEntity = GetById<T>(newEntity.Id);
+                    string tableName = table.TableName;
+                    var fieldList = _fapPlatformDomain.ColumnSet.Where(t => t.TableName == tableName).Select(f => f.ColName);
+                    string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
+                    string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
+                    //设置clone数据的enabledate为当前时间
                     var currDate = DateTimeUtils.CurrentDateTimeStr;
-                    //设置新entity为删除状态
-                    SetNewEntityToDelete<T>(newEntity, currDate);
-                    //设置旧entity为失效态
-                    SetOldEntityInvalid(oldEntity, currDate);
+                    try
+                    {
+                        //clone老数据到新数据
+                        var oldData = GetById(table.TableName, newEntity.Id);
+                        long newId = _dbSession.Insert(tableName, columnList, paramList, oldData);
 
-                    _dbSession.Insert(newEntity);
-                    return _dbSession.UpdateWithTimestamp(oldEntity);
+                        //修改老数据失效
+                        newEntity.DisableDate = currDate;
+                        _dbSession.UpdateWithTimestamp<T2>(newEntity);
+
+                        //根据传值更新新数据
+                        newEntity.Id = newId;
+                        SetNewEntityToDelete<T2>(newEntity, currDate);
+                        return _dbSession.Update(newEntity);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"跟踪更新失败:{ex.Message}");
+                        throw;
+                    }
                 }
             }
         }
@@ -1628,7 +1644,7 @@ namespace Fap.Core.DataAccess
             //是否历史追溯
             bool isTrace = table.TraceAble == 1;
             return await DeleteEntityAsync(entityToDelete, table, isTrace);
-            async Task<bool> DeleteEntityAsync<T>(T entityToDelete, FapTable table, bool isTrace) where T : BaseModel
+            async Task<bool> DeleteEntityAsync<T1>(T1 entityToDelete, FapTable table, bool isTrace) where T1 : BaseModel
             {
                 bool execResult = false;
                 try
@@ -1636,16 +1652,16 @@ namespace Fap.Core.DataAccess
                     BeginTransaction();
                     //删除前，通过数据拦截器处理数据
                     IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
-                    BeforeDelete<T>(entityToDelete, dataInterceptor);
+                    BeforeDelete<T1>(entityToDelete, dataInterceptor);
                     if (isTrace)
                     {
-                        execResult = await TraceDeleteAsync<T>(entityToDelete);
+                        execResult = await TraceDeleteAsync<T1>(entityToDelete);
                     }
                     else
                     {
                         //逻辑删除
-                        SetEntityToLogicDelete<T>(entityToDelete);
-                        execResult = _dbSession.UpdateWithTimestamp<T>(entityToDelete);
+                        SetEntityToLogicDelete<T1>(entityToDelete);
+                        execResult = _dbSession.UpdateWithTimestamp<T1>(entityToDelete);
                     }
                     if (!execResult)
                     {
@@ -1654,7 +1670,7 @@ namespace Fap.Core.DataAccess
                     else
                     {
                         //删除后
-                        AfterDelete<T>(entityToDelete, dataInterceptor);
+                        AfterDelete<T1>(entityToDelete, dataInterceptor);
                         Commit();
                     }
                 }
@@ -1668,17 +1684,34 @@ namespace Fap.Core.DataAccess
                     Dispose();
                 }
                 return execResult;
-                async Task<bool> TraceDeleteAsync<T>(T newEntity) where T : BaseModel
+                async Task<bool> TraceDeleteAsync<T2>(T2 newEntity) where T2 : BaseModel
                 {
-                    T oldEntity = GetById<T>(newEntity.Id);
+                    string tableName = table.TableName;
+                    var fieldList = _fapPlatformDomain.ColumnSet.Where(t => t.TableName == tableName).Select(f => f.ColName);
+                    string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
+                    string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
+                    //设置clone数据的enabledate为当前时间
                     var currDate = DateTimeUtils.CurrentDateTimeStr;
-                    //设置新entity为删除状态
-                    SetNewEntityToDelete<T>(newEntity, currDate);
-                    //设置旧entity为失效态
-                    SetOldEntityInvalid(oldEntity, currDate);
+                    try
+                    {
+                        //clone老数据到新数据
+                        var oldData = GetById(table.TableName, newEntity.Id);
+                        long newId =await _dbSession.Insert(tableName, columnList, paramList, oldData);
 
-                    await _dbSession.InsertAsync(newEntity);
-                    return _dbSession.UpdateWithTimestamp(oldEntity);
+                        //修改老数据失效
+                        newEntity.DisableDate = currDate;
+                        _dbSession.UpdateWithTimestamp<T2>(newEntity);
+
+                        //根据传值更新新数据
+                        newEntity.Id = newId;
+                        SetNewEntityToDelete<T2>(newEntity, currDate);
+                        return await _dbSession.UpdateAsync(newEntity);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"跟踪更新失败:{ex.Message}");
+                        throw;
+                    }
                 }
             }
         }
@@ -1896,7 +1929,7 @@ namespace Fap.Core.DataAccess
                     {
                         AfterDynamicUpdate(dataObject, dataInterceptor);
                         Commit();
-                    }                   
+                    }
                 }
                 catch (Exception ex)
                 {
