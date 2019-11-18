@@ -12,6 +12,8 @@ namespace XUnitTestFapCore
         bool ModifyUserDynamic(string pinyin);
         bool DeleteTrace();
         bool DeleteLogic();
+        bool DeleteDynamicTrace();
+        bool DeleteDynamicLogic();
     }
     public interface IUser1
     {

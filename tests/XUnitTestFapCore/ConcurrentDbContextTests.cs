@@ -114,5 +114,18 @@ namespace XUnitTestFapCore
             var b = _userService.DeleteTrace();
             Assert.True(b);
         }
+
+        [Fact]
+        public void DeleteDynamicLogic()
+        {
+            var b = _userService.DeleteDynamicLogic();
+            Assert.True(b);
+        }
+        [Fact]
+        public void DeleteDynamicTrace()
+        {
+            var b = _userService.DeleteDynamicTrace();
+            Assert.True(b);
+        }
     }
 }
