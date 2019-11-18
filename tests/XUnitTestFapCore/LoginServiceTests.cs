@@ -46,5 +46,29 @@ namespace XUnitTestFapCore
            
             Assert.True(true);
         }
+        [Fact]
+        public void UpdateEmployee()
+        {
+            var s= _userService.ModifyEmployee("zhangsan");
+            Assert.True(s);
+        }
+
+        [Fact]
+        public void AddUser()
+        {
+            Action<string> a1 = (s) =>
+            {
+                _userService.ModifyUser(s);
+            };
+            Parallel.Invoke(() => a1("gaoya1"), () =>
+                a1("gaoya2"), () => a1("gaoya3"),
+             () => a1("gaoya4"),
+              () => a1("gaoya5"),
+             () => a1("gaoya6"),
+              () => a1("gaoya7"),
+              () => a1("gaoya8"),
+              () => a1("gaoya9"));
+            Assert.True(true);
+        }
     }
 }

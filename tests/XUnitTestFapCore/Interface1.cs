@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Fap.Core
+namespace XUnitTestFapCore
 {
     public interface IUser
     {
         bool ModifyEmployee(string pinyin);
+        bool ModifyUser(string pinyin);
     }
     public interface IUser1
     {

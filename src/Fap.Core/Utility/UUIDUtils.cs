@@ -9,6 +9,10 @@ namespace Fap.Core.Utility
     public class UUIDUtils
     {
         /// <summary>
+        /// 时间戳
+        /// </summary>
+        public static long Ts => new IdGenerator(0).CreateId();
+        /// <summary>
         /// 生成FID
         /// </summary>
         /// <returns></returns>

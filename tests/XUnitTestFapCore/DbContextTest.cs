@@ -155,8 +155,8 @@ namespace XUnitTestFapCore
         {
             var emp = _dbContext.QueryFirst<Employee>("select * from employee where id=2474");
             emp.EmpPinYin = "gaoyuan1";
-            emp = _dbContext.Update<Employee>(emp);
-            Assert.Equal("gaoyuan1", emp.EmpPinYin);
+            var rv = _dbContext.Update<Employee>(emp);
+            Assert.True(rv);
         }
         [Fact]
         public void UpdateDyncTrace()
@@ -172,8 +172,8 @@ namespace XUnitTestFapCore
         {
             var emp = _dbContext.QueryFirst<FapUser>("select * from FapUser where id=35");
             emp.UserEmail = "gaoyuan1@fda.com";
-            emp = _dbContext.Update<FapUser>(emp);
-            Assert.Equal("gaoyuan1@fda.com", emp.UserEmail);
+            var rv = _dbContext.Update<FapUser>(emp);
+            Assert.True(rv);
         }
         [Fact]
         public void UpdateDync()

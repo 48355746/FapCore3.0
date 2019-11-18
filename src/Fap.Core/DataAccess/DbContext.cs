@@ -363,6 +363,52 @@ namespace Fap.Core.DataAccess
             }
         }
 
+        #region inner Get       
+        private T GetById<T>(long? id) where T : BaseModel
+        {
+            if (id == null)
+            {
+                Guard.Against.Null("Id 不能为null", nameof(GetById));
+            }
+            string sqlOri = $"select * from {typeof(T).Name} where id=@Id";
+            DynamicParameters param = new DynamicParameters();
+            param.Add("Id", id);
+            return _dbSession.QueryFirstOrDefault<T>(sqlOri, param);
+        }
+        private Task<T> GetByIdAsync<T>(long? id) where T : BaseModel
+        {
+            if (id == null)
+            {
+                Guard.Against.Null("Id 不能为null", nameof(GetById));
+            }
+            string sqlOri = $"select * from {typeof(T).Name} where id=@Id";
+            DynamicParameters param = new DynamicParameters();
+            param.Add("Id", id);
+            return _dbSession.QueryFirstOrDefaultAsync<T>(sqlOri, param);
+        }
+        private dynamic GetById(string tableName, long? id)
+        {
+            if (id == null)
+            {
+                Guard.Against.Null("Id 不能为null", nameof(GetById));
+            }
+            string sqlOri = $"select * from {tableName} where id=@Id";
+            DynamicParameters param = new DynamicParameters();
+            param.Add("Id", id);
+            return _dbSession.QueryFirstOrDefault(sqlOri, param);
+        }
+        private Task<dynamic> GetByIdAsync(string tableName, long? id)
+        {
+            if (id == null)
+            {
+                Guard.Against.Null("Id 不能为null", nameof(GetById));
+            }
+            string sqlOri = $"select * from {tableName} where id=@Id";
+            DynamicParameters param = new DynamicParameters();
+            param.Add("Id", id);
+            return _dbSession.QueryFirstOrDefaultAsync(sqlOri, param);
+        }
+        #endregion
 
 
         #region Interceptor
@@ -420,7 +466,6 @@ namespace Fap.Core.DataAccess
         }
         private void InitEntityToUpdate<T>(T model) where T : BaseModel
         {
-            model.Ts = DateTimeUtils.Ts;
             model.UpdateBy = _applicationContext.EmpUid;
             model.UpdateName = _applicationContext.EmpName;
             model.UpdateDate = DateTimeUtils.CurrentDateTimeStr;
@@ -463,28 +508,60 @@ namespace Fap.Core.DataAccess
 
         #endregion
         #region update
-        private T UpdateEntity<T>(T entityToUpdate, FapTable table) where T : BaseModel
+        private bool UpdateEntity<T>(T entityToUpdate, FapTable table) where T : BaseModel
         {
-            T tResult = default(T);
+            string tableName = table.TableName;
+            T oldDataClone = GetById<T>(entityToUpdate.Id);
+            if (entityToUpdate.Ts != null && entityToUpdate.Ts != oldDataClone.Ts)
+            {
+                _logger.LogInformation("时间戳改变，说明数据已经过期，被其他人修改了,需要刷新数据");
+                return false;
+            }
+            if (oldDataClone.DisableDate != DateTimeUtils.PermanentTimeStr)
+            {
+                _logger.LogInformation("此数据已经失效，不能再更新");
+                return false;
+            }
             //预处理
             InitEntityToUpdate<T>(entityToUpdate);
+            BeginTransaction();
             //更新前，通过数据拦截器处理数据
             IDataInterceptor interceptor = GetTableInterceptor(table.DataInterceptor);
             BeforeUpdate(entityToUpdate, interceptor);
             //逻辑处理时，还需要根据是否要历史追溯来判断是否逻辑            
             bool isTrace = table.TraceAble == 1;
-            if (isTrace)
+            bool execResult = false;
+            try
             {
-                tResult = TraceUpdate<T>(entityToUpdate, table);
+                if (isTrace)
+                {
+                    execResult = TraceUpdate<T>(entityToUpdate, oldDataClone, table);
+                }
+                else
+                {
+                    execResult = _dbSession.UpdateWithTimestamp(entityToUpdate);
+                }
+                if (!execResult)
+                {
+                    Rollback();
+                }
+                else
+                {
+                    AfterUpdate(entityToUpdate, interceptor);
+                    Commit();
+                }
             }
-            else
+            catch (Exception ex)
             {
-                _dbSession.Update<T>(entityToUpdate);
-                tResult = entityToUpdate;
+                _logger.LogError($"更新失败:{ex.Message}");
+                Rollback();
             }
-            AfterUpdate(tResult, interceptor);
+            finally
+            {
+                Dispose();
+            }
             //RemoveCache(table.TableName);
-            return tResult;
+            return execResult;
             /// <summary>
             /// 历史追踪更新
             /// </summary>
@@ -492,10 +569,9 @@ namespace Fap.Core.DataAccess
             /// <param name="newEntity"></param>
             /// <returns></returns>
             /// <remarks>修改老数据失效，clone老数据并更新</remarks>
-            T TraceUpdate<T>(T newEntity, FapTable table) where T : BaseModel
+            bool TraceUpdate<T>(T newEntity, T oldDataClone, FapTable table) where T : BaseModel
             {
                 string tableName = table.TableName;
-                dynamic oldDataClone = Get(tableName, newEntity.Id);
                 var fieldList = _fapPlatformDomain.ColumnSet.Where(t => t.TableName == tableName).Select(f => f.ColName);
                 string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
                 string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
@@ -503,51 +579,79 @@ namespace Fap.Core.DataAccess
                 var currDate = DateTimeUtils.CurrentDateTimeStr;
                 try
                 {
-                    BeginTransaction();
                     //clone老数据到新数据
-                    long newId = _dbSession.Insert(tableName, columnList, paramList, oldDataClone);
-                    //修改老数据失效
-                    _dbSession.Execute($"update {tableName} set DisableDate=@DisableDate where Id=@Id", new DynamicParameters(new { DisableDate = currDate, Id = newEntity.Id }));
+                    var oldData = GetById(table.TableName, oldDataClone.Id);
+                    long newId = _dbSession.Insert(tableName, columnList, paramList, oldData);
                     //根据传值更新新数据
                     newEntity.Id = newId;
                     newEntity.EnableDate = currDate;
                     _dbSession.Update(newEntity);
-                    Commit();
+                    //修改老数据失效
+                    oldDataClone.DisableDate = currDate;
+                    return _dbSession.UpdateWithTimestamp<T>(oldDataClone);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    Rollback();
+                    _logger.LogError($"跟踪更新失败:{ex.Message}");
                     throw;
                 }
-                finally
-                {
-                    Dispose();
-                }
-                return newEntity;
             }
         }
-        private async Task<T> UpdateEntityAsync<T>(T entityToUpdate, FapTable table) where T : BaseModel
+        private async Task<bool> UpdateEntityAsync<T>(T entityToUpdate, FapTable table) where T : BaseModel
         {
-            T tResult = default(T);
+            string tableName = table.TableName;
+            T oldDataClone = await GetByIdAsync<T>(entityToUpdate.Id);
+            if (entityToUpdate.Ts != null && entityToUpdate.Ts != oldDataClone.Ts)
+            {
+                _logger.LogInformation("时间戳改变，说明数据已经过期，被其他人修改了,需要刷新数据");
+                return false;
+            }
+            if (oldDataClone.DisableDate != DateTimeUtils.PermanentTimeStr)
+            {
+                _logger.LogInformation("此数据已经失效，不能再更新");
+                return false;
+            }
             //预处理
             InitEntityToUpdate<T>(entityToUpdate);
+            BeginTransaction();
             //更新前，通过数据拦截器处理数据
             IDataInterceptor interceptor = GetTableInterceptor(table.DataInterceptor);
             BeforeUpdate(entityToUpdate, interceptor);
             //逻辑处理时，还需要根据是否要历史追溯来判断是否逻辑            
             bool isTrace = table.TraceAble == 1;
-            if (isTrace)
+            bool execResult = false;
+            try
             {
-                tResult = await TraceUpdateAsync<T>(entityToUpdate, table);
+                if (isTrace)
+                {
+                    execResult =await TraceUpdateAsync<T>(entityToUpdate, oldDataClone, table);
+                }
+                else
+                {
+                    execResult = _dbSession.UpdateWithTimestamp(entityToUpdate);
+                }
+                if (!execResult)
+                {
+                    Rollback();
+                }
+                else
+                {
+                    AfterUpdate(entityToUpdate, interceptor);
+                    Commit();
+                }
             }
-            else
+            catch (Exception ex)
             {
-                await _dbSession.UpdateAsync<T>(entityToUpdate);
-                tResult = entityToUpdate;
+                _logger.LogError($"更新失败:{ex.Message}");
+                Rollback();
             }
-            AfterUpdate(tResult, interceptor);
+            finally
+            {
+                Dispose();
+            }
+
             //RemoveCache(table.TableName);
-            return tResult;
+            return execResult;
             /// <summary>
             /// 历史追踪更新
             /// </summary>
@@ -555,10 +659,9 @@ namespace Fap.Core.DataAccess
             /// <param name="newEntity"></param>
             /// <returns></returns>
             /// <remarks>修改老数据失效，clone老数据并更新</remarks>
-            async Task<T> TraceUpdateAsync<T>(T newEntity, FapTable table) where T : BaseModel
+            async Task<bool> TraceUpdateAsync<T>(T newEntity, T oldDataClone, FapTable table) where T : BaseModel
             {
                 string tableName = table.TableName;
-                dynamic oldDataClone = Get(tableName, newEntity.Id);
                 var fieldList = _fapPlatformDomain.ColumnSet.Where(t => t.TableName == tableName).Select(f => f.ColName);
                 string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
                 string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
@@ -566,28 +669,21 @@ namespace Fap.Core.DataAccess
                 var currDate = DateTimeUtils.CurrentDateTimeStr;
                 try
                 {
-                    BeginTransaction();
                     //clone老数据到新数据
                     long newId = await _dbSession.InsertAsync(tableName, columnList, paramList, oldDataClone);
-                    //修改老数据失效
-                    await _dbSession.ExecuteAsync($"update {tableName} set DisableDate=@DisableDate where Id=@Id", new DynamicParameters(new { DisableDate = currDate, Id = newEntity.Id }));
                     //根据传值更新新数据
                     newEntity.Id = newId;
                     newEntity.EnableDate = currDate;
                     await _dbSession.UpdateAsync(newEntity);
-                    Commit();
+                    //修改老数据失效
+                    oldDataClone.DisableDate = currDate;
+                    return _dbSession.UpdateWithTimestamp<T>(oldDataClone);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    Rollback();
-                    throw;
+                    _logger.LogError($"跟踪更新失败:{ex.Message}");
                 }
-                finally
-                {
-                    Dispose();
-                }
-                return newEntity;
-
+                return false;
             }
         }
         #endregion
@@ -1529,14 +1625,14 @@ namespace Fap.Core.DataAccess
             return vsid;
         }
 
-        public T Update<T>(T entityToUpdate) where T : BaseModel
+        public bool Update<T>(T entityToUpdate) where T : BaseModel
         {
             string tableName = typeof(T).Name;
             FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
 
             return UpdateEntity(entityToUpdate, table);
         }
-        public async Task<T> UpdateAsync<T>(T entityToUpdate) where T : BaseModel
+        public async Task<bool> UpdateAsync<T>(T entityToUpdate) where T : BaseModel
         {
             string tableName = typeof(T).Name;
             FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);

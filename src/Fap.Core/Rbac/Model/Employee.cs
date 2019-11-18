@@ -37,7 +37,7 @@ namespace Fap.Core.Rbac.Model
         /// <summary>
         /// 部门 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string DeptUidMC { get; set; }
         /// <summary>
         /// 性别
@@ -46,7 +46,7 @@ namespace Fap.Core.Rbac.Model
         /// <summary>
         /// 性别 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string GenderMC { get; set; }
         /// <summary>
         /// 身份证号
@@ -67,7 +67,7 @@ namespace Fap.Core.Rbac.Model
         /// <summary>
         /// 员工类别 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string EmpCategoryMC { get; set; }
         /// <summary>
         /// 入职日期
@@ -93,7 +93,7 @@ namespace Fap.Core.Rbac.Model
         /// <summary>
         /// 职务 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string EmpJobMC { get; set; }
         /// <summary>
         /// 职务级别
@@ -106,7 +106,7 @@ namespace Fap.Core.Rbac.Model
         /// <summary>
         /// 员工状态 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string EmpStatusMC { get; set; }
         /// <summary>
         /// 直属领导
@@ -123,7 +123,7 @@ namespace Fap.Core.Rbac.Model
         /// <summary>
         /// 职位 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string EmpPositionMC { get; set; }
 
         /// <summary>
@@ -134,7 +134,7 @@ namespace Fap.Core.Rbac.Model
         /// 成本中心
         /// </summary>
         public string CostCenter { get; set; }
-        [ComputedAttribute]
+        [Computed]
         public string CostCenterMC { get; set; }
         /// <summary>
         /// 登录名

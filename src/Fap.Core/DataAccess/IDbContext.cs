@@ -235,8 +235,8 @@ namespace Fap.Core.DataAccess
         decimal Sum<T>(string colName, string where = "", DynamicParameters parameters = null);
         Task<decimal> SumAsync(string tableName, string colName, string where = "", DynamicParameters parameters = null);
         Task<decimal> SumAsync<T>(string colName, string where = "", DynamicParameters parameters = null);
-        T Update<T>(T entityToUpdate) where T : BaseModel;
-        Task<T> UpdateAsync<T>(T entityToUpdate) where T : BaseModel;
+        bool Update<T>(T entityToUpdate) where T : BaseModel;
+        Task<bool> UpdateAsync<T>(T entityToUpdate) where T : BaseModel;
         bool UpdateBatch<T>(IEnumerable<T> entityListToUpdate) where T : BaseModel;
         Task<bool> UpdateBatchAsync<T>(IEnumerable<T> entityListToUpdate) where T : BaseModel;
         bool UpdateDynamicData(FapDynamicObject fapDynData);

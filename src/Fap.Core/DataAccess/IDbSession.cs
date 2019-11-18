@@ -54,6 +54,7 @@ namespace Fap.Core.DataAccess
         void TransactionProxy(Action<IDbConnection, IDbTransaction> execAction);
         bool Update(FapDynamicObject keyValues);
         bool Update<T>(T entityToUpdate) where T : class;
+        bool UpdateWithTimestamp<T>(T entityToUpdate) where T : BaseModel;
         Task<bool> UpdateAsync<T>(T entityToUpdate) where T : class;
 
         public void BeginTransaction();

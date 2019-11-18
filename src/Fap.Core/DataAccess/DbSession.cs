@@ -562,7 +562,11 @@ namespace Fap.Core.DataAccess
             dynamic d = keyValues as dynamic;
             if (d.Get("Id") == null)
             {
-                Guard.Against.NullOrEmpty("Update（FapDynamicObject keyValues）异常，tableName不能为null", nameof(FapDynamicObject));
+                Guard.Against.NullOrEmpty("Update（FapDynamicObject keyValues）异常，Id不能为null", nameof(FapDynamicObject));
+            }
+            if (d.Get("Ts") == null)
+            {
+                Guard.Against.NullOrEmpty("Update（FapDynamicObject keyValues）异常，Ts不能为null", nameof(FapDynamicObject));
             }
             if (CurrentTransaction != null)
             {
@@ -572,7 +576,30 @@ namespace Fap.Core.DataAccess
             return connection.Update(keyValues.TableName, keyValues, CurrentTransaction, CommandTimeout);
         }
         /// <summary>
-        /// 内部方法，sql不处理
+        /// 加了乐观锁的更新，Id和Ts为条件
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="entityUpdate"></param>
+        /// <returns></returns>
+        public bool UpdateWithTimestamp<T>(T entityUpdate)where T : BaseModel
+        {
+            if ((entityUpdate.Id ?? 0) < 1)
+            {
+                Guard.Against.Null("Id不能为null", nameof(UpdateWithTimestamp));
+            }
+            if ((entityUpdate.Ts ?? 0) < 1)
+            {
+                Guard.Against.Null("Ts不能为null", nameof(UpdateWithTimestamp));
+            }
+            if (CurrentConnection != null)
+            {
+                return CurrentConnection.Update(entityUpdate, CurrentTransaction, CommandTimeout);
+            }
+            using var connection = GetDbConnection(DataSourceEnum.MASTER);
+            return connection.Update(entityUpdate, CurrentTransaction, CommandTimeout);
+        }
+        /// <summary>
+        /// 根据主键更新
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="entityToUpdate"></param>
