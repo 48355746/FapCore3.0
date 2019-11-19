@@ -1,0 +1,8 @@
+/*!
+ * jquery-entropizer - 0.1.0
+ * Built: 2014-06-11 23:46
+ * https://github.com/jreesuk/jquery-entropizer
+ * 
+ * Copyright (c) 2014 Jonathan Rees
+ * Licensed under the MIT License
+ */.entropizer-track{background-color:#bbb;color:#fff;text-align:center;font-size:1em;width:100%;height:30px;line-height:30px;position:relative;border-radius:15px;overflow:hidden}.entropizer-bar{width:0;height:30px;position:absolute;left:0;-moz-transition:background-color .75s ease,width .25s ease-out;-o-transition:background-color .75s ease,width .25s ease-out;-webkit-transition:background-color .75s ease,width .25s ease-out;transition:background-color .75s ease,width .25s ease-out}.entropizer-text{width:100%;position:absolute;left:0;z-index:1}

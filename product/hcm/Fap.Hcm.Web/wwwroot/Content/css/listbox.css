@@ -1,0 +1,58 @@
+/**
+ * A default stylesheme for Listbox.js plugin.
+ *
+ * @copyright   (c) 2012, Igor Kalnitsky <igor@kalnitsky.org>
+ * @version     0.2.0
+ * @license     BSD
+ */
+
+.lbjs {
+    margin: 0px;
+    width: 170px;
+    padding: 5px;
+    border: 1px solid #CCC;
+    border-radius: 5px;
+    background: #FCFCFC;
+    height: 300px;
+}
+
+.lbjs .lbjs-list {
+    margin: 0px;
+    overflow: auto;
+}
+
+
+.lbjs .lbjs-list .lbjs-item {
+    margin: 0px;
+    padding: 5px;
+}
+
+.lbjs .lbjs-list .lbjs-item:not([disabled]) {
+    cursor: pointer;
+}
+
+.lbjs .lbjs-list .lbjs-item:hover:not([disabled]) {
+    background: rgba(112, 147, 216, 0.9);
+}
+
+.lbjs .lbjs-list .lbjs-item[selected] {
+    background: rgba(112, 147, 216, 0.5);
+}
+
+.lbjs .lbjs-list .lbjs-item[disabled] {
+    color: #999;
+    cursor: default;
+}
+
+.lbjs .lbjs-searchbar-wrapper {
+    margin: 0px;
+    margin-right: 12px;
+}
+
+.lbjs .lbjs-searchbar {
+    margin: 0px;
+    margin-bottom: 10px;
+    width: 100%;
+    padding: 3px 5px;
+    border: 1px solid #ccc;
+}

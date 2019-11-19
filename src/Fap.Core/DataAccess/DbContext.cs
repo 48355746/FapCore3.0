@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace Fap.Core.DataAccess
 {
-    public class DbContext : IDisposable, IDbContext
+    public class DbContext :  IDbContext
     {
         private readonly IFapApplicationContext _applicationContext;
         private readonly ILogger<DbContext> _logger;
@@ -556,10 +556,6 @@ namespace Fap.Core.DataAccess
                 _logger.LogError($"更新失败:{ex.Message}");
                 Rollback();
             }
-            finally
-            {
-                Dispose();
-            }
             //RemoveCache(table.TableName);
             return execResult;
             /// <summary>
@@ -644,10 +640,6 @@ namespace Fap.Core.DataAccess
             {
                 _logger.LogError($"更新失败:{ex.Message}");
                 Rollback();
-            }
-            finally
-            {
-                Dispose();
             }
 
             //RemoveCache(table.TableName);
@@ -1207,7 +1199,10 @@ namespace Fap.Core.DataAccess
                 }
                 finally
                 {
-                    Dispose();
+                    if (ActiveTransactionNumber.Value == 0)
+                    {
+                        _dbSession.Dispose();
+                    }
                 }
             }
         }
@@ -1229,17 +1224,13 @@ namespace Fap.Core.DataAccess
                 }
                 finally
                 {
-                    Dispose();
+                    if (ActiveTransactionNumber.Value == 0)
+                    {
+                        _dbSession.Dispose();
+                    }
                 }
             }
-        }
-        public void Dispose()
-        {
-            if (ActiveTransactionNumber.Value == 0)
-            {
-                _dbSession.Dispose();
-            }
-        }
+        }   
         #endregion
 
         #region Get
@@ -1401,23 +1392,19 @@ namespace Fap.Core.DataAccess
                 _logger.LogError($"insert 事务异常:{ex.Message}");
                 throw;
             }
-            finally
-            {
-                Dispose();
-            }
 
-            long InsertEntity<T>(T entityToInsert) where T : BaseModel
+            long InsertEntity<T1>(T1 entityToInsert) where T1 : BaseModel
             {
                 string tableName = typeof(T).Name;
                 FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
                 //初始化基础数据以及默认值
-                InitEntityToInsert<T>(entityToInsert);
+                InitEntityToInsert<T1>(entityToInsert);
                 IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
                 //insert前事件
-                BeforeInsert<T>(entityToInsert, dataInterceptor);
-                long id = _dbSession.Insert<T>(entityToInsert);
+                BeforeInsert<T1>(entityToInsert, dataInterceptor);
+                long id = _dbSession.Insert<T1>(entityToInsert);
                 //insert 后事件            
-                AfterInsert<T>(entityToInsert, dataInterceptor);
+                AfterInsert<T1>(entityToInsert, dataInterceptor);
                 //RemoveCache(tableName);
                 return id;
             }
@@ -1436,10 +1423,6 @@ namespace Fap.Core.DataAccess
                 Rollback();
                 _logger.LogError($"insert 事务异常:{ex.Message}");
                 throw;
-            }
-            finally
-            {
-                Dispose();
             }
             async Task<long> InsertEntityAsync<T>(T entityToInsert) where T : BaseModel
             {
@@ -1561,6 +1544,10 @@ namespace Fap.Core.DataAccess
         /// <returns></returns>
         public bool Delete<T>(T entityToDelete) where T : BaseModel
         {
+            if (entityToDelete == null)
+            {
+                return false;
+            }
             string tableName = typeof(T).Name;
             FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
             //是否历史追溯
@@ -1588,22 +1575,20 @@ namespace Fap.Core.DataAccess
                     if (!execResult)
                     {
                         Rollback();
+                        _logger.LogInformation($"线程{Thread.CurrentThread.ManagedThreadId}回滚了");
                     }
                     else
                     {
                         //删除后
                         AfterDelete<T1>(entityToDelete, dataInterceptor);
                         Commit();
+                        _logger.LogInformation($"线程{Thread.CurrentThread.ManagedThreadId}提交了");
                     }
                 }
                 catch (Exception ex)
                 {
                     Rollback();
                     _logger.LogError($"更新dynamic失败：{ex.Message}");
-                }
-                finally
-                {
-                    Dispose();
                 }
                 return execResult;
                 bool TraceDelete<T2>(T2 newEntity) where T2 : BaseModel
@@ -1619,15 +1604,17 @@ namespace Fap.Core.DataAccess
                         //clone老数据到新数据
                         var oldData = GetById(table.TableName, newEntity.Id);
                         long newId = _dbSession.Insert(tableName, columnList, paramList, oldData);
-
                         //修改老数据失效
                         newEntity.DisableDate = currDate;
-                        _dbSession.UpdateWithTimestamp<T2>(newEntity);
-
-                        //根据传值更新新数据
-                        newEntity.Id = newId;
-                        SetNewEntityToDelete<T2>(newEntity, currDate);
-                        return _dbSession.Update(newEntity);
+                        bool execRv= _dbSession.UpdateWithTimestamp<T2>(newEntity);
+                        if (execRv)
+                        {
+                            //根据传值更新新数据
+                            newEntity.Id = newId;
+                            SetNewEntityToDelete<T2>(newEntity, currDate);
+                            _dbSession.Update(newEntity);
+                        }
+                        return execRv;
                     }
                     catch (Exception ex)
                     {
@@ -1679,10 +1666,6 @@ namespace Fap.Core.DataAccess
                     Rollback();
                     _logger.LogError($"更新dynamic失败：{ex.Message}");
                 }
-                finally
-                {
-                    Dispose();
-                }
                 return execResult;
                 async Task<bool> TraceDeleteAsync<T2>(T2 newEntity) where T2 : BaseModel
                 {
@@ -1700,12 +1683,15 @@ namespace Fap.Core.DataAccess
 
                         //修改老数据失效
                         newEntity.DisableDate = currDate;
-                        _dbSession.UpdateWithTimestamp<T2>(newEntity);
-
-                        //根据传值更新新数据
-                        newEntity.Id = newId;
-                        SetNewEntityToDelete<T2>(newEntity, currDate);
-                        return await _dbSession.UpdateAsync(newEntity);
+                        bool rv=  _dbSession.UpdateWithTimestamp<T2>(newEntity);
+                        if (rv)
+                        {
+                            //根据传值更新新数据
+                            newEntity.Id = newId;
+                            SetNewEntityToDelete<T2>(newEntity, currDate);
+                             await _dbSession.UpdateAsync(newEntity);
+                        }
+                        return rv;
                     }
                     catch (Exception ex)
                     {
@@ -1822,10 +1808,6 @@ namespace Fap.Core.DataAccess
                 _logger.LogError($"insert dynamic error:{ex.Message}");
                 throw;
             }
-            finally
-            {
-                Dispose();
-            }
             long InsertDynamicData(dynamic fapDynData, FapTable table)
             {
                 InitDynamicToInsert(fapDynData);
@@ -1937,10 +1919,6 @@ namespace Fap.Core.DataAccess
                     execResult = false;
                     _logger.LogError($"更新dynamic失败：{ex.Message}");
                 }
-                finally
-                {
-                    Dispose();
-                }
                 return execResult;
                 bool DynamicObjectUpdate(dynamic dynamicData)
                 {
@@ -2042,21 +2020,19 @@ namespace Fap.Core.DataAccess
                     if (!execRv)
                     {
                         Rollback();
+                        _logger.LogInformation($"线程{Thread.CurrentThread.ManagedThreadId}回滚了");
                     }
                     else
                     {
                         AfterDynamicDelete(dataObject, dataInterceptor);
                         Commit();
+                        _logger.LogInformation($"线程{Thread.CurrentThread.ManagedThreadId}成功提交");
                     }
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex.Message);
                     Rollback();
-                }
-                finally
-                {
-                    Dispose();
                 }
                 return execRv;
 
@@ -2074,6 +2050,7 @@ namespace Fap.Core.DataAccess
                     string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
                     string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
                     long newId = _dbSession.Insert(tableName, columnList, paramList, newData);
+                    //_logger.LogInformation($"-----{newId}-----");
                     //update old data invalid
                     dynamic dyData = new FapDynamicObject(tableName, id, newData.Ts);
 
@@ -2082,9 +2059,6 @@ namespace Fap.Core.DataAccess
                 }
             }
         }
-
-
-
         public void DeleteDynamicDataBatch(IEnumerable<FapDynamicObject> dataObjects)
         {
             foreach (var dataObject in dataObjects)

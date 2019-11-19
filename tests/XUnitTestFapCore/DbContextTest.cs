@@ -9,6 +9,7 @@ using Fap.Core.Exceptions;
 using System.Linq;
 using Fap.Core.Rbac.Model;
 using Fap.Core.Metadata;
+using Fap.Core.Utility;
 
 namespace XUnitTestFapCore
 {
@@ -197,13 +198,13 @@ namespace XUnitTestFapCore
         [Fact]
         public void InsertDynamic()
         {
-            //dynamic emp = new FapDynamicObject("FapUser", 0);
-            //emp.UserName = "jeke";
-            //emp.UserCode = "jeke zhang";
-            //emp.UserEmail = "jeke@leo.com";
-            //emp.UserPassword = "AQAAAAEAAAPoAAAAEPyzGOp9bSEKLsUrTKsxb/dYCuil0xALUPFogrbMCTuTfDb/w3YuWxhqlFTCYhGUow==";
-            //long id = _dbContext.InsertDynamicData(emp);
-            //Assert.Equal(id, emp.Id);
+            dynamic emp = new FapDynamicObject("FapUser", 0,UUIDUtils.Ts);
+            emp.UserName = "jeke";
+            emp.UserCode = "jeke zhang";
+            emp.UserEmail = "jeke@leo.com";
+            emp.UserPassword = "AQAAAAEAAAPoAAAAEPyzGOp9bSEKLsUrTKsxb/dYCuil0xALUPFogrbMCTuTfDb/w3YuWxhqlFTCYhGUow==";
+            long id = _dbContext.InsertDynamicData(emp);
+            Assert.Equal(id, emp.Id);
         }
     }
 }

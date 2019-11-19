@@ -1,0 +1,45 @@
+﻿
+.billskin .layui-layer-btn a {
+    display: inline-block;
+    color: #FFF !important;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25) !important;
+    background-image: none !important;
+    border: 5px solid #FFF;
+    border-radius: 0;
+    box-shadow: none !important;
+    -webkit-transition: background-color 0.15s, border-color 0.15s, opacity 0.15s;
+    -o-transition: background-color 0.15s, border-color 0.15s, opacity 0.15s;
+    transition: background-color 0.15s, border-color 0.15s, opacity 0.15s;
+    cursor: pointer;
+    vertical-align: middle;
+    margin: 0;
+    position: relative;
+    padding: 6px 12px;
+    margin-bottom: 0;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.42857143;
+    text-align: center;
+    white-space: nowrap;
+    height: 42px;
+    width: 80px;
+}
+
+.billskin .layui-layer-btn {
+    text-align: center;
+}
+
+.billskin .layui-layer-btn0 {
+    background-color: #6fb3e0 !important;
+    border-color: #6fb3e0;
+}
+
+.billskin .layui-layer-btn1 {
+    background-color: #428bca !important;
+    border-color: #428bca;
+}
+
+.billskin .layui-layer-btn2 {
+    background-color: #8b9aa3 !important;
+    border-color: #abbac3;
+}

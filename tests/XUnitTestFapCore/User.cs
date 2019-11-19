@@ -19,26 +19,26 @@ namespace XUnitTestFapCore
 
         public bool DeleteDynamicLogic()
         {
-            var emp = _dbContext.Get("FapUser", 152);
+            var emp = _dbContext.Get("FapUser", 31);
             dynamic empd = new FapDynamicObject("FapUser", emp.Id, emp.Ts);
             return _dbContext.DeleteDynamicData(empd);
         }
 
         public bool DeleteDynamicTrace()
         {
-            var emp = _dbContext.Get("Employee", 3056);
+            var emp = _dbContext.Get("Employee", 73);
             dynamic empd = new FapDynamicObject("Employee", emp.Id, emp.Ts);
            return  _dbContext.DeleteDynamicData(empd);
         }
 
         public bool DeleteLogic()
         {
-            return _dbContext.Delete<FapUser>(152);
+            return _dbContext.Delete<FapUser>(31);
         }
 
         public bool DeleteTrace()
         {
-            return _dbContext.Delete<Employee>(3068);
+            return _dbContext.Delete<Employee>(73);
         }
 
         [Transactional]

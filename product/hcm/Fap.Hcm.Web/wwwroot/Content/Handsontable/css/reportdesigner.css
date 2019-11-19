@@ -1,0 +1,9 @@
+﻿.report-designer {
+    padding-top:10px;
+}
+
+.handsontableInput {
+    box-shadow: 0 0 0 2px #5292F7 inset;
+    -moz-box-shadow:0 0 0 2px #5292F7 inset;
+    -webkit-box-shadow:0 0 0 2px #5292F7 inset;
+}

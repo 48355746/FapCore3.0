@@ -11,3 +11,5 @@
 /tests/XUnitTestFapCore/obj
 /thirdparty/SQLGeneration/bin
 /thirdparty/SQLGeneration/obj
+/product/hcm/Fap.Hcm.Web/wwwroot/upload/image
+/product/hcm/Fap.Hcm.Web/wwwroot/upload/image
