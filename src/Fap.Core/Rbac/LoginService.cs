@@ -79,7 +79,7 @@ namespace Fap.Core.Rbac
                 list = new List<FapRole>();
             }
             var tempList = list.AsList();
-            tempList.Insert(0, new FapRole { Id = -1, Fid = PlatformConstants.CommonUserRoleFid, RoleCode="000", RoleName="普通用户", RoleNote="用户普通用户的授权" });
+            tempList.Insert(0, new FapRole { Id = -1, Fid = FapPlatformConstants.CommonUserRoleFid, RoleCode="000", RoleName="普通用户", RoleNote="用户普通用户的授权" });
             return tempList;
         }
         /// <summary>

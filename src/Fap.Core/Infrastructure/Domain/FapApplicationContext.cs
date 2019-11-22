@@ -1,7 +1,9 @@
 ﻿
 using Fap.Core.DataAccess;
+using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Cache;
 using Fap.Core.Infrastructure.Enums;
+using Fap.Core.MultiLanguage;
 using Fap.Core.Rbac.Model;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -72,41 +74,19 @@ namespace Fap.Core.Infrastructure.Domain
         /// 所有角色UID
         /// </summary>
         public IEnumerable<string> Roles => _httpContextAccessor?.HttpContext == null ? Array.Empty<string>() : _httpContextAccessor?.HttpContext.User.FindAll(c => c.Type == ClaimTypes.Role)?.Select(r => r.Value);
-
-        //public FapRole Role { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
-        //public FapUser Account
-        //{
-        //    get
-        //    {
-        //        string key = $"user_{UserUid}";
-        //        var user = _cacheService.Get<FapUser>(key);
-        //        if (user == null)
-        //        {
-        //            user = _dbContext.Get<FapUser>(UserUid, true);
-        //            _cacheService.Add(key, user);
-        //        }
-        //        return user;
-        //    }
-        //}
-
-        //public FapOnlineUser OnlineUser => throw new NotImplementedException();
-
-        //public Employee Employee
-        //{
-        //    get
-        //    {
-        //        string key = $"employee_{EmpUid}";
-        //        var employee = _cacheService.Get<Employee>(key);
-        //        if (employee == null)
-        //        {
-        //            employee = _dbContext.Get<Employee>(EmpUid, true);
-        //            _cacheService.Add(key, employee);
-        //        }
-        //        return employee;
-        //    }
-        //}
-
-        public string CurrentRoleUid { get; set; } = PlatformConstants.CommonUserRoleFid;
+        /// <summary>
+        /// 当前角色
+        /// </summary>
+        public string CurrentRoleUid { get; set; } = FapPlatformConstants.CommonUserRoleFid;
+        /// <summary>
+        /// HttpRequest
+        /// </summary>
+        public HttpRequest Request => _httpContextAccessor?.HttpContext?.Request;
+        public HttpResponse Response => _httpContextAccessor?.HttpContext.Response;
+        public ISession Session => _httpContextAccessor?.HttpContext.Session;
+        public HttpContext HttpContext => _httpContextAccessor?.HttpContext;
+        public string ClientIpAddress => Request.Headers["X-Forwarded-For"].FirstOrDefault().IsMissing() ? HttpContext.Connection.RemoteIpAddress.ToString() : Request.Headers["X-Forwarded-For"].FirstOrDefault();
+        public string Broswer=> Request.Headers["User-Agent"].ToString();
+        public string BaseUrl=> $"{Request.Scheme}://{Request.Host.Host}:{Request.Host.Port}";
     }
 }

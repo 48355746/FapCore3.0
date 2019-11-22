@@ -11,7 +11,6 @@ namespace Fap.Core.Metadata
     /// 动态类型对象，用来获取动态数据
     /// by sunchangtan
     /// </summary>
-    [Serializable]
     public class FapDynamicObject : System.Dynamic.DynamicObject, IEnumerable<KeyValuePair<string, object>>
     {
         /// <summary>
@@ -20,11 +19,17 @@ namespace Fap.Core.Metadata
         /// <param name="tableName">table name</param>
         /// <param name="id">primarykey value</param>
         /// <param name="ts">timestamp</param>
-        public FapDynamicObject(string tableName,long id,long ts)
+        public FapDynamicObject(string tableName, long? id = null, long? ts = null)
         {
             TableName = tableName;
-            ((dynamic)this).Id = id;
-            ((dynamic)this).Ts = ts;
+            if (id != null)
+            {
+                ((dynamic)this).Id = id;
+            }
+            if (ts != null)
+            {
+                ((dynamic)this).Ts = ts;
+            }
         }
         private IDictionary<string, object> map = new Dictionary<string, object>();
         /// <summary>
@@ -115,7 +120,12 @@ namespace Fap.Core.Metadata
                 {
                     map = new Dictionary<string, object>();
                 }
-                if (map.TryAdd(key, value))
+                if (map.ContainsKey(key))
+                {
+                    map[key] = value;
+                    result = value;
+                }
+                else if (map.TryAdd(key, value))
                 {
                     result = value;
                 }
@@ -202,7 +212,7 @@ namespace Fap.Core.Metadata
                 {
                     parameters.Add(entry.Key, entry.Value);
                 }
-                result= parameters;
+                result = parameters;
                 return true;
             }
             return base.TryInvokeMember(binder, args, out result);

@@ -198,7 +198,7 @@ namespace Fap.Core.Rbac
                     if (rd != null)
                     {
                         where = rd.SqlCondition;
-                        string pattern = PlatformConstants.VariablePattern;
+                        string pattern = FapPlatformConstants.VariablePattern;
                         Regex reg = new Regex(pattern);
                         MatchCollection matchs = reg.Matches(where);
                         foreach (var mtch in matchs)
@@ -296,7 +296,7 @@ namespace Fap.Core.Rbac
                 list = new List<FapRole>();
             }
 
-            list.Insert(0, new FapRole { Id = -1, Fid = PlatformConstants.CommonUserRoleFid, RoleCode = "000", RoleName = "普通用户", RoleNote = "用户普通用户的授权" });
+            list.Insert(0, new FapRole { Id = -1, Fid = FapPlatformConstants.CommonUserRoleFid, RoleCode = "000", RoleName = "普通用户", RoleNote = "用户普通用户的授权" });
             return list;
         }
     }

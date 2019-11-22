@@ -1,0 +1,13 @@
+D:\FapCore3.0\fap-netcore\src\Fap.AspNetCore\bin\Debug\netcoreapp3.0\Fap.AspNetCore.deps.json
+D:\FapCore3.0\fap-netcore\src\Fap.AspNetCore\bin\Debug\netcoreapp3.0\Fap.AspNetCore.dll
+D:\FapCore3.0\fap-netcore\src\Fap.AspNetCore\bin\Debug\netcoreapp3.0\Fap.AspNetCore.pdb
+D:\FapCore3.0\fap-netcore\src\Fap.AspNetCore\bin\Debug\netcoreapp3.0\Fap.Core.dll
+D:\FapCore3.0\fap-netcore\src\Fap.AspNetCore\bin\Debug\netcoreapp3.0\SQLGeneration.dll
+D:\FapCore3.0\fap-netcore\src\Fap.AspNetCore\bin\Debug\netcoreapp3.0\Fap.Core.pdb
+D:\FapCore3.0\fap-netcore\src\Fap.AspNetCore\bin\Debug\netcoreapp3.0\SQLGeneration.pdb
+D:\FapCore3.0\fap-netcore\src\Fap.AspNetCore\obj\Debug\netcoreapp3.0\Fap.AspNetCore.csprojAssemblyReference.cache
+D:\FapCore3.0\fap-netcore\src\Fap.AspNetCore\obj\Debug\netcoreapp3.0\Fap.AspNetCore.AssemblyInfoInputs.cache
+D:\FapCore3.0\fap-netcore\src\Fap.AspNetCore\obj\Debug\netcoreapp3.0\Fap.AspNetCore.AssemblyInfo.cs
+D:\FapCore3.0\fap-netcore\src\Fap.AspNetCore\obj\Debug\netcoreapp3.0\Fap.AspNetCore.csproj.CopyComplete
+D:\FapCore3.0\fap-netcore\src\Fap.AspNetCore\obj\Debug\netcoreapp3.0\Fap.AspNetCore.dll
+D:\FapCore3.0\fap-netcore\src\Fap.AspNetCore\obj\Debug\netcoreapp3.0\Fap.AspNetCore.pdb

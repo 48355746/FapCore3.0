@@ -41,11 +41,11 @@ namespace Fap.Core.Utility
         /// </summary>
         /// <param name="dt"></param>
         /// <returns></returns>
-        public static string GetDateTimeStr(DateTime dt)
+        public static string DateTimeFormat(DateTime dt)
         {
             return string.Format("{0:yyyy-MM-dd HH:mm:ss}", dt);
         }
-        public static string GetDateStr(DateTime dt)
+        public static string DateFormat(DateTime dt)
         {
             return string.Format("{0:yyyy-MM-dd}", dt);
         }

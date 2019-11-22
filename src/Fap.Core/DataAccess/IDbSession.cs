@@ -10,7 +10,7 @@ namespace Fap.Core.DataAccess
     public interface IDbSession
     {
         IConnectionFactory ConnectionFactory { get; }
-
+        DatabaseDialectEnum DatabaseDialect { get; }
         bool Delete<T>(T entityToDelete) where T : class;
         bool DeleteAll<T>() where T : class;
         Task<bool> DeleteAllAsync<T>() where T : class;

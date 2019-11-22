@@ -39,7 +39,7 @@ namespace Fap.Core.DataAccess
             set { threadLocalTransaction.Value = value; }
             get { return threadLocalTransaction.Value; }
         }
-
+        public DatabaseDialectEnum DatabaseDialect { get; private set; }
         /// <summary>
         /// 构造方法
         /// </summary>
@@ -48,6 +48,7 @@ namespace Fap.Core.DataAccess
         {
             _logger = loggerFactory.CreateLogger<DbSession>();
             ConnectionFactory = connectionFactory;
+            DatabaseDialect = connectionFactory.DatabaseDialect;
             // CommandTimeout = commandTimeOut;
         }
         #region private

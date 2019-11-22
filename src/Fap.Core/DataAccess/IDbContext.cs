@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dapper;
+using Fap.Core.Infrastructure.Model;
+using Fap.Core.Infrastructure.Query;
 using Fap.Core.Metadata;
 
 namespace Fap.Core.DataAccess
@@ -47,6 +49,13 @@ namespace Fap.Core.DataAccess
         Task<List<long>> InsertBatchAsync<T>(IEnumerable<T> entityListToInsert) where T : BaseModel;
         long InsertDynamicData(FapDynamicObject fapDynData);
         List<long> InsertDynamicDataBatch(IEnumerable<FapDynamicObject> dataObjects);
+        /// <summary>
+        /// 查询原始sql，不进行包装
+        /// </summary>
+        /// <param name="sqlOri"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        IEnumerable<dynamic> QueryOriSql(string sqlOri, DynamicParameters parameters = null);
         IEnumerable<dynamic> Query(string sqlOri, DynamicParameters parameters = null, bool withMC = false);
         IEnumerable<T> Query<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : BaseModel;
         IEnumerable<T> QueryAll<T>(bool withMC = false) where T : BaseModel;
@@ -240,5 +249,11 @@ namespace Fap.Core.DataAccess
         Task<bool> UpdateBatchAsync<T>(IEnumerable<T> entityListToUpdate) where T : BaseModel;
         bool UpdateDynamicData(FapDynamicObject fapDynData);
         void UpdateDynamicDataBatch(IEnumerable<FapDynamicObject> dataObjects);
+
+        (string, DynamicParameters) JqgridPagingQuery(SimpleQueryOption queryOption);
+        (string, DynamicParameters) JqgridStatisticsQuery(SimpleQueryOption requestParam);
+        (string, DynamicParameters) FormQuery(SimpleQueryOption queryOption);
+        void InitDefualtValue(FapDynamicObject keyValues);
+        IEnumerable<DataChangeHistory> QueryDataHistory(string tableName, string fid);
     }
 }

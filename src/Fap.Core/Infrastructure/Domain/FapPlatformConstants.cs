@@ -4,9 +4,12 @@ using System.Text;
 
 namespace Fap.Core.Infrastructure.Domain
 {
-    public class PlatformConstants
+    public class FapPlatformConstants
     {
-
+        /// <summary>
+        /// 管理员账号
+        /// </summary>
+        public const string Administrator = "hr";
         /// <summary>
         /// 变量替换正则表达式${Variable}
         /// </summary>
@@ -36,5 +39,10 @@ namespace Fap.Core.Infrastructure.Domain
         /// 管理员角色Fid值
         /// </summary>
         public const string AdministratorRoleFid = "11111111111111111111";
+        /// <summary>
+        ///部门权限替换字符
+        /// </summary>
+
+        public const string DepartmentAuthority = "FAP::&&DEPTAUTHORITY&&";
     }
 }

@@ -1,0 +1,65 @@
+﻿@inject Fap.Core.Rbac.ILoginService _loginService
+@{
+    IEnumerable<Fap.Model.Infrastructure.FapRole> roles = _loginService.GetUserRoles(_session.UserUid) ;
+    Fap.Model.Infrastructure.FapRole cr = _session.AcSession.Role;
+}
+<li class="light-blue">
+    <a data-toggle="dropdown" href="#" class="dropdown-toggle">
+        <img class="nav-user-photo" src="@Url.Content("~/Home/UserPhoto")" alt="" />
+        <span class="user-info">
+            <small>欢迎,</small>
+           
+            <text>@_session.AcSession.Employee.EmpName</text>
+           
+        </span>
+
+        <i class="ace-icon fa fa-caret-down"></i>
+    </a>
+
+    <ul class="user-menu dropdown-menu-right dropdown-menu dropdown-yellow dropdown-caret dropdown-close">
+        @foreach (var role in roles)
+        {
+            <li>
+                <a href="@Url.Content("~/Home/ChangeRole/?fid=")@role.Fid">
+                    @if (role.Fid == cr.Fid)
+                    {
+                        <i class="ace-icon green fa fa-check"></i>
+                    }
+                    else
+                    {
+                        <i class="ace-icon green fa fa-circle"></i>
+                    }
+                    @role.RoleName
+                </a>
+
+            </li>
+        }
+
+        <li class="divider"></li>
+        <li>
+            <a href="#SelfService/Ess/UserProfile/">
+                <i class="ace-icon fa fa-user"></i>
+                个人信息
+            </a>
+        </li>
+        <li>
+            <a href="#SelfService/Ess/ResetPassword/">
+                <i class="ace-icon fa fa-lock"></i>
+                修改密码
+            </a>
+        </li>
+        <li class="divider"></li>
+        <li>
+            <a href="#modal-productinfo" data-toggle="modal">
+                <i class="ace-icon fa fa-info-circle"></i>
+                关于
+            </a>
+        </li>
+        <li>
+            <a href="@Url.Content("~/Home/SignOut")">
+                <i class="ace-icon fa fa-power-off"></i>
+                退出
+            </a>
+        </li>
+    </ul>
+</li>

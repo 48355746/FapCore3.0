@@ -13,7 +13,7 @@ namespace Fap.Core.DataAccess.SqlParser
     /// <summary>
     /// 简单SQL语句解析器
     /// </summary>
-    internal class FapSqlParser
+    public class FapSqlParser
     {
         private string _sql = "";
         private bool _withMC = false; //是否取参照的名称
@@ -35,45 +35,10 @@ namespace Fap.Core.DataAccess.SqlParser
         }
 
         /// <summary>
-        /// 从SQL语句中提取出有效的WHERE条件语句
-        /// </summary>
-        /// <param name="isHasMetadata"></param>
-        /// <returns></returns>
-        public string DrawValidWhereClauseFromSQL(out bool isHasMetadata)
-        {
-            isHasMetadata = false;
-            //解析SQL语句
-            CommandBuilder commandBuilder = new CommandBuilder();
-            SelectBuilder selectBuilder = (SelectBuilder)commandBuilder.GetCommand(_sql);
-            if (selectBuilder == null)
-            {
-                return null;
-            }
-            foreach (var item in selectBuilder.Projection)
-            {
-                var pi = item.ProjectionItem;
-                if (pi is SelectBuilder)
-                {
-                    SelectBuilder sbi = pi as SelectBuilder;
-                    FilterGroup topFilter =
-                   new FilterGroup(Conjunction.And,
-                       new LessThanEqualToFilter(new Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
-                       new GreaterThanEqualToFilter(new Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
-                       new EqualToFilter(new Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_Dr)));
-                    sbi.AddWhere(topFilter);
-                }
-            }
-            Formatter formatter = new Formatter();
-            string beforeActual = formatter.GetCommandText(selectBuilder);
-
-            return beforeActual;
-        }
-
-        /// <summary>
-        /// 获得完整的SQL语句
+        /// 获得解析完整的SQL语句
         /// </summary>
         /// <returns></returns>
-        public string GetCompletedSql()
+        public string ParserSqlStatement()
         {
             //解析SQL语句
             CommandBuilder commandBuilder = new CommandBuilder();
@@ -110,6 +75,51 @@ namespace Fap.Core.DataAccess.SqlParser
 
             return newSql;
         }
+        /// <summary>
+        /// 获得解析select语句不在主where部分加有效期限制
+        /// </summary>
+        /// <returns></returns>
+        public string ParserSelectSqlNoWhere()
+        {
+            //解析SQL语句
+            CommandBuilder commandBuilder = new CommandBuilder();
+            ICommand command = commandBuilder.GetCommand(_sql);
+
+            if (command is SelectBuilder)
+            {
+                SelectBuilder select = command as SelectBuilder;
+                var projections = select.Projection;               
+                int fieldCount = projections.Count();
+                if (fieldCount > 0)
+                {
+                    var arryProjections = projections.ToArray();
+                    for (int i = 0; i < fieldCount; i++)
+                    {
+                        IProjectionItem item = arryProjections[i].ProjectionItem;
+                        if (item is AllColumns)//*
+                        {
+                            AllColumns currItem = item as AllColumns;
+                            //移除掉重新构建
+                            select.RemoveProjection(arryProjections[i]);
+                            HandleSelectStarStatement(select, currItem);
+
+                        }
+                        else if (item is Column)
+                        {
+                            Column currItem = item as Column;
+                            HandleSelectStatement(select, currItem);
+                            i++;
+                        }
+                    }
+                }
+                Formatter formatter = new Formatter();
+                string newSql = formatter.GetCommandText(command);
+
+                return newSql;
+            }
+            return string.Empty;
+        }
+
 
         private void RepackInsertSQL(InsertBuilder insert)
         {
@@ -124,7 +134,7 @@ namespace Fap.Core.DataAccess.SqlParser
         {
             var table = delete.Table;
             var where = delete.Where;
-            BuilderWhere(where);
+            HandlerInFilterWhere(where);
             //添加有效期验证
             FilterGroup validFilter = new FilterGroup(Conjunction.And,
                new LessThanEqualToFilter(table.Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
@@ -136,7 +146,7 @@ namespace Fap.Core.DataAccess.SqlParser
         {
             var table = update.Table;
             var where = update.Where;
-            BuilderWhere(where);
+            HandlerInFilterWhere(where);
             //添加有效期验证
             FilterGroup validFilter = new FilterGroup(Conjunction.And,
                new LessThanEqualToFilter(table.Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
@@ -144,8 +154,11 @@ namespace Fap.Core.DataAccess.SqlParser
                new EqualToFilter(table.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_Dr)));
             update.AddWhere(validFilter);
         }
-
-        private void BuilderWhere(IEnumerable<IFilter> where)
+        /// <summary>
+        /// 处理In中的select
+        /// </summary>
+        /// <param name="where"></param>
+        private void HandlerInFilterWhere(IEnumerable<IFilter> where)
         {
             if (where.Any())
             {
@@ -179,10 +192,7 @@ namespace Fap.Core.DataAccess.SqlParser
         /// <summary>
         /// 重新组合SQL语句(带上有效时间和删除标识)
         /// </summary>
-        /// <param name="fields"></param>
-        /// <param name="tables"></param>
-        /// <param name="whereClause"></param>
-        /// <param name="sqlBuilder"></param>
+        ///<param name="select"></param>
         private void RepackSelectSQL(SelectBuilder select)
         {
             var projections = select.Projection;
@@ -211,9 +221,14 @@ namespace Fap.Core.DataAccess.SqlParser
                     }
                 }
             }
-            BuilderWhere(where);
+            HandlerInFilterWhere(where);
 
-            foreach (AliasedSource tb in tables.Sources)
+            ParserWhere(select);
+        }
+
+        private static void ParserWhere(SelectBuilder select)
+        {
+            foreach (AliasedSource tb in select.Sources.Sources)
             {
                 //添加有效期验证
                 FilterGroup validFilter = new FilterGroup(Conjunction.And,
@@ -222,8 +237,6 @@ namespace Fap.Core.DataAccess.SqlParser
                    new EqualToFilter(tb.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_Dr)));
                 select.AddWhere(validFilter);
             }
-
-
         }
 
 
@@ -300,7 +313,7 @@ namespace Fap.Core.DataAccess.SqlParser
         /// <param name="columnList"></param>
         /// <param name="table"></param>
         /// <param name="selectBuilder"></param>
-        public void MakeSelectStarPartition(IEnumerable<FapColumn> columnList, AliasedSource aliaseSource, SelectBuilder select)
+        private void MakeSelectStarPartition(IEnumerable<FapColumn> columnList, AliasedSource aliaseSource, SelectBuilder select)
         {
             string tableAlias = aliaseSource.Alias;
             int mcIndex = 0;
@@ -411,7 +424,7 @@ namespace Fap.Core.DataAccess.SqlParser
         /// <param name="columnList"></param>
         /// <param name="table"></param>
         /// <param name="selectBuilder"></param>
-        public void MakeSelectPartition(FapColumn fCol, SelectBuilder select, Column column)
+        private void MakeSelectPartition(FapColumn fCol, SelectBuilder select, Column column)
         {
             string tableAlias = column.Source.Alias;
             int mcIndex = 0;

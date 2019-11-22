@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Fap.AspNetCore</id>
+    <version>1.0.5</version>
+    <authors>wangyanfei</authors>
+    <owners>wangyanfei</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Package Description</description>
+    <dependencies>
+      <group targetFramework=".NETCoreApp3.0">
+        <dependency id="Fap.Core" version="1.0.0" exclude="Build,Analyzers" />
+        <dependency id="HtmlSanitizer" version="4.0.217" exclude="Build,Analyzers" />
+        <dependency id="IdentityModel" version="4.1.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.AspNetCore.Authentication.Cookies" version="2.2.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.AspNetCore.Authentication.OpenIdConnect" version="3.0.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.AspNetCore.Mvc.TagHelpers" version="2.2.0" exclude="Build,Analyzers" />
+        <dependency id="YUICompressor.NET" version="3.0.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+    <frameworkReferences>
+      <group targetFramework=".NETCoreApp3.0">
+        <frameworkReference name="Microsoft.AspNetCore.App" />
+      </group>
+    </frameworkReferences>
+  </metadata>
+  <files>
+    <file src="D:\FapCore3.0\fap-netcore\src\Fap.AspNetCore\bin\Debug\netcoreapp3.0\Fap.AspNetCore.dll" target="lib\netcoreapp3.0\Fap.AspNetCore.dll" />
+  </files>
+</package>

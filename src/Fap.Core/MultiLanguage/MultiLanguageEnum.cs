@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 
-namespace Fap.Core.Infrastructure.Enums
+namespace Fap.Core.MultiLanguage
 {
     /// <summary>
     /// 多语言

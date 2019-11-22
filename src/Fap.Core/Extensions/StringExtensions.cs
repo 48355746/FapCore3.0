@@ -67,5 +67,35 @@ namespace Fap.Core.Extensions
                         || value.EqualsWithIgnoreCase("1") || value.EqualsWithIgnoreCase("true")
                         || value.EqualsWithIgnoreCase("t");
         }
+        public static long ToLong(this string value)
+        {
+            return Convert.ToInt64(value);
+        }
+        public static decimal ToDecimal(this string value)
+        {
+            return Convert.ToDecimal(value);
+        }
+        /// <summary>
+        /// 去除所有空格
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static string RemoveSpace(this string str)
+        {
+            if (str.IsMissing()) return "";
+            return str.Replace(" ", "").Replace("\r", "").Replace("\n", "");
+        }
+        /// <summary>
+        /// 替换字符串
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="oldString"></param>
+        /// <param name="newString"></param>
+        /// <param name="stringComparison"></param>
+        /// <returns></returns>
+        public static string ReplaceIgnoreCase(this string str, string oldString, string newString, StringComparison stringComparison = StringComparison.OrdinalIgnoreCase)
+        {
+            return str.IsMissing() ? "" : str.Replace(oldString, newString, stringComparison);
+        }
     }
 }

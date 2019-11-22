@@ -7,10 +7,13 @@ using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Config;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Infrastructure.Enums;
+using Fap.Core.Infrastructure.Model;
+using Fap.Core.Infrastructure.Query;
 using Fap.Core.Metadata;
 using Fap.Core.Utility;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -20,13 +23,14 @@ using System.Threading.Tasks;
 
 namespace Fap.Core.DataAccess
 {
-    public class DbContext :  IDbContext
+    public class DbContext : IDbContext
     {
         private readonly IFapApplicationContext _applicationContext;
         private readonly ILogger<DbContext> _logger;
         private readonly IDbSession _dbSession;
         private readonly IFapPlatformDomain _fapPlatformDomain;
         private readonly IServiceProvider _serviceProvider;
+        private ThreadLocal<string> threadLocalHistoryTimePoint = new ThreadLocal<string>();
         public DbContext(ILoggerFactory loggerFactory, IFapPlatformDomain fapPlatformDomain, IFapApplicationContext applicationContext, IDbSession dbSession, IServiceProvider serviceProvider)
         {
             _logger = loggerFactory.CreateLogger<DbContext>();
@@ -35,49 +39,54 @@ namespace Fap.Core.DataAccess
             _applicationContext = applicationContext;
             _serviceProvider = serviceProvider;
         }
+
         /// <summary>
         /// 历史时间点
         /// </summary>
-        public string HistoryDateTime { get; set; }
+        public string HistoryDateTime
+        {
+            set { threadLocalHistoryTimePoint.Value = value; }
+            get { return threadLocalHistoryTimePoint.Value; }
+        }
         #region private
-        private static Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
+        private static ConcurrentDictionary<string, PropertyInfo> properties = new ConcurrentDictionary<string, PropertyInfo>();
         private (string, DynamicParameters) WrapSqlAndParam(string sqlOri, DynamicParameters parameters, bool withMC = false, bool withId = false)
         {
             return (ParseFapSql(sqlOri, withMC, withId), InitParamers(parameters));
-            DynamicParameters InitParamers(DynamicParameters parameters)
-            {
-                if (parameters == null)
-                {
-                    parameters = new DynamicParameters();
-                }
-                if (!parameters.ParameterNames.Contains(FapDbConstants.FAPCOLUMN_FIELD_CurrentDate))
-                {
-                    if (HistoryDateTime.IsMissing())
-                    {
-                        parameters.Add(FapDbConstants.FAPCOLUMN_FIELD_CurrentDate, DateTimeUtils.CurrentDateTimeStr);
-                    }
-                    else
-                    {
-                        parameters.Add(FapDbConstants.FAPCOLUMN_FIELD_CurrentDate, HistoryDateTime);
-                    }
-                }
-                if (!parameters.ParameterNames.Contains(FapDbConstants.FAPCOLUMN_FIELD_Dr))
-                {
-                    parameters.Add(FapDbConstants.FAPCOLUMN_FIELD_Dr, 0);
-                }
-                return parameters;
-            }
+
             string ParseFapSql(string sqlOri, bool withMC = false, bool withId = false)
             {
                 _logger.LogTrace($"wrap前的sql:{sqlOri}");
                 FapSqlParser parse = new FapSqlParser(_fapPlatformDomain, sqlOri, withMC, withId);
 
-                var sql = parse.GetCompletedSql();
+                var sql = parse.ParserSqlStatement();
                 _logger.LogTrace($"wrap后的sql:{sql}");
                 return sql;
             }
         }
-
+        private DynamicParameters InitParamers(DynamicParameters parameters)
+        {
+            if (parameters == null)
+            {
+                parameters = new DynamicParameters();
+            }
+            if (!parameters.ParameterNames.Contains(FapDbConstants.FAPCOLUMN_FIELD_CurrentDate))
+            {
+                if (HistoryDateTime.IsMissing())
+                {
+                    parameters.Add(FapDbConstants.FAPCOLUMN_FIELD_CurrentDate, DateTimeUtils.CurrentDateTimeStr);
+                }
+                else
+                {
+                    parameters.Add(FapDbConstants.FAPCOLUMN_FIELD_CurrentDate, HistoryDateTime);
+                }
+            }
+            if (!parameters.ParameterNames.Contains(FapDbConstants.FAPCOLUMN_FIELD_Dr))
+            {
+                parameters.Add(FapDbConstants.FAPCOLUMN_FIELD_Dr, 0);
+            }
+            return parameters;
+        }
         private void InitEntityToInsert<T>(T entity) where T : BaseModel
         {
             if (entity.Fid.IsMissing())
@@ -101,7 +110,7 @@ namespace Fap.Core.DataAccess
                 Type type = entity.GetType();
                 if (!properties.TryGetValue(column.TableName + column.ColName, out PropertyInfo propertyInfo))
                 {
-                    properties.Add(column.TableName + column.ColName, (propertyInfo = type.GetProperty(column.ColName)));
+                    properties.TryAdd(column.TableName + column.ColName, (propertyInfo = type.GetProperty(column.ColName)));
                 }
                 if (propertyInfo == null)
                 {
@@ -358,6 +367,48 @@ namespace Fap.Core.DataAccess
                         //InitEntityToInsert(sr);
                         _dbSession.Insert<CfgSequenceRule>(sr);
                         return 1;
+                    }
+                }
+            }
+        }
+
+        public void InitDefualtValue(FapDynamicObject keyValues)
+        {
+            if (keyValues == null)
+            {
+                return;
+            }
+            dynamic dynEntity = keyValues;
+            //非系统默认列的默认值的生成
+            IEnumerable<FapColumn> columns = _fapPlatformDomain.ColumnSet.Where(c => c.TableName == keyValues.TableName && c.IsDefaultCol != 1 && (c.DefaultValueClass.IsPresent() || c.ColDefault.IsPresent()));
+            foreach (var column in columns)
+            {
+                //先判断是否有值，如果有值，则不赋值
+                object value = dynEntity.Get(column.ColName);
+                if (value != null && !string.IsNullOrWhiteSpace(value.ToString().Trim()))
+                {
+                    continue;
+                }
+                if (column.ColDefault.IsPresent())
+                {
+                    string key = column.ColName;
+                    object cv = GetFieldDefaultValue(column);
+                    dynEntity.Add(key, cv);
+                }
+            }
+            //是否有配置的编码
+            Dictionary<string, string> ccr = GetBillCode(keyValues.TableName);
+            if (ccr != null && ccr.Any())
+            {
+                foreach (var cc in ccr)
+                {
+                    if (dynEntity.ContainsKey(cc.Key) && (dynEntity.Get(cc.Key) == "" || dynEntity.Get(cc.Key) == null))
+                    {
+                        dynEntity.Add(cc.Key, cc.Value);
+                    }
+                    else if (!dynEntity.ContainsKey(cc.Key))
+                    {
+                        dynEntity.Add(cc.Key, cc.Value);
                     }
                 }
             }
@@ -827,6 +878,10 @@ namespace Fap.Core.DataAccess
             var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters);
             return _dbSession.ExecuteScalarAsync<T>(sql, dynParams);
         }
+        public IEnumerable<dynamic> QueryOriSql(string sqlOri, DynamicParameters parameters = null)
+        {
+            return _dbSession.Query(sqlOri, parameters);
+        }
         public IEnumerable<dynamic> Query(string sqlOri, DynamicParameters parameters = null, bool withMC = false)
         {
             var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
@@ -1230,7 +1285,7 @@ namespace Fap.Core.DataAccess
                     }
                 }
             }
-        }   
+        }
         #endregion
 
         #region Get
@@ -1606,7 +1661,7 @@ namespace Fap.Core.DataAccess
                         long newId = _dbSession.Insert(tableName, columnList, paramList, oldData);
                         //修改老数据失效
                         newEntity.DisableDate = currDate;
-                        bool execRv= _dbSession.UpdateWithTimestamp<T2>(newEntity);
+                        bool execRv = _dbSession.UpdateWithTimestamp<T2>(newEntity);
                         if (execRv)
                         {
                             //根据传值更新新数据
@@ -1679,17 +1734,17 @@ namespace Fap.Core.DataAccess
                     {
                         //clone老数据到新数据
                         var oldData = GetById(table.TableName, newEntity.Id);
-                        long newId =await _dbSession.Insert(tableName, columnList, paramList, oldData);
+                        long newId = await _dbSession.Insert(tableName, columnList, paramList, oldData);
 
                         //修改老数据失效
                         newEntity.DisableDate = currDate;
-                        bool rv=  _dbSession.UpdateWithTimestamp<T2>(newEntity);
+                        bool rv = _dbSession.UpdateWithTimestamp<T2>(newEntity);
                         if (rv)
                         {
                             //根据传值更新新数据
                             newEntity.Id = newId;
                             SetNewEntityToDelete<T2>(newEntity, currDate);
-                             await _dbSession.UpdateAsync(newEntity);
+                            await _dbSession.UpdateAsync(newEntity);
                         }
                         return rv;
                     }
@@ -2077,6 +2132,394 @@ namespace Fap.Core.DataAccess
         }
         #endregion
 
+        #region jqgrid paging statistics query
+        public (string, DynamicParameters) JqgridPagingQuery(SimpleQueryOption queryOption)
+        {
+            DynamicParameters dynamicParameters = new DynamicParameters();
+
+            if (_dbSession.DatabaseDialect == DatabaseDialectEnum.MSSQL)
+            {
+                string sql = PagingMSSQL(queryOption, dynamicParameters);
+                return (sql, dynamicParameters);
+            }
+            else if (_dbSession.DatabaseDialect == DatabaseDialectEnum.MYSQL)
+            {
+                string sql = PagingMySQL(queryOption, dynamicParameters);
+                return (sql, dynamicParameters);
+            }
+            else
+            {
+                throw new NotImplementedException("jqgrid 分页脚本为实现，暂不支持");
+            }
+            string PagingMSSQL(SimpleQueryOption requestParam, DynamicParameters paramObject)
+            {
+                StringBuilder sqlBuilder = new StringBuilder();
+                sqlBuilder.Append("SELECT a.* FROM (");
+
+                ////过滤条件
+                //string filter = requestParam.Wraper.MakeFilterSql();
+                //if (!string.IsNullOrWhiteSpace(filter))
+                //{
+                //    sqlBuilder.Append("SELECT w.* FROM (");
+                //}
+
+                sqlBuilder.Append("SELECT ").Append(requestParam.Wraper.MakeSelectSql()).Append(", ROW_NUMBER() OVER(");
+                //Orderby条件
+                string orderBy = requestParam.Wraper.MakeOrderBySql();
+                if (!string.IsNullOrEmpty(orderBy))
+                {
+                    sqlBuilder.Append(" ORDER BY ").Append(orderBy);
+                }
+
+                sqlBuilder.Append(") AS RowNumber FROM ");
+                sqlBuilder.Append(requestParam.Wraper.MakeFromSql());
+                //Join条件
+                string join = requestParam.Wraper.MakeJoinSql();
+                if (!string.IsNullOrEmpty(join))
+                {
+                    sqlBuilder.Append(join);
+                }
+
+                //Where条件
+                sqlBuilder.Append(" WHERE 1=1 ");
+                string where = requestParam.Wraper.MakeWhereSql();
+                if (!string.IsNullOrEmpty(where))
+                {
+                    sqlBuilder.Append(" AND (").Append(where).Append(")");
+                }
+
+                //过滤条件
+                string filter = requestParam.Wraper.MakeFilterSql();
+                if (!string.IsNullOrWhiteSpace(filter))
+                {
+                    sqlBuilder.Append(" AND (").Append(filter).Append(")");
+                }
+
+                ////过滤条件
+                //if (!string.IsNullOrWhiteSpace(filter))
+                //{
+                //    sqlBuilder.Append(") AS w WHERE ").Append(filter);
+                //}
+
+                sqlBuilder.Append(") AS a ");
+
+                string completeSql = sqlBuilder.ToString();
+
+                sqlBuilder.Append("WHERE (RowNumber BETWEEN ").Append(requestParam.RecordFirstIndex).Append(" AND ").Append(requestParam.RecordLastIndex).Append(")");
+                sqlBuilder.Append(";");
+
+                //返回总数
+                sqlBuilder.Append("SELECT count(1) FROM ");
+                //sqlBuilder.Append(requestParam.Wraper.MakeFromSql());
+                ////Where条件
+                //if (!string.IsNullOrEmpty(where))
+                //{
+                //    sqlBuilder.Append(" WHERE ").Append(where);
+                //}
+                sqlBuilder.Append("(").Append(completeSql).Append(") AS t");
+
+                //Dictionary<string, object> parameterMap = requestParam.Parameters;
+                ////设置参数值
+                //foreach (var item in parameterMap)
+                //{
+                //    paramObject.Add(item.Key, item.Value);
+                //}
+                //paramObject.Add("@returncount", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+                return sqlBuilder.ToString();
+            }
+
+            string PagingMySQL(SimpleQueryOption requestParam, DynamicParameters paramObject)
+            {
+                //Orderby条件
+                string orderBy = requestParam.Wraper.MakeOrderBySql();
+                if (!string.IsNullOrEmpty(orderBy))
+                {
+                    orderBy = " ORDER BY " + orderBy;
+                }
+                else
+                {
+                    orderBy = " order by Id";
+                }
+
+                //Join条件
+                string join = requestParam.Wraper.MakeJoinSql();
+
+                //Where条件
+                string where = requestParam.Wraper.MakeWhereSql();
+                if (!string.IsNullOrEmpty(where))
+                {
+                    where = " where " + where;
+                }
+
+                //过滤条件
+                string filter = requestParam.Wraper.MakeFilterSql();
+                if (!string.IsNullOrWhiteSpace(filter))
+                {
+                    where = where.IsPresent() ? where + " and " + filter : where;
+                }
+
+                StringBuilder sql = new StringBuilder();
+                sql.AppendLine(string.Format("select {0} from {1} {2} {3}   limit {4},{5};", requestParam.Wraper.MakeSelectSql(), requestParam.Wraper.MakeFromSql() + " " + join, where, orderBy, requestParam.RecordFirstIndex - 1, requestParam.PageCount));
+
+                //总数sql
+                sql.AppendLine(string.Format("SELECT count(*) FROM {0} {1}", requestParam.Wraper.MakeFromSql(), where));
+                return sql.ToString();
+            }
+        }
+
+        public (string, DynamicParameters) JqgridStatisticsQuery(SimpleQueryOption requestParam)
+        {
+            DynamicParameters parameters = new DynamicParameters();
+            Dictionary<string, StatSymbolEnum> statFields = requestParam.StatFields;
+            if (statFields.Count == 0) return ("", parameters);
+
+            StringBuilder sqlBuilder = new StringBuilder();
+            sqlBuilder.Append("SELECT ");
+            foreach (var statField in statFields)
+            {
+                if (statField.Value == StatSymbolEnum.None)
+                {
+                    continue;
+                }
+                if (statField.Value == StatSymbolEnum.Description)
+                {
+                    sqlBuilder.Append(statField.Key + ",");
+                }
+                else
+                {
+                    //string statTitle = MyEnumHelper.GetDescription(typeof(EnumStatSymbol), statField.Value);
+                    string statSymbol = Enum.GetName(typeof(StatSymbolEnum), statField.Value);
+                    string statFieldName = statField.Key;
+                    sqlBuilder.AppendFormat("CAST({0}({1}) AS VARCHAR(100)) AS {2},", statSymbol, statFieldName, statFieldName);
+                }
+            }
+            sqlBuilder.Remove(sqlBuilder.Length - 1, 1);
+
+            sqlBuilder.Append(" FROM ").Append(requestParam.Wraper.MakeFromSql());
+
+            //Where条件
+            sqlBuilder.Append(" WHERE 1=1 ");
+            string where = requestParam.Wraper.MakeWhereSql();
+            if (!string.IsNullOrEmpty(where))
+            {
+                sqlBuilder.Append(" AND (").Append(where).Append(")");
+            }
+
+            //过滤条件
+            string filter = requestParam.Wraper.MakeFilterSql();
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                sqlBuilder.Append(" AND (").Append(filter).Append(")");
+            }
+
+            Dictionary<string, object> parameterMap = requestParam.Parameters;
+            //设置参数值
+            foreach (var item in parameterMap)
+            {
+                if (item.Key == "@returncount") continue;
+                parameters.Add(item.Key, item.Value);
+            }
+            return (sqlBuilder.ToString(), parameters);
+        }
+        #endregion
+
+        #region form query
+        public (string, DynamicParameters) FormQuery(SimpleQueryOption queryOption)
+        {
+            StringBuilder sqlBuilder = new StringBuilder();
+            sqlBuilder.Append("SELECT ");
+            sqlBuilder.Append(queryOption.Wraper.MakeSelectSql());
+
+            sqlBuilder.Append(" FROM ").Append(queryOption.Wraper.MakeFromSql());
+            //Join条件
+            string join = queryOption.Wraper.MakeJoinSql();
+            if (!string.IsNullOrEmpty(join))
+            {
+                sqlBuilder.Append(join);
+            }
+            //Where条件
+            string where = queryOption.Wraper.MakeWhereSql();
+            if (!string.IsNullOrEmpty(where))
+            {
+                sqlBuilder.Append(" WHERE ").Append(where);
+            }
+            //OrderBy条件
+            string orderby = queryOption.Wraper.MakeOrderBySql();
+            if (!string.IsNullOrEmpty(orderby))
+            {
+                sqlBuilder.Append(" ORDER BY ").Append(orderby);
+            }
+            DynamicParameters parameters = new DynamicParameters();
+            Dictionary<string, object> parameterMap = queryOption.Parameters;
+            //设置参数值
+            foreach (var item in parameterMap)
+            {
+                parameters.Add(item.Key, item.Value);
+            }
+
+            return (sqlBuilder.ToString(), parameters);
+        }
+        #endregion
+
+        #region history trace
+        /// <summary>
+        /// 获取指定数据的历史变化
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <param name="fid"></param>
+        /// <returns></returns>
+        public IEnumerable<DataChangeHistory> QueryDataHistory(string tableName, string fid)
+        {
+            List<DataChangeHistory> dcHistory = new List<DataChangeHistory>();
+
+            string sql = $"SELECT * FROM {tableName} where  Fid=@Fid ORDER BY Id ASC";
+            FapSqlParser parse = new FapSqlParser(_fapPlatformDomain, sql, true);
+            sql = parse.ParserSelectSqlNoWhere();
+
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("Fid", fid);
+            InitParamers(parameters);
+
+            var list = _dbSession.Query(sql, parameters).ToList();
+            FapTable table = _fapPlatformDomain.TableSet.FirstOrDefault(t => t.TableName == tableName);
+            var columns = _fapPlatformDomain.ColumnSet.Where(c => c.TableName == tableName);
+            for (int i = 0; i < list.Count(); i++)
+            {
+                if (i == 0)
+                {
+                    DataChangeHistory dch = CompareDataChange(list[i], null, table, columns);
+                    dcHistory.Add(dch);
+                }
+                else
+                {
+                    DataChangeHistory dch = CompareDataChange(list[i], list[i - 1], table, columns);
+                    dcHistory.Add(dch);
+                }
+            }
+            return dcHistory;
+            DataChangeHistory CompareDataChange(dynamic currentData, dynamic preData, FapTable table, IEnumerable<FapColumn> columnList)
+            {
+                IDictionary<string, object> currRow = currentData as IDictionary<string, object>;
+                currRow.TryGetValue(FapDbConstants.FAPCOLUMN_FIELD_UpdateDate, out object datetime);
+                DataChangeHistory dcHistory = new DataChangeHistory();
+                dcHistory.ChangeDateTime = datetime.ToStringOrEmpty();
+                dcHistory.DataName = table.TableComment;
+                if (preData == null)
+                {
+                    dcHistory.ChangeType = DataChangeTypeEnum.ADD;
+                    currRow.TryGetValue(FapDbConstants.FAPCOLUMN_FIELD_CreateName, out object creator);
+                    dcHistory.Operator = creator == null ? "初始化" : creator.ToStringOrEmpty();
+                    return dcHistory;
+                }
+
+                currRow.TryGetValue(FapDbConstants.FAPCOLUMN_FIELD_Dr, out object dr);
+                currRow.TryGetValue(FapDbConstants.FAPCOLUMN_FIELD_UpdateName, out object updateName);
+                if ("1" == dr.ToStringOrEmpty()) //删除标志
+                {
+                    dcHistory.ChangeType = DataChangeTypeEnum.DELETE;
+                    dcHistory.Operator = updateName == null ? "未知" : updateName.ToString();
+                    return dcHistory;
+                }
+
+                dcHistory.ChangeType = DataChangeTypeEnum.UPDATE;
+                dcHistory.Operator = updateName == null ? "未知" : updateName.ToString();
+                List<DataItemChangeHistory> dicHistory = new List<DataItemChangeHistory>();
+                IDictionary<string, object> preRow = preData as IDictionary<string, object>;
+                var keyList = currRow.Keys;
+                foreach (var key in keyList)
+                {
+                    if (FapDbConstants.FAPCOLUMN_FIELD_Id.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                        || FapDbConstants.FAPCOLUMN_FIELD_Fid.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                        || FapDbConstants.FAPCOLUMN_FIELD_CreateBy.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                        || FapDbConstants.FAPCOLUMN_FIELD_CreateDate.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                        || FapDbConstants.FAPCOLUMN_FIELD_CreateName.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                        || FapDbConstants.FAPCOLUMN_FIELD_DisableDate.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                        || FapDbConstants.FAPCOLUMN_FIELD_EnableDate.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                        || FapDbConstants.FAPCOLUMN_FIELD_Ts.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                        || FapDbConstants.FAPCOLUMN_FIELD_UpdateBy.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                        || FapDbConstants.FAPCOLUMN_FIELD_UpdateDate.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                        || FapDbConstants.FAPCOLUMN_FIELD_UpdateName.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                        )
+                    {
+                        continue;
+                    }
+                    if (key.EndsWith("MC"))
+                    {
+                        continue;
+                    }
+                    string colKey = key;
+                    FapColumn col = columnList.Where(c => c.ColName == key).FirstOrDefault();
+                    if (col.CtrlType == FapColumn.CTRL_TYPE_FILE || col.CtrlType == FapColumn.CTRL_TYPE_IMAGE)
+                    {
+                        continue;
+                    }
+                    if (col.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX || col.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
+                    {
+                        colKey = key + "MC";
+                    }
+                    currRow.TryGetValue(colKey, out object currentValue);
+                    preRow.TryGetValue(colKey, out object preValue);
+                    if (col.CtrlType == FapColumn.CTRL_TYPE_CHECKBOX)
+                    {
+                        currentValue = currentValue.ToInt() == 1 ? "是" : "否";
+                        preValue = preValue.ToInt() == 1 ? "是" : "否";
+                    }
+                    if (!IsObjectEquals(currentValue, preValue))
+                    {
+                        if (currentValue == null || currentValue.ToString() == "")
+                        {
+                            currentValue = "空";
+                        }
+                        if (preValue == null || preValue.ToString() == "")
+                        {
+                            preValue = "空";
+                        }
+                        if (preValue == currentValue)
+                        {
+                            continue;
+                        }
+                        DataItemChangeHistory dich = new DataItemChangeHistory();
+                        if (col != null)
+                        {
+                            dich.ItemName = $"\"{ col.ColComment}\"";
+                            dich.ChangeMessage = "从\"" + preValue + "\"更新成\"" + currentValue + "\"";
+                        }
+                        else
+                        {
+                            dich.ChangeMessage = "从\"" + preValue + "]更新成\"" + currentValue + "\"";
+                        }
+                        dicHistory.Add(dich);
+                    }
+                }
+
+                dcHistory.ItemChangeList = dicHistory;
+                return dcHistory;
+            }
+            bool IsObjectEquals(object value1, object value2)
+            {
+                if ((value1 == null && value2 != null) || (value1 != null && value2 == null))
+                {
+                    return false;
+                }
+                if (value1 is int && value2 is int)
+                {
+                    return ((int)value1) == ((int)value2);
+                }
+                else if (value1 is double && value2 is double)
+                {
+                    return ((double)value1) == ((double)value2);
+                }
+                else if (value1 is string && value2 is string)
+                {
+                    return ((string)value1) == ((string)value2);
+                }
+
+                return true;
+            }
+        }
+
+        #endregion
     }
 }
 
