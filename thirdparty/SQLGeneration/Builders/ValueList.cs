@@ -82,4 +82,38 @@ namespace SQLGeneration.Builders
             visitor.VisitValueList(this);
         }
     }
+    /// <summary>
+    /// Provides a list of values that can appear in an 'in' comparison.
+    /// </summary>
+    public class ParameterValue : IValueProvider
+    {
+        private readonly ParameterLiteral _value;
+
+        /// <summary>
+        /// Initializes a new instance of a InList.
+        /// </summary>
+        public ParameterValue(ParameterLiteral value)
+        {
+            _value =value;
+        }
+
+
+        /// <summary>
+        /// Gets the values being provided.
+        /// </summary>
+        public IProjectionItem Value
+        {
+            get { return _value; }
+        }
+
+        bool IValueProvider.IsValueList
+        {
+            get { return false; }
+        }
+
+        void IVisitableBuilder.Accept(BuilderVisitor visitor)
+        {
+            visitor.VisitParameterLiteral(_value);
+        }
+    }
 }

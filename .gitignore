@@ -6,7 +6,9 @@
 /product/hcm/Fap.Hcm.Web/bin/Debug/netcoreapp3.0
 /product/hcm/Fap.Hcm.Web/obj
 /src/Fap.Core/bin/Debug
+/src/Fap.AspNetCore/bin/Debug
 /src/Fap.Core/obj
+/src/Fap.AspNetCore/obj
 /tests/XUnitTestFapCore/bin/Debug/netcoreapp3.0
 /tests/XUnitTestFapCore/obj
 /thirdparty/SQLGeneration/bin

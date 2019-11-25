@@ -2058,7 +2058,15 @@ namespace SQLGeneration.Parsing
                 /// Gets the identifier for the IN keyword.
                 /// </summary>
                 public const string InKeyword = "in";
-
+                /// <summary>
+                /// Describes the structure of a parameter variable.
+                /// </summary>
+                /// <remarks>wyf 用于dapper 中的 in @参数表达式</remarks>
+                public static class Parameter
+                {
+                    public const string Name = "Parameter";
+                    public const string Value = "value_parameter";
+                }
                 /// <summary>
                 /// Describes the structure of a values list.
                 /// </summary>
@@ -2258,7 +2266,9 @@ namespace SQLGeneration.Parsing
                         .Add(Filter.In.Expression, true, Expression(ArithmeticItem.Name))
                         .Add(Filter.In.NotKeyword, false, Token(SqlTokenRegistry.Not))
                         .Add(Filter.In.InKeyword, true, Token(SqlTokenRegistry.In))
-                        .Add(true, Options()
+                        .Add(true, Options()//wyf 增加in后面加@参数，用于dapper语法
+                            .Add(Filter.In.Parameter.Name,Define()
+                                .Add(Filter.In.Parameter.Value,true,Token(SqlTokenRegistry.Identifier)))
                             .Add(Filter.In.Values.Name, Define()
                                 .Add(Filter.In.Values.LeftParenthesis, true, Token(SqlTokenRegistry.LeftParenthesis))
                                 .Add(Filter.In.Values.ValueList, false, Expression(ValueList.Name))

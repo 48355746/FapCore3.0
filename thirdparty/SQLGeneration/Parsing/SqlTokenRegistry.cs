@@ -110,8 +110,7 @@ namespace SQLGeneration.Parsing
         /// <summary>
         /// Gets the identifier for the IN keyword.
         /// </summary>
-        public const string In = "In";
-
+        public const string In = "In";    
         /// <summary>
         /// Gets the identifier for the INSERT keyword.
         /// </summary>

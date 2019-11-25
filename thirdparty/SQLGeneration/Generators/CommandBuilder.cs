@@ -1489,6 +1489,16 @@ namespace SQLGeneration.Generators
                 MatchResult expressionResult = inResult.Matches[SqlGrammar.Filter.In.Expression];
                 IFilterItem expression = (IFilterItem)BuildArithmeticItem(expressionResult);
                 IValueProvider valueProvider = null;
+                MatchResult parameterResult = inResult.Matches[SqlGrammar.Filter.In.Parameter.Name];
+                if (parameterResult.IsMatch)
+                {
+                    string value = ((TokenResult)parameterResult.Matches[SqlGrammar.Filter.In.Parameter.Value].Context).Value;
+                    ParameterLiteral sl = new ParameterLiteral(value);
+                    ParameterValue pv = new ParameterValue(sl);
+
+                    valueProvider = pv;
+                }
+
                 MatchResult valuesResult = inResult.Matches[SqlGrammar.Filter.In.Values.Name];
                 if (valuesResult.IsMatch)
                 {
@@ -1678,14 +1688,14 @@ namespace SQLGeneration.Generators
             OrderBy orderBy = new OrderBy(expression, order, placement);
             //sql2012+分页
             MatchResult offsetFetchResult = result.Matches[SqlGrammar.OrderByItem.PageOffsetFetch];
-            if(offsetFetchResult.IsMatch)
+            if (offsetFetchResult.IsMatch)
             {
                 orderBy.OffsetFetch = ((TokenResult)offsetFetchResult.Matches[SqlGrammar.OrderByItem.PageOffsetFetch].Context).Value.ToUpper();
             }
             MatchResult limitResult = result.Matches[SqlGrammar.OrderByItem.PageLimit];
-            if(limitResult.IsMatch)
+            if (limitResult.IsMatch)
             {
-                orderBy.Limit= ((TokenResult)limitResult.Matches[SqlGrammar.OrderByItem.PageLimit].Context).Value.ToUpper();
+                orderBy.Limit = ((TokenResult)limitResult.Matches[SqlGrammar.OrderByItem.PageLimit].Context).Value.ToUpper();
             }
             orderByList.Add(orderBy);
         }
