@@ -64,7 +64,7 @@ namespace Fap.Core.DataAccess
                 return sql;
             }
         }
-        private DynamicParameters InitParamers(DynamicParameters parameters)
+        private DynamicParameters InitParamers(DynamicParameters parameters=null)
         {
             if (parameters == null)
             {
@@ -2154,14 +2154,6 @@ namespace Fap.Core.DataAccess
             string PagingMSSQL(SimpleQueryOption requestParam, DynamicParameters paramObject)
             {
                 StringBuilder sqlBuilder = new StringBuilder();
-                sqlBuilder.Append("SELECT a.* FROM (");
-
-                ////过滤条件
-                //string filter = requestParam.Wraper.MakeFilterSql();
-                //if (!string.IsNullOrWhiteSpace(filter))
-                //{
-                //    sqlBuilder.Append("SELECT w.* FROM (");
-                //}
 
                 sqlBuilder.Append("SELECT ").Append(requestParam.Wraper.MakeSelectSql()).Append(", ROW_NUMBER() OVER(");
                 //Orderby条件
@@ -2181,29 +2173,21 @@ namespace Fap.Core.DataAccess
                 }
 
                 //Where条件
-                sqlBuilder.Append(" WHERE 1=1 ");
                 string where = requestParam.Wraper.MakeWhereSql();
-                if (!string.IsNullOrEmpty(where))
+                if (where.IsPresent())
                 {
-                    sqlBuilder.Append(" AND (").Append(where).Append(")");
-                }
-
-                //过滤条件
-                string filter = requestParam.Wraper.MakeFilterSql();
-                if (!string.IsNullOrWhiteSpace(filter))
-                {
-                    sqlBuilder.Append(" AND (").Append(filter).Append(")");
-                }
-
-                ////过滤条件
-                //if (!string.IsNullOrWhiteSpace(filter))
-                //{
-                //    sqlBuilder.Append(") AS w WHERE ").Append(filter);
-                //}
-
-                sqlBuilder.Append(") AS a ");
+                    sqlBuilder.Append($"Where {where}");
+                }               
 
                 string completeSql = sqlBuilder.ToString();
+                FapSqlParser parse = new FapSqlParser(_fapPlatformDomain, completeSql, true);
+                InitParamers(paramObject);
+                var sql = parse.ParserSqlStatement();
+                sqlBuilder.Clear();
+                sqlBuilder.Append("SELECT a.* FROM (");
+                sqlBuilder.Append(sql);
+                sqlBuilder.Append(") AS a ");
+
 
                 sqlBuilder.Append("WHERE (RowNumber BETWEEN ").Append(requestParam.RecordFirstIndex).Append(" AND ").Append(requestParam.RecordLastIndex).Append(")");
                 sqlBuilder.Append(";");
@@ -2216,16 +2200,7 @@ namespace Fap.Core.DataAccess
                 //{
                 //    sqlBuilder.Append(" WHERE ").Append(where);
                 //}
-                sqlBuilder.Append("(").Append(completeSql).Append(") AS t");
-
-                //Dictionary<string, object> parameterMap = requestParam.Parameters;
-                ////设置参数值
-                //foreach (var item in parameterMap)
-                //{
-                //    paramObject.Add(item.Key, item.Value);
-                //}
-                //paramObject.Add("@returncount", dbType: DbType.Int32, direction: ParameterDirection.Output);
-
+                sqlBuilder.Append("(").Append(sql).Append(") AS t");             
                 return sqlBuilder.ToString();
             }
 

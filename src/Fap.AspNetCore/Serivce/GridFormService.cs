@@ -253,7 +253,7 @@ namespace Fap.AspNetCore.Serivce
                 }
                 QueryDataObject GetDynamicDataList(string[] sql, DynamicParameters paramObject, bool isPaged = false)
                 {
-                    var dataList = _dbContext.Query(sql[0], paramObject);
+                    var dataList = _dbContext.QueryOriSql(sql[0], paramObject);
 
                     QueryDataObject dataObject = new QueryDataObject();
                     dataObject.OrginData = dataList;

@@ -46,5 +46,30 @@ namespace XUnitTestFapCore
             string rv3 = parser3.ParserSqlStatement();
             Assert.Equal(sql.Length, rv.Length);
         }
+        [Fact]
+        public void TestJoinSql()
+        {
+            string sql = "select employee.EmpName,Employee.DeptUid,Fapuser.UserCode from employee,Fapuser where employee.Fid=FapUser.UserIdentity";
+            FapSqlParser parser = new FapSqlParser(_appDomain, sql,true);
+            string rv = parser.ParserSqlStatement();
+            Assert.True(true);
+        }
+        [Fact]
+        public void TestPageing()
+        {
+            string sql = "SELECT *, ROW_NUMBER() OVER( ORDER BY Id asc) AS RowNumber FROM Employee";
+            FapSqlParser parser = new FapSqlParser(_appDomain, sql, true);
+            string rv = parser.ParserSqlStatement();
+            Assert.True(true);
+        }
+
+        [Fact]
+        public void TestMysqlPageing()
+        {
+            string sql = "SELECT * FROM Employee where Id=1 order by id desc limit 1,10";
+            FapSqlParser parser = new FapSqlParser(_appDomain, sql, true);
+            string rv = parser.ParserSqlStatement();
+            Assert.True(true);
+        }
     }
 }

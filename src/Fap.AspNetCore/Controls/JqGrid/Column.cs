@@ -7,7 +7,6 @@ using System.Text;
 
 namespace Fap.AspNetCore.Controls.JqGrid
 {
-    [Serializable]
     public class Column
     {
         private  List<string> _classes = new List<string>();

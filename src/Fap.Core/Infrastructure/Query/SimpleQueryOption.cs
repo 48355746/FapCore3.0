@@ -235,7 +235,7 @@ namespace Fap.Core.Infrastructure.Query
             {
                 if (_wraper == null)
                 {
-                    _wraper = new SimpleQueryOptionBuilder(this,_platformDomain,_applicationContext);
+                    _wraper = new SimpleQueryOptionBuilder(this, _platformDomain, _applicationContext);
                 }
                 return _wraper;
             }
@@ -310,7 +310,6 @@ namespace Fap.Core.Infrastructure.Query
     {
         private SimpleQueryOption _queryOption;
         private IFapPlatformDomain _platformDomain;
-        private IFapApplicationContext _applicationContext;
         public SimpleQueryOptionBuilder(SimpleQueryOption queryOption, IFapPlatformDomain platformDomain, IFapApplicationContext applicationContext)
         {
             _queryOption = queryOption;
@@ -387,7 +386,7 @@ namespace Fap.Core.Infrastructure.Query
 
                 return null;
             }
-        }     
+        }
 
         private List<SqlColumnInfo> ParseOrginSelectSql(string columnSqlSegment)
         {
@@ -425,7 +424,7 @@ namespace Fap.Core.Infrastructure.Query
                     columnInfo.TableAlias = MainTable.TableName;
                     columnInfo.ColumnName = temp[1];
                     columnInfo.ColumnAlias = columnInfo.ColumnName;// columnInfo.TableAlias + "_" + columnInfo.ColumnName;
-                    columnInfo.ColumnInCorrespond =_platformDomain.ColumnSet.FirstOrDefault(c=>c.TableName==MainTable.TableName&&c.ColName== columnInfo.ColumnName);
+                    columnInfo.ColumnInCorrespond = _platformDomain.ColumnSet.FirstOrDefault(c => c.TableName == MainTable.TableName && c.ColName == columnInfo.ColumnName);
                     columnInfo.ColumnOrder = columnInfo.ColumnInCorrespond.ColOrder;
                 }
                 else if ("e".Equals(temp[0], StringComparison.CurrentCultureIgnoreCase))
@@ -439,7 +438,7 @@ namespace Fap.Core.Infrastructure.Query
                             columnInfo.TableAlias = ExtTable.TableName;
                             columnInfo.ColumnName = temp[1];
                             columnInfo.ColumnAlias = columnInfo.ColumnName;// columnInfo.TableAlias + "_" + columnInfo.ColumnName;
-                            columnInfo.ColumnInCorrespond = _platformDomain.ColumnSet.FirstOrDefault(c => c.TableName == ExtTable.TableName && c.ColName == columnInfo.ColumnName); 
+                            columnInfo.ColumnInCorrespond = _platformDomain.ColumnSet.FirstOrDefault(c => c.TableName == ExtTable.TableName && c.ColName == columnInfo.ColumnName);
                             columnInfo.ColumnOrder = columnInfo.ColumnInCorrespond.ColOrder;
                         }
                     }
@@ -451,179 +450,25 @@ namespace Fap.Core.Infrastructure.Query
                 columnInfo.TableAlias = MainTable.TableName;
                 columnInfo.ColumnName = temp[0];
                 columnInfo.ColumnAlias = columnInfo.TableAlias + "_" + columnInfo.ColumnName;
-                columnInfo.ColumnInCorrespond = _platformDomain.ColumnSet.FirstOrDefault(c => c.TableName == MainTable.TableName && c.ColName == columnInfo.ColumnName); 
+                columnInfo.ColumnInCorrespond = _platformDomain.ColumnSet.FirstOrDefault(c => c.TableName == MainTable.TableName && c.ColName == columnInfo.ColumnName);
                 columnInfo.ColumnOrder = columnInfo.ColumnInCorrespond.ColOrder;
             }
             return columnInfo;
         }
-      
+
 
         /// <summary>
         /// 生成Select的SQL
         /// </summary>
         public string MakeSelectSql()
         {
-            FapTable mainTable = this.MainTable;
-            var mainColumnList = this.MainColumnList;
-            StringBuilder sqlBuilder = new StringBuilder();
-            int index = 0;
-
             //处理要显示的字段
-            if (!string.IsNullOrWhiteSpace(_queryOption.QueryCols) && _queryOption.QueryCols != "*")
+            if (_queryOption.QueryCols.IsPresent())
             {
-                List<SqlColumnInfo> displayCols = this.ParseOrginSelectSql(_queryOption.QueryCols);
-                foreach (var item in displayCols)
-                {
-                    sqlBuilder.Append(item.TableAlias).Append('.').Append(item.ColumnName).Append(" AS ").Append(item.ColumnAlias).Append(',');
-
-                    if (item.ColumnInCorrespond != null)
-                    {
-                        ResultColumns.Add(item.ColumnInCorrespond);
-                    }
-
-                    //如果是参照字段
-                    if (item.ColumnInCorrespond != null && FapColumn.CTRL_TYPE_REFERENCE.Equals(item.ColumnInCorrespond.CtrlType))
-                    {
-                        FapColumn refColumn = item.ColumnInCorrespond;
-                        string refTableAlias = "ref" + (index++); //参照表的别名
-                        sqlBuilder.Append("(");
-                        sqlBuilder.Append(" SELECT ").Append(refTableAlias).Append(".").Append(refColumn.RefName);
-                        if (item.ColumnInCorrespond.MultiAble == 1) //是否多选
-                        {
-                            sqlBuilder.Append("+','");
-                        }
-                        sqlBuilder.Append(" FROM ").Append(refColumn.RefTable).Append(" AS ").Append(refTableAlias);
-                        sqlBuilder.Append(" WHERE ").Append(refTableAlias).Append(".").Append(refColumn.RefID).Append("=").Append(item.TableAlias).Append(".").Append(refColumn.ColName);
-                        sqlBuilder.Append(" AND ").Append(refTableAlias).Append(".EnableDate<=@CurrentDate"); //有效时间<=当前时间
-                        sqlBuilder.Append(" AND ").Append(refTableAlias).Append(".DisableDate>@CurrentDate"); //失效时间>=当前时间
-                        sqlBuilder.Append(" AND ").Append(refTableAlias).Append(".Dr=0"); //未删除状态
-                        if (item.ColumnInCorrespond.MultiAble == 1) //是否多选
-                        {
-                            sqlBuilder.Append(" for xml path('')"); // 逗号分隔的字符串，比如，以“aaa,bbb,ccc,”显示
-                        }
-                        sqlBuilder.Append(")");
-                        sqlBuilder.Append(" AS ").Append(refColumn.TableName).Append("_").Append(item.ColumnName).Append("MC");
-                        sqlBuilder.Append(',');
-
-                        //int showAbleMC = 0;
-                        ////将原来的ID字段变成不可见
-                        //if (refColumn.ShowAble == 1)
-                        //{
-                        //    refColumn.ShowAble = 0;
-                        //    showAbleMC = 1;
-                        //}
-                        //else
-                        //{
-                        //    showAbleMC = 0;
-                        //}
-                        //this._resultColumns.Add(new FapColumn() { ColName = item.ColumnName + "MC", ColComment = refColumn.ColComment, IsCustomColumn = 1,NullAble=refColumn.NullAble, ShowAble = showAbleMC });
-
-                        //参照字段生成MC字段
-                        FapColumn refMCColumn = GeneralReferenceColumn(refColumn);
-                        ResultColumns.Add(refMCColumn);
-                    }
-                }
-            }
-            else
-            {
-                //查询主表
-                string mainTableName = mainTable.TableName;
-                //this.AddResultColumn(mainTableName);
-                foreach (var item in mainColumnList)
-                {
-                    ResultColumns.Add(item);
-                    sqlBuilder.Append(mainTableName).Append('.').Append(item.ColName).Append(" AS ").Append(item.TableName).Append("_").Append(item.ColName).Append(',');
-                    if (item.IsMultiLang == 1)
-                    {
-                        var langList = Enum.GetNames(typeof(MultiLanguageEnum));
-                        foreach (var lang in langList)
-                        {
-                            if (lang == MultiLanguageEnum.ZhCn.ToString())
-                            {
-                                continue;
-                            }
-                            sqlBuilder.Append(mainTableName).Append('.').Append(item.ColName + lang).Append(" AS ").Append(item.TableName).Append("_").Append(item.ColName + lang).Append(',');
-                        }
-                    }
-                    //如果是参照字段
-                    if (FapColumn.CTRL_TYPE_REFERENCE.Equals(item.CtrlType))
-                    {
-                        FapColumn refColumn = item;
-                        string refTableAlias = "ref" + (index++); //参照表的别名
-                        sqlBuilder.Append("(");
-                        sqlBuilder.Append(" SELECT ").Append(refTableAlias).Append(".").Append(refColumn.RefName);
-                        if (item.MultiAble == 1) //是否多选
-                        {
-                            sqlBuilder.Append("+','");
-                        }
-                        sqlBuilder.Append(" FROM ").Append(refColumn.RefTable).Append(" AS ").Append(refTableAlias);
-                        sqlBuilder.Append(" WHERE ").Append(refTableAlias).Append(".").Append(refColumn.RefID).Append("=").Append(mainTableName).Append(".").Append(refColumn.ColName);
-                        sqlBuilder.Append(" AND ").Append(refTableAlias).Append(".EnableDate<=@CurrentDate"); //有效时间<=当前时间
-                        sqlBuilder.Append(" AND ").Append(refTableAlias).Append(".DisableDate>@CurrentDate"); //失效时间>=当前时间
-                        sqlBuilder.Append(" AND ").Append(refTableAlias).Append(".Dr=0"); //未删除状态
-                        if (item.MultiAble == 1) //是否多选
-                        {
-                            sqlBuilder.Append(" for xml path('')"); // 逗号分隔的字符串，比如，以“aaa,bbb,ccc,”显示
-                        }
-                        sqlBuilder.Append(")");
-                        sqlBuilder.Append(" AS ").Append(refColumn.TableName).Append("_").Append(item.ColName).Append("MC");
-                        sqlBuilder.Append(',');
-
-                        //参照字段生成MC字段
-                        FapColumn refMCColumn = GeneralReferenceColumn(refColumn);
-                        ResultColumns.Add(refMCColumn);
-                    }
-                }
-
-                //查询扩展表
-                if (_queryOption.IsQueryExtTable)
-                {
-                    FapTable extTable = ExtTable;
-                    if (extTable != null)
-                    {
-                        var extColumnList = ExtColumnList;
-                        //this.AddResultColumn(ExtTable.TableName);
-
-                        string extTableName = extTable.TableName;
-                        foreach (var item in extColumnList)
-                        {
-                            ResultColumns.Add(item);
-                            sqlBuilder.Append(extTableName).Append('.').Append(item.ColName).Append(" AS ").Append(extTableName).Append("_").Append(item.ColName).Append(',');
-
-                            //如果是参照字段
-                            if (FapColumn.CTRL_TYPE_REFERENCE.Equals(item.CtrlType))
-                            {
-                                FapColumn refColumn = item;
-                                string refTableAlias = "ref" + (index++); //参照表的别名
-                                sqlBuilder.Append("(");
-                                sqlBuilder.Append(" SELECT ").Append(refTableAlias).Append(".").Append(refColumn.RefName);
-                                if (item.MultiAble == 1) //是否多选
-                                {
-                                    sqlBuilder.Append("+','");
-                                }
-                                sqlBuilder.Append(" FROM ").Append(refColumn.RefTable).Append(" AS ").Append(refTableAlias);
-                                sqlBuilder.Append(" WHERE ").Append(refTableAlias).Append(".").Append(refColumn.RefID).Append("=").Append(extTable.TableName).Append(".").Append(refColumn.ColName);
-                                sqlBuilder.Append(" AND ").Append(refTableAlias).Append(".EnableDate<=@CurrentDate"); //有效时间<=当前时间
-                                sqlBuilder.Append(" AND ").Append(refTableAlias).Append(".DisableDate>@CurrentDate"); //失效时间>=当前时间
-                                sqlBuilder.Append(" AND ").Append(refTableAlias).Append(".Dr=0"); //未删除状态
-                                if (item.MultiAble == 1) //是否多选
-                                {
-                                    sqlBuilder.Append(" for xml path('')"); // 逗号分隔的字符串，比如，以“aaa,bbb,ccc,”显示
-                                }
-                                sqlBuilder.Append(")");
-                                sqlBuilder.Append(" AS ").Append(item.ColName).Append("MC");
-                                sqlBuilder.Append(',');
-
-                                //参照字段生成MC字段
-                                FapColumn refMCColumn = GeneralReferenceColumn(refColumn);
-                                ResultColumns.Add(refMCColumn);
-                            }
-                        }
-                    }
-                }
+                return _queryOption.QueryCols;
             }
 
-            return sqlBuilder.ToString().TrimEnd(',');
+            return "*";
         }
         /// <summary>
         /// 构造参照名称字段
@@ -646,22 +491,8 @@ namespace Fap.Core.Infrastructure.Query
         /// <returns></returns>
         public string MakeFromSql()
         {
-            StringBuilder sqlBuilder = new StringBuilder();
-            FapTable mainTable = MainTable;
+            return MainTable.TableName;
 
-            //查询主表
-            sqlBuilder.Append(mainTable.TableName).Append(" AS ").Append(mainTable.TableName).Append(',');
-
-            //查询扩展表
-            //if (_requestParam.IsQueryExtTable)
-            //{
-            //    if (!string.IsMissing(mainTable.ExtTable))
-            //    {
-            //        sqlBuilder.Append(mainTable.ExtTable).Append(" AS ").Append(mainTable.ExtTable).Append(',');
-            //    }
-            //}
-
-            return sqlBuilder.ToString().TrimEnd(',');
         }
 
         /// <summary>
@@ -677,9 +508,8 @@ namespace Fap.Core.Infrastructure.Query
                 FapTable mainTable = MainTable;
                 if (mainTable.ExtTable.IsPresent())
                 {
-                    sqlBuilder.Append(" LEFT JOIN ").Append(mainTable.ExtTable).Append(" AS ").Append(mainTable.ExtTable);
-                    sqlBuilder.Append(" ON (" + mainTable.ExtTable + ".EnableDate<=@CurrentDate AND " + mainTable.ExtTable + ".DisableDate>@CurrentDate AND " + mainTable.ExtTable + ".Dr=0)");
-                    sqlBuilder.Append(" AND ");
+                    sqlBuilder.Append(" LEFT JOIN ").Append(mainTable.ExtTable);
+                    sqlBuilder.Append(" ON ");
                     sqlBuilder.Append(mainTable.ExtTable + ".Fid=").Append(_queryOption.TableName + ".Fid");
                 }
             }
@@ -692,29 +522,28 @@ namespace Fap.Core.Infrastructure.Query
         /// <returns></returns>
         public string MakeWhereSql()
         {
-            StringBuilder sqlBuilder = new StringBuilder();
-
+            //过滤条件
+            string filter = MakeFilterSql();
             //预处理：加上有效时间
             if (_queryOption.Where.IsPresent())
             {
-                string where = _queryOption.Where;
-                //处理Where条件， m. 表示主表，  e.表示扩展表
-                FapTable mainTable = MainTable;
-                FapTable extTable = ExtTable;
-                where = where.Replace("m.", mainTable.TableName + ".");
-                if (extTable != null)
+                if (filter.IsPresent())
                 {
-                    where = where.Replace("e.", extTable.TableName + ".");
+                    return $"({_queryOption.Where}) and ({filter})";
                 }
-
-                sqlBuilder.Append("(").Append(where).Append(")").Append(" AND ");
+                else
+                {
+                    return _queryOption.Where;
+                }
             }
-
-            sqlBuilder.Append("(" + _queryOption.TableName + ".EnableDate<=@CurrentDate AND " + _queryOption.TableName + ".DisableDate>@CurrentDate AND " + _queryOption.TableName + ".Dr=0)");
-
-            _queryOption.AddParameter("CurrentDate", _queryOption.TimePoint.IsMissing() ? DateTimeUtils.CurrentDateTimeStr: _queryOption.TimePoint);
-
-            return sqlBuilder.ToString();
+            else
+            {
+                if (filter.IsPresent())
+                {
+                    filter = $" ({filter}) ";
+                }
+            }
+            return string.Empty;
         }
 
         /// <summary>
@@ -789,7 +618,7 @@ namespace Fap.Core.Infrastructure.Query
                                     { //参照类型                                       
 
                                         sqlBuilder.Append(item.TableName).Append(".").Append(item.OrginalField).Append(" IN (");
-                                      
+
                                         string refWhere = string.Empty;
                                         if (item.Operator.Trim().EqualsWithIgnoreCase("IS NULL"))
                                         {
@@ -839,103 +668,30 @@ namespace Fap.Core.Infrastructure.Query
             }
 
         }
-       
+
         /// <summary>
         /// 组装Orderby部分的SQL语句
         /// </summary>
         /// <returns></returns>
         public string MakeOrderBySql()
         {
-            StringBuilder sqlBuilder = new StringBuilder();
-            if (_queryOption.OrderBy != null && _queryOption.OrderBy.OrderByConditions.Count > 0)
-            {
-                int index = 0;
-                foreach (var item in _queryOption.OrderBy.OrderByConditions)
-                {
-                    if (!item.HasMC) //正常字段
-                    {
-                        sqlBuilder.Append(MainTable.TableName).Append(".").Append(item.Field).Append(" ").Append(item.Order);
-                    }
-                    else //MC字段
-                    {
-                        FapColumn column = _platformDomain.ColumnSet.FirstOrDefault(c => c.TableName == MainTable.TableName && c.ColName == item.OrginalField); 
-                        if (column != null)
-                        {
-                            if (column.CtrlType == FapColumn.CTRL_TYPE_REFERENCE) //参照类型
-                            {
-                                //例子：
-                                //(SELECT UserGroupName 
-                                //    FROM FapUserGroup
-                                //    WHERE Fid=FapUser.UserGroupUid AND EnableDate<=
-                                //        '2016-03-26 23:51:36' AND DisableDate>'2016-03-26 23:51:36' AND Dr=0
-                                //)   desc
-                                string fieldPrefix = "ref" + index + ".";
-                                sqlBuilder.Append("(");
-                                sqlBuilder.Append("SELECT ").Append(fieldPrefix).Append(column.RefName).Append(" FROM ").Append(column.RefTable).Append(" AS ").Append("ref" + index);
-                                sqlBuilder.Append(" WHERE ").Append(fieldPrefix).Append(column.RefID).Append("=").Append(MainTable.TableName).Append(".").Append(item.OrginalField);
-                                //sqlBuilder.Append(" AND ").Append(DataAccessorHelper.GetValidWhere());
-                                sqlBuilder.Append(") ");
-                                sqlBuilder.Append(item.Order);
-                            }
-                            else if (column.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX) //下拉框类型
-                            {
-                                sqlBuilder.Append("(");
-                                sqlBuilder.Append("SELECT NAME FROM FapDict");
-                                sqlBuilder.Append(" WHERE Category='").Append(column.RefTable).Append("'");
-                                sqlBuilder.Append(" AND Code=").Append(MainTable.TableName).Append(".").Append(item.Field);
-                                //sqlBuilder.Append(" AND ").Append(DataAccessorHelper.GetValidWhere());
-                                sqlBuilder.Append(") ");
-                                sqlBuilder.Append(item.Order);
-                            }
-
-                        }
-                    }
-
-                    if (index < _queryOption.OrderBy.OrderByConditions.Count - 1)
-                    {
-                        sqlBuilder.Append(", ");
-                    }
-                    index++;
-                }
-            }
-            else
+            string orderBy = string.Join(',', _queryOption.OrderBy?.OrderByConditions.Select(o => $"{o.Field} {o.Order}"));
+            if (orderBy.IsMissing())
             {
                 List<FapColumn> columnList = MainColumnList.Where(c => !string.IsNullOrWhiteSpace(c.SortDirection)).ToList();
                 if (columnList != null && columnList.Count > 0)
                 {
-                    foreach (var column in columnList)
-                    {
-                        sqlBuilder.AppendFormat("{0}.{1} {2},", MainTable.TableName, column.ColName, column.SortDirection);
-                    }
-                    sqlBuilder.Remove(sqlBuilder.Length - 1, 1);
+                    return string.Join(',', columnList.Select(o => $"{o.ColName} {o.SortDirection}"));
+
                 }
                 else
                 {
                     //默认Id倒序
-                    sqlBuilder.Append(MainTable.TableName + ".Id DESC");
+                    return "Id DESC";
                 }
             }
-            return sqlBuilder.ToString();
-            //StringBuilder sqlBuilder = new StringBuilder();
-            //if (!string.IsMissing(_queryOption.OrderBy))
-            //{
-            //    string orderBy = _queryOption.OrderBy;
-            //    FapTable mainTable = MainTable;
-            //    FapTable extTable = ExtTable;
-            //    orderBy = orderBy.Replace("m.", mainTable.TableName + ".");
-            //    if (extTable != null)
-            //    {
-            //        orderBy = orderBy.Replace("e.", extTable.TableName + ".");
-            //    }
-            //    sqlBuilder.Append(orderBy);
-            //}
-            //else
-            //{
-            //    FapTable mainTable = MainTable;
-            //    sqlBuilder.Append(mainTable.TableName + ".Id ");
-            //}
+            return orderBy;
 
-            //return sqlBuilder.ToString();
         }
 
     }

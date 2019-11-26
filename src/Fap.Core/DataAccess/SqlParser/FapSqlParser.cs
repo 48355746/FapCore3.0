@@ -48,22 +48,16 @@ namespace Fap.Core.DataAccess.SqlParser
             {
                 SelectBuilder select = command as SelectBuilder;
                 RepackSelectSQL(select);
-                //Formatter formatter = new Formatter();
-                //return formatter.GetCommandText(select) ;
             }
             else if (command is UpdateBuilder)
             {
                 UpdateBuilder update = command as UpdateBuilder;
                 RepackUpdateSQL(update);
-                //Formatter formatter = new Formatter();
-                //return formatter.GetCommandText(update);
             }
             else if (command is DeleteBuilder)
             {
                 DeleteBuilder delete = command as DeleteBuilder;
                 RepackDeleteSQL(delete);
-                //Formatter formatter = new Formatter();
-                //return formatter.GetCommandText(delete);
             }
             else if (command is InsertBuilder)
             {
@@ -216,8 +210,7 @@ namespace Fap.Core.DataAccess.SqlParser
                     else if (item is Column)
                     {
                         Column currItem = item as Column;
-                        HandleSelectStatement(select, currItem);
-                        i++;
+                        HandleSelectStatement(select, currItem);                       
                     }
                 }
             }

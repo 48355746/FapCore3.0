@@ -1686,20 +1686,29 @@ namespace SQLGeneration.Generators
                 placement = buildNullPlacement(placementResult);
             }
             OrderBy orderBy = new OrderBy(expression, order, placement);
-            //sql2012+分页
-            MatchResult offsetFetchResult = result.Matches[SqlGrammar.OrderByItem.PageOffsetFetch];
-            if (offsetFetchResult.IsMatch)
+            //分页
+            MatchResult paginationResult = result.Matches[SqlGrammar.OrderByItem.Pagination];
+            if (paginationResult.IsMatch)
             {
-                orderBy.OffsetFetch = ((TokenResult)offsetFetchResult.Matches[SqlGrammar.OrderByItem.PageOffsetFetch].Context).Value.ToUpper();
+                orderBy.Pagination = buildOrderPagination(paginationResult);
             }
-            MatchResult limitResult = result.Matches[SqlGrammar.OrderByItem.PageLimit];
-            if (limitResult.IsMatch)
-            {
-                orderBy.Limit = ((TokenResult)limitResult.Matches[SqlGrammar.OrderByItem.PageLimit].Context).Value.ToUpper();
-            }
+           
             orderByList.Add(orderBy);
         }
-
+        private string buildOrderPagination(MatchResult result)
+        {
+            MatchResult fetch = result.Matches[SqlGrammar.Pagination.OffsetFetch];
+            if (fetch.IsMatch)
+            {
+                return ((TokenResult)fetch.Context).Value.ToUpper();
+            }
+            MatchResult limit = result.Matches[SqlGrammar.Pagination.Limit];
+            if (limit.IsMatch)
+            {
+                return ((TokenResult)limit.Context).Value.ToUpper();
+            }
+            return string.Empty;
+        }
         private Order buildOrderDirection(MatchResult result)
         {
             MatchResult descending = result.Matches[SqlGrammar.OrderDirection.Descending];
