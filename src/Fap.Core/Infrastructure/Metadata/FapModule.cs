@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Fap.Core.Metadata
+namespace Fap.Core.Infrastructure.Metadata
 {
     /// <summary>
     /// 系统模块表

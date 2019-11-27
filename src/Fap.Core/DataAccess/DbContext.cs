@@ -9,7 +9,7 @@ using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Infrastructure.Enums;
 using Fap.Core.Infrastructure.Model;
 using Fap.Core.Infrastructure.Query;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.Utility;
 using Microsoft.Extensions.Logging;
 using System;

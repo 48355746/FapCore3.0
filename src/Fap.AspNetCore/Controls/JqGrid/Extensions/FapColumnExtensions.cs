@@ -1,7 +1,7 @@
 ﻿using Fap.Core.DataAccess;
 using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Domain;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.MultiLanguage;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;

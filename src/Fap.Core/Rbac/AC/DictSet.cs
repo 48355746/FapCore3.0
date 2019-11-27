@@ -1,5 +1,5 @@
 ﻿using Fap.Core.DataAccess;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Data;

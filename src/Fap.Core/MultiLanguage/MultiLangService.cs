@@ -1,7 +1,7 @@
 ﻿using Fap.Core.DI;
 using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Domain;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.Rbac.Model;
 using Fap.Model.Infrastructure;
 using System;

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Dapper;
 using Fap.Core.Infrastructure.Model;
 using Fap.Core.Infrastructure.Query;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 
 namespace Fap.Core.DataAccess
 {

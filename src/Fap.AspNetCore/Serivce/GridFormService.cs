@@ -5,7 +5,7 @@ using System;
 using Fap.Core.Extensions;
 using System.Collections.Generic;
 using System.Text;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.DataAccess;
 using System.Linq;

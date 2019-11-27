@@ -1,4 +1,4 @@
-﻿using Fap.Core.Metadata;
+﻿using Fap.Core.Infrastructure.Metadata;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;

@@ -1,6 +1,6 @@
 ﻿using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Domain;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 using SQLGeneration.Builders;
 using SQLGeneration.Generators;
 using System;

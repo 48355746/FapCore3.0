@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.Rbac.Model;
 using Fap.Model.Infrastructure;
 

@@ -4,7 +4,7 @@ using Dapper.Contrib.Extensions;
 using Fap.Core.DI;
 using Fap.Core.Exceptions;
 using Fap.Core.Extensions;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;

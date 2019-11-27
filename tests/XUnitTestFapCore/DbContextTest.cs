@@ -8,7 +8,7 @@ using Xunit;
 using Fap.Core.Exceptions;
 using System.Linq;
 using Fap.Core.Rbac.Model;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.Utility;
 
 namespace XUnitTestFapCore

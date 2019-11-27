@@ -1,4 +1,4 @@
-﻿using Fap.Core.Metadata;
+﻿using Fap.Core.Infrastructure.Metadata;
 using Ganss.XSS;
 using Microsoft.AspNetCore.Http;
 using System;

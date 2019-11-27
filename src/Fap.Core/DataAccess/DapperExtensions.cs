@@ -2,7 +2,7 @@
 using Dapper;
 using Dapper.Contrib.Extensions;
 using Fap.Core.Extensions;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.Utility;
 using System;
 using System.Collections.Concurrent;

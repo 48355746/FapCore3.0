@@ -1,6 +1,6 @@
 ﻿using Fap.Core.DataAccess;
 using Fap.Core.DI;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.Rbac.Model;
 using System;
 using System.Collections.Generic;

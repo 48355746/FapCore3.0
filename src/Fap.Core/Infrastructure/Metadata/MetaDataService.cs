@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Fap.Core.Metadata
+namespace Fap.Core.Infrastructure.Metadata
 {
     [Service(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton)]
     public class MetaDataService : IMetaDataService

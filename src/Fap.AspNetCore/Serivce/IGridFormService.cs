@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Fap.AspNetCore.Model;
 using Fap.AspNetCore.ViewModel;
 using Fap.Core.Infrastructure.Query;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 using Microsoft.AspNetCore.Http;
 
 namespace Fap.AspNetCore.Serivce

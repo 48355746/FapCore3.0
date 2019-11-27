@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Fap.Core.Metadata
+namespace Fap.Core.Infrastructure.Metadata
 {
     public interface IMetaDataService
     {

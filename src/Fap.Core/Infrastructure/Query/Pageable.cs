@@ -5,7 +5,7 @@ using System.Text;
 using Ardalis.GuardClauses;
 using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Domain;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.MultiLanguage;
 using Fap.Core.Utility;
 
