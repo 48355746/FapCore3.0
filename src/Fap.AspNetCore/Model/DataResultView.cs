@@ -11,7 +11,7 @@ namespace Fap.AspNetCore.Model
         /// <summary>
         /// 表的字段元数据，不仅支持单表， 也可以支持多表
         /// </summary>
-        public IEnumerable<FapColumn> ColumnList { get; set; }
+        //public IEnumerable<FapColumn> ColumnList { get; set; }
 
         /// <summary>
         /// 查询结果数据集合（动态对象）

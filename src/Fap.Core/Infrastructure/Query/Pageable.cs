@@ -15,19 +15,17 @@ namespace Fap.Core.Infrastructure.Query
     /// 单表数据查询请求对象
     /// 适用于主表、扩展表的查询
     /// </summary>
-    public class SimpleQueryOption
+    public class Pageable
     {
         private IFapPlatformDomain _platformDomain;
-        private IFapApplicationContext _applicationContext;
-        public SimpleQueryOption(IFapPlatformDomain platformDomain, IFapApplicationContext applicationContext)
+        public Pageable(IFapPlatformDomain platformDomain)
         {
             _platformDomain = platformDomain;
-            _applicationContext = applicationContext;
         }
         /// <summary>
-        /// 时间点， 只用于查询历史信息
+        /// 历史时间点， 只用于查询历史信息
         /// </summary>
-        public string TimePoint { get; set; }
+        public string HistoryTimePoint { get; set; }
         public FapTable FapTable
         {
             get
@@ -40,7 +38,10 @@ namespace Fap.Core.Infrastructure.Query
         /// 说明：要查询的表
         /// </summary>
         public string TableName { get; set; }
-
+        /// <summary>
+        /// 分页最大ID条件，存在的时候 可以根据MaxId过滤，提高性能
+        /// </summary>
+        public long? MaxId { get; set; }
         /// <summary>
         /// 显示的列名。
         /// 说明：如果为空，查询主表和扩展表的列；如果不空，查询指定的列
@@ -55,18 +56,14 @@ namespace Fap.Core.Infrastructure.Query
         /// </summary>
         public string HiddenCols { get; set; } = string.Empty;
         #region Where条件
-        private string _where;
         /// <summary>
         /// 查询条件
         /// 说明：可以由主表、扩展表的字段作为查询条件
         /// 举例：m.Age>@Age, e.HighestEducation=@HighestEducation
         /// m. 表示主表， e. 表示扩展表
         /// </summary>
-        public string Where
-        {
-            get { return _where; }
-            set { _where = value; }
-        }
+        public string Where { get; set; }
+
         /// <summary>
         /// 增加查询条件
         /// </summary>
@@ -74,19 +71,19 @@ namespace Fap.Core.Infrastructure.Query
         /// <param name="symbol">AND还是OR</param>
         public void AddWhere(string where, QuerySymbolEnum symbol = QuerySymbolEnum.AND)
         {
-            if (_where.IsMissing())
+            if (Where.IsMissing())
             {
-                _where = where;
+                Where = where;
             }
             else
             {
                 if (symbol == QuerySymbolEnum.AND)
                 {
-                    _where += " AND (" + where + ")";
+                    Where += " AND (" + where + ")";
                 }
                 else if (symbol == QuerySymbolEnum.OR)
                 {
-                    _where += " OR (" + where + ")";
+                    Where += " OR (" + where + ")";
                 }
             }
         }
@@ -95,22 +92,10 @@ namespace Fap.Core.Infrastructure.Query
 
         #region  过滤条件    
 
-        private FilterCondition _filterCondition;
-
         /// <summary>
         /// 过滤条件对象
         /// </summary>
-        public FilterCondition FilterCondition
-        {
-            get
-            {
-                return _filterCondition;
-            }
-            set
-            {
-                _filterCondition = value;
-            }
-        }
+        public FilterCondition FilterCondition { get; set; }
 
         #endregion     
         /// <summary>
@@ -120,7 +105,6 @@ namespace Fap.Core.Infrastructure.Query
         /// m. 表示主表， e. 表示扩展表
         /// </summary>
         public OrderByCondition OrderBy { get; set; } = new OrderByCondition();
-
 
         /// <summary>
         /// 是否要查询扩展表的数据
@@ -189,38 +173,6 @@ namespace Fap.Core.Infrastructure.Query
 
         #endregion
 
-        /// <summary>
-        /// 获取原始SQL语句
-        /// 导出数据sql
-        /// </summary>
-        public string OrginSql
-        {
-            get
-            {
-                string currentDate = DateTimeUtils.CurrentDateTimeStr;
-                StringBuilder sqlBuilder = new StringBuilder();
-                sqlBuilder.Append("SELECT ");
-                sqlBuilder.Append(this.Wraper.MakeSelectSql().Replace("@CurrentDate", "'" + currentDate + "'").Replace(this.TableName + "_", "", StringComparison.OrdinalIgnoreCase));
-                sqlBuilder.Append(" FROM ").Append(this.TableName);
-                //string valideWhere = this.Wraper.MakeWhereSql().Replace("@CurrentDate","'"+currentDate+"'");
-                sqlBuilder.Append(" WHERE ").Append(" 1=1 ");
-                //if (!string.IsMissing(this.Where))
-                //{
-                //    sqlBuilder.Append(" and ").Append(this.Where);
-                //}
-                sqlBuilder.Append(" and ").Append(this.Wraper.MakeWhereSql().Replace("@CurrentDate", "'" + currentDate + "'"));
-                if (this.FilterCondition != null)
-                {
-                    sqlBuilder.Append(" and ").Append(this.Wraper.MakeFilterSql());
-                }
-                if (this.OrderBy != null)
-                {
-                    sqlBuilder.Append(" ORDER BY ").Append(this.Wraper.MakeOrderBySql());
-                }
-                return sqlBuilder.ToString();
-            }
-        }
-
 
 
         [NonSerialized]
@@ -235,7 +187,7 @@ namespace Fap.Core.Infrastructure.Query
             {
                 if (_wraper == null)
                 {
-                    _wraper = new SimpleQueryOptionBuilder(this, _platformDomain, _applicationContext);
+                    _wraper = new SimpleQueryOptionBuilder(this, _platformDomain);
                 }
                 return _wraper;
             }
@@ -245,60 +197,46 @@ namespace Fap.Core.Infrastructure.Query
         /// 当前页码，从1开始
         /// 说明：适用于分页查询
         /// </summary>
-        public int CurrentPageIndex { get; set; }
+        public int PageNumber { get; set; }
         /// <summary>
-        /// 每页的个数
+        /// 每页的记录个数
         /// 说明：适用于分页查询
         /// </summary>
-        public int PageCount { get; set; }
+        public int PageSize { get; set; }
 
         /// <summary>
         /// 记录总数量
         /// 说明：适用于分页查询
         /// </summary>
-        [NonSerialized]
-        private int _totalNum = 0;
-        public int TotalNum { get { return _totalNum; } set { _totalNum = value; } }
+   
+        public int TotalSizes { get; set; }
 
-        [NonSerialized]
-        private int _totalPage = 0;
         /// <summary>
         /// 总页数
         /// </summary>
-        public int TotalPage
+        public int TotalPages
         {
             get
             {
-                _totalPage = (TotalNum + PageCount - 1) / PageCount;
-                return _totalPage;
+                return (TotalSizes + PageSize - 1) / PageSize;
             }
         }
 
-        [NonSerialized]
-        private int _recordFirstIndex = 0;
         /// <summary>
-        /// 当前页上开始记录Index
+        /// 开始分页偏移量
         /// </summary>
-        public int RecordFirstIndex
+        public int Offset
         {
             get
             {
-                _recordFirstIndex = (CurrentPageIndex - 1) * PageCount + 1;
-                return _recordFirstIndex;
-            }
-        }
-
-        [NonSerialized]
-        private int _recordLastIndex = 0;
-        /// <summary>
-        /// 当前页上结束记录Index
-        /// </summary>
-        public int RecordLastIndex
-        {
-            get
-            {
-                _recordLastIndex = CurrentPageIndex * PageCount;
-                return _recordLastIndex;
+                if (MaxId != null)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return (PageNumber - 1) * PageSize;
+                }
             }
         }
     }
@@ -308,19 +246,13 @@ namespace Fap.Core.Infrastructure.Query
     /// </summary>
     public sealed class SimpleQueryOptionBuilder
     {
-        private SimpleQueryOption _queryOption;
+        private Pageable _queryOption;
         private IFapPlatformDomain _platformDomain;
-        public SimpleQueryOptionBuilder(SimpleQueryOption queryOption, IFapPlatformDomain platformDomain, IFapApplicationContext applicationContext)
+        public SimpleQueryOptionBuilder(Pageable queryOption, IFapPlatformDomain platformDomain)
         {
             _queryOption = queryOption;
             _platformDomain = platformDomain;
         }
-
-        /// <summary>
-        /// 最后返回的字段对象集合
-        /// </summary>
-        public List<FapColumn> ResultColumns { get; } = new List<FapColumn>();
-
         /// <summary>
         /// 主表
         /// </summary>
@@ -388,73 +320,6 @@ namespace Fap.Core.Infrastructure.Query
             }
         }
 
-        private List<SqlColumnInfo> ParseOrginSelectSql(string columnSqlSegment)
-        {
-            List<SqlColumnInfo> columnInfoList = new List<SqlColumnInfo>();
-            string[] columnInfos = columnSqlSegment.Split(',');
-            foreach (var str in columnInfos)
-            {
-                if (str.IsMissing()) continue;
-
-                string item = str.Trim();
-                SqlColumnInfo columnInfo = ParseColumnStr(item);
-                if (columnInfo != null)
-                {
-                    columnInfoList.Add(columnInfo);
-                }
-            }
-
-            return columnInfoList.OrderBy(c => c.ColumnOrder).ToList();
-        }
-
-        /// <summary>
-        /// 解析select前面部分的SQL
-        /// </summary>
-        /// <param name="columnSql"></param>
-        /// <returns></returns>
-        private SqlColumnInfo ParseColumnStr(string columnSql)
-        {
-            SqlColumnInfo columnInfo = null;
-            string[] temp = columnSql.Split('.');
-            if (temp.Length > 1)
-            {
-                if ("m".Equals(temp[0], StringComparison.CurrentCultureIgnoreCase))
-                {
-                    columnInfo = new SqlColumnInfo();
-                    columnInfo.TableAlias = MainTable.TableName;
-                    columnInfo.ColumnName = temp[1];
-                    columnInfo.ColumnAlias = columnInfo.ColumnName;// columnInfo.TableAlias + "_" + columnInfo.ColumnName;
-                    columnInfo.ColumnInCorrespond = _platformDomain.ColumnSet.FirstOrDefault(c => c.TableName == MainTable.TableName && c.ColName == columnInfo.ColumnName);
-                    columnInfo.ColumnOrder = columnInfo.ColumnInCorrespond.ColOrder;
-                }
-                else if ("e".Equals(temp[0], StringComparison.CurrentCultureIgnoreCase))
-                {
-                    //查询扩展表
-                    if (_queryOption.IsQueryExtTable)
-                    {
-                        if (ExtTable != null)
-                        {
-                            columnInfo = new SqlColumnInfo();
-                            columnInfo.TableAlias = ExtTable.TableName;
-                            columnInfo.ColumnName = temp[1];
-                            columnInfo.ColumnAlias = columnInfo.ColumnName;// columnInfo.TableAlias + "_" + columnInfo.ColumnName;
-                            columnInfo.ColumnInCorrespond = _platformDomain.ColumnSet.FirstOrDefault(c => c.TableName == ExtTable.TableName && c.ColName == columnInfo.ColumnName);
-                            columnInfo.ColumnOrder = columnInfo.ColumnInCorrespond.ColOrder;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                columnInfo = new SqlColumnInfo();
-                columnInfo.TableAlias = MainTable.TableName;
-                columnInfo.ColumnName = temp[0];
-                columnInfo.ColumnAlias = columnInfo.TableAlias + "_" + columnInfo.ColumnName;
-                columnInfo.ColumnInCorrespond = _platformDomain.ColumnSet.FirstOrDefault(c => c.TableName == MainTable.TableName && c.ColName == columnInfo.ColumnName);
-                columnInfo.ColumnOrder = columnInfo.ColumnInCorrespond.ColOrder;
-            }
-            return columnInfo;
-        }
 
 
         /// <summary>
@@ -470,20 +335,7 @@ namespace Fap.Core.Infrastructure.Query
 
             return "*";
         }
-        /// <summary>
-        /// 构造参照名称字段
-        /// </summary>
-        /// <param name="refColumn"></param>
-        /// <returns></returns>
-        private static FapColumn GeneralReferenceColumn(FapColumn refColumn)
-        {
-            FapColumn refMCColumn = (FapColumn)refColumn.Clone();
-            refMCColumn.IsCustomColumn = 1; //属于自定义字段
-            refMCColumn.ColName = refMCColumn.ColName + "MC";
-            refMCColumn.CtrlType = FapColumn.CTRL_TYPE_TEXT;
-            refMCColumn.ShowAble = 0;//不显示
-            return refMCColumn;
-        }
+
 
         /// <summary>
         /// 组装成From部分的SQL
@@ -584,7 +436,6 @@ namespace Fap.Core.Infrastructure.Query
             {
                 if (filterCondition != null)
                 {
-
                     if (filterCondition.FilterConditions.Count > 0)
                     {
                         sqlBuilder.Append(" (");

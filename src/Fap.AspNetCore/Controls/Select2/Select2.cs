@@ -22,11 +22,11 @@ namespace Fap.AspNetCore.Controls
         private string _id;
         private int _width;
         private bool _isMulti;
-        private bool _isClear;
+        //private bool _isClear;
         private string _selectOptions;
         private string _placeholder;
         //dataSource
-        private string _data;
+        //private string _data;
         //event
         private string _changeEvent;
         private string _openEvent;

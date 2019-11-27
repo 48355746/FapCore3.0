@@ -17,7 +17,6 @@ namespace Fap.AspNetCore.Controls.TagHelpers
 {
     public class FapFormTagHelper : TagHelper
     {
-        private IDbContext _dataAccessor;
         private IServiceProvider _serviceProvider;
         public FapFormTagHelper(IServiceProvider serviceProvider)
         {
@@ -38,7 +37,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// <summary>
         /// 查询设置
         /// </summary>
-        public SimpleQueryOption QueryOption { get; set; }
+        public QuerySet QueryOption { get; set; }
 
         public FormStatus FormStatus { get; set; } = FormStatus.Add;
 

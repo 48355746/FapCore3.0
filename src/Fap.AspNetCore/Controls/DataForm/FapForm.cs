@@ -56,6 +56,7 @@ namespace Fap.AspNetCore.Controls.DataForm
 
         private IDbContext _dbContext;
         private IFapApplicationContext _applicationContext;
+        private IFapPlatformDomain _platformDomain;
         private IMultiLangService _multiLangService;
         private IRbacService _rbacService;
         //子表默认值集合
@@ -72,6 +73,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             _multiLangService = serviceProvider.GetService<IMultiLangService>(); 
             _rbacService = serviceProvider.GetService<IRbacService>(); ;
             _applicationContext = serviceProvider.GetService<IFapApplicationContext>();
+            _platformDomain = serviceProvider.GetService<IFapPlatformDomain>();
             _serviceProvider = serviceProvider;
             this.Id = id;
         }
@@ -211,16 +213,19 @@ namespace Fap.AspNetCore.Controls.DataForm
             }
             return this;
         }
-        public FapForm SetQueryOption(SimpleQueryOption queryOption)
+        public FapForm SetQueryOption(QuerySet qs)
         {
-            _tableName = queryOption.TableName;
-            _hiddenCols = queryOption.HiddenCols ?? "";
-            _tb =queryOption.FapTable;
-            DataResultView drv = QueryDynamicData(queryOption);
-            IEnumerable<FapColumn> fapColumns = drv.ColumnList.OrderBy(c => c.ColOrder);// coms.GetSimpleMetaData(queryOption).ColumnList;
-            if (drv.Data.Any())
+            _tableName = qs.TableName;
+            _hiddenCols = qs.HiddenCols ?? "";
+            _tb =_platformDomain.TableSet.FirstOrDefault(t=>t.TableName==qs.TableName);
+            DynamicParameters parameters = new DynamicParameters();
+            qs.Parameters.ForEach(q => parameters.Add(q.ParamKey, q.ParamValue));
+            var frmData = _dbContext.QueryFirstOrDefault(qs.ToString(), parameters);
+            var queryColList = qs.QueryCols.Split(',');
+            IEnumerable<FapColumn> fapColumns =_platformDomain.ColumnSet.Where(c => c.TableName == qs.TableName && queryColList.Contains(c.ColName));
+            if (frmData != null)
             {
-                FormData = drv.Data.First();
+                FormData = (frmData as IDictionary<string, object>).ToFapDynamicObject(qs.TableName);
                 if (_formStatus != FormStatus.View)
                 {
                     _formStatus = FormStatus.Edit;
@@ -228,31 +233,14 @@ namespace Fap.AspNetCore.Controls.DataForm
             }
             else
             {
-                FormData = drv.DefaultData;
-                //drv.DefaultData.RcrtDemand_BillName
-                //单据设置初始值
-                DynamicParameters param = new DynamicParameters();
-                param.Add("TableName", _tableName);
-                //FapTable tb = db.QueryFirstOrDefaultEntityByWhere<FapTable>("TableName=@TableName  and tablefeature like '%BillFeature%'", param);
-                if (_tb.TableFeature != null && _tb.TableFeature.Contains("BillFeature"))
-                {
-                    string billName = fapColumns.First().TableName + "_BillName";
-                    string billTime = fapColumns.First().TableName + "_BillTime";
-                    string billEmp = fapColumns.First().TableName + "_BillEmpUid";
-                    string billEmpName = fapColumns.First().TableName + "_BillEmpUidMC";
-                    string appEmp = fapColumns.First().TableName + "_AppEmpUid";
-                    string appEmpName = fapColumns.First().TableName + "_AppEmpUidMC";
-                    FormData.Add(billName, _tb.TableComment);
-                    FormData.Add(billTime, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-                    FormData.Add(billEmp,_applicationContext.EmpUid);
-                    FormData.Add(billEmpName,_applicationContext.EmpName);
-                    FormData.Add(appEmp, _applicationContext.EmpUid);
-                    FormData.Add(appEmpName, _applicationContext.EmpName);
-                    IsDocument = true;
-                }
+                FormData = _dbContext.GetDefualtData(qs.TableName);
                 _formStatus = FormStatus.Add;
             }
-            FidValue = FormData.Get(fapColumns.First().TableName + "_Fid");
+            if (_tb.TableFeature != null && _tb.TableFeature.Contains("BillFeature"))
+            {
+                IsDocument = true;
+            }
+            FidValue = FormData.Get("Fid");
             if (fapColumns.Any())
             {
 
@@ -264,25 +252,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 }
             }
             return this;
-            DataResultView QueryDynamicData(SimpleQueryOption queryOption)
-            {
-                var(sql,parameters)= _dbContext.FormQuery(queryOption);
-                var dl= _dbContext.Query(sql, parameters);              
-                //组装成DataResultView对象
-                DataResultView dataResultView = new DataResultView();
-                dataResultView.ColumnList = queryOption.Wraper.ResultColumns;
-                dataResultView.Data =dl;
-                //当未获取数据的时候才获取默认值
-                if (!dl.Any())
-                {
-                    dynamic defaultData = new FapDynamicObject(queryOption.TableName);
-                    _dbContext.InitDefualtValue(defaultData);
-                    dataResultView.DefaultData = defaultData;
-                }
-                dataResultView.DataJson = dl.ToJson();
-                //dataResultView.OutputSqlLog = OutputSQL(sql, paramObject);
-                return dataResultView;
-            }
+          
         }
         public override string ToString()
         {

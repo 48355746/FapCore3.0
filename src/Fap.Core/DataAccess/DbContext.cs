@@ -64,7 +64,7 @@ namespace Fap.Core.DataAccess
                 return sql;
             }
         }
-        private DynamicParameters InitParamers(DynamicParameters parameters=null)
+        private DynamicParameters InitParamers(DynamicParameters parameters = null)
         {
             if (parameters == null)
             {
@@ -210,6 +210,10 @@ namespace Fap.Core.DataAccess
             }
             return "";
         }
+        /// <summary>
+        /// 初始化默认值
+        /// </summary>
+        /// <param name="dynEntity">FapDynamicObject</param>
         private void InitDynamicToInsert(dynamic dynEntity)
         {
             if (dynEntity == null)
@@ -320,15 +324,20 @@ namespace Fap.Core.DataAccess
             //单据没有配置的时候 返回默认的值
             if (IsBill(tableName))
             {
-                //CfgBillCodeRule bc = new CfgBillCodeRule();
-                //bc.FieldName = "BillCode";
-                int seq = GetSequence(tableName);
-                //bc.BillCode = seq.ToString().PadLeft(7, '0');
-                string billcode = seq.ToString().PadLeft(7, '0');
-                dictCodes.Add("BillCode", billcode);
+                if (!dictCodes.ContainsKey("BillCode"))
+                {
+                    int seq = GetSequence(tableName);
+                    //bc.BillCode = seq.ToString().PadLeft(7, '0');
+                    string billcode = seq.ToString().PadLeft(7, '0');
+                    dictCodes.Add("BillCode", billcode);
+                }
                 dictCodes.Add("BillStatus", BillStatus.DRAFT);
+                dictCodes.Add("BillTime", DateTimeUtils.CurrentDateTimeStr);
+                dictCodes.Add("BillEmpUid", _applicationContext.EmpUid);
+                dictCodes.Add("BillEmpUidMC", _applicationContext.EmpName);
+                dictCodes.Add("AppEmpUid", _applicationContext.EmpUid);
+                dictCodes.Add("AppEmpUidMC", _applicationContext.EmpName);
             }
-
             return dictCodes;
             bool IsBill(string tableName)
             {
@@ -371,24 +380,18 @@ namespace Fap.Core.DataAccess
                 }
             }
         }
-
-        public void InitDefualtValue(FapDynamicObject keyValues)
+        /// <summary>
+        /// 获取初始化表单数据
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
+        public FapDynamicObject GetDefualtData(string tableName)
         {
-            if (keyValues == null)
-            {
-                return;
-            }
-            dynamic dynEntity = keyValues;
+            dynamic dynEntity = new FapDynamicObject(tableName, null, UUIDUtils.Ts);
             //非系统默认列的默认值的生成
-            IEnumerable<FapColumn> columns = _fapPlatformDomain.ColumnSet.Where(c => c.TableName == keyValues.TableName && c.IsDefaultCol != 1 && (c.DefaultValueClass.IsPresent() || c.ColDefault.IsPresent()));
+            IEnumerable<FapColumn> columns = _fapPlatformDomain.ColumnSet.Where(c => c.TableName == tableName && c.IsDefaultCol != 1 && (c.DefaultValueClass.IsPresent() || c.ColDefault.IsPresent()));
             foreach (var column in columns)
             {
-                //先判断是否有值，如果有值，则不赋值
-                object value = dynEntity.Get(column.ColName);
-                if (value != null && !string.IsNullOrWhiteSpace(value.ToString().Trim()))
-                {
-                    continue;
-                }
                 if (column.ColDefault.IsPresent())
                 {
                     string key = column.ColName;
@@ -397,7 +400,7 @@ namespace Fap.Core.DataAccess
                 }
             }
             //是否有配置的编码
-            Dictionary<string, string> ccr = GetBillCode(keyValues.TableName);
+            Dictionary<string, string> ccr = GetBillCode(tableName);
             if (ccr != null && ccr.Any())
             {
                 foreach (var cc in ccr)
@@ -412,6 +415,7 @@ namespace Fap.Core.DataAccess
                     }
                 }
             }
+            return dynEntity;
         }
 
         #region inner Get       
@@ -1479,18 +1483,18 @@ namespace Fap.Core.DataAccess
                 _logger.LogError($"insert 事务异常:{ex.Message}");
                 throw;
             }
-            async Task<long> InsertEntityAsync<T>(T entityToInsert) where T : BaseModel
+            async Task<long> InsertEntityAsync<T1>(T1 entityToInsert) where T1 : BaseModel
             {
-                string tableName = typeof(T).Name;
+                string tableName = typeof(T1).Name;
                 FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
                 //初始化基础数据以及默认值
-                InitEntityToInsert<T>(entityToInsert);
+                InitEntityToInsert<T1>(entityToInsert);
                 IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
                 //insert前事件
-                BeforeInsert<T>(entityToInsert, dataInterceptor);
-                long id = await _dbSession.InsertAsync<T>(entityToInsert);
+                BeforeInsert<T1>(entityToInsert, dataInterceptor);
+                long id = await _dbSession.InsertAsync<T1>(entityToInsert);
                 //insert 后事件            
-                AfterInsert<T>(entityToInsert, dataInterceptor);
+                AfterInsert<T1>(entityToInsert, dataInterceptor);
                 //RemoveCache(tableName);
                 return id;
             }
@@ -2133,209 +2137,222 @@ namespace Fap.Core.DataAccess
         #endregion
 
         #region jqgrid paging statistics query
-        public (string, DynamicParameters) JqgridPagingQuery(SimpleQueryOption queryOption)
+        public PageInfo<T> QueryPage<T>(Pageable pageable) where T : BaseModel
         {
             DynamicParameters dynamicParameters = new DynamicParameters();
-
+            InitParamers(dynamicParameters);
+            string sql = string.Empty;
             if (_dbSession.DatabaseDialect == DatabaseDialectEnum.MSSQL)
             {
-                string sql = PagingMSSQL(queryOption, dynamicParameters);
-                return (sql, dynamicParameters);
+                sql = PagingMSSQL(pageable);
             }
             else if (_dbSession.DatabaseDialect == DatabaseDialectEnum.MYSQL)
             {
-                string sql = PagingMySQL(queryOption, dynamicParameters);
-                return (sql, dynamicParameters);
+                sql = PagingMySQL(pageable);
             }
             else
             {
                 throw new NotImplementedException("jqgrid 分页脚本为实现，暂不支持");
             }
-            string PagingMSSQL(SimpleQueryOption requestParam, DynamicParameters paramObject)
+            //返回总数
+            string[] sqls = sql.Split(';', StringSplitOptions.RemoveEmptyEntries);
+            Dictionary<string, object> parameterMap = pageable.Parameters;
+            //设置参数值
+            foreach (var item in parameterMap)
             {
-                StringBuilder sqlBuilder = new StringBuilder();
-
-                sqlBuilder.Append("SELECT ").Append(requestParam.Wraper.MakeSelectSql()).Append(", ROW_NUMBER() OVER(");
-                //Orderby条件
-                string orderBy = requestParam.Wraper.MakeOrderBySql();
-                if (!string.IsNullOrEmpty(orderBy))
-                {
-                    sqlBuilder.Append(" ORDER BY ").Append(orderBy);
-                }
-
-                sqlBuilder.Append(") AS RowNumber FROM ");
-                sqlBuilder.Append(requestParam.Wraper.MakeFromSql());
-                //Join条件
-                string join = requestParam.Wraper.MakeJoinSql();
-                if (!string.IsNullOrEmpty(join))
-                {
-                    sqlBuilder.Append(join);
-                }
-
-                //Where条件
-                string where = requestParam.Wraper.MakeWhereSql();
-                if (where.IsPresent())
-                {
-                    sqlBuilder.Append($"Where {where}");
-                }               
-
-                string completeSql = sqlBuilder.ToString();
-                FapSqlParser parse = new FapSqlParser(_fapPlatformDomain, completeSql, true);
-                InitParamers(paramObject);
-                var sql = parse.ParserSqlStatement();
-                sqlBuilder.Clear();
-                sqlBuilder.Append("SELECT a.* FROM (");
-                sqlBuilder.Append(sql);
-                sqlBuilder.Append(") AS a ");
-
-
-                sqlBuilder.Append("WHERE (RowNumber BETWEEN ").Append(requestParam.RecordFirstIndex).Append(" AND ").Append(requestParam.RecordLastIndex).Append(")");
-                sqlBuilder.Append(";");
-
-                //返回总数
-                sqlBuilder.Append("SELECT count(1) FROM ");
-                //sqlBuilder.Append(requestParam.Wraper.MakeFromSql());
-                ////Where条件
-                //if (!string.IsNullOrEmpty(where))
-                //{
-                //    sqlBuilder.Append(" WHERE ").Append(where);
-                //}
-                sqlBuilder.Append("(").Append(sql).Append(") AS t");             
-                return sqlBuilder.ToString();
+                dynamicParameters.Add(item.Key, item.Value);
+            }
+            PageInfo<T> page = new PageInfo<T>();
+            page.PageSize = pageable.PageSize;
+            page.TotalSizes = ExecuteScalar<int>(sqls[1], dynamicParameters);
+            page.Items = Query<T>(sqls[0], dynamicParameters, true);
+            page.MaxIdValue = page.Items.Max(a => a.Id).Value;
+            page.PageNumber = pageable.PageNumber;
+            string statSql = StatisticsSql(pageable);
+            if (statSql.IsPresent())
+            {
+                page.StatFieldData = Query(statSql, dynamicParameters);
+            }
+            return page;
+        }
+        public PageInfo<dynamic> QueryPage(Pageable pageable)
+        {
+            DynamicParameters dynamicParameters = new DynamicParameters();
+            InitParamers(dynamicParameters);
+            string sql = string.Empty;
+            if (_dbSession.DatabaseDialect == DatabaseDialectEnum.MSSQL)
+            {
+                sql = PagingMSSQL(pageable);
+            }
+            else if (_dbSession.DatabaseDialect == DatabaseDialectEnum.MYSQL)
+            {
+                sql = PagingMySQL(pageable);
+            }
+            else
+            {
+                throw new NotImplementedException("jqgrid 分页脚本为实现，暂不支持");
+            }
+            //返回总数
+            string[] sqls = sql.Split(';', StringSplitOptions.RemoveEmptyEntries);
+            Dictionary<string, object> parameterMap = pageable.Parameters;
+            //设置参数值
+            foreach (var item in parameterMap)
+            {
+                dynamicParameters.Add(item.Key, item.Value);
+            }
+            PageInfo<dynamic> page = new PageInfo<dynamic>();
+            page.PageSize = pageable.PageSize;
+            page.TotalSizes = ExecuteScalar<int>(sqls[1], dynamicParameters);
+            page.Items = Query(sqls[0], dynamicParameters, true);
+            page.MaxIdValue = page.Items.Max(a => a.Id);
+            page.PageNumber = pageable.PageNumber;
+            string statSql = StatisticsSql(pageable);
+            if (statSql.IsPresent())
+            {
+                page.StatFieldData =QueryFirstOrDefault(statSql, dynamicParameters);               
+            }
+            return page;
+        }
+        #region page sql
+        private string PagingMSSQL(Pageable pageable)
+        {
+            //Orderby条件
+            string orderBy = pageable.Wraper.MakeOrderBySql();
+            if (!string.IsNullOrEmpty(orderBy))
+            {
+                orderBy = $" ORDER BY {orderBy} "  ;
+            }
+            else
+            {
+                orderBy = " order by Id ";
             }
 
-            string PagingMySQL(SimpleQueryOption requestParam, DynamicParameters paramObject)
+            //Join条件
+            string join = pageable.Wraper.MakeJoinSql();
+
+            //Where条件
+            string where = pageable.Wraper.MakeWhereSql();
+            if (!string.IsNullOrEmpty(where))
             {
-                //Orderby条件
-                string orderBy = requestParam.Wraper.MakeOrderBySql();
-                if (!string.IsNullOrEmpty(orderBy))
+                where = $" where {where}";
+            }
+            //过滤条件
+            string filter = pageable.Wraper.MakeFilterSql();
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                where = where.IsPresent() ? $"({where}) and ({filter})" : where;
+            }
+            string countWhere = where;
+            if (pageable.MaxId != null)
+            {
+                where = where.IsPresent() ? $"({where}) and Id>{pageable.MaxId}" : where;
+            }
+            StringBuilder sql = new StringBuilder();
+            sql.Append($"select {pageable.Wraper.MakeSelectSql()} from {pageable.Wraper.MakeFromSql()} {join} {where} {orderBy}  offset {pageable.Offset} rows fetch next {pageable.PageSize} rows only ;");
+
+            //总数sql
+            sql.Append($"SELECT count(0) FROM {pageable.Wraper.MakeFromSql()} {join} {countWhere}");
+            return sql.ToString();
+
+        }
+
+        private string PagingMySQL(Pageable pageable)
+        {
+            //Orderby条件
+            string orderBy = pageable.Wraper.MakeOrderBySql();
+            if (!string.IsNullOrEmpty(orderBy))
+            {
+                orderBy = $" ORDER BY {orderBy}";
+            }
+            else
+            {
+                orderBy = " order by Id ";
+            }
+            //Join条件
+            string join = pageable.Wraper.MakeJoinSql();
+
+            //Where条件
+            string where = pageable.Wraper.MakeWhereSql();
+            if (!string.IsNullOrEmpty(where))
+            {
+                where = $" where {where}" ;
+            }
+            //过滤条件
+            string filter = pageable.Wraper.MakeFilterSql();
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                where = where.IsPresent() ? $"({where}) and ({filter})" : where;
+            }
+            string countWhere = where;
+            StringBuilder sql = new StringBuilder();
+            if (pageable.MaxId != null)
+            {
+                where = where.IsPresent() ? $"({where}) and Id>{pageable.MaxId}" : where;                
+            }            
+            sql.Append($"select {pageable.Wraper.MakeSelectSql()} from {pageable.Wraper.MakeFromSql()} {join} {where} {orderBy}   limit {pageable.Offset},{pageable.PageSize};");
+            
+            //总数sql
+            sql.Append($"SELECT count(0) FROM {pageable.Wraper.MakeFromSql()} {join} {countWhere}");
+            return sql.ToString();
+        }
+
+        private string StatisticsSql(Pageable pageable)
+        {
+            Dictionary<string, StatSymbolEnum> statFields = pageable.StatFields;
+            if (statFields.Any())
+            {
+                StringBuilder sqlBuilder = new StringBuilder();
+                sqlBuilder.Append("SELECT ");
+                foreach (var statField in statFields)
                 {
-                    orderBy = " ORDER BY " + orderBy;
+                    if (statField.Value == StatSymbolEnum.None)
+                    {
+                        continue;
+                    }
+                    if (statField.Value == StatSymbolEnum.Description)
+                    {
+                        sqlBuilder.Append(statField.Key + ",");
+                    }
+                    else
+                    {
+                        //string statTitle = MyEnumHelper.GetDescription(typeof(EnumStatSymbol), statField.Value);
+                        string statSymbol = Enum.GetName(typeof(StatSymbolEnum), statField.Value);
+                        string statFieldName = statField.Key;
+                        sqlBuilder.AppendFormat("{0}({1}) {2},", statSymbol, statFieldName, statFieldName);
+                    }
                 }
-                else
-                {
-                    orderBy = " order by Id";
-                }
+                sqlBuilder.Remove(sqlBuilder.Length - 1, 1);
+
+                sqlBuilder.Append(" FROM ").Append(pageable.Wraper.MakeFromSql());
 
                 //Join条件
-                string join = requestParam.Wraper.MakeJoinSql();
-
+                string join = pageable.Wraper.MakeJoinSql();
+                sqlBuilder.Append($" {join} ");
                 //Where条件
-                string where = requestParam.Wraper.MakeWhereSql();
+                string where = pageable.Wraper.MakeWhereSql();
                 if (!string.IsNullOrEmpty(where))
                 {
                     where = " where " + where;
                 }
-
                 //过滤条件
-                string filter = requestParam.Wraper.MakeFilterSql();
+                string filter = pageable.Wraper.MakeFilterSql();
                 if (!string.IsNullOrWhiteSpace(filter))
                 {
-                    where = where.IsPresent() ? where + " and " + filter : where;
+                    where = where.IsPresent() ? $"({where}) and ({filter})" : where;
                 }
 
-                StringBuilder sql = new StringBuilder();
-                sql.AppendLine(string.Format("select {0} from {1} {2} {3}   limit {4},{5};", requestParam.Wraper.MakeSelectSql(), requestParam.Wraper.MakeFromSql() + " " + join, where, orderBy, requestParam.RecordFirstIndex - 1, requestParam.PageCount));
-
-                //总数sql
-                sql.AppendLine(string.Format("SELECT count(*) FROM {0} {1}", requestParam.Wraper.MakeFromSql(), where));
-                return sql.ToString();
+                //Where条件
+                sqlBuilder.Append($" {where} ");
+                return sqlBuilder.ToString();
             }
+            return string.Empty;
         }
 
-        public (string, DynamicParameters) JqgridStatisticsQuery(SimpleQueryOption requestParam)
-        {
-            DynamicParameters parameters = new DynamicParameters();
-            Dictionary<string, StatSymbolEnum> statFields = requestParam.StatFields;
-            if (statFields.Count == 0) return ("", parameters);
 
-            StringBuilder sqlBuilder = new StringBuilder();
-            sqlBuilder.Append("SELECT ");
-            foreach (var statField in statFields)
-            {
-                if (statField.Value == StatSymbolEnum.None)
-                {
-                    continue;
-                }
-                if (statField.Value == StatSymbolEnum.Description)
-                {
-                    sqlBuilder.Append(statField.Key + ",");
-                }
-                else
-                {
-                    //string statTitle = MyEnumHelper.GetDescription(typeof(EnumStatSymbol), statField.Value);
-                    string statSymbol = Enum.GetName(typeof(StatSymbolEnum), statField.Value);
-                    string statFieldName = statField.Key;
-                    sqlBuilder.AppendFormat("CAST({0}({1}) AS VARCHAR(100)) AS {2},", statSymbol, statFieldName, statFieldName);
-                }
-            }
-            sqlBuilder.Remove(sqlBuilder.Length - 1, 1);
-
-            sqlBuilder.Append(" FROM ").Append(requestParam.Wraper.MakeFromSql());
-
-            //Where条件
-            sqlBuilder.Append(" WHERE 1=1 ");
-            string where = requestParam.Wraper.MakeWhereSql();
-            if (!string.IsNullOrEmpty(where))
-            {
-                sqlBuilder.Append(" AND (").Append(where).Append(")");
-            }
-
-            //过滤条件
-            string filter = requestParam.Wraper.MakeFilterSql();
-            if (!string.IsNullOrWhiteSpace(filter))
-            {
-                sqlBuilder.Append(" AND (").Append(filter).Append(")");
-            }
-
-            Dictionary<string, object> parameterMap = requestParam.Parameters;
-            //设置参数值
-            foreach (var item in parameterMap)
-            {
-                if (item.Key == "@returncount") continue;
-                parameters.Add(item.Key, item.Value);
-            }
-            return (sqlBuilder.ToString(), parameters);
-        }
         #endregion
 
-        #region form query
-        public (string, DynamicParameters) FormQuery(SimpleQueryOption queryOption)
-        {
-            StringBuilder sqlBuilder = new StringBuilder();
-            sqlBuilder.Append("SELECT ");
-            sqlBuilder.Append(queryOption.Wraper.MakeSelectSql());
-
-            sqlBuilder.Append(" FROM ").Append(queryOption.Wraper.MakeFromSql());
-            //Join条件
-            string join = queryOption.Wraper.MakeJoinSql();
-            if (!string.IsNullOrEmpty(join))
-            {
-                sqlBuilder.Append(join);
-            }
-            //Where条件
-            string where = queryOption.Wraper.MakeWhereSql();
-            if (!string.IsNullOrEmpty(where))
-            {
-                sqlBuilder.Append(" WHERE ").Append(where);
-            }
-            //OrderBy条件
-            string orderby = queryOption.Wraper.MakeOrderBySql();
-            if (!string.IsNullOrEmpty(orderby))
-            {
-                sqlBuilder.Append(" ORDER BY ").Append(orderby);
-            }
-            DynamicParameters parameters = new DynamicParameters();
-            Dictionary<string, object> parameterMap = queryOption.Parameters;
-            //设置参数值
-            foreach (var item in parameterMap)
-            {
-                parameters.Add(item.Key, item.Value);
-            }
-
-            return (sqlBuilder.ToString(), parameters);
-        }
         #endregion
+
 
         #region history trace
         /// <summary>

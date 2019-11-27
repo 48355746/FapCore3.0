@@ -42,7 +42,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// <summary>
         /// 查询设置
         /// </summary>
-        public SimpleQueryOption QueryOption { get; set; }
+        public QuerySet QueryOption { get; set; }
         /// <summary>
         /// 单据状态
         /// </summary>        

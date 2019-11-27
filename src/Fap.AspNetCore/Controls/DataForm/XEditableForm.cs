@@ -1,4 +1,5 @@
-﻿using Fap.AspNetCore.Model;
+﻿using Dapper;
+using Fap.AspNetCore.Model;
 using Fap.Core.DataAccess;
 using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Domain;
@@ -123,7 +124,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 }
                 foreach (var column in _fapColumns)
                 {
-                    string datakey = column.TableName + "_" + column.ColName;
+                    string datakey = column.ColName;
                     var fv = FormData.Get(datakey);
                     string strValue = (fv == null ? "" : fv.ToString());
                     if (existRolePower)
@@ -139,45 +140,22 @@ namespace Fap.AspNetCore.Controls.DataForm
             }
             return this;
         }
-        public XEditableForm SetQueryOption(SimpleQueryOption queryOption)
+        public XEditableForm SetQueryOption(QuerySet qs)
         {
-            TableName = queryOption.TableName;
+            TableName = qs.TableName;
+            DynamicParameters parameters = new DynamicParameters();
+            qs.Parameters.ForEach(q => parameters.Add(q.ParamKey, q.ParamValue));
+            FormData = _dbContext.QueryFirstOrDefault(qs.ToString(), parameters);
 
-            DataResultView drv = QueryDynamicData(queryOption);
-            if (drv.Data.Any())
-            {
-                FormData = drv.Data.FirstOrDefault();
-            }
-            else
-            {
-                FormData = drv.DefaultData;
-            }
-            _pkValue = FormData.Get(TableName + "_Fid");
-            IEnumerable<FapColumn> fapColumns = drv.ColumnList;// coms.GetSimpleMetaData(queryOption).ColumnList;
+            _pkValue = FormData.Get("Fid");
+            var queryColList = qs.QueryCols.Split(',');
+            IEnumerable<FapColumn> fapColumns =_platformDomain.ColumnSet.Where(c => c.TableName == qs.TableName && queryColList.Contains(c.ColName));
             if (fapColumns.Any())
             {
                 SetFapClumns(fapColumns);
             }
             return this;
-            DataResultView QueryDynamicData(SimpleQueryOption queryOption)
-            {
-                var (sql, parameters) = _dbContext.FormQuery(queryOption);
-                var dl = _dbContext.Query(sql, parameters);
-                //组装成DataResultView对象
-                DataResultView dataResultView = new DataResultView();
-                dataResultView.ColumnList = queryOption.Wraper.ResultColumns;
-                dataResultView.Data = dl;
-                //当未获取数据的时候才获取默认值
-                if (!dl.Any())
-                {
-                    dynamic defaultData = new FapDynamicObject(queryOption.TableName);
-                    _dbContext.InitDefualtValue(defaultData);
-                    dataResultView.DefaultData = defaultData;
-                }
-                dataResultView.DataJson = dl.ToJson();
-                //dataResultView.OutputSqlLog = OutputSQL(sql, paramObject);
-                return dataResultView;
-            }
+           
         }
         public override string ToString()
         {
@@ -410,7 +388,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             }
             else if (column.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
             {
-                var valueMC = FormData.Get(column.TableName + "_" + column.ColName + "MC");
+                var valueMC = FormData.Get(column.ColName + "MC");
                 string strValue = "{code:'" + fieldValue.RemoveSpace() + "',name:'" + (valueMC == null ? "" : valueMC.ToString()) + "'}";
                 sbOption.AppendLine("value:" + strValue.RemoveSpace() + ",");
                 sbOption.AppendLine("type:'reference',");

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Fap.Core.Metadata;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -20,11 +21,11 @@ namespace Fap.Core.Infrastructure.Query
         /// 查询的数据集合
         /// </summary>
         [NonSerialized]
-        private IEnumerable<dynamic> _data;
+        private IEnumerable<FapDynamicObject> _data;
         /// <summary>
         /// 查询结果数据集合（动态对象）
         /// </summary>
-        public IEnumerable<dynamic> Data { set { _data = value; } get { return _data; } }
+        public IEnumerable<FapDynamicObject> Data { set { _data = value; } get { return _data; } }
         /// <summary>
         /// 查询结果数据集合的JSON字符串
         /// </summary>

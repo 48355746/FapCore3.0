@@ -40,7 +40,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// <summary>
         /// 查询设置
         /// </summary>
-        public SimpleQueryOption QueryOption { get; set; }
+        public QuerySet QueryOption { get; set; }
 
         public XEditableSaveModel SaveModel { get; set; } = XEditableSaveModel.Single;
         public XEditableFormModel FormModel { get; set; } = XEditableFormModel.Inline;

@@ -250,10 +250,14 @@ namespace Fap.Core.DataAccess
         bool UpdateDynamicData(FapDynamicObject fapDynData);
         void UpdateDynamicDataBatch(IEnumerable<FapDynamicObject> dataObjects);
 
-        (string, DynamicParameters) JqgridPagingQuery(SimpleQueryOption queryOption);
-        (string, DynamicParameters) JqgridStatisticsQuery(SimpleQueryOption requestParam);
-        (string, DynamicParameters) FormQuery(SimpleQueryOption queryOption);
-        void InitDefualtValue(FapDynamicObject keyValues);
+        PageInfo<T> QueryPage<T>(Pageable pageable) where T : BaseModel;
+        PageInfo<dynamic> QueryPage(Pageable pageable);
+        /// <summary>
+        /// 获取一个默认数据
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
+        FapDynamicObject GetDefualtData(string tableName);
         IEnumerable<DataChangeHistory> QueryDataHistory(string tableName, string fid);
     }
 }

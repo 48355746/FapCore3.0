@@ -55,7 +55,7 @@ namespace Fap.AspNetCore.Infrastructure
         /// <param name="model"></param>
         /// <param name="handler"></param>
         /// <returns></returns>
-        protected JsonResult GetJqGridDataList(JqGridPostData model, Action<SimpleQueryOption> handler = null)
+        protected JsonResult GetJqGridDataList(JqGridPostData model, Action<Pageable> handler = null)
         {
             var jqJson = _gridFormService.QueryPageDataResultView(model, handler);
             return Json(jqJson);

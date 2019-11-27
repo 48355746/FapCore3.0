@@ -21,8 +21,7 @@ namespace Fap.AspNetCore.Infrastructure
         {
             FormViewModel model = new FormViewModel();
             model.FormId = $"frm-{tableName}";
-            SimpleQueryOption qryOption = new SimpleQueryOption(_fapPlatformDomain,_applicationContext);
-
+           
             QuerySet qs = new QuerySet();
             qs.TableName = tableName;
             qs.InitWhere = "";
@@ -33,38 +32,18 @@ namespace Fap.AspNetCore.Infrastructure
             if (handler != null)
             {
                 handler(qs);
-            }
-            
-            qryOption.QueryCols = qs.QueryCols;
-            qryOption.HiddenCols = qs.HiddenCols;
-            qryOption.TableName = qs.TableName;
+            }            
             if (fid.IsPresent())
             {
-                qryOption.Where = "Fid=@Fid";
-                qryOption.Parameters.Add("Fid", fid);
+                qs.InitWhere = "Fid=@Fid";
+                qs.Parameters.Add(new Parameter("Fid", fid));
             }
             else
             {
-                qryOption.Where = "Id=@Id";
-                qryOption.Parameters.Add("Id", id);
+                qs.InitWhere = "Id=@Id";
+                qs.Parameters.Add(new Parameter("Id", id));
             }
-
-            if(qs.InitWhere.IsPresent())
-            {
-                qryOption.Where += " and " + qs.InitWhere;
-            }
-            if(qs.GlobalWhere.IsPresent())
-            {
-                qryOption.Where += " and " + qs.GlobalWhere;
-            }
-            if(qs.Parameters!=null&&qs.Parameters.Any())
-            {
-                qs.Parameters.ForEach(param =>
-                {
-                    qryOption.AddParameter(param.ParamKey, param.ParamValue);
-                });
-            }
-            model.QueryOption = qryOption;
+            model.QueryOption = qs;
             model.TableName = tableName;
             return model;
         }

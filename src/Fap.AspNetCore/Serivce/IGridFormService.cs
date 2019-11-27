@@ -11,7 +11,7 @@ namespace Fap.AspNetCore.Serivce
     public interface IGridFormService
     {
         Task<ResponseViewModel> PersistenceAsync(IFormCollection formCollection);
-        JqGridData QueryPageDataResultView(JqGridPostData jqGridPostData, Action<SimpleQueryOption> actionSimpleQueryOption);
+        JqGridData QueryPageDataResultView(JqGridPostData jqGridPostData, Action<Pageable> actionSimpleQueryOption);
         ResponseViewModel SaveChange(OperEnum oper, FapDynamicObject mainDataKeyValues, System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<dynamic>> childDataList = null);
     }
 }

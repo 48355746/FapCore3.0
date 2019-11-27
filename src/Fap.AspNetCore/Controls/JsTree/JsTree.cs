@@ -31,8 +31,8 @@ namespace Fap.AspNetCore.Controls
         //private bool _massLoad;
         //private bool _conditionalSelect;
         private TreeModel _treeModel;
-        private string _valueField = "Fid";
-        private string _parentValueField = "Pid";
+        //private string _valueField = "Fid";
+        //private string _parentValueField = "Pid";
         //public string _displayField;
         //public string _initContidtion;
         private string _nodeIcon = "icon-folder  ace-icon fa fa-folder blue";

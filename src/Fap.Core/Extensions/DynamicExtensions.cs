@@ -72,7 +72,7 @@ namespace Fap.Core.Extensions
         /// <returns></returns>
         public static dynamic ToFapDynamicObject(this IDictionary<string, object> dynamicData, string tableName)
         {
-            dynamic obj = new FapDynamicObject(tableName, 0, UUIDUtils.Ts);
+            dynamic obj = new FapDynamicObject(tableName);
             List<string> keyList = new List<string>(dynamicData.Keys);
             foreach (var key in keyList)
             {

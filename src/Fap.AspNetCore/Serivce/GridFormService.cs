@@ -49,14 +49,14 @@ namespace Fap.AspNetCore.Serivce
             _antiforgery = antiforgery;
             _logger = logger;
         }
-        public JqGridData QueryPageDataResultView(JqGridPostData jqGridPostData, Action<SimpleQueryOption> actionSimpleQueryOption)
+        public JqGridData QueryPageDataResultView(JqGridPostData jqGridPostData, Action<Pageable> actionSimpleQueryOption)
         {
-            SimpleQueryOption queryOption = AnalysisPostData();
+            Pageable queryOption = AnalysisPostData();
 
             //queryOption.Where = AnalysisWhere(queryOption.Where);
             PageDataResultView result = QueryPagedDynamicData(jqGridPostData.HasOperCol);
             return result.GetJqGridJsonData();
-            SimpleQueryOption AnalysisPostData()
+            Pageable AnalysisPostData()
             {
                 jqGridPostData.Filters = jqGridPostData.Filters.IsPresent() ? jqGridPostData.Filters.Replace("query ", "select ") : "";
                 //矫正当前页为0的情况
@@ -66,7 +66,7 @@ namespace Fap.AspNetCore.Serivce
                 }
                 QuerySet qs = jqGridPostData.QuerySet;
                 IEnumerable<FapColumn> fapColumns = _platformDomain.ColumnSet.Where(c => c.TableName == qs.TableName);
-                SimpleQueryOption queryOption = new SimpleQueryOption(_platformDomain, _applicationContext) { TableName = qs.TableName, QueryCols = qs.QueryCols, TimePoint = jqGridPostData.TimePoint };
+                Pageable queryOption = new Pageable(_platformDomain) { TableName = qs.TableName, QueryCols = qs.QueryCols, HistoryTimePoint = jqGridPostData.TimePoint };
                 //设置统计
                 if (qs.Statsetlist != null && qs.Statsetlist.Any())
                 {
@@ -167,8 +167,8 @@ namespace Fap.AspNetCore.Serivce
                 {
                     actionSimpleQueryOption(queryOption);
                 }
-                queryOption.CurrentPageIndex = jqGridPostData.Page;
-                queryOption.PageCount = jqGridPostData.Rows;
+                queryOption.PageNumber = jqGridPostData.Page;
+                queryOption.PageSize = jqGridPostData.Rows;
                 //数据权限
                 string dataWhere = _rbacService.GetRoleDataWhere(qs.TableName);
                 if (dataWhere.IsPresent())
@@ -201,49 +201,27 @@ namespace Fap.AspNetCore.Serivce
             {
                 try
                 {
-                    (string sql, DynamicParameters paramObject) = _dbContext.JqgridPagingQuery(queryOption);
-                    //返回总数
-                    string[] sqls = sql.Split(';', StringSplitOptions.RemoveEmptyEntries);
-                    Dictionary<string, object> parameterMap = queryOption.Parameters;
-                    //设置参数值
-                    foreach (var item in parameterMap)
-                    {
-                        paramObject.Add(item.Key, item.Value);
-                    }
+                    PageInfo<dynamic> pi = _dbContext.QueryPage(queryOption);
 
-                    QueryDataObject dataObject = GetDynamicDataList(sqls, paramObject, true);
                     //组装成DataResultView对象
                     PageDataResultView dataResultView = new PageDataResultView();
-                    dataResultView.ColumnList = queryOption.Wraper.ResultColumns;
-                    dataResultView.Data = dataObject.Data;
+                    dataResultView.Data = pi.Items.ToFapDynamicObjectList(queryOption.TableName);
                     //当未获取数据的时候才获取默认值
                     //if (!dataObject.Data.Any())
                     //{
                     //wyf表单应用，表格暂时不用取默认值
                     //dataResultView.DefaultData = queryOption.Wraper.GetDefaultData();
                     //}
-                    dataResultView.DataJson = dataObject.DataJson;
-                    dataResultView.TotalNum = dataObject.TotalCount;
-                    dataResultView.CurrentPageIndex = queryOption.CurrentPageIndex;
-                    dataResultView.OrginData = dataObject.OrginData;
-                    dataResultView.DataListForJqGrid = dataObject.OrginData;
-                    dataResultView.PageCount = queryOption.PageCount;
-                    //dataResultView.OutputSqlLog = OutputSQL(sql, paramObject);
-
+                    dataResultView.DataJson = JsonConvert.SerializeObject(pi.Items);
+                    dataResultView.TotalNum = pi.TotalPages;
+                    dataResultView.CurrentPageIndex = pi.PageNumber;
+                    dataResultView.OrginData = pi.Items;
+                    dataResultView.DataListForJqGrid = pi.Items;
+                    dataResultView.PageCount = pi.PageSize;
                     //统计字段
-                    if (queryOption.StatFields.Count > 0)
-                    {
-                        var (statSql, statParamObject) = _dbContext.JqgridStatisticsQuery(queryOption);
+                    dataResultView.StatFieldData = pi.StatFieldData;
+                    dataResultView.StatFieldDataJson = JsonConvert.SerializeObject(pi.StatFieldData); 
 
-                        IEnumerable<dynamic> statData = _dbContext.Query(statSql, statParamObject);
-                        if (statData != null && statData.Count() > 0)
-                        {
-                            dynamic sd = statData.First();
-                            dataResultView.StatFieldData = sd;
-                            dataResultView.StatFieldDataJson = sd.ToJson();
-                        }
-
-                    }
                     return dataResultView;
 
                 }
@@ -251,25 +229,7 @@ namespace Fap.AspNetCore.Serivce
                 {
                     throw;
                 }
-                QueryDataObject GetDynamicDataList(string[] sql, DynamicParameters paramObject, bool isPaged = false)
-                {
-                    var dataList = _dbContext.QueryOriSql(sql[0], paramObject);
 
-                    QueryDataObject dataObject = new QueryDataObject();
-                    dataObject.OrginData = dataList;
-                    dataObject.Data = dataList.ToFapDynamicObjectList(queryOption.TableName);
-                    dataObject.DataJson = Newtonsoft.Json.JsonConvert.SerializeObject(dataList);
-
-                    if (isPaged)
-                    {
-                        int total = _dbContext.ExecuteScalar<int>(sql[1], paramObject);
-                        //paramObject.Add("@returncount", dbType: DbType.Int32, direction: ParameterDirection.Output);
-                        //得到记录总数
-                        dataObject.TotalCount = total;// paramObject.Get<int>("returncount");
-                    }
-                    return dataObject;
-
-                }
             }
         }
         public async Task<ResponseViewModel> PersistenceAsync(IFormCollection formCollection)

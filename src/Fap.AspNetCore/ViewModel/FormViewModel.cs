@@ -28,7 +28,7 @@ namespace Fap.AspNetCore.ViewModel
         /// <summary>
         /// 关联查询设置
         /// </summary>
-        public SimpleQueryOption QueryOption { get; set; }
+        public QuerySet QueryOption { get; set; }
         /// <summary>
         /// 表单初始化默认值
         /// </summary>

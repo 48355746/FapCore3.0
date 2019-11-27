@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Fap.Core.Extensions;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
@@ -34,6 +35,7 @@ namespace Fap.Core.Infrastructure.Query
         /// 初始化条件
         /// </summary>
         public string InitWhere { get; set; }
+
         /// <summary>
         /// 全局条件
         /// </summary>
@@ -48,7 +50,19 @@ namespace Fap.Core.Infrastructure.Query
             set { _usePermissions = value; }
         }
 
-
+        public override string ToString()
+        {
+            string where = string.Empty;
+            if (GlobalWhere.IsPresent())
+            {
+                where = GlobalWhere;
+            }
+            if (InitWhere.IsPresent())
+            {
+                where = where.IsMissing() ? InitWhere : $"{where} and {InitWhere}";
+            }
+            return $"select {QueryCols} from {TableName} where {where}";
+        }
         /// <summary>
         /// 排序,[字段，排序]
         /// </summary>
@@ -71,7 +85,7 @@ namespace Fap.Core.Infrastructure.Query
 
             if (value == null)
             {
-                Parameters.Add(new Parameter { ParamKey = key, ParamValue = "" });
+                Parameters.Add(new Parameter(key, ""));
                 return;
             }
 
@@ -79,11 +93,11 @@ namespace Fap.Core.Infrastructure.Query
             {
                 key = key.TrimStart('@');
             }
-            Parameters.Add(new Parameter { ParamKey = key, ParamValue = value });
+            Parameters.Add(new Parameter(key, value ));
 
         }
         public List<Parameter> Parameters { get; set; } = new List<Parameter>();
-        
+
         /// <summary>
         /// 统计设置
         /// </summary>
@@ -112,7 +126,7 @@ namespace Fap.Core.Infrastructure.Query
 
 
         public List<DefaultValue> DefaultValues { get; set; } = new List<DefaultValue>();
-        
+
         public void AddDefaultValue(string field, object value)
         {
             DefaultValues.Add(new DefaultValue { Field = field, Value = value });
@@ -123,8 +137,13 @@ namespace Fap.Core.Infrastructure.Query
     }
     public class Parameter
     {
+        public Parameter(string key, object value)
+        {
+            ParamKey = key;
+            ParamValue = value;
+        }
         public string ParamKey { get; set; }
-        public string ParamValue { get; set; }
+        public object ParamValue { get; set; }
     }
     public class OrderBy
     {

@@ -34,7 +34,7 @@ namespace Fap.AspNetCore.Controls.DataForm
     {
         private string _id;
         public CfgFreeForm FFrm { get; private set; }
-        private IDbContext _db = null;
+        private IDbContext _dbContext;
         private IFapApplicationContext _applicationContext;
         private IMultiLangService _multiLangService;
         private FormStatus _formStatus = FormStatus.Add;
@@ -61,7 +61,7 @@ namespace Fap.AspNetCore.Controls.DataForm
         {
             _id = id;
             _formStatus = frmStatus;
-            _db = dataAccessor;
+            _dbContext = dataAccessor;
             _applicationContext = applicationContext;
             _multiLangService = multiLangService;
             _loggerFactory = loggerFactory;
@@ -103,20 +103,23 @@ namespace Fap.AspNetCore.Controls.DataForm
             _formTemplate = formTemplate;
             return this;
         }
-        private SimpleQueryOption _ffQueryOption;
+        private QuerySet _querySet;
         private bool _gridReadonly;
         //子表默认值设置
         private IEnumerable<SubTableDefaultValue> _subTableListDefaultData;
 
-        public FapFreeForm SetQueryOption(SimpleQueryOption queryOption)
+        public FapFreeForm SetQueryOption(QuerySet qs)
         {
-            _ffQueryOption = queryOption;
-            _tb = queryOption.FapTable;
-            DataResultView drv = QueryDynamicData(queryOption);
-            IEnumerable<FapColumn> fapColumns = drv.ColumnList;// coms.GetSimpleMetaData(queryOption).ColumnList;
-            if (drv.Data.Any())
+            _querySet = qs;
+            _tb = _appDomain.TableSet.FirstOrDefault(t => t.TableName == qs.TableName);
+            DynamicParameters parameters = new DynamicParameters();
+            qs.Parameters.ForEach(q => parameters.Add(q.ParamKey, q.ParamValue));
+            var frmData = _dbContext.QueryFirstOrDefault(qs.ToString(), parameters);
+            var queryColList= qs.QueryCols.Split(',');
+            IEnumerable<FapColumn> fapColumns = _appDomain.ColumnSet.Where(c => c.TableName == qs.TableName && queryColList.Contains(c.ColName));
+            if (frmData!=null)
             {
-                FormData = drv.Data.FirstOrDefault();
+                FormData =(frmData as IDictionary<string,object>).ToFapDynamicObject(qs.TableName);
                 if (_formStatus != FormStatus.View)
                 {
                     _formStatus = FormStatus.Edit;
@@ -124,33 +127,12 @@ namespace Fap.AspNetCore.Controls.DataForm
             }
             else
             {
-                FormData = drv.DefaultData;
-                //drv.DefaultData.RcrtDemand_BillName
-                //单据设置初始值
-                DynamicParameters param = new DynamicParameters();
-                param.Add("TableName", queryOption.TableName);
-                //FapTable tb = db.QueryFirstOrDefaultEntityByWhere<FapTable>("TableName=@TableName  and tablefeature like '%BillFeature%'", param);
-                if (_tb.TableFeature != null && _tb.TableFeature.Contains("BillFeature"))
-                {
-                    string billName = fapColumns.First().TableName + "_BillName";
-                    string billTime = fapColumns.First().TableName + "_BillTime";
-                    string billEmp = fapColumns.First().TableName + "_BillEmpUid";
-                    string billEmpName = fapColumns.First().TableName + "_BillEmpUidMC";
-                    string appEmp = fapColumns.First().TableName + "_AppEmpUid";
-                    string appEmpName = fapColumns.First().TableName + "_AppEmpUidMC";
-                    FormData.Add(billName, _tb.TableComment);
-                    FormData.Add(billTime, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-                    FormData.Add(billEmp,_applicationContext.EmpUid);
-                    FormData.Add(billEmpName,_applicationContext.EmpName);
-                    FormData.Add(appEmp, _applicationContext.EmpUid);
-                    FormData.Add(appEmpName, _applicationContext.EmpName);
-                }
+                FormData = _dbContext.GetDefualtData(qs.TableName);              
                 _formStatus = FormStatus.Add;
             }
-            FidValue = FormData.Get(fapColumns.First().TableName + "_Fid");
+            FidValue = FormData.Get("Fid");
             if (fapColumns.Any())
             {
-
                 SetFapClumns(fapColumns.ToList());
                 //如果id为jqgriddataform的时候 formid改为frm-表名
                 if (_id.Equals("jqgriddataform", System.StringComparison.CurrentCultureIgnoreCase))
@@ -159,27 +141,9 @@ namespace Fap.AspNetCore.Controls.DataForm
                 }
             }
             //获取自由表单设置
-            GetFreeFromSet(queryOption.TableName);
+            GetFreeFromSet(qs.TableName);
             return this;
-            DataResultView QueryDynamicData(SimpleQueryOption queryOption)
-            {
-                var (sql, parameters) = _db.FormQuery(queryOption);
-                var dl = _db.Query(sql, parameters);
-                //组装成DataResultView对象
-                DataResultView dataResultView = new DataResultView();
-                dataResultView.ColumnList = queryOption.Wraper.ResultColumns;
-                dataResultView.Data = dl;
-                //当未获取数据的时候才获取默认值
-                if (!dl.Any())
-                {
-                    dynamic defaultData = new FapDynamicObject(queryOption.TableName);
-                    _db.InitDefualtValue(defaultData);
-                    dataResultView.DefaultData = defaultData;
-                }
-                dataResultView.DataJson = dl.ToJson();
-                //dataResultView.OutputSqlLog = OutputSQL(sql, paramObject);
-                return dataResultView;
-            }
+      
         }
         /// <summary>
         /// 设置列，包括权限部分
@@ -199,7 +163,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     {
                         continue;
                     }
-                    string key = col.TableName + "_" + col.ColName;
+                    string key =  col.ColName;
                     var fv = FormData.Get(key);
                     object fvc = null;
                     if (col.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
@@ -215,7 +179,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     {
                         fvc = _cutomDefault[col.ColName + "MC"];
                     }
-                    _fapFields.Add(new FapField(_db,_appDomain, _multiLangService) { CurrentColumn = col, FieldName = col.ColName, FieldComment = col.ColComment, ReadOnly = col.EditAble == 0 ? true : false, FieldValue = (fv == null ? "" : fv), FieldMCValue = (fvc == null ? "" : fvc) });
+                    _fapFields.Add(new FapField(_dbContext,_appDomain, _multiLangService) { CurrentColumn = col, FieldName = col.ColName, FieldComment = col.ColComment, ReadOnly = col.EditAble == 0 ? true : false, FieldValue = (fv == null ? "" : fv), FieldMCValue = (fvc == null ? "" : fvc) });
 
                 }
             }
@@ -232,11 +196,11 @@ namespace Fap.AspNetCore.Controls.DataForm
 
             if (_formTemplate.IsPresent())
             {
-                FFrm = _db.Get<CfgFreeForm>(_formTemplate);
+                FFrm = _dbContext.Get<CfgFreeForm>(_formTemplate);
             }
             else
             {
-                FFrm = _db.QueryFirstOrDefaultWhere<CfgFreeForm>("BillTable=@Table and Enabled=1", param);
+                FFrm = _dbContext.QueryFirstOrDefaultWhere<CfgFreeForm>("BillTable=@Table and Enabled=1", param);
             }
             if (FFrm == null)
                 return;
@@ -364,30 +328,31 @@ namespace Fap.AspNetCore.Controls.DataForm
                     _logger.LogError($"表{table.Value.TableName}未设置和主表的关联字段，请设置关联字段参照主表");
                     continue;
                 }
-                Grid grid = new Grid(_db, _loggerFactory, _appDomain,_applicationContext, _multiLangService, $"grid-{table.Value.TableName}");
+                Grid grid = new Grid(_dbContext, _loggerFactory, _appDomain,_applicationContext, _multiLangService, $"grid-{table.Value.TableName}");
                 QuerySet qs = new QuerySet();
                 qs.TableName = table.Value.TableName;
 
-                Dictionary<string, object> ffParams = this._ffQueryOption.Parameters;
+                var ffParams = _querySet.Parameters;
                 string newUid = string.Empty;
                 if (ffParams != null && ffParams.Any())
                 {
-                    if (ffParams.Keys.Contains("Id"))
+                    if (ffParams.Exists(p=>p.ParamKey=="Id"))
                     {
-                        if (ffParams["Id"].ToString() == "0")
+
+                        if (ffParams.First(p=>p.ParamKey=="Id").ParamValue.ToString() == "0")
                         {
                             qs.GlobalWhere = $"{primaryKey}='{fidv}'";
                             newUid = fidv;
                         }
                         else
                         {
-                            qs.GlobalWhere = $"{primaryKey}=(select fid from {_tb.TableName} where Id={ffParams["Id"]})";
+                            qs.GlobalWhere = $"{primaryKey}=(select fid from {_tb.TableName} where Id={ffParams.First(p => p.ParamKey == "Id").ParamValue})";
                         }
                     }
-                    if (ffParams.Keys.Contains("Fid"))
+                    if (ffParams.Exists(p => p.ParamKey == "Fid"))
                     {
-                        qs.GlobalWhere = $"{primaryKey}='{ffParams["Fid"]}'";
-                        newUid = ffParams["Fid"].ToString();
+                        qs.GlobalWhere = $"{primaryKey}='{ffParams.First(p => p.ParamKey == "Fid").ParamValue.ToString()}'";
+                        newUid = ffParams.First(p => p.ParamKey == "Fid").ParamValue.ToString().ToString();
                     }
                 }
                 var subColumnList =_appDomain.ColumnSet.Where(c=>c.TableName==table.Value.TableName);
@@ -667,14 +632,14 @@ namespace Fap.AspNetCore.Controls.DataForm
                     script.AppendLine("showUpload: true,");
                     script.AppendLine("showCaption: false,");
                     script.AppendLine("overwriteInitial: false,");
-                    IEnumerable<FapAttachment> attList = null;
+                    //IEnumerable<FapAttachment> attList = null;
                     //预览
                     //if (_formStatus == FormStatus.Edit)
                     //{
                     //    string bid = field.FieldValue.ToString();
                     //    DynamicParameters parameters = new DynamicParameters();
                     //    parameters.Add("Bid", bid);
-                    //    attList = _db.QueryWhere<FapAttachment>("Bid=@Bid", parameters);
+                    //    attList = _dbContext.QueryWhere<FapAttachment>("Bid=@Bid", parameters);
                     //    if (attList.Any())
                     //    {
                     //        StringBuilder initPre = new StringBuilder();
@@ -940,7 +905,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 }
                 if (col.RemoteChkURL.IsPresent())
                 {
-                    string oriValue = FormData.Get(col.TableName + "_" + col.ColName);
+                    string oriValue = FormData.Get(col.ColName);
                     script.AppendLine("             " + col.ColName + ": {");
                     script.AppendLine("				remote: '" +_applicationContext.BaseUrl + "/" + col.RemoteChkURL + "&fid=" + FidValue + "&orivalue=" + oriValue + "&currcol=" + col.ColName + "',");
                     script.AppendLine("			},");
@@ -1020,7 +985,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             #region 表单联动脚本
             DynamicParameters pm = new DynamicParameters();
             pm.Add("TableName", _tb.TableName);
-            var formInjections = _db.QueryWhere<FapFormInjection>("TableName=@TableName and IsEnabled=1", pm);
+            var formInjections = _dbContext.QueryWhere<FapFormInjection>("TableName=@TableName and IsEnabled=1", pm);
             if (formInjections != null && formInjections.Any())
             {
                 foreach (var inject in formInjections)
