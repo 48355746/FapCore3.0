@@ -58,6 +58,8 @@ namespace Fap.Core.DataAccess
         IEnumerable<dynamic> QueryOriSql(string sqlOri, DynamicParameters parameters = null);
         IEnumerable<dynamic> Query(string sqlOri, DynamicParameters parameters = null, bool withMC = false);
         IEnumerable<T> Query<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : BaseModel;
+        IEnumerable<dynamic> QueryAll(string tableName, bool withMC = false);
+        Task<IEnumerable<dynamic>> QueryAllAsync(string tableName, bool withMC = false);
         IEnumerable<T> QueryAll<T>(bool withMC = false) where T : BaseModel;
         Task<IEnumerable<T>> QueryAllAsync<T>(bool withMC = false) where T : BaseModel;
         Task<IEnumerable<dynamic>> QueryAsync(string sqlOri, DynamicParameters parameters = null, bool withMC = false);

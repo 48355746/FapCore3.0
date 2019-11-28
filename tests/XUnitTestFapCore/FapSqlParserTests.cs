@@ -71,5 +71,13 @@ namespace XUnitTestFapCore
             string rv = parser.ParserSqlStatement();
             Assert.True(true);
         }
+        [Fact]
+        public void TestDDL()
+        {
+            string sql = "delete from  Employee";
+            FapSqlParser parser = new FapSqlParser(_appDomain, sql, true);
+            string rv= parser.ParserSqlStatement();
+            Assert.True(rv.Length > 0);
+        }
     }
 }

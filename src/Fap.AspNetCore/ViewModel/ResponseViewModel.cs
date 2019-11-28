@@ -16,6 +16,10 @@
         /// </summary>
         public bool success { get; set; }
         /// <summary>
+        /// 响应状态编码
+        /// </summary>
+        public int code { get; set; }
+        /// <summary>
         /// 表示请求响应事务服务端返回的业务特定说明文字。
         /// </summary>
         public string msg { get; set; }
@@ -31,6 +35,7 @@
         {
             ResponseViewModel rvm = new ResponseViewModel()
             {
+                code=200,
                 success = true,
                 msg = msg,
                 data = data,
@@ -41,15 +46,27 @@
         {
             ResponseViewModel rvm = new ResponseViewModel()
             {
+                code=200,
                 success = true,
                 msg = msg
             };
             return rvm;
         }
-        public static ResponseViewModel Failure(string msg="返回失败")
+        public static ResponseViewModel NotFound(string msg = "数据未找到", int code = 404)
         {
             return new ResponseViewModel()
             {
+                code = code,
+                success = false,
+                msg = msg,
+                data = null
+            };
+        }
+        public static ResponseViewModel Failure(string msg="失败", int code=500)
+        {
+            return new ResponseViewModel()
+            {
+                code=code,
                 success = false,
                 msg = msg,
                 data = null
