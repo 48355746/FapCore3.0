@@ -72,21 +72,21 @@ namespace Fap.Core.Scheduler
             }
         }
 
-        public Task ScheduleJob(IJobDetail jobDetail, ITrigger trigger)
+        public async Task ScheduleJob(IJobDetail jobDetail, ITrigger trigger)
         {
 
-           return scheduler.ScheduleJob(jobDetail, trigger);
+            await scheduler.ScheduleJob(jobDetail, trigger);
 
         }
 
         /// <summary>
         /// 开始调度
         /// </summary>
-        public void Run()
+        public async Task Start()
         {
             if (scheduler != null && !scheduler.IsStarted)
             {
-                scheduler.Start();
+                await scheduler.Start();
             }
 
         }
@@ -94,11 +94,11 @@ namespace Fap.Core.Scheduler
         ///<summary>
         /// 停止调度
         ///</summary>
-        public void Shutdown()
+        public async Task Shutdown()
         {
             if (scheduler != null && !scheduler.IsShutdown)
             {
-                scheduler.Shutdown();
+                await scheduler.Shutdown(true);
             }
         }
 
@@ -106,27 +106,27 @@ namespace Fap.Core.Scheduler
         ///
         /// 备用
         ///
-        public void Standby()
+        public async Task Standby()
         {
-            scheduler.Standby();
+            await scheduler.Standby();
         }
 
 
         ///
         /// 暂停所有
         ///
-        public void PauseAll()
+        public async Task PauseAll()
         {
-            scheduler.PauseAll();
+            await scheduler.PauseAll();
         }
 
 
         ///
         /// 重启所有
         ///
-        public void ResumeAll()
+        public async Task ResumeAll()
         {
-            scheduler.ResumeAll();
+            await scheduler.ResumeAll();
         }
 
 
@@ -134,9 +134,9 @@ namespace Fap.Core.Scheduler
         /// 重启
         ///
         /// 组名
-        public void ResumeJobGroup(string groupName)
+        public async Task ResumeJobGroup(string groupName)
         {
-            scheduler.ResumeJobs(GroupMatcher<JobKey>.GroupEquals(groupName));
+            await scheduler.ResumeJobs(GroupMatcher<JobKey>.GroupEquals(groupName));
         }
 
 
@@ -144,9 +144,9 @@ namespace Fap.Core.Scheduler
         ///  重启
         ///
         /// 组名
-        public void ResumeTriggerGroup(string groupName)
+        public async Task ResumeTriggerGroup(string groupName)
         {
-            scheduler.ResumeTriggers(GroupMatcher<TriggerKey>.GroupEquals(groupName));
+            await scheduler.ResumeTriggers(GroupMatcher<TriggerKey>.GroupEquals(groupName));
         }
 
 
@@ -154,9 +154,9 @@ namespace Fap.Core.Scheduler
         /// 根据组名暂停作业
         ///
         /// 组名
-        public void PauseJobGroup(string groupName)
+        public async Task PauseJobGroup(string groupName)
         {
-            scheduler.PauseJobs(GroupMatcher<JobKey>.GroupEquals(groupName));
+            await scheduler.PauseJobs(GroupMatcher<JobKey>.GroupEquals(groupName));
         }
 
 
@@ -164,9 +164,9 @@ namespace Fap.Core.Scheduler
         /// 根据组名暂停触发器
         ///
         /// 组名
-        public void PauseTriggerGroup(string groupName)
+        public async Task PauseTriggerGroup(string groupName)
         {
-            scheduler.PauseTriggers(GroupMatcher<TriggerKey>.GroupEquals(groupName));
+            await scheduler.PauseTriggers(GroupMatcher<TriggerKey>.GroupEquals(groupName));
         }
 
 
@@ -206,9 +206,9 @@ namespace Fap.Core.Scheduler
         ///
         /// 作业名
         /// 分组名
-        public void PauseJob(string jobName, string groupName)
+        public async Task PauseJob(string jobName, string groupName)
         {
-            scheduler.PauseJob(new JobKey(jobName, groupName));
+            await scheduler.PauseJob(new JobKey(jobName, groupName));
 
         }
 
@@ -217,12 +217,12 @@ namespace Fap.Core.Scheduler
         /// </summary>
         /// <param name="jobName">任务名称</param>
         /// <param name="groupName">分组名</param>
-        public void RemoveJob(string jobName, string groupName)
+        public async Task RemoveJob(string jobName, string groupName)
         {
             JobKey jobKey = new JobKey(jobName);
             TriggerKey triggerKey = new TriggerKey(jobName, groupName);
-            scheduler.PauseTrigger(triggerKey);// 停止触发器  
-            scheduler.UnscheduleJob(triggerKey);// 移除触发器 
+            await scheduler.PauseTrigger(triggerKey);// 停止触发器  
+            await scheduler.UnscheduleJob(triggerKey);// 移除触发器 
 
         }
 
@@ -231,42 +231,42 @@ namespace Fap.Core.Scheduler
         /// </summary>
         /// <param name="jobName"></param>
         /// <param name="groupName"></param>
-        public void ResumeJob(string jobName, string groupName)
+        public async Task ResumeJob(string jobName, string groupName)
         {
-            scheduler.ResumeJob(new JobKey(jobName, groupName));
+           await  scheduler.ResumeJob(new JobKey(jobName, groupName));
 
 
         }
 
 
         //把作业与触发器添加到调度里去
-        public void TriggerJob(string jobName, string groupName)
+        public async Task TriggerJob(string jobName, string groupName)
         {
-            scheduler.TriggerJob(new JobKey(jobName, groupName));
+            await scheduler.TriggerJob(new JobKey(jobName, groupName));
         }
 
 
-        public void Interrupt(string jobName, string groupName)
+        public async Task Interrupt(string jobName, string groupName)
         {
-            scheduler.Interrupt(new JobKey(jobName, groupName));
+            await scheduler.Interrupt(new JobKey(jobName, groupName));
         }
 
 
-        public void ResumeTrigger(string triggerName, string groupName)
+        public async Task ResumeTrigger(string triggerName, string groupName)
         {
-            scheduler.ResumeTrigger(new TriggerKey(triggerName, groupName));
+            await scheduler.ResumeTrigger(new TriggerKey(triggerName, groupName));
         }
 
 
-        public void PauseTrigger(string triggerName, string groupName)
+        public async Task PauseTrigger(string triggerName, string groupName)
         {
-            scheduler.PauseTrigger(new TriggerKey(triggerName, groupName));
+            await scheduler.PauseTrigger(new TriggerKey(triggerName, groupName));
         }
 
 
-        public void UnscheduleJob(string triggerName, string groupName)
+        public async Task UnscheduleJob(string triggerName, string groupName)
         {
-            scheduler.UnscheduleJob(new TriggerKey(triggerName, groupName));
+           await  scheduler.UnscheduleJob(new TriggerKey(triggerName, groupName));
         }
 
 
@@ -275,15 +275,15 @@ namespace Fap.Core.Scheduler
         ///
         /// 组名
         ///
-        public Task<bool> IsJobGroupPaused(string groupName)
+        public async Task<bool> IsJobGroupPaused(string groupName)
         {
             try
             {
-                return scheduler.IsJobGroupPaused(groupName);
+                return await scheduler.IsJobGroupPaused(groupName);
             }
             catch (NotImplementedException)
             {
-                return null;
+                return await Task.FromResult(false);
             }
         }
         ///

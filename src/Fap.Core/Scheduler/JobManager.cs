@@ -22,7 +22,6 @@ namespace Fap.Core.Scheduler
         private ILogger<JobManager> _logger;
         private ILoggerFactory _logFactory;
         private readonly IDbContext _dbContext;
-        private readonly IFapConfigService _config;
         public JobManager(IServiceProvider provider)
         {
             _provider = provider;

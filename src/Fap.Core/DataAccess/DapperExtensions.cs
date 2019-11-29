@@ -106,13 +106,12 @@ namespace Fap.Core.DataAccess
 
         public static bool Update<T>(this IDbConnection connection, T entityUpdate, IDbTransaction transaction = null, int? commandTimeout = null) where T : BaseModel
         {
-            var id = entityUpdate.Id ?? 0;
+            var id = entityUpdate.Id;
             if (id < 1)
             {
                 Guard.Against.NullOrEmpty("更新数据Id必须设置.", nameof(entityUpdate));
             }
-            var ts = entityUpdate.Ts ?? 0;
-            if (ts < 1)
+            if (entityUpdate.Ts < 1)
             {
                 Guard.Against.NullOrEmpty("更新数据Ts必须设置.", nameof(entityUpdate));
             }

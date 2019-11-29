@@ -17,12 +17,14 @@ namespace XUnitTestFapCore
             _schedulerService = factory.Services.GetService<ISchedulerService>();
         }
         [Fact]
-        public void Start()
+        public async Task Start()
         {
-            Task.Run(() =>
-            _schedulerService.Run()
-            );
-            Task.WaitAll();
+
+           await _schedulerService.Run();
+
+            await Task.Delay(TimeSpan.FromDays(1));
+
+            await _schedulerService.Shutdown();
         }
     }
 }

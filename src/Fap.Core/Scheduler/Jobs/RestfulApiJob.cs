@@ -34,6 +34,7 @@ namespace Fap.Core.Scheduler.Jobs
                 var httpClient = httpClientFact.CreateClient();
                 var responseMessage =await httpClient.GetAsync(url);
                 responseMessage.EnsureSuccessStatusCode();
+                _dbContext.Insert<FapJobLog>(new FapJobLog { JobId = jobKey.Name, JobName = jobDetail.Description, ExecuteTime = DateTimeUtils.CurrentDateTimeStr, ExecuteResult = "success",Message=$"{responseMessage.StatusCode.ToString()}--{(int)responseMessage.StatusCode}" });
             }
             catch (Exception ex)
             {
@@ -46,7 +47,6 @@ namespace Fap.Core.Scheduler.Jobs
                 e2.UnscheduleAllTriggers = true;
                 throw e2;
             }
-            _dbContext.Insert<FapJobLog>(new FapJobLog { JobId = jobKey.Name, JobName = jobDetail.Description, ExecuteTime = DateTimeUtils.CurrentDateTimeStr, ExecuteResult = "success" });
             _logger.LogInformation("---{0} completed '{1}' at {1}", jobKey,url, DateTimeUtils.CurrentDateTimeStr);
         }
     }

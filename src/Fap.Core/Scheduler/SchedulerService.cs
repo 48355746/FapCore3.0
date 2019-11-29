@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Fap.Core.DI;
+using System.Threading.Tasks;
 
 namespace Fap.Core.Scheduler
 {
@@ -25,7 +26,7 @@ namespace Fap.Core.Scheduler
         /// <summary>
         /// 初始化
         /// </summary>
-        public async void Run()
+        public async Task Run()
         {
             _logger.LogInformation("启动计划任务starting");
             await SchedulerManager.Instance.Init();
@@ -34,23 +35,23 @@ namespace Fap.Core.Scheduler
             List<JobInfo> jobInfoList = jobManager.LoadJobFromDB();
             await SchedulerManager.Instance.AddScheduleJob(jobInfoList);
 
-            SchedulerManager.Instance.Run();
+            await SchedulerManager.Instance.Start();
             _logger.LogInformation("启动计划任务结束");
         }
 
         /// <summary>
         /// 启动所有定时任务 
         /// </summary>
-        public void StartAllJobs()
+        public async Task StartAllJobs()
         {
-            SchedulerManager.Instance.Run();
+           await SchedulerManager.Instance.Start();
         }
 
         /// <summary>
         /// 添加一个定时任务,仅仅不存在时会添加
         /// </summary>
         /// <param name="fapJob"></param>
-        public async void AddJob(FapJob fapJob)
+        public async Task AddJob(FapJob fapJob)
         {
             var jobManager = new JobManager(_serviceProvider);
             JobInfo job = jobManager.GetJobInfo(fapJob);
@@ -61,35 +62,35 @@ namespace Fap.Core.Scheduler
         /// 暂停一个定时任务
         /// </summary>
         /// <param name="fapJob"></param>
-        public void PauseJob(FapJob fapJob)
+        public async Task PauseJob(FapJob fapJob)
         {
-            SchedulerManager.Instance.PauseJob(fapJob.JobCode, fapJob.JobGroup);
+            await SchedulerManager.Instance.PauseJob(fapJob.JobCode, fapJob.JobGroup);
         }
 
         /// <summary>
         /// 重启一个定时任务
         /// </summary>
         /// <param name="fapJob"></param>
-        public void ResumeJob(FapJob fapJob)
+        public async Task ResumeJob(FapJob fapJob)
         {
-            SchedulerManager.Instance.ResumeJob(fapJob.JobCode, fapJob.JobGroup);
+           await  SchedulerManager.Instance.ResumeJob(fapJob.JobCode, fapJob.JobGroup);
         }
 
         /// <summary>
         /// 删除一个定时任务
         /// </summary>
         /// <param name="fapJob"></param>
-        public void RemoveJob(FapJob fapJob)
+        public async Task RemoveJob(FapJob fapJob)
         {
-            SchedulerManager.Instance.RemoveJob(fapJob.JobCode, fapJob.JobGroup);
+            await SchedulerManager.Instance.RemoveJob(fapJob.JobCode, fapJob.JobGroup);
         }
 
         /// <summary>
         /// 关闭所有定时任务
         /// </summary>
-        public void ShutdownJobs()
+        public async Task Shutdown()
         {
-            SchedulerManager.Instance.Shutdown();
+           await SchedulerManager.Instance.Shutdown();
         }
     }
 }

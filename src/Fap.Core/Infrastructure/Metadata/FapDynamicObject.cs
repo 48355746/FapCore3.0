@@ -19,14 +19,14 @@ namespace Fap.Core.Infrastructure.Metadata
         /// <param name="tableName">table name</param>
         /// <param name="id">primarykey value</param>
         /// <param name="ts">timestamp</param>
-        public FapDynamicObject(string tableName, long? id = null, long? ts = null)
+        public FapDynamicObject(string tableName, long id = 0, long ts = 0)
         {
             TableName = tableName;
-            if (id != null)
+            if (id>0)
             {
                 ((dynamic)this).Id = id;
             }
-            if (ts != null)
+            if (ts>0)
             {
                 ((dynamic)this).Ts = ts;
             }

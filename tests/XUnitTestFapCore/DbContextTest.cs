@@ -10,6 +10,7 @@ using System.Linq;
 using Fap.Core.Rbac.Model;
 using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.Utility;
+using Fap.Core.Scheduler;
 
 namespace XUnitTestFapCore
 {
@@ -188,12 +189,16 @@ namespace XUnitTestFapCore
         [Fact]
         public void InsertEntity()
         {
-            Employee emp = new Employee();
-            emp.EmpName = "jeke";
-            emp.EmpCode = "jeke zhang";
-            emp.Age = 20;
-            long id = _dbContext.Insert<Employee>(emp);
-            Assert.Equal(id, emp.Id);
+            //Employee emp = new Employee();
+            //emp.EmpName = "jeke";
+            //emp.EmpCode = "jeke zhang";
+            //emp.Age = 20;
+            //long id = _dbContext.Insert<Employee>(emp);
+            //Assert.Equal(id, emp.Id);
+            long id= _dbContext.Insert<FapJobLog>(new FapJobLog { JobId = "ces", JobName = "fff", ExecuteTime = DateTimeUtils.CurrentDateTimeStr, ExecuteResult = "success", Message = $"清理行数:1" });
+            Assert.Equal(1,id);
+
+
         }
         [Fact]
         public void InsertDynamic()
@@ -206,5 +211,6 @@ namespace XUnitTestFapCore
             long id = _dbContext.InsertDynamicData(emp);
             Assert.Equal(id, emp.Id);
         }
+       
     }
 }

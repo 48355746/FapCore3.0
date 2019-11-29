@@ -37,8 +37,8 @@ namespace Fap.Core.Scheduler.Jobs
                 DynamicParameters param = new DynamicParameters();
                 param.Add("Date", DateTimeUtils.DateTimeFormat(dt));
                 string sql = "DELETE FROM FapSyslog WHERE [Date]<=@Date";
-               int c= _dbContext.Execute(sql, param);
-                _dbContext.Insert<FapJobLog>(new FapJobLog { JobId = jobKey.Name, JobName = jobDetail.Description, ExecuteTime = DateTimeUtils.CurrentDateTimeStr, ExecuteResult = "success" ,Message=$"清理行数:{c}" });
+                int c = _dbContext.Execute(sql, param);
+                _dbContext.Insert<FapJobLog>(new FapJobLog { JobId = jobKey.Name, JobName = jobDetail.Description, ExecuteTime = DateTimeUtils.CurrentDateTimeStr, ExecuteResult = "success", Message = $"清理行数:{c}" });
             }
             catch (Exception ex)
             {

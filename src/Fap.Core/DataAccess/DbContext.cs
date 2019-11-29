@@ -387,7 +387,7 @@ namespace Fap.Core.DataAccess
         /// <returns></returns>
         public FapDynamicObject GetDefualtData(string tableName)
         {
-            dynamic dynEntity = new FapDynamicObject(tableName, null, UUIDUtils.Ts);
+            dynamic dynEntity = new FapDynamicObject(tableName, 0, UUIDUtils.Ts);
             //非系统默认列的默认值的生成
             IEnumerable<FapColumn> columns = _fapPlatformDomain.ColumnSet.Where(c => c.TableName == tableName && c.IsDefaultCol != 1 && (c.DefaultValueClass.IsPresent() || c.ColDefault.IsPresent()));
             foreach (var column in columns)
@@ -2176,7 +2176,7 @@ namespace Fap.Core.DataAccess
             page.PageSize = pageable.PageSize;
             page.TotalSizes = ExecuteScalar<int>(sqls[1], dynamicParameters);
             page.Items = Query<T>(sqls[0], dynamicParameters, true);
-            page.MaxIdValue = page.Items.Max(a => a.Id).Value;
+            page.MaxIdValue = page.Items.Max(a => a.Id);
             page.PageNumber = pageable.PageNumber;
             string statSql = StatisticsSql(pageable);
             if (statSql.IsPresent())

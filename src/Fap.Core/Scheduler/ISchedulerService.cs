@@ -5,12 +5,12 @@ namespace Fap.Core.Scheduler
 {
     public interface ISchedulerService
     {
-        void Run();
-        void AddJob(FapJob fapJob);
-        void PauseJob(FapJob fapJob);
-        void RemoveJob(FapJob fapJob);
-        void ResumeJob(FapJob fapJob);
-        void ShutdownJobs();
-        void StartAllJobs();
+        Task Run();
+        Task AddJob(FapJob fapJob);
+        Task PauseJob(FapJob fapJob);
+        Task RemoveJob(FapJob fapJob);
+        Task ResumeJob(FapJob fapJob);
+        Task Shutdown();
+        Task StartAllJobs();
     }
 }

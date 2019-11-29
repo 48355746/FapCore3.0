@@ -6,11 +6,10 @@ using System.Reflection;
 namespace Fap.Core.Infrastructure.Metadata
 {
 
-    [Serializable]
     public class BaseModel : ICloneable
     {
         [Key]
-        public long? Id { get; set; }
+        public long Id { get; set; }
         public string Fid { get; set; }
         /// <summary>
         /// 所属组织
@@ -35,7 +34,7 @@ namespace Fap.Core.Infrastructure.Metadata
         /// <summary>
         /// 时间戳
         /// </summary>
-        public long? Ts { get; set; }
+        public long Ts { get; set; }
         /// <summary>
         /// 创建人
         /// </summary>

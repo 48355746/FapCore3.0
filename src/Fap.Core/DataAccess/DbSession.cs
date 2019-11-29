@@ -584,11 +584,11 @@ namespace Fap.Core.DataAccess
         /// <returns></returns>
         public bool UpdateWithTimestamp<T>(T entityUpdate)where T : BaseModel
         {
-            if ((entityUpdate.Id ?? 0) < 1)
+            if ((entityUpdate.Id) < 1)
             {
                 Guard.Against.Null("Id不能为null", nameof(UpdateWithTimestamp));
             }
-            if ((entityUpdate.Ts ?? 0) < 1)
+            if ((entityUpdate.Ts) < 1)
             {
                 Guard.Against.Null("Ts不能为null", nameof(UpdateWithTimestamp));
             }
