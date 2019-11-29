@@ -15,6 +15,8 @@ namespace Fap.Core.Message
         /// </summary>
         /// <param name="mail"></param>
         void SendMail(FapMail mail);
+
+        void AutoSendMail();
         /// <summary>
         /// 站内信
         /// </summary>

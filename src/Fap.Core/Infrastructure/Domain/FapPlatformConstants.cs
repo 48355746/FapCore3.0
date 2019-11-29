@@ -44,5 +44,11 @@ namespace Fap.Core.Infrastructure.Domain
         /// </summary>
 
         public const string DepartmentAuthority = "FAP::&&DEPTAUTHORITY&&";
+        //邮件发送配置
+        public const string MailAccount = "system.mail.account";
+        public const string MailPassword = "system.mail.password";
+        public const string MailPort = "system.mail.port";
+        public const string MailServer = "system.mail.host";
+        public const string MailAccountName = "system.mail.accountname";
     }
 }

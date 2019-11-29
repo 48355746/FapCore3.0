@@ -43,7 +43,9 @@ namespace Fap.Core.Infrastructure.Domain
         }
         public static IFapBuilder AddFap(this IFapBuilder builder)
         {
+            //httpcontext,httpclient
             builder.Services.AddHttpContextAccessor();
+            builder.Services.AddHttpClient();
             //数据库访问
             builder.Services.AddSingleton<IConnectionFactory, ConnectionFactory>();
             builder.Services.AddSingleton<IDbSession, DbSession>();
