@@ -19,12 +19,10 @@ namespace Fap.AspNetCore.Controls.DataForm
         private FapColumn _fapColumn;
         private IDbContext _dataAccessor;
         private IMultiLangService _multiLangService;
-        private IFapPlatformDomain _platformDomain;
-        public FapField(IDbContext dataAccessor,IFapPlatformDomain platformDomain, IMultiLangService multiLangService)
+        public FapField(IDbContext dataAccessor,IMultiLangService multiLangService)
         {
             _dataAccessor = dataAccessor;
             _multiLangService = multiLangService;
-            _platformDomain = platformDomain;
         }
         /// <summary>
         /// 字段名称
@@ -192,7 +190,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                         GetMultiSelValues(tempList);
                     }
                 }
-                IEnumerable<FapDict> dicList =_platformDomain.DictSet.Where(d=>d.Category==_fapColumn.RefTable);
+                IEnumerable<FapDict> dicList =_dataAccessor.Dictionarys(_fapColumn.RefTable);
                 sbFormGroup.AppendLine(_fapColumn.AsCombobox(editAble, dicList, tempList, FieldValue.ToString()));
             }
             else if (_fapColumn.CtrlType == FapColumn.CTRL_TYPE_CHECKBOXLIST)
@@ -231,7 +229,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 IEnumerable<FapDict> dicList = new List<FapDict>();
                 if (!string.IsNullOrWhiteSpace(_fapColumn.RefTable))
                 {
-                    dicList = _platformDomain.DictSet.Where(d => d.Category == _fapColumn.RefTable);
+                    dicList = _dataAccessor.Dictionarys(_fapColumn.RefTable);
                 }
                 sbFormGroup.AppendLine(_fapColumn.AsCheckbox(editAble, dicList, FieldValue.ToString()));
             }
@@ -370,7 +368,7 @@ namespace Fap.AspNetCore.Controls.DataForm
         {
             if (_fapColumn.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX)
             {
-                var dicts = _platformDomain.DictSet.Where(d => d.Category == _fapColumn.RefTable);
+                var dicts = _dataAccessor.Dictionarys(_fapColumn.RefTable);
                 if (_fapColumn.MultiAble == 1)
                 {
                     //多选
@@ -528,7 +526,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                         GetMultiSelValues(tempList);
                     }
                 }
-                IEnumerable<FapDict> dicList =_platformDomain.DictSet.Where(d=>d.Category==_fapColumn.RefTable);
+                IEnumerable<FapDict> dicList = _dataAccessor.Dictionarys(_fapColumn.RefTable);
                 if (_fapColumn.MultiAble == 0)
                 {
                     sbFormGroup.AppendFormat(" <select id=\"{0}\" name=\"{0}\" ng-model=\"{1}\" " + editAble + " class=\"form-control \" data-placeholder=\"请选择\" >", ctrlName, ngModel).AppendLine();
@@ -672,7 +670,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 }
                 else
                 {
-                    IEnumerable<FapDict> dicList = _platformDomain.DictSet.Where(d => d.Category == _fapColumn.RefTable);
+                    IEnumerable<FapDict> dicList = _dataAccessor.Dictionarys(_fapColumn.RefTable);
                     if (dicList.Any())
                     {
                         List<string> selCodes = new List<string>();

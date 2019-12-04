@@ -86,5 +86,31 @@ namespace Fap.Core.Rbac.AC
             fapTable = null;
             return false;
         }
+
+        public bool TryGetValueByCategory(string category, out IEnumerable<FapTable> tables)
+        {
+            if (!_initialized)
+            {
+                Init();
+            }
+            var result = _allTables.Where<FapTable>(f => f.TableCategory.Equals(category, StringComparison.CurrentCultureIgnoreCase));
+            if (result != null)
+            {
+                tables = result;
+                return true;
+            }
+            tables = null;
+            return false;
+        }
+       
+        public IEnumerable<FapTable> TryGetValue(Func<FapTable, bool> predicate)
+        {
+            if (!_initialized)
+            {
+                Init();
+            }
+            var result = _allTables.Where(predicate);
+            return result;
+        }
     }
 }

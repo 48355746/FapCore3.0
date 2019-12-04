@@ -7,10 +7,10 @@
     </style>
     <script src="~/Content/js/codemirror/codemirror.js"></script>
     <script src="~/Content/js/codemirror/mode/sql/sql.js"></script>*@
-@inject Fap.Core.DataAccess.DbContext.IDbContext _db;
+@inject Fap.Core.DataAccess.DbContext _db;
 @{
     string tn = ViewBag.TableName;
-    var cols = _db.ColumnList(tn);
+    var cols = _db.Columns(tn);
     var options = cols.Where(c => c.IsDefaultCol == 0).Select(c => "<option value='" + c.ColComment + "'>" + c.ColComment + "[" + c.ColName + "]</option>");
     var columns ="{"+string.Join(",", cols.Where(c => c.IsDefaultCol == 0).Select(c => c.ColName + ":'" + c.ColComment+"'"))+"}";
 }

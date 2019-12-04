@@ -1,7 +1,8 @@
 ﻿@inject Fap.Core.Rbac.ILoginService _loginService
+@using Fap.Core.Rbac.Model
 @{
-    IEnumerable<Fap.Model.Infrastructure.FapRole> roles = _loginService.GetUserRoles(_session.UserUid) ;
-    Fap.Model.Infrastructure.FapRole cr = _session.AcSession.Role;
+    IEnumerable<FapRole> roles = _loginService.GetUserRoles(_applicationContext.UserUid) ;
+    FapRole cr =roles.FirstOrDefault(r=>r.Fid==_applicationContext.CurrentRoleUid);
 }
 <li class="light-blue">
     <a data-toggle="dropdown" href="#" class="dropdown-toggle">
@@ -9,7 +10,7 @@
         <span class="user-info">
             <small>欢迎,</small>
            
-            <text>@_session.AcSession.Employee.EmpName</text>
+            <text>@_applicationContext.EmpName</text>
            
         </span>
 

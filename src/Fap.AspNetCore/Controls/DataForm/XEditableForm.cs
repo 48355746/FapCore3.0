@@ -33,14 +33,12 @@ namespace Fap.AspNetCore.Controls.DataForm
         private string _editUrl;
         private IDbContext _dbContext;
         private IFapApplicationContext _applicationContext;
-        private IFapPlatformDomain _platformDomain;
         private IRbacService _rbacService;
         private IMultiLangService _multiLangService;
-        public XEditableForm(IFapApplicationContext applicationContext, IFapPlatformDomain platformDomain, IDbContext dataAccessor,  IMultiLangService multiLangService,IRbacService rbacService) : base("")
+        public XEditableForm(IFapApplicationContext applicationContext, IDbContext dataAccessor,  IMultiLangService multiLangService,IRbacService rbacService) : base("")
         {
             _dbContext = dataAccessor;
             _applicationContext = applicationContext;
-            _platformDomain = platformDomain;
             _multiLangService = multiLangService;
             _rbacService = rbacService;
         }
@@ -149,7 +147,7 @@ namespace Fap.AspNetCore.Controls.DataForm
 
             _pkValue = FormData.Get("Fid");
             var queryColList = qs.QueryCols.Split(',');
-            IEnumerable<FapColumn> fapColumns =_platformDomain.ColumnSet.Where(c => c.TableName == qs.TableName && queryColList.Contains(c.ColName));
+            IEnumerable<FapColumn> fapColumns =_dbContext.Columns(qs.TableName).Where(c=> queryColList.Contains(c.ColName));
             if (fapColumns.Any())
             {
                 SetFapClumns(fapColumns);

@@ -4,6 +4,7 @@ using Dapper;
 using Fap.Core.Infrastructure.Model;
 using Fap.Core.Infrastructure.Query;
 using Fap.Core.Infrastructure.Metadata;
+using System;
 
 namespace Fap.Core.DataAccess
 {
@@ -272,6 +273,7 @@ namespace Fap.Core.DataAccess
         #region metadata
         FapTable Table(string tableName);
         IEnumerable<FapTable> Tables(string tableCategory);
+        IEnumerable<FapTable> Tables(Func<FapTable, bool> predicate);
         IEnumerable<FapColumn> Columns(string tableName);
         FapColumn Column(string tableName, string colName);
         IEnumerable<FapDict> Dictionarys(string category);

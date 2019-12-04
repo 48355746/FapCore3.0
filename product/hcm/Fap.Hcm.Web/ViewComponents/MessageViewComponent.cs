@@ -2,10 +2,12 @@
 using Fap.Core.DataAccess;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Infrastructure.Model;
+using Fap.Workflow.Model;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Fap.Core.Extensions;
 
 namespace Fap.Hcm.Web.ViewComponents
 {
@@ -22,16 +24,16 @@ namespace Fap.Hcm.Web.ViewComponents
         {
             DynamicParameters param = new DynamicParameters();
             param.Add("EmpUid", _applicationContext.EmpUid);
-            string sqlToDo = $"select count(0) C from WfTask,WfActivityInstance,WfProcessInstance where WfTask.ActivityInsUid=WfActivityInstance.Fid and WfTask.ProcessInsUid= WfProcessInstance.Fid and  WfProcessInstance.ProcessState='Running' and  WfActivityInstance.ActivityState in('{WfActivityInstanceState.Running}','{WfActivityInstanceState.Ready}') and WfTask.TaskState='{WfTaskState.Handling}' and WfTask.ExecutorEmpUid='{_session.EmpUid}'";
+            string sqlToDo = $"select count(0) C from WfTask,WfActivityInstance,WfProcessInstance where WfTask.ActivityInsUid=WfActivityInstance.Fid and WfTask.ProcessInsUid= WfProcessInstance.Fid and  WfProcessInstance.ProcessState='Running' and  WfActivityInstance.ActivityState in('{WfActivityInstanceState.Running}','{WfActivityInstanceState.Ready}') and WfTask.TaskState='{WfTaskState.Handling}' and WfTask.ExecutorEmpUid='{_applicationContext.EmpUid}'";
             int todoCount = _dataAccessor.ExecuteScalar<int>(sqlToDo);
-            var agents = _dataAccessor.QueryAll<WfAgentSetting>().Where(a => a.Agent == _session.EmpUid && a.State == 1);
+            var agents = _dataAccessor.QueryAll<WfAgentSetting>().Where(a => a.Agent == _applicationContext.EmpUid && a.State == 1);
             //获取待办
             var listCount = _dataAccessor.Query($"select count(0) C,WfTask.BizTypeUid from WfTask,WfActivityInstance,WfProcessInstance where WfTask.ActivityInsUid=WfActivityInstance.Fid and WfTask.ProcessInsUid= WfProcessInstance.Fid and  WfProcessInstance.ProcessState='Running' and  WfActivityInstance.ActivityState in('{WfActivityInstanceState.Running}','{WfActivityInstanceState.Ready}') and WfTask.TaskState='{WfTaskState.Handling}' and WfTask.ExecutorEmpUid in (@Agents) group by WfTask.BizTypeUid", new DynamicParameters(new { Agents = agents.Select(a => a.Principal) }));
             int agentCount = 0;
             foreach (var item in listCount)
             {
                 //检查是否代理了此业务
-                var existAgents = agents.Where(a => a.BusinessType.IsNullOrEmpty() || a.BusinessType == item.BizTypeUid);
+                var existAgents = agents.Where(a => a.BusinessType.IsMissing() || a.BusinessType == item.BizTypeUid);
                 if (existAgents.Any())
                 {
                     var cc = listCount.FirstOrDefault(b => b.BizTypeUid == item.BizTypeUid);

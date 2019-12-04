@@ -1,4 +1,6 @@
-﻿@model IEnumerable<Fap.Model.Infrastructure.FapMessage>
+﻿@using Fap.Core.Infrastructure.Model
+@using Fap.Core.Infrastructure.Enums
+@model IEnumerable<FapMessage>
 @{ 
     int todoCount = ViewBag.ToDoCount;
     int agentCount = ViewBag.AgentCount;
@@ -73,8 +75,8 @@
 
 @if (Model != null)
 {
-    var notices = Model.Where(m => m.MsgCategory == Fap.Model.Constants.FapMessageCategory.Notice);
-    var messages = Model.Where(m => m.MsgCategory == Fap.Model.Constants.FapMessageCategory.Message);
+    var notices = Model.Where(m => m.MsgCategory == FapMessageCategory.Notice);
+    var messages = Model.Where(m => m.MsgCategory == FapMessageCategory.Message);
     if (notices != null)
     {
 

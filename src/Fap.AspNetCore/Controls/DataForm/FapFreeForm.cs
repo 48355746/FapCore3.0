@@ -55,9 +55,8 @@ namespace Fap.AspNetCore.Controls.DataForm
         private string FidValue { get; set; }
         private ILoggerFactory _loggerFactory;
         private ILogger<FapFreeForm> _logger;
-        private IFapPlatformDomain _appDomain;
 
-        public FapFreeForm(IDbContext dataAccessor, ILoggerFactory loggerFactory, IFapPlatformDomain platformDomain, IFapApplicationContext applicationContext, IMultiLangService multiLangService, string id, FormStatus frmStatus = FormStatus.Add) : base("")
+        public FapFreeForm(IDbContext dataAccessor, ILoggerFactory loggerFactory,  IFapApplicationContext applicationContext, IMultiLangService multiLangService, string id, FormStatus frmStatus = FormStatus.Add) : base("")
         {
             _id = id;
             _formStatus = frmStatus;
@@ -65,7 +64,6 @@ namespace Fap.AspNetCore.Controls.DataForm
             _applicationContext = applicationContext;
             _multiLangService = multiLangService;
             _loggerFactory = loggerFactory;
-            _appDomain = platformDomain;
             _logger = loggerFactory.CreateLogger<FapFreeForm>();
         }
         /// <FapFreeForm>
@@ -111,12 +109,12 @@ namespace Fap.AspNetCore.Controls.DataForm
         public FapFreeForm SetQueryOption(QuerySet qs)
         {
             _querySet = qs;
-            _tb = _appDomain.TableSet.FirstOrDefault(t => t.TableName == qs.TableName);
+            _tb =_dbContext.Table(qs.TableName);
             DynamicParameters parameters = new DynamicParameters();
             qs.Parameters.ForEach(q => parameters.Add(q.ParamKey, q.ParamValue));
             var frmData = _dbContext.QueryFirstOrDefault(qs.ToString(), parameters);
             var queryColList= qs.QueryCols.Split(',');
-            IEnumerable<FapColumn> fapColumns = _appDomain.ColumnSet.Where(c => c.TableName == qs.TableName && queryColList.Contains(c.ColName));
+            IEnumerable<FapColumn> fapColumns =_dbContext.Columns(qs.TableName).Where(c=>queryColList.Contains(c.ColName));
             if (frmData!=null)
             {
                 FormData =(frmData as IDictionary<string,object>).ToFapDynamicObject(qs.TableName);
@@ -179,7 +177,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     {
                         fvc = _cutomDefault[col.ColName + "MC"];
                     }
-                    _fapFields.Add(new FapField(_dbContext,_appDomain, _multiLangService) { CurrentColumn = col, FieldName = col.ColName, FieldComment = col.ColComment, ReadOnly = col.EditAble == 0 ? true : false, FieldValue = (fv == null ? "" : fv), FieldMCValue = (fvc == null ? "" : fvc) });
+                    _fapFields.Add(new FapField(_dbContext,_multiLangService) { CurrentColumn = col, FieldName = col.ColName, FieldComment = col.ColComment, ReadOnly = col.EditAble == 0 ? true : false, FieldValue = (fv == null ? "" : fv), FieldMCValue = (fvc == null ? "" : fvc) });
 
                 }
             }
@@ -227,7 +225,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             matchs = reg.Matches(FFrm.FFContent);
             if (matchs.Any())
             {
-                var childTableList =_appDomain.TableSet.Where(t => t.ExtTable == _tb.TableName);
+                var childTableList =_dbContext.Tables(t => t.ExtTable == _tb.TableName);
                 foreach (var mtch in matchs)
                 {
                     string childTableLabel = mtch.ToString().TrimStart(new char[] { '{', '{' }).TrimEnd(new char[] { '}', '}' });
@@ -322,13 +320,13 @@ namespace Fap.AspNetCore.Controls.DataForm
             }
             foreach (var table in _childTableList)
             {
-                string primaryKey =_appDomain.ColumnSet.Where(c=>c.TableName== table.Value.TableName).FirstOrDefault(f => f.RefTable == _tb.TableName)?.ColName ?? "";
+                string primaryKey =_dbContext.Columns(table.Value.TableName).FirstOrDefault(f => f.RefTable == _tb.TableName)?.ColName ?? "";
                 if (IsNullOrWhiteSpace(primaryKey))
                 {
                     _logger.LogError($"表{table.Value.TableName}未设置和主表的关联字段，请设置关联字段参照主表");
                     continue;
                 }
-                Grid grid = new Grid(_dbContext, _loggerFactory, _appDomain,_applicationContext, _multiLangService, $"grid-{table.Value.TableName}");
+                Grid grid = new Grid(_dbContext, _loggerFactory, _applicationContext, _multiLangService, $"grid-{table.Value.TableName}");
                 QuerySet qs = new QuerySet();
                 qs.TableName = table.Value.TableName;
 
@@ -355,7 +353,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                         newUid = ffParams.First(p => p.ParamKey == "Fid").ParamValue.ToString().ToString();
                     }
                 }
-                var subColumnList =_appDomain.ColumnSet.Where(c=>c.TableName==table.Value.TableName);
+                var subColumnList =_dbContext.Columns(table.Value.TableName);
                 if (subColumnList != null && subColumnList.Any())
                 {
                     //元数据默认值

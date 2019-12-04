@@ -54,6 +54,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Fap.AspNetCore\Fap.AspNetCore.csproj" />
     <ProjectReference Include="..\..\..\src\Fap.Core\Fap.Core.csproj" />
+    <ProjectReference Include="..\..\..\src\Fap.Workflow\Fap.Workflow.csproj" />
   </ItemGroup>
 
 </Project>

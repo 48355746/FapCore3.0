@@ -56,7 +56,6 @@ namespace Fap.AspNetCore.Controls.DataForm
 
         private IDbContext _dbContext;
         private IFapApplicationContext _applicationContext;
-        private IFapPlatformDomain _platformDomain;
         private IMultiLangService _multiLangService;
         private IRbacService _rbacService;
         //子表默认值集合
@@ -73,7 +72,6 @@ namespace Fap.AspNetCore.Controls.DataForm
             _multiLangService = serviceProvider.GetService<IMultiLangService>(); 
             _rbacService = serviceProvider.GetService<IRbacService>(); ;
             _applicationContext = serviceProvider.GetService<IFapApplicationContext>();
-            _platformDomain = serviceProvider.GetService<IFapPlatformDomain>();
             _serviceProvider = serviceProvider;
             this.Id = id;
         }
@@ -196,7 +194,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                         fvc = _cutomDefault[col.ColName + "MC"];
                     }
                     var platformDomain = _serviceProvider.GetService<IFapPlatformDomain>();
-                    FapField frmField = new FapField(_dbContext, platformDomain, _multiLangService) { FormData = FormData, CurrentColumn = col, FieldGroup = col.ColGroup.IsMissing() ? "默认分组" : col.ColGroup, FieldValue = (fv == null ? "" : fv), FieldMCValue = (fvc == null ? "" : fvc) };
+                    FapField frmField = new FapField(_dbContext, _multiLangService) { FormData = FormData, CurrentColumn = col, FieldGroup = col.ColGroup.IsMissing() ? "默认分组" : col.ColGroup, FieldValue = (fv == null ? "" : fv), FieldMCValue = (fvc == null ? "" : fvc) };
                     #region 权限（只读可编辑）判断
                     if (viewList != null && viewList.Contains(col.Fid))
                     {
@@ -217,12 +215,12 @@ namespace Fap.AspNetCore.Controls.DataForm
         {
             _tableName = qs.TableName;
             _hiddenCols = qs.HiddenCols ?? "";
-            _tb =_platformDomain.TableSet.FirstOrDefault(t=>t.TableName==qs.TableName);
+            _tb =_dbContext.Table(qs.TableName);
             DynamicParameters parameters = new DynamicParameters();
             qs.Parameters.ForEach(q => parameters.Add(q.ParamKey, q.ParamValue));
             var frmData = _dbContext.QueryFirstOrDefault(qs.ToString(), parameters);
             var queryColList = qs.QueryCols.Split(',');
-            IEnumerable<FapColumn> fapColumns =_platformDomain.ColumnSet.Where(c => c.TableName == qs.TableName && queryColList.Contains(c.ColName));
+            IEnumerable<FapColumn> fapColumns =_dbContext.Columns(qs.TableName).Where(c=> queryColList.Contains(c.ColName));
             if (frmData != null)
             {
                 FormData = (frmData as IDictionary<string, object>).ToFapDynamicObject(qs.TableName);

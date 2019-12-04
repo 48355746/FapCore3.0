@@ -2392,7 +2392,11 @@ namespace Fap.Core.DataAccess
         }
         public IEnumerable<FapTable> Tables(string tableCategory)
         {
-            return _fapPlatformDomain.TableSet.Where(t => t.TableCategory == tableCategory);
+            return Tables(t => t.TableCategory == tableCategory);
+        }
+        public IEnumerable<FapTable> Tables(Func<FapTable,bool> predicate)
+        {
+            return _fapPlatformDomain.TableSet.TryGetValue(predicate);
         }
         public IEnumerable<FapColumn> Columns(string tableName)
         {

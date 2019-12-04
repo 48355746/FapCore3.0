@@ -13,7 +13,7 @@
                 <i class="menu-icon @menu.ImageUrl"></i>
                 <span class="menu-text">
                     @menu.Text
-                    @if (menu.ToolTip.IsNotNullOrEmpty())
+                    @if (menu.ToolTip.IsMissing())
                     {
                         <span class="badge badge-warning" data-plug="@menu.ToolTip"></span>
                     }
@@ -33,7 +33,7 @@
                                 <a href="#" class="dropdown-toggle">
                                     <i class="menu-icon fa fa-caret-right"></i>
                                     @cmenu.Text
-                                    @if (cmenu.ToolTip.IsNotNullOrEmpty())
+                                    @if (cmenu.ToolTip.IsPresent())
                                     {
                                         <span class="badge badge-warning" data-plug="@cmenu.ToolTip"></span>
                                     }
@@ -45,7 +45,7 @@
                                 <a data-url="@cmenu.NavigateUrl.Substring(1)" href="~/Home/MainFrame#@cmenu.NavigateUrl.Substring(1)" class="dropdown-toggle">
                                     <i class="menu-icon fa fa-caret-right"></i>
                                     @cmenu.Text
-                                    @if (cmenu.ToolTip.IsNotNullOrEmpty())
+                                    @if (cmenu.ToolTip.IsPresent())
                                     {
                                         <span class="badge badge-warning" data-plug="@cmenu.ToolTip"></span>
                                     }
@@ -60,7 +60,7 @@
                                 <a href="#">
                                     <i class="menu-icon fa fa-caret-right"></i>
                                     @cmenu.Text
-                                    @if (cmenu.ToolTip.IsNotNullOrEmpty())
+                                    @if (cmenu.ToolTip.IsPresent())
                                     {
                                         <span class="badge badge-warning" data-plug="@cmenu.ToolTip"></span>
                                     }
@@ -71,7 +71,7 @@
                                 <a data-url="@cmenu.NavigateUrl.Substring(1)" href="~/Home/MainFrame#@cmenu.NavigateUrl.Substring(1)">
                                     <i class="menu-icon fa fa-caret-right"></i>
                                     @cmenu.Text
-                                    @if (cmenu.ToolTip.IsNotNullOrEmpty())
+                                    @if (cmenu.ToolTip.IsPresent())
                                     {
                                         <span class="badge badge-warning" data-plug="@cmenu.ToolTip"></span>
                                     }
@@ -88,7 +88,7 @@
                                         <a data-url="@ccmenu.NavigateUrl.Substring(1)" href="~/Home/MainFrame#@ccmenu.NavigateUrl.Substring(1)">
                                             <i class="menu-icon fa fa-caret-right"></i>
                                             @ccmenu.Text
-                                            @if (ccmenu.ToolTip.IsNotNullOrEmpty())
+                                            @if (ccmenu.ToolTip.IsPresent())
                                             {
                                                 <span class="badge badge-warning" data-plug="@ccmenu.ToolTip"></span>
                                             }

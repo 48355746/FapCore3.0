@@ -211,6 +211,16 @@ namespace XUnitTestFapCore
             long id = _dbContext.InsertDynamicData(emp);
             Assert.Equal(id, emp.Id);
         }
+        [Fact]
+        public void InTest()
+        {
+            string sql = "select * from Employee where Fid in @Fids";
+            var emps= _dbContext.Query<Employee>(sql, new Dapper.DynamicParameters(new { Fids = new string[] { "3534239003521843200", "3534239003874164736", "3534239004188737536", "3534239004486533120", "3534239004855631872" } }));
+            sql = "select *from Employee where Fid in(select useridentity from FapUser)";
+            var emp= _dbContext.Query(sql);
+            //Assert.Equal(5, emps.Count());
+            Assert.Null(emp);
+        }
        
     }
 }
