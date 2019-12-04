@@ -13,15 +13,13 @@ namespace Fap.Core.Annex.FileDirectory
     public class FileDirectoryService : IFileService
     {
         private IDbContext _dataAccessor;
-        private IFapPlatformDomain _appDomain;
         private ILogger<FileDirectoryService> _logger;
         private IFapConfigService _configService;
 
 
-        public FileDirectoryService(IDbContext dataAccessor, IFapPlatformDomain appDomain, ILogger<FileDirectoryService> logger, IFapConfigService configService)
+        public FileDirectoryService(IDbContext dataAccessor,  ILogger<FileDirectoryService> logger, IFapConfigService configService)
         {
             _dataAccessor = dataAccessor;
-            _appDomain = appDomain;
             _logger = logger;
             _configService = configService;
 

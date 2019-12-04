@@ -39,7 +39,6 @@ namespace Fap.Core.Annex
         /// </summary>
         public const string FILESERVICE_DATABASE = "Database";
 
-        private IFapPlatformDomain _appDomain;
         private IDbContext _dataAccessor;
         private ILoggerFactory _logger;
         private IFapConfigService _configService;
@@ -47,9 +46,8 @@ namespace Fap.Core.Annex
         private IFileService _fileService;
         private string _fileServiceType = FILESERVICE_FTP; //默认是数据库
 
-        public FapFileService(IFapPlatformDomain appDomain, IDbContext dataAccessor, IFapConfigService configService, ILoggerFactory logger, string fileServiceType = "")
+        public FapFileService(IDbContext dataAccessor, IFapConfigService configService, ILoggerFactory logger, string fileServiceType = "")
         {
-            _appDomain = appDomain;
             _dataAccessor = dataAccessor;
             _logger = logger;
             _configService = configService;
@@ -89,7 +87,7 @@ namespace Fap.Core.Annex
                 if (_fileServiceType.Equals(FapFileService.FILESERVICE_FILE, StringComparison.CurrentCultureIgnoreCase))
                 {
                     ILogger<FileDirectoryService> log = _logger.CreateLogger<FileDirectoryService>();
-                    _fileService = new FileDirectoryService(_dataAccessor, _appDomain, log, _configService);
+                    _fileService = new FileDirectoryService(_dataAccessor, log, _configService);
                 }
                 else if (_fileServiceType.Equals(FapFileService.FILESERVICE_FTP, StringComparison.CurrentCultureIgnoreCase))
                 {
@@ -117,7 +115,7 @@ namespace Fap.Core.Annex
             if (fileServiceType.Equals(FILESERVICE_FILE, StringComparison.CurrentCultureIgnoreCase))
             {
                 ILogger<FileDirectoryService> log = _logger.CreateLogger<FileDirectoryService>();
-                fileService = new FileDirectoryService(_dataAccessor, _appDomain, log, _configService);
+                fileService = new FileDirectoryService(_dataAccessor, log, _configService);
             }
             else if (fileServiceType.Equals(FILESERVICE_FTP, StringComparison.CurrentCultureIgnoreCase))
             {

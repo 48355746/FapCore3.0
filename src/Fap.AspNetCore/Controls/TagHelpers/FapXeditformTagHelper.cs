@@ -15,15 +15,13 @@ namespace Fap.AspNetCore.Controls.TagHelpers
     {
         private IDbContext _dataAccessor;
         private ILogger<FapXeditformTagHelper> _logger;
-        private IFapPlatformDomain _appDomain;
         private IFapApplicationContext _applicationContext;
         private IMultiLangService _multiLang;
         private IRbacService _rbacService;
-        public FapXeditformTagHelper(IDbContext dataAccessor,  ILoggerFactory logger, IFapPlatformDomain appDomain, IFapApplicationContext applicationContext, IMultiLangService multiLang, IRbacService rbacService)
+        public FapXeditformTagHelper(IDbContext dataAccessor,  ILoggerFactory logger,  IFapApplicationContext applicationContext, IMultiLangService multiLang, IRbacService rbacService)
         {
             _dataAccessor = dataAccessor;
             _logger = logger.CreateLogger<FapXeditformTagHelper>();
-            _appDomain = appDomain;
             _applicationContext = applicationContext;
             _multiLang = multiLang;
             _rbacService = rbacService;
@@ -55,7 +53,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             {
                 id = Id;
             }
-            XEditableForm form = new XEditableForm( _applicationContext,_appDomain,_dataAccessor, _multiLang, _rbacService);
+            XEditableForm form = new XEditableForm( _applicationContext,_dataAccessor, _multiLang, _rbacService);
             if (QueryOption != null)
             {
                 form.SetQueryOption(QueryOption);

@@ -314,7 +314,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             StringBuilder sbOption = new StringBuilder();
             if (column.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX || column.CtrlType == FapColumn.CTRL_TYPE_RADIO)
             {
-                IEnumerable<FapDict> dicList =_platformDomain.DictSet.Where(d=>d.Category==column.RefTable);
+                IEnumerable<FapDict> dicList =_dbContext.Dictionarys(column.RefTable);
                 string strSource = string.Join(",", dicList.Select(d => "{id:'" + d.Code.RemoveSpace() + "',text:'" + d.Name.RemoveSpace().Replace("'","") + "'}"));
                 sbOption.AppendLine("type:'select2',");
                 sbOption.AppendLine("value:'" + fieldValue.RemoveSpace() + "',");
@@ -325,7 +325,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             }
             else if (column.CtrlType == FapColumn.CTRL_TYPE_CHECKBOXLIST)
             {
-                IEnumerable<FapDict> dicList = _platformDomain.DictSet.Where(d => d.Category == column.RefTable);
+                IEnumerable<FapDict> dicList =_dbContext.Dictionarys(column.RefTable);
                 string strSource = string.Join(",", dicList.Select(d => "{id:'" + d.Code.RemoveSpace() + "',text:'" + d.Name.RemoveSpace().Replace("'", "") + "'"));
                 sbOption.AppendLine("type:'checklist',");
                 sbOption.AppendLine("value:[" + fieldValue.RemoveSpace() + "],");

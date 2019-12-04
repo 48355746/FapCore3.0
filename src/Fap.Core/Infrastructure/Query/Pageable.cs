@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Ardalis.GuardClauses;
+using Fap.Core.DataAccess;
 using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Infrastructure.Metadata;
@@ -17,10 +18,10 @@ namespace Fap.Core.Infrastructure.Query
     /// </summary>
     public class Pageable
     {
-        private IFapPlatformDomain _platformDomain;
-        public Pageable(IFapPlatformDomain platformDomain)
+        private IDbContext _dbContext;
+        public Pageable(IDbContext dbContext)
         {
-            _platformDomain = platformDomain;
+            _dbContext = dbContext;
         }
         /// <summary>
         /// 历史时间点， 只用于查询历史信息
@@ -30,7 +31,7 @@ namespace Fap.Core.Infrastructure.Query
         {
             get
             {
-                return _platformDomain.TableSet.FirstOrDefault(t => t.TableName == TableName);
+                return _dbContext.Table(TableName);
             }
         }
         /// <summary>
@@ -187,7 +188,7 @@ namespace Fap.Core.Infrastructure.Query
             {
                 if (_wraper == null)
                 {
-                    _wraper = new SimpleQueryOptionBuilder(this, _platformDomain);
+                    _wraper = new SimpleQueryOptionBuilder(this, _dbContext);
                 }
                 return _wraper;
             }
@@ -247,11 +248,11 @@ namespace Fap.Core.Infrastructure.Query
     public sealed class SimpleQueryOptionBuilder
     {
         private Pageable _queryOption;
-        private IFapPlatformDomain _platformDomain;
-        public SimpleQueryOptionBuilder(Pageable queryOption, IFapPlatformDomain platformDomain)
+        private IDbContext _dbContext;
+        public SimpleQueryOptionBuilder(Pageable queryOption, IDbContext dbContext)
         {
             _queryOption = queryOption;
-            _platformDomain = platformDomain;
+            _dbContext = dbContext;
         }
         /// <summary>
         /// 主表
@@ -260,7 +261,7 @@ namespace Fap.Core.Infrastructure.Query
         {
             get
             {
-                var _mainTable = _platformDomain.TableSet.FirstOrDefault(t => t.TableName == _queryOption.TableName);
+                var _mainTable =_dbContext.Table(_queryOption.TableName);
 
                 if (_mainTable == null)
                 {
@@ -274,7 +275,7 @@ namespace Fap.Core.Infrastructure.Query
         {
             get
             {
-                var _mainColumnList = _platformDomain.ColumnSet.Where(c => c.TableName == _queryOption.TableName);
+                var _mainColumnList = _dbContext.Columns(_queryOption.TableName);
                 if (_mainColumnList == null || _mainColumnList.Count() == 0)
                 {
                     Guard.Against.Null(_mainColumnList, "主表字段元数据");
@@ -295,7 +296,7 @@ namespace Fap.Core.Infrastructure.Query
                 FapTable mainTable = MainTable;
                 if (mainTable.ExtTable.IsPresent())
                 {
-                    return _platformDomain.TableSet.FirstOrDefault(t => t.TableName == MainTable.ExtTable);
+                    return _dbContext.Table(MainTable.ExtTable);
                 }
                 return null;
             }
@@ -313,7 +314,7 @@ namespace Fap.Core.Infrastructure.Query
                 FapTable mainTable = MainTable;
                 if (mainTable.ExtTable.IsPresent())
                 {
-                    return _platformDomain.ColumnSet.Where(t => t.TableName == MainTable.ExtTable);
+                    return _dbContext.Columns(MainTable.ExtTable);
                 }
 
                 return null;
@@ -462,7 +463,7 @@ namespace Fap.Core.Infrastructure.Query
                             }
                             else //MC字段
                             {
-                                FapColumn column = _platformDomain.ColumnSet.FirstOrDefault(c => c.TableName == item.TableName && c.ColName == item.OrginalField);
+                                FapColumn column = _dbContext.Columns(item.TableName).FirstOrDefault(c=> c.ColName == item.OrginalField);
                                 if (column != null)
                                 {
                                     if (column.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)

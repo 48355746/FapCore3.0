@@ -193,7 +193,6 @@ namespace Fap.AspNetCore.Controls.DataForm
                     {
                         fvc = _cutomDefault[col.ColName + "MC"];
                     }
-                    var platformDomain = _serviceProvider.GetService<IFapPlatformDomain>();
                     FapField frmField = new FapField(_dbContext, _multiLangService) { FormData = FormData, CurrentColumn = col, FieldGroup = col.ColGroup.IsMissing() ? "默认分组" : col.ColGroup, FieldValue = (fv == null ? "" : fv), FieldMCValue = (fvc == null ? "" : fvc) };
                     #region 权限（只读可编辑）判断
                     if (viewList != null && viewList.Contains(col.Fid))

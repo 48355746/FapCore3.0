@@ -172,7 +172,6 @@ namespace Fap.AspNetCore.Controls.JqGrid
         private bool _logicDelete = true;
         private IDbContext _dataAccessor;
         private ILoggerFactory _loggerFactory;
-        private IFapPlatformDomain _platformDomain;
         private IFapApplicationContext  _applicationContext;
         private IMultiLangService _multiLang;
         //分布式缓存
@@ -181,7 +180,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
         ///     Constructor
         /// </summary>
         /// <param name = "id">Id of grid</param>
-        public Grid(IDbContext dataAccessor, ILoggerFactory logger, IFapPlatformDomain appDomain, IFapApplicationContext applicationContext, IMultiLangService multiLang, string id) : base("")
+        public Grid(IDbContext dataAccessor, ILoggerFactory logger, IFapApplicationContext applicationContext, IMultiLangService multiLang, string id) : base("")
         {
             if (id.IsMissing())
             {
@@ -190,7 +189,6 @@ namespace Fap.AspNetCore.Controls.JqGrid
             _id = id;
             _dataAccessor = dataAccessor;
             _loggerFactory = logger;
-            _platformDomain = appDomain;
             _applicationContext = applicationContext;
             _multiLang = multiLang;
         }
@@ -289,9 +287,9 @@ namespace Fap.AspNetCore.Controls.JqGrid
             {
                 _defaultValues = queryset.DefaultValues;
             }
-            Pageable queryOption = new Pageable(_platformDomain) { TableName = queryset.TableName, QueryCols = queryset.QueryCols };
+            Pageable queryOption = new Pageable(_dataAccessor) { TableName = queryset.TableName, QueryCols = queryset.QueryCols };
             var queryColList = queryset.QueryCols.Split(',');
-            IEnumerable<FapColumn> fapColumns = _platformDomain.ColumnSet.Where(c => c.TableName == queryset.TableName && queryColList.Contains(c.ColName));
+            IEnumerable<FapColumn> fapColumns =_dataAccessor.Columns(queryset.TableName).Where(c=> queryColList.Contains(c.ColName));
             _fapColumns = fapColumns;
             if (fapColumns.Any())
             {
@@ -337,7 +335,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 {
                     hideCols = queryset.HiddenCols.Split(',', StringSplitOptions.RemoveEmptyEntries);
                 }
-                List<Column> grdColumns = _fapColumns.OrderBy(c => c.ColOrder).ToColumns(_loggerFactory,  _multiLang, _platformDomain, disCols, hideCols).ToList();
+                List<Column> grdColumns = _fapColumns.OrderBy(c => c.ColOrder).ToColumns(_loggerFactory,_dataAccessor,  _multiLang,  disCols, hideCols).ToList();
 
                 _columns.AddRange(grdColumns);
 

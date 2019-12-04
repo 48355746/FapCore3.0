@@ -569,7 +569,7 @@ namespace Fap.Core.DataAccess
         {
             string tableName = table.TableName;
             T oldDataClone = GetById<T>(entityToUpdate.Id);
-            if (entityToUpdate.Ts != null && entityToUpdate.Ts != oldDataClone.Ts)
+            if (entityToUpdate.Ts != oldDataClone.Ts)
             {
                 _logger.LogInformation("时间戳改变，说明数据已经过期，被其他人修改了,需要刷新数据");
                 return false;
@@ -654,7 +654,7 @@ namespace Fap.Core.DataAccess
         {
             string tableName = table.TableName;
             T oldDataClone = await GetByIdAsync<T>(entityToUpdate.Id);
-            if (entityToUpdate.Ts != null && entityToUpdate.Ts != oldDataClone.Ts)
+            if (entityToUpdate.Ts != oldDataClone.Ts)
             {
                 _logger.LogInformation("时间戳改变，说明数据已经过期，被其他人修改了,需要刷新数据");
                 return false;

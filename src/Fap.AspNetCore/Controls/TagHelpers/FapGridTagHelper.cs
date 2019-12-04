@@ -219,7 +219,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                 id = Id;
             }
             string pager = $"pager-{id}";
-            Grid grid = new Grid(_dataAccessor, _loggerFactory, _appDomain,_applicationContext, _multiLang, $"grid-{id}");
+            Grid grid = new Grid(_dataAccessor, _loggerFactory, _applicationContext, _multiLang, $"grid-{id}");
             if (Url.IsPresent())
             {
                 grid.SetUrl(Url);

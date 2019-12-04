@@ -30,7 +30,6 @@ namespace Fap.AspNetCore.Serivce
     {
         private readonly IFapApplicationContext _applicationContext;
         private readonly IDbContext _dbContext;
-        private readonly IFapPlatformDomain _platformDomain;
         private readonly IRbacService _rbacService;
         private IAntiforgery _antiforgery;
         private readonly ILogger<GridFormService> _logger;
@@ -38,13 +37,11 @@ namespace Fap.AspNetCore.Serivce
             IFapApplicationContext fapApplicationContext,
             ILogger<GridFormService> logger,
             IDbContext dbContext,
-            IFapPlatformDomain platformDomain,
             IRbacService rbacService,
             IAntiforgery antiforgery)
         {
             _dbContext = dbContext;
             _applicationContext = fapApplicationContext;
-            _platformDomain = platformDomain;
             _rbacService = rbacService;
             _antiforgery = antiforgery;
             _logger = logger;
@@ -65,8 +62,8 @@ namespace Fap.AspNetCore.Serivce
                     jqGridPostData.Page = 1;
                 }
                 QuerySet qs = jqGridPostData.QuerySet;
-                IEnumerable<FapColumn> fapColumns = _platformDomain.ColumnSet.Where(c => c.TableName == qs.TableName);
-                Pageable queryOption = new Pageable(_platformDomain) { TableName = qs.TableName, QueryCols = qs.QueryCols, HistoryTimePoint = jqGridPostData.TimePoint };
+                IEnumerable<FapColumn> fapColumns =_dbContext.Columns(qs.TableName);
+                Pageable queryOption = new Pageable(_dbContext) { TableName = qs.TableName, QueryCols = qs.QueryCols, HistoryTimePoint = jqGridPostData.TimePoint };
                 //设置统计
                 if (qs.Statsetlist != null && qs.Statsetlist.Any())
                 {
@@ -323,7 +320,7 @@ namespace Fap.AspNetCore.Serivce
 
             (dynamic mainData, Dictionary<string, IEnumerable<dynamic>> childsData) BuilderData()
             {
-                var columnList = _platformDomain.ColumnSet.Where(c => c.TableName == tableName);
+                var columnList =_dbContext.Columns(tableName);
                 //undefined 父文本编辑框控件要去掉,logicdelete逻辑删除,childsData子表格数据
                 string[] exclude = new string[]
                 {
@@ -351,7 +348,7 @@ namespace Fap.AspNetCore.Serivce
                             List<FapDynamicObject> childDatas = new List<FapDynamicObject>();
                             foreach (JObject cd in childDataArray)
                             {
-                                dynamic cfdo = cd.ToFapDynamicObject(_platformDomain.ColumnSet.Where(c => c.TableName == childTableName), exclude);
+                                dynamic cfdo = cd.ToFapDynamicObject(_dbContext.Columns(childTableName), exclude);
                                 childDatas.Add(cfdo);
                             }
                             childDataDic.Add(childTableName, childDatas);
@@ -393,7 +390,7 @@ namespace Fap.AspNetCore.Serivce
                     foreach (var item in childDataList)
                     {
                         //获取外键字段
-                        var childColumnList = _platformDomain.ColumnSet.Where(c => c.TableName == item.Key);
+                        var childColumnList =_dbContext.Columns(item.Key);
                         string foreignKey = childColumnList.First(f => f.RefTable == mainData.TableName).ColName;
                         //先删除后增加
                         _dbContext.DeleteExec(item.Key, $"{foreignKey}='{mainData.Get("Fid")}'");
@@ -409,12 +406,12 @@ namespace Fap.AspNetCore.Serivce
             void DeleteChildData(dynamic mainData)
             {
                 //检查子表，删除子表数据
-                var childtableList = _platformDomain.TableSet.Where(t => t.ExtTable == mainData.TableName);
+                var childtableList =_dbContext.Tables(t => t.ExtTable == mainData.TableName);
                 if (childtableList != null && childtableList.Any())
                 {
                     foreach (var childTable in childtableList)
                     {
-                        var childColumnList = _platformDomain.ColumnSet.Where(c => c.TableName == childTable.TableName);
+                        var childColumnList = _dbContext.Columns(childTable.TableName);
                         string foreignKey = childColumnList.First(f => f.RefTable == mainData.TableName).ColName;
                         _dbContext.DeleteExec(childTable.TableName, $"{foreignKey} = @Fid", new DynamicParameters(new { Fid = mainData.Fid }));
                     }

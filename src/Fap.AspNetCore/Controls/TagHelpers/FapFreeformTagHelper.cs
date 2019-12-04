@@ -16,16 +16,14 @@ namespace Fap.AspNetCore.Controls.TagHelpers
     {
         private IDbContext _dataAccessor;
         private ILoggerFactory _loggerFactory;
-        private IFapApplicationContext _session;
+        private IFapApplicationContext _applicationContext;
         private IMultiLangService _multiLang;
-        private IFapPlatformDomain _appDomain;
-        public FapFreeformTagHelper(IDbContext dataAccessor, ILoggerFactory loggerFactory, IFapPlatformDomain platformDomain, IFapApplicationContext session, IMultiLangService multiLang)
+        public FapFreeformTagHelper(IDbContext dataAccessor, ILoggerFactory loggerFactory, IFapApplicationContext applicationContext, IMultiLangService multiLang)
         {
             _dataAccessor = dataAccessor;
             _loggerFactory = loggerFactory;
-            _session = session;
+            _applicationContext = applicationContext;
             _multiLang = multiLang;
-            _appDomain = platformDomain;
         }
         /// <summary>
         /// 控件ID
@@ -65,7 +63,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             {
                 id = Id;
             }
-            FapFreeForm form = new FapFreeForm(_dataAccessor, _loggerFactory, _appDomain, _session, _multiLang, id);
+            FapFreeForm form = new FapFreeForm(_dataAccessor, _loggerFactory, _applicationContext, _multiLang, id);
             if (FormTemplate.IsPresent())
             {
                 form.SetFromTemplate(FormTemplate);

@@ -13,7 +13,7 @@ namespace Fap.AspNetCore.Controls.JqGrid.Extensions
     public static class FapColumnExtensions
     {
         public static string[] systemDefaultFields = { "EnableDate", "DisableDate", "CreateBy", "CreateName", "CreateDate", "UpdateBy", "UpdateName", "UpdateDate", "GroupUid", "OrgUid", "Dr", "Ts" };
-        public static IEnumerable<Column> ToColumns(this IEnumerable<FapColumn> fapColumns, ILoggerFactory loggerFactory,  IMultiLangService multiLang, IFapPlatformDomain platformDomain, string[] disCols, string[] hideCols)
+        public static IEnumerable<Column> ToColumns(this IEnumerable<FapColumn> fapColumns, ILoggerFactory loggerFactory,IDbContext dbContext, IMultiLangService multiLang,  string[] disCols, string[] hideCols)
         {
             ILogger logger = loggerFactory.CreateLogger("性能");
             if (fapColumns.Any())
@@ -26,7 +26,7 @@ namespace Fap.AspNetCore.Controls.JqGrid.Extensions
                         if (systemDefaultFields.Contains(fc.ColName))
                             continue;
                         Stopwatch timePerParse = Stopwatch.StartNew();
-                        yield return fc.ToColumn( multiLang,platformDomain, disCols, hideCols);
+                        yield return fc.ToColumn( multiLang,dbContext, disCols, hideCols);
                         timePerParse.Stop();
                         var ts = timePerParse.ElapsedMilliseconds;
 
@@ -46,7 +46,7 @@ namespace Fap.AspNetCore.Controls.JqGrid.Extensions
         /// <param name="disCols">手动设置可见的字段，默认可能为不可见</param>
         /// <param name="hideCols">要隐藏的字段</param>
         /// <returns></returns>
-        public static Column ToColumn(this FapColumn fapColumn, IMultiLangService multiLang,IFapPlatformDomain platformDomain, string[] disCols, string[] hideCols)
+        public static Column ToColumn(this FapColumn fapColumn, IMultiLangService multiLang,IDbContext dbContext, string[] disCols, string[] hideCols)
         {
             //判断是否为隐藏。当disCols不包含且 ShowAble==0
 
@@ -123,7 +123,7 @@ namespace Fap.AspNetCore.Controls.JqGrid.Extensions
                     col.SetFormatter(Enums.Formatters.Select);
                     //编辑设置
                     col.SetEditType(Enums.EditType.Select);
-                    IEnumerable<FapDict> list = platformDomain.DictSet.Where(d=>d.Category==fapColumn.RefTable);
+                    IEnumerable<FapDict> list = dbContext.Dictionarys(fapColumn.RefTable);
                     if (list != null && list.Any())
                     {
                         string codeValues = string.Join(";", list.Select(c => c.Code + ":" + c.Name).ToList());
