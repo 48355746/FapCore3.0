@@ -13,18 +13,16 @@ using Fap.Core.Infrastructure.Query;
 
 namespace Fap.AspNetCore.Model
 {
-    public class JqgridJsonFilterToSql
+    public class JsonFilterToSql
     {
         private IDbContext _dbContext;
-        IFapPlatformDomain _platformDomain;
-        public JqgridJsonFilterToSql(IDbContext dbContext,IFapPlatformDomain platformDomain)
+        public JsonFilterToSql(IDbContext dbContext)
         {
             _dbContext = dbContext;
-            _platformDomain = platformDomain;
         }
         private static Dictionary<string, string> Q2Oper;
         private static Dictionary<string, string> Q2OperDesc;
-        static JqgridJsonFilterToSql()
+        static JsonFilterToSql()
         {
             Q2Oper = new Dictionary<string, string>();
             Q2OperDesc = new Dictionary<string, string>();
@@ -101,7 +99,7 @@ namespace Fap.AspNetCore.Model
                 return "";
             }
             StringBuilder sqlBuilder = new StringBuilder();
-            IEnumerable<FapColumn> cols = _platformDomain.ColumnSet.Where(c => c.TableName == tableName);
+            IEnumerable<FapColumn> cols =_dbContext.Columns(tableName);
             if (filter.IsPresent())
             {
                 JObject jsono = JObject.Parse(filter);
@@ -139,7 +137,7 @@ namespace Fap.AspNetCore.Model
                     foreach (JObject o in rules)
                     {
                         //特殊处理MC参照字段
-                        string colName =o.GetValue("field").ToString();
+                        string colName = o.GetValue("field").ToString();
                         string op = o.GetValue("op").ToString();
                         string data = o.GetValue("data").ToString();
                         if (colName.EndsWith("MC", false, System.Globalization.CultureInfo.CurrentCulture))
@@ -347,7 +345,7 @@ namespace Fap.AspNetCore.Model
             //Dictionary<string, List<JqGridFilterDescViewModel>> dicList = new Dictionary<string, List<JqGridFilterDescViewModel>>();
             List<FilterDescModel> sqlBuilder = new List<FilterDescModel>();
 
-            IEnumerable<FapColumn> cols = _platformDomain.ColumnSet.Where(c => c.TableName == tableName);
+            IEnumerable<FapColumn> cols =_dbContext.Columns(tableName);
             if (!string.IsNullOrEmpty(filter))
             {
                 JObject jsono = JObject.Parse(filter);
@@ -383,12 +381,10 @@ namespace Fap.AspNetCore.Model
                             colName = colName.Substring(0, colName.Length - 2);
                         }
                         FapColumn col = cols.FirstOrDefault(c => c.ColName == colName);
-                        if (col.CtrlType ==FapColumn.CTRL_TYPE_COMBOBOX)
+                        if (col.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX)
                         {
-                            if(_platformDomain.DictSet.TryGetValueByCodeAndCategory(data, col.RefTable, out FapDict fapDict))
-                            {
-                                data = fapDict.Name;
-                            }
+                                data =_dbContext.Dictionary(col.RefTable,data)?.Name;
+                           
                         }
 
                         if (!string.IsNullOrEmpty(op))// && !string.IsNullOrEmpty(data))
@@ -421,5 +417,25 @@ namespace Fap.AspNetCore.Model
         }
 
         #endregion
+    }
+    public class FilterDescModel
+    {
+        /// <summary>
+        /// 分组
+        /// </summary>
+        public string Group { get; set; }
+        /// <summary>
+        /// 描述
+        /// </summary>
+        public string FilterDesc { get; set; }
+        /// <summary>
+        /// 操作符
+        /// </summary>
+        public string FilterOper { get; set; }
+        /// <summary>
+        /// 结果
+        /// </summary>
+
+        public string FilterResult { get; set; }
     }
 }

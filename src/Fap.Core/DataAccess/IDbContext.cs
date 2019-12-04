@@ -10,7 +10,7 @@ namespace Fap.Core.DataAccess
     public interface IDbContext
     {
         string HistoryDateTime { get; set; }
-
+        DatabaseDialectEnum DatabaseDialect {get;}
         void BeginTransaction();
         void Commit();
         int Count(string tableName, string where = "", DynamicParameters parameters = null);
@@ -56,6 +56,13 @@ namespace Fap.Core.DataAccess
         /// <param name="parameters"></param>
         /// <returns></returns>
         IEnumerable<dynamic> QueryOriSql(string sqlOri, DynamicParameters parameters = null);
+        /// <summary>
+        /// 查询原始sql，不进行包装
+        /// </summary>
+        /// <param name="sqlOri"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        IEnumerable<T> QueryOriSql<T>(string sqlOri, DynamicParameters parameters = null) where T:class;
         IEnumerable<dynamic> Query(string sqlOri, DynamicParameters parameters = null, bool withMC = false);
         IEnumerable<T> Query<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : BaseModel;
         IEnumerable<dynamic> QueryAll(string tableName, bool withMC = false);
@@ -261,5 +268,15 @@ namespace Fap.Core.DataAccess
         /// <returns></returns>
         FapDynamicObject GetDefualtData(string tableName);
         IEnumerable<DataChangeHistory> QueryDataHistory(string tableName, string fid);
+
+        #region metadata
+        FapTable Table(string tableName);
+        IEnumerable<FapTable> Tables(string tableCategory);
+        IEnumerable<FapColumn> Columns(string tableName);
+        FapColumn Column(string tableName, string colName);
+        IEnumerable<FapDict> Dictionarys(string category);
+        FapDict Dictionary(string category, string code);
+        #endregion
+
     }
 }

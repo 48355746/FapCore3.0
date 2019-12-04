@@ -19,13 +19,13 @@ namespace Fap.AspNetCore.Infrastructure
         /// <param name="tableName"></param>
         /// <param name="filter"></param>
         /// <returns></returns>
-        public static List<JqGridFilterDescViewModel> BuilderFilterDesc(string tableName, string filter,IFapPlatformDomain domain,IDbContext dbContext)
+        public static List<JqGridFilterDescViewModel> BuilderFilterDesc(string tableName, string filter,IDbContext dbContext)
         {
             if (string.IsNullOrWhiteSpace(filter))
             {
                 return null;
             }
-            JqgridJsonFilterToSql jfs = new JqgridJsonFilterToSql(dbContext,domain);
+            JsonFilterToSql jfs = new JsonFilterToSql(dbContext);
             var filterDescModel = jfs.BuilderFilterDesc(tableName, filter);
             //Dictionary<string, List<JqGridFilterDescViewModel>> dicList = new Dictionary<string, List<JqGridFilterDescViewModel>>();
             List<JqGridFilterDescViewModel> sqlBuilder = new List<JqGridFilterDescViewModel>();

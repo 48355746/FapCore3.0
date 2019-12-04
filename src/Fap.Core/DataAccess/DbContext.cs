@@ -48,6 +48,8 @@ namespace Fap.Core.DataAccess
             set { threadLocalHistoryTimePoint.Value = value; }
             get { return threadLocalHistoryTimePoint.Value; }
         }
+        public DatabaseDialectEnum DatabaseDialect => _dbSession.DatabaseDialect;
+
         #region private
         private static ConcurrentDictionary<string, PropertyInfo> properties = new ConcurrentDictionary<string, PropertyInfo>();
         private (string, DynamicParameters) WrapSqlAndParam(string sqlOri, DynamicParameters parameters, bool withMC = false, bool withId = false)
@@ -882,9 +884,25 @@ namespace Fap.Core.DataAccess
             var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters);
             return _dbSession.ExecuteScalarAsync<T>(sql, dynParams);
         }
+        /// <summary>
+        /// 查询原始sql，不进行包装
+        /// </summary>
+        /// <param name="sqlOri"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
         public IEnumerable<dynamic> QueryOriSql(string sqlOri, DynamicParameters parameters = null)
         {
             return _dbSession.Query(sqlOri, parameters);
+        }
+        /// <summary>
+        /// 查询原始sql，不进行包装
+        /// </summary>
+        /// <param name="sqlOri"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        public IEnumerable<T> QueryOriSql<T>(string sqlOri, DynamicParameters parameters = null) where T : class
+        {
+            return _dbSession.Query<T>(sqlOri, parameters);
         }
         public IEnumerable<dynamic> Query(string sqlOri, DynamicParameters parameters = null, bool withMC = false)
         {
@@ -907,7 +925,7 @@ namespace Fap.Core.DataAccess
             var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
             return _dbSession.QueryAsync<T>(sql, dynParams);
         }
-        public IEnumerable<dynamic> QueryAll(string tableName,bool withMC = false)
+        public IEnumerable<dynamic> QueryAll(string tableName, bool withMC = false)
         {
             string sql = $"select * from {tableName}";
             return Query(sql, null, withMC);
@@ -921,13 +939,13 @@ namespace Fap.Core.DataAccess
         {
             string tableName = typeof(T).Name;
             string sql = $"select * from {tableName}";
-            return Query<T>(sql,null,withMC);
+            return Query<T>(sql, null, withMC);
         }
         public Task<IEnumerable<T>> QueryAllAsync<T>(bool withMC = false) where T : BaseModel
         {
             string tableName = typeof(T).Name;
             string sql = $"select * from {tableName}";
-            return QueryAsync<T>(sql,null,withMC);
+            return QueryAsync<T>(sql, null, withMC);
         }
         /// <summary>
         /// 仅当元素个数大于等于1时返回第一个元素，否则抛异常InvalidOperationException: Sequence contains no elements
@@ -2219,7 +2237,7 @@ namespace Fap.Core.DataAccess
             string statSql = StatisticsSql(pageable);
             if (statSql.IsPresent())
             {
-                page.StatFieldData =QueryFirstOrDefault(statSql, dynamicParameters);               
+                page.StatFieldData = QueryFirstOrDefault(statSql, dynamicParameters);
             }
             return page;
         }
@@ -2230,7 +2248,7 @@ namespace Fap.Core.DataAccess
             string orderBy = pageable.Wraper.MakeOrderBySql();
             if (!string.IsNullOrEmpty(orderBy))
             {
-                orderBy = $" ORDER BY {orderBy} "  ;
+                orderBy = $" ORDER BY {orderBy} ";
             }
             else
             {
@@ -2285,7 +2303,7 @@ namespace Fap.Core.DataAccess
             string where = pageable.Wraper.MakeWhereSql();
             if (!string.IsNullOrEmpty(where))
             {
-                where = $" where {where}" ;
+                where = $" where {where}";
             }
             //过滤条件
             string filter = pageable.Wraper.MakeFilterSql();
@@ -2297,10 +2315,10 @@ namespace Fap.Core.DataAccess
             StringBuilder sql = new StringBuilder();
             if (pageable.MaxId != null)
             {
-                where = where.IsPresent() ? $"({where}) and Id>{pageable.MaxId}" : where;                
-            }            
+                where = where.IsPresent() ? $"({where}) and Id>{pageable.MaxId}" : where;
+            }
             sql.Append($"select {pageable.Wraper.MakeSelectSql()} from {pageable.Wraper.MakeFromSql()} {join} {where} {orderBy}   limit {pageable.Offset},{pageable.PageSize};");
-            
+
             //总数sql
             sql.Append($"SELECT count(0) FROM {pageable.Wraper.MakeFromSql()} {join} {countWhere}");
             return sql.ToString();
@@ -2363,6 +2381,44 @@ namespace Fap.Core.DataAccess
 
         #endregion
 
+        #region Metadata
+        public FapTable Table(string tableName)
+        {
+            if (!_fapPlatformDomain.TableSet.TryGetValueByName(tableName, out FapTable fapTable))
+            {
+                Guard.Against.Null(fapTable, nameof(fapTable));
+            }
+            return fapTable;
+        }
+        public IEnumerable<FapTable> Tables(string tableCategory)
+        {
+            return _fapPlatformDomain.TableSet.Where(t => t.TableCategory == tableCategory);
+        }
+        public IEnumerable<FapColumn> Columns(string tableName)
+        {
+            if (!_fapPlatformDomain.ColumnSet.TryGetValueByTable(tableName, out IEnumerable<FapColumn> fapColumns))
+            {
+                Guard.Against.Null(fapColumns, nameof(fapColumns));
+            }
+            return fapColumns;
+        }
+        public FapColumn Column(string tableName, string colName)
+        {
+            return Columns(tableName).FirstOrDefault(c => c.ColName.EqualsWithIgnoreCase(colName));
+        }
+        public IEnumerable<FapDict> Dictionarys(string category)
+        {
+            if (!_fapPlatformDomain.DictSet.TryGetValueByCategory(category, out IEnumerable<FapDict> fapDictionarys))
+            {
+                Guard.Against.Null(fapDictionarys, nameof(fapDictionarys));
+            }
+            return fapDictionarys;
+        }
+        public FapDict Dictionary(string category,string code)
+        {
+            return Dictionarys(category).FirstOrDefault(d => d.Code.EqualsWithIgnoreCase(code));
+        }
+        #endregion
 
         #region history trace
         /// <summary>

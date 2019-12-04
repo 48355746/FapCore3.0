@@ -11,7 +11,6 @@ namespace Fap.Core.Rbac.Model
     /// <summary>
     /// 对象模型：用户
     /// </summary>
-    [Serializable]
     public class FapUser : BaseModel
     {
         /// <summary>

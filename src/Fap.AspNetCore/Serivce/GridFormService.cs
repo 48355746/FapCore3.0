@@ -138,7 +138,7 @@ namespace Fap.AspNetCore.Serivce
                 //页面级条件
                 if (jqGridPostData.PageCondition.IsPresent())
                 {
-                    JqgridJsonFilterToSql jfs = new JqgridJsonFilterToSql(_dbContext, _platformDomain);
+                    JsonFilterToSql jfs = new JsonFilterToSql(_dbContext);
                     if (qs.GlobalWhere.IsPresent())
                     {
                         queryOption.AddWhere(jfs.BuilderFilter(queryOption.TableName, jqGridPostData.PageCondition), QuerySymbolEnum.AND);
@@ -156,7 +156,7 @@ namespace Fap.AspNetCore.Serivce
                     //{
                     //    queryOption.Filter = strFilter;
                     //}
-                    FilterCondition filterCondition = JqgridJsonFilterToSql.BuildFilterCondition(fapColumns, jqGridPostData.Filters);
+                    FilterCondition filterCondition =JsonFilterToSql.BuildFilterCondition(fapColumns, jqGridPostData.Filters);
                     if (filterCondition != null)
                     {
                         queryOption.FilterCondition = filterCondition;

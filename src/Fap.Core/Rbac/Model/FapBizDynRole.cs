@@ -8,7 +8,6 @@ namespace Fap.Core.Rbac.Model
     /// <summary>
     /// 动态角色
     /// </summary>
-    [Serializable]
     public class FapBizDynRole : BaseModel
     {
         /// <summary>

@@ -11,7 +11,6 @@ namespace Fap.Core.Rbac.Model
     /// <summary>
     /// 业务角色员工
     /// </summary>
-    [Serializable]
     public class FapBizRoleEmployee : BaseModel
     {
         /// <summary>

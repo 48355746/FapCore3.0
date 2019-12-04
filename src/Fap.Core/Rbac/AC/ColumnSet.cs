@@ -72,7 +72,7 @@ namespace Fap.Core.Rbac.AC
         }
 
 
-        public bool TryGetValueByTable(string tableName, out List<FapColumn> fapColumns)
+        public bool TryGetValueByTable(string tableName, out IEnumerable<FapColumn> fapColumns)
         {
             if (!_initialized)
             {
@@ -81,7 +81,7 @@ namespace Fap.Core.Rbac.AC
             var result = _allColumns.Where<FapColumn>(c => c.TableName.Equals(tableName,StringComparison.CurrentCultureIgnoreCase));
             if (result != null&&result.Any())
             {
-                fapColumns = result.ToList<FapColumn>();
+                fapColumns = result;
                 return true;
             }
             fapColumns = null;

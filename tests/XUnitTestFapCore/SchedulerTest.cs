@@ -20,7 +20,7 @@ namespace XUnitTestFapCore
         public async Task Start()
         {
 
-           await _schedulerService.Run();
+            await _schedulerService.Run();
 
             await Task.Delay(TimeSpan.FromDays(1));
 

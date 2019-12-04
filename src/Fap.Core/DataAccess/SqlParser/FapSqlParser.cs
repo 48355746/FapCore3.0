@@ -247,7 +247,7 @@ namespace Fap.Core.DataAccess.SqlParser
                 tableSource = select.Sources.Sources.First();
             }
             string tableName = tableSource.Source.GetSourceName();
-            List<FapColumn> columns = GetColumnsOfTable(tableName);
+            IEnumerable<FapColumn> columns = GetColumnsOfTable(tableName);
             if (columns != null)
             {
                 this.MakeSelectStarPartition(columns, tableSource, select);
@@ -281,9 +281,9 @@ namespace Fap.Core.DataAccess.SqlParser
         /// </summary>
         /// <param name="table"></param>
         /// <returns></returns>
-        private List<FapColumn> GetColumnsOfTable(string table)
+        private IEnumerable<FapColumn> GetColumnsOfTable(string table)
         {
-            _appDomain.ColumnSet.TryGetValueByTable(table, out List<FapColumn> fapCols);
+            _appDomain.ColumnSet.TryGetValueByTable(table, out IEnumerable<FapColumn> fapCols);
             return fapCols;
         }
 

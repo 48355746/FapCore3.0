@@ -8,7 +8,6 @@ namespace Fap.Core.Infrastructure.Model
     /// <summary>
     /// 邮件
     /// </summary>
-	[Serializable]
     public class FapMail :BaseModel
     {
         /// <summary>

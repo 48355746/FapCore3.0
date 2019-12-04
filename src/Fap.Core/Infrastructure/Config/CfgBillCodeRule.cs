@@ -9,7 +9,6 @@ namespace Fap.Core.Infrastructure.Config
     /// <summary>
     /// 单据编码规则
     /// </summary>
-    [Serializable]
     [Table("CfgBillCodeRule")]
     public class CfgBillCodeRule : BaseModel
     {

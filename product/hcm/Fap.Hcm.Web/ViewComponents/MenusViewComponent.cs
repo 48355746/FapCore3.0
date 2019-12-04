@@ -2,7 +2,6 @@
 using Fap.AspNetCore.ViewModel;
 using Fap.Core.DataAccess;
 using Fap.Core.Infrastructure.Domain;
-using Fap.Core.Metadata;
 using Fap.Core.MultiLanguage;
 using Fap.Core.Rbac;
 using Fap.Core.Rbac.Model;
@@ -13,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Fap.Core.Extensions;
+using Fap.Core.Infrastructure.Metadata;
 
 namespace Fap.Hcm.Web.ViewComponents
 {

@@ -1,11 +1,8 @@
 ﻿using Dapper;
-using Fap.Core.DataAccess.DbContext;
-using Fap.Core.Extensions;
-using Fap.Core.Rbac;
-using Fap.Model.Infrastructure;
-using Fap.Workflow.Model;
+using Fap.Core.DataAccess;
+using Fap.Core.Infrastructure.Domain;
+using Fap.Core.Infrastructure.Model;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,16 +12,16 @@ namespace Fap.Hcm.Web.ViewComponents
     public class MessageViewComponent:ViewComponent
     {
         private IDbContext _dataAccessor;
-        private IFapSessionStorage _session;
-        public MessageViewComponent(IDbContext dataAccessor,IFapSessionStorage session)
+        private IFapApplicationContext _applicationContext;
+        public MessageViewComponent(IDbContext dataAccessor, IFapApplicationContext applicationContext)
         {
             _dataAccessor = dataAccessor;
-            _session = session;
+            _applicationContext = applicationContext;
         }
         public async Task<IViewComponentResult> InvokeAsync()
         {
             DynamicParameters param = new DynamicParameters();
-            param.Add("EmpUid", _session.EmpUid);
+            param.Add("EmpUid", _applicationContext.EmpUid);
             string sqlToDo = $"select count(0) C from WfTask,WfActivityInstance,WfProcessInstance where WfTask.ActivityInsUid=WfActivityInstance.Fid and WfTask.ProcessInsUid= WfProcessInstance.Fid and  WfProcessInstance.ProcessState='Running' and  WfActivityInstance.ActivityState in('{WfActivityInstanceState.Running}','{WfActivityInstanceState.Ready}') and WfTask.TaskState='{WfTaskState.Handling}' and WfTask.ExecutorEmpUid='{_session.EmpUid}'";
             int todoCount = _dataAccessor.ExecuteScalar<int>(sqlToDo);
             var agents = _dataAccessor.QueryAll<WfAgentSetting>().Where(a => a.Agent == _session.EmpUid && a.State == 1);
