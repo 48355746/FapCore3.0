@@ -1,6 +1,8 @@
 ﻿using Castle.DynamicProxy;
 using Fap.Core.DataAccess;
 using Fap.Core.DataAccess.Interceptor;
+using Fap.Core.MultiLanguage;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -85,12 +87,12 @@ namespace Fap.Core.Infrastructure.Domain
         //    return builder;
         //}
 
-        //public static void BuilderMultiLanguageJsFile(this IApplicationBuilder app)
-        //{
-        //    //初始化多语言js文件
-        //    IMultiLangService multiLang = app.ApplicationServices.GetService<IMultiLangService>();
-        //    multiLang.InitMultiLangResJS();
-        //}
+        public static void BuilderMultiLanguageJsFile(this IApplicationBuilder app)
+        {
+            //初始化多语言js文件
+            IMultiLangService multiLang = app.ApplicationServices.GetService<IMultiLangService>();
+            multiLang.InitMultiLangResJS();
+        }
 
 
     }

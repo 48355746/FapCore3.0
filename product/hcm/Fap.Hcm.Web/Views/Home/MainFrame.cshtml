@@ -1,22 +1,6 @@
 ﻿@{
-    Fap.Model.Infrastructure.FapOnlineUser onlineUser = null;
-    string theme = "no-skin";
-    if (_session.AcSession != null)
-    {
-        if (!string.IsNullOrWhiteSpace(_session.AcSession.Account.Theme))
-        {
-            theme = _session.AcSession.Account.Theme;
-        }
-        onlineUser = _session.AcSession.OnlineUser;//.GetData<FapOnlineUser>(PlatformConstants.CurrentOnlineUser);
-    }
-
     string currentLanguangeName = _multiLangService.CurrentLanguageName; //当前语种
-                                                                         //开发者
-    bool isDevaloper = _session.IsDeveloper;
-    Fap.Core.Platform.License.RegisterInfo registerInfo = _appDomain.ServiceRegisterInfo; //产品注册信息
-                                                                                          //系统名称
-    string systemName = _config.GetSysParamValue("sys.web.name");
-
+    string systemName = _config.GetSysParamValue("sys.web.name");//系统名称
 }
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -360,86 +344,7 @@
                 </div><!-- /.page-content -->
             </div>
         </div><!-- /.main-content -->
-        <div id="modal-productinfo" class="modal fade" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header no-padding">
-                        <div class="table-header">
-                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-                                <span class="white">&times;</span>
-                            </button>
-                            产品信息
-                        </div>
-                    </div>
 
-                    <div class="modal-body ">
-                        <div class="row">
-                            <div class="well">
-                                <h4 class="green smaller lighter">产品信息</h4>
-
-                                @string.Join(",", _appDomain.ModuleSet.ToList().Select(m => m.ModuleName))
-                            </div>
-
-
-
-                        </div>
-                        <div class="row">
-                            <div class="col-xs-12">
-                                @if (registerInfo == null || registerInfo.RegisterState == Fap.Core.Platform.License.EnumRegisterState.FailureRegister || registerInfo.RegisterState == Fap.Core.Platform.License.EnumRegisterState.UnRegister)
-                                {
-                                    <h3 class="red">未激活的产品</h3>
-                                    <p class="red">未激活产品将限制部分功能</p>
-                                    <div condition="isDevaloper">
-                                        <a href="#" id="btnGetRegistKey">获取申请码</a>
-                                        <a href="#" id="btnActivated">激活</a>
-                                    </div>
-                                }
-                                else if (registerInfo.RegisterState == Fap.Core.Platform.License.EnumRegisterState.Trial)
-                                {
-                                    <h3 class="red">试用版的产品</h3>
-                                    <p class="red">试用版产品试用期限：@(registerInfo.ExpireWhenTrial)天</p>
-                                    <div condition="isDevaloper">
-                                        <a href="#" id="btnGetRegistKey">获取申请码</a>
-                                        <a href="#" id="btnActivated">激活</a>
-                                    </div>
-                                }
-                                else if (registerInfo.RegisterState == Fap.Core.Platform.License.EnumRegisterState.Release)
-                                {
-                                    <h3 class="blue">正式版的产品</h3>
-
-                                    <div condition="isDevaloper">
-                                        <a href="#" id="btnGetRegistKey">获取申请码</a>
-                                        <a href="#" id="btnActivated">激活</a>
-                                    </div>
-
-                                }
-                                else if (registerInfo.RegisterState == Fap.Core.Platform.License.EnumRegisterState.Develop)
-                                {
-                                    <h3 class="blue">开发版的产品</h3>
-                                    <p class="red">开发版产品试用期限：@(registerInfo.ExpireWhenTrial)天</p>
-                                    <div condition="isDevaloper">
-                                        <a href="#" id="btnGetRegistKey">获取申请码</a>
-                                        <a href="#" id="btnActivated">激活</a>
-                                    </div>
-                                }
-                            </div>
-                            <div class="col-xs-12">
-                                <textarea id="requestCode" rows="5" cols="50" style="display:none; width:100%;"></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="modal-footer no-margin-top">
-                        <button class="btn btn-sm btn-danger pull-right" data-dismiss="modal">
-                            <i class="ace-icon fa fa-times"></i>
-                            关闭
-                        </button>
-
-
-                    </div>
-                </div><!-- /.modal-content -->
-            </div><!-- /.modal-dialog -->
-        </div>
         <div class="footer">
             <div class="footer-inner">
                 <!-- #section:basics/footer -->
@@ -538,13 +443,6 @@
         <script src="~/Content/js/lodash.min.js" asp-append-version="true"></script>
     </environment>
     <script src="~/Content/layer/layer.js"></script>
-    <script>
-        $(function () {
-            changeTheme('@theme');
-        })
-
-    </script>
-
 
 </body>
 </html>

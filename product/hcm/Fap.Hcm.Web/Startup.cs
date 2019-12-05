@@ -12,6 +12,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.DI;
+using Microsoft.Extensions.FileProviders;
+using System.IO;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace Fap.Hcm.Web
 {
@@ -28,7 +32,27 @@ namespace Fap.Hcm.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddFapService().AddAutoInjection();
+            //response 压缩giz
             services.AddResponseCompression();
+            //添加内存缓存
+            services.AddMemoryCache();
+            //添加认证
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            }).AddCookie(options =>
+            {
+                options.Cookie.HttpOnly = true;
+                options.ExpireTimeSpan = TimeSpan.FromHours(1);
+                options.LoginPath = new PathString("/");
+                options.LogoutPath = "/";
+                //options.AccessDeniedPath = "";//指定路径处理 return Forbid() or ForbidAsync()
+                options.Cookie = new CookieBuilder
+                {
+                    IsEssential = false // required for auth to work without explicit user consent; adjust to suit your privacy policy
+                };
+            });
             services.AddControllersWithViews();
         }
 
@@ -47,6 +71,8 @@ namespace Fap.Hcm.Web
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                //生成多语js文件
+                app.BuilderMultiLanguageJsFile();
             }
             else
             {
@@ -54,11 +80,20 @@ namespace Fap.Hcm.Web
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+            app.UseResponseCompression();
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
+            app.UseSession();
+            app.UseStaticFiles(new StaticFileOptions()
+            {
+                ServeUnknownFileTypes = true,
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"UploadFiles")),
+                RequestPath = new PathString("/UploadFiles")
+            });
             app.UseRouting();
-
+            //认证
+            app.UseAuthentication();
+            //鉴权
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
