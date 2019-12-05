@@ -35,7 +35,6 @@ namespace Fap.Core.Office.Excel.Import
         /// 导入模式
         /// </summary>
         private ImportMode mode;
-        private IFapPlatformDomain _platformDomain;
         /// <summary>
         /// 
         /// </summary>
@@ -43,10 +42,9 @@ namespace Fap.Core.Office.Excel.Import
         /// <param name="fileName">文件路径</param>
         /// <param name="tableName">表名</param>
         /// <param name="mode">导入模式</param>
-        public ExcelEntityDataImport(IDbContext dataAccessor, IFapPlatformDomain platformDomain, string fileName, string tableName, ImportMode mode)
+        public ExcelEntityDataImport(IDbContext dataAccessor, string fileName, string tableName, ImportMode mode)
             : base(dataAccessor, fileName)
         {
-            _platformDomain = platformDomain;
             this.tableName = tableName;
             this.mode = mode;
         }
@@ -64,7 +62,7 @@ namespace Fap.Core.Office.Excel.Import
             }
             this.sheetMetadata = sheetMetadata;
 
-            FapTable table =_platformDomain.TableSet.FirstOrDefault(t=>t.TableName==tableName);
+            FapTable table =_dataAccessor.Table(tableName);
             if (table == null)
             {
                 return;
@@ -92,7 +90,7 @@ namespace Fap.Core.Office.Excel.Import
         private void ImportDataToTable(IWorkbook workbook, ISheet sheet, string tableName)
         {
             List<string> columnNameList = new List<string>();
-            var entityColumnList =_platformDomain.ColumnSet.Where(c=>c.TableName==tableName);
+            var entityColumnList =_dataAccessor.Columns(tableName);
             var entityColumnNameList = entityColumnList.Select(c => c.ColName); ;
 
             //获得Excel中列名

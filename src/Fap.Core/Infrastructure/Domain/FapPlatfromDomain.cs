@@ -15,14 +15,11 @@ namespace Fap.Core.Infrastructure.Domain
         public string Product { get; set; } = "HCM";
         private IDbSession _dbSession;
         private readonly ILogger<FapPlatfromDomain> _logger;
-        public FapPlatfromDomain(ILoggerFactory loggerFactory, IDbSession dbSession)
+        public FapPlatfromDomain(ILogger<FapPlatfromDomain> logger, IDbSession dbSession)
         {
-            _logger = loggerFactory.CreateLogger<FapPlatfromDomain>();
+            _logger = logger;
             _dbSession = dbSession;
-            //加载注册码信息
-            string name = System.Net.Dns.GetHostName();
-            LoadRegisterInfo();
-            InitFap();
+            InitPlatformDomain();
         }
         /// <summary>
         /// 产品注册码信息
@@ -211,8 +208,9 @@ namespace Fap.Core.Infrastructure.Domain
                 }
             }
         }
-        private void InitFap()
+        public void InitPlatformDomain()
         {
+            LoadRegisterInfo();
             //this.ButtonSet = new ButtonSet(this);
             _logger.LogInformation("初始化元数据");
             this.TableSet = new TableSet( _dbSession);

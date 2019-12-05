@@ -11,12 +11,10 @@ namespace Fap.Core.Office
     [Service]
     public class OfficeService : IOfficeService
     {
-        private readonly IFapPlatformDomain _platformDomain;
         private readonly IDbContext _dbContext;
         private readonly ILogger<OfficeService> _logger;
-        public OfficeService(IFapPlatformDomain platformDomain, IDbContext dbContext,ILogger<OfficeService> logger)
+        public OfficeService(IDbContext dbContext,ILogger<OfficeService> logger)
         {
-            _platformDomain = platformDomain;
             _dbContext = dbContext;
             _logger = logger;
         }
@@ -24,7 +22,7 @@ namespace Fap.Core.Office
         {
             try
             {
-                ExcelEntityDataExport excelExport = new ExcelEntityDataExport(_dbContext, _platformDomain, exportModel);
+                ExcelEntityDataExport excelExport = new ExcelEntityDataExport(_dbContext, exportModel);
                 excelExport.Export();
                 return true;
             }
@@ -39,7 +37,7 @@ namespace Fap.Core.Office
         {
             try
             {
-                ExcelEntityDataImport excelImport = new ExcelEntityDataImport(_dbContext, _platformDomain, fileName, tableName, importMode);
+                ExcelEntityDataImport excelImport = new ExcelEntityDataImport(_dbContext,  fileName, tableName, importMode);
 
                 excelImport.Import();
                 return true;

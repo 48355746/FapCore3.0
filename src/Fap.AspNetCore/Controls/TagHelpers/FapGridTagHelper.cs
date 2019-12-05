@@ -19,17 +19,15 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         //private IOptions<FapOption> _fapOption;
         private ILogger<FapGridTagHelper> _logger;
         private ILoggerFactory _loggerFactory;
-        private IFapPlatformDomain _appDomain;
         private IFapApplicationContext _applicationContext;
         private IMultiLangService _multiLang;
         private readonly IMemoryCache _memoryCache;
-        public FapGridTagHelper(IDbContext dataAccessor,  ILoggerFactory logger, IFapPlatformDomain appDomain, IFapApplicationContext applicationContext, IMultiLangService multiLang, IMemoryCache memoryCache)
+        public FapGridTagHelper(IDbContext dataAccessor,  ILoggerFactory logger,IFapApplicationContext applicationContext, IMultiLangService multiLang, IMemoryCache memoryCache)
         {
             _dataAccessor = dataAccessor;
             //_fapOption = fapOption;
             _loggerFactory = logger;
             _logger = logger.CreateLogger<FapGridTagHelper>();
-            _appDomain = appDomain;
             _applicationContext = applicationContext;
             _multiLang = multiLang;
             _memoryCache = memoryCache;

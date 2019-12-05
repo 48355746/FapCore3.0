@@ -106,7 +106,7 @@ namespace Fap.Core.DataAccess
             entity.OrgUid = _applicationContext.OrgUid;
             entity.GroupUid = _applicationContext.GroupUid;
             //非系统默认列的默认值的生成
-            IEnumerable<FapColumn> columns = _fapPlatformDomain.ColumnSet.Where(c => c.TableName == tableName && c.IsDefaultCol != 1 && (c.DefaultValueClass.IsPresent() || c.ColDefault.IsPresent()));
+            IEnumerable<FapColumn> columns = Columns(tableName).Where(c => c.IsDefaultCol != 1 && (c.DefaultValueClass.IsPresent() || c.ColDefault.IsPresent()));
             foreach (var column in columns)
             {
                 Type type = entity.GetType();
@@ -238,7 +238,7 @@ namespace Fap.Core.DataAccess
             dynEntity.GroupUid = _applicationContext.GroupUid;
 
             //非系统默认列的默认值的生成
-            IEnumerable<FapColumn> columns = _fapPlatformDomain.ColumnSet.Where(c => c.TableName == tableName && c.IsDefaultCol != 1 && (c.DefaultValueClass.IsPresent() || c.ColDefault.IsPresent()));
+            IEnumerable<FapColumn> columns = Columns(tableName).Where(c => c.IsDefaultCol != 1 && (c.DefaultValueClass.IsPresent() || c.ColDefault.IsPresent()));
             foreach (var column in columns)
             {
                 //先判断是否有值，如果有值，则不赋值
@@ -343,7 +343,7 @@ namespace Fap.Core.DataAccess
             return dictCodes;
             bool IsBill(string tableName)
             {
-                FapTable tb = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
+                FapTable tb = Table(tableName);
                 if (tb != null && tb.TableFeature != null && tb.TableFeature.Contains("BillFeature"))
                 {
                     return true;
@@ -391,7 +391,7 @@ namespace Fap.Core.DataAccess
         {
             dynamic dynEntity = new FapDynamicObject(tableName, 0, UUIDUtils.Ts);
             //非系统默认列的默认值的生成
-            IEnumerable<FapColumn> columns = _fapPlatformDomain.ColumnSet.Where(c => c.TableName == tableName && c.IsDefaultCol != 1 && (c.DefaultValueClass.IsPresent() || c.ColDefault.IsPresent()));
+            IEnumerable<FapColumn> columns = Columns(tableName).Where(c => c.IsDefaultCol != 1 && (c.DefaultValueClass.IsPresent() || c.ColDefault.IsPresent()));
             foreach (var column in columns)
             {
                 if (column.ColDefault.IsPresent())
@@ -625,7 +625,7 @@ namespace Fap.Core.DataAccess
             bool TraceUpdate<T1>(T1 newEntity, T1 oldDataClone, FapTable table) where T1 : BaseModel
             {
                 string tableName = table.TableName;
-                var fieldList = _fapPlatformDomain.ColumnSet.Where(t => t.TableName == tableName).Select(f => f.ColName);
+                var fieldList = Columns(tableName).Select(f => f.ColName);
                 string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
                 string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
                 //设置clone数据的enabledate为当前时间
@@ -711,7 +711,7 @@ namespace Fap.Core.DataAccess
             async Task<bool> TraceUpdateAsync<T1>(T1 newEntity, T1 oldDataClone, FapTable table) where T1 : BaseModel
             {
                 string tableName = table.TableName;
-                var fieldList = _fapPlatformDomain.ColumnSet.Where(t => t.TableName == tableName).Select(f => f.ColName);
+                var fieldList = Columns(tableName).Select(f => f.ColName);
                 string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
                 string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
                 //设置clone数据的enabledate为当前时间
@@ -1483,7 +1483,7 @@ namespace Fap.Core.DataAccess
             long InsertEntity<T1>(T1 entityToInsert) where T1 : BaseModel
             {
                 string tableName = typeof(T).Name;
-                FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
+                FapTable table = Table(tableName);
                 //初始化基础数据以及默认值
                 InitEntityToInsert<T1>(entityToInsert);
                 IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
@@ -1514,7 +1514,7 @@ namespace Fap.Core.DataAccess
             async Task<long> InsertEntityAsync<T1>(T1 entityToInsert) where T1 : BaseModel
             {
                 string tableName = typeof(T1).Name;
-                FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
+                FapTable table = Table(tableName);
                 //初始化基础数据以及默认值
                 InitEntityToInsert<T1>(entityToInsert);
                 IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
@@ -1582,14 +1582,14 @@ namespace Fap.Core.DataAccess
         public bool Update<T>(T entityToUpdate) where T : BaseModel
         {
             string tableName = typeof(T).Name;
-            FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
+            FapTable table = Table(tableName);
 
             return UpdateEntity(entityToUpdate, table);
         }
         public async Task<bool> UpdateAsync<T>(T entityToUpdate) where T : BaseModel
         {
             string tableName = typeof(T).Name;
-            FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
+            FapTable table = Table(tableName);
 
             return await UpdateEntityAsync(entityToUpdate, table);
 
@@ -1600,7 +1600,7 @@ namespace Fap.Core.DataAccess
             if (entityListToUpdate == null || entityListToUpdate.Count() < 1) return false;
 
             string tableName = typeof(T).Name;
-            FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
+            FapTable table = Table(tableName);
 
             foreach (var entity in entityListToUpdate)
             {
@@ -1614,7 +1614,7 @@ namespace Fap.Core.DataAccess
             if (entityListToUpdate == null || entityListToUpdate.Count() < 1) return false;
 
             string tableName = typeof(T).Name;
-            FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
+            FapTable table = Table(tableName);
             foreach (var entity in entityListToUpdate)
             {
                 await UpdateEntityAsync(entity, table);
@@ -1636,7 +1636,7 @@ namespace Fap.Core.DataAccess
                 return false;
             }
             string tableName = typeof(T).Name;
-            FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
+            FapTable table = Table(tableName);
             //是否历史追溯
             bool isTrace = table.TraceAble == 1;
             return DeleteEntity(entityToDelete, table, isTrace);
@@ -1681,7 +1681,7 @@ namespace Fap.Core.DataAccess
                 bool TraceDelete<T2>(T2 newEntity) where T2 : BaseModel
                 {
                     string tableName = table.TableName;
-                    var fieldList = _fapPlatformDomain.ColumnSet.Where(t => t.TableName == tableName).Select(f => f.ColName);
+                    var fieldList = Columns(tableName).Select(f => f.ColName);
                     string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
                     string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
                     //设置clone数据的enabledate为当前时间
@@ -1714,7 +1714,7 @@ namespace Fap.Core.DataAccess
         public async Task<bool> DeleteAsync<T>(T entityToDelete) where T : BaseModel
         {
             string tableName = typeof(T).Name;
-            FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
+            FapTable table = Table(tableName);
             //是否历史追溯
             bool isTrace = table.TraceAble == 1;
             return await DeleteEntityAsync(entityToDelete, table, isTrace);
@@ -1757,7 +1757,7 @@ namespace Fap.Core.DataAccess
                 async Task<bool> TraceDeleteAsync<T2>(T2 newEntity) where T2 : BaseModel
                 {
                     string tableName = table.TableName;
-                    var fieldList = _fapPlatformDomain.ColumnSet.Where(t => t.TableName == tableName).Select(f => f.ColName);
+                    var fieldList = Columns(tableName).Select(f => f.ColName);
                     string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
                     string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
                     //设置clone数据的enabledate为当前时间
@@ -1876,7 +1876,7 @@ namespace Fap.Core.DataAccess
             {
                 Guard.Against.NullOrWhiteSpace("tableName不能为null", nameof(FapDynamicObject));
             }
-            FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == fapDynData.TableName);
+            FapTable table = Table(fapDynData.TableName);
             if (table == null)
             {
                 Guard.Against.Null("实体元数据未发现或未注册", nameof(FapTable));
@@ -1943,7 +1943,7 @@ namespace Fap.Core.DataAccess
             {
                 Guard.Against.Null("请指定表名", "UpdateDynamicData");
             }
-            FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
+            FapTable table = Table(tableName);
             if (table == null)
             {
                 Guard.Against.Null($"未找到实体{tableName}元数据", nameof(FapDynamicObject));
@@ -2013,7 +2013,7 @@ namespace Fap.Core.DataAccess
                 }
                 bool TraceDynamicUpdate(dynamic dynamicData, string tableName, dynamic oriData)
                 {
-                    var fieldList = _fapPlatformDomain.ColumnSet.Where(c => c.TableName == tableName).Select(c => c.ColName);
+                    var fieldList = Columns(tableName).Select(c => c.ColName);
                     long? id = dynamicData.Id;
                     //将旧数据变成历史数据， 更新后的数据为最新数据
                     try
@@ -2072,7 +2072,7 @@ namespace Fap.Core.DataAccess
             {
                 Guard.Against.Null("删除实体Key不能为null", nameof(DeleteDynamicData));
             }
-            FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
+            FapTable table = Table(tableName);
 
             return TraceDynamicDelete(dynamicData, table);
 
@@ -2125,7 +2125,8 @@ namespace Fap.Core.DataAccess
 
                 bool TraceDelete(dynamic dynamicData, long id, string tableName)
                 {
-                    List<string> fieldList = _fapPlatformDomain.ColumnSet.Where(c => c.TableName == dynamicData.TableName).Select(c => c.ColName).ToList();
+                    string tn = dynamicData.TableName;
+                    var fieldList = Columns(tn).Select(c => c.ColName);
                     var currDate = DateTimeUtils.CurrentDateTimeStr;
                     //insert new data
                     var newData = GetById(dynamicData.TableName, id);
@@ -2394,7 +2395,7 @@ namespace Fap.Core.DataAccess
         {
             return Tables(t => t.TableCategory == tableCategory);
         }
-        public IEnumerable<FapTable> Tables(Func<FapTable,bool> predicate)
+        public IEnumerable<FapTable> Tables(Func<FapTable, bool> predicate)
         {
             return _fapPlatformDomain.TableSet.TryGetValue(predicate);
         }
@@ -2418,7 +2419,7 @@ namespace Fap.Core.DataAccess
             }
             return fapDictionarys;
         }
-        public FapDict Dictionary(string category,string code)
+        public FapDict Dictionary(string category, string code)
         {
             return Dictionarys(category).FirstOrDefault(d => d.Code.EqualsWithIgnoreCase(code));
         }

@@ -118,7 +118,7 @@ namespace Fap.Core.MultiLanguage
         {
             if (_appDomain.MultiLangSet.TryGetValueByCode(resCode, out FapResMultiLang resMultiLang))
             {
-                return GetObjectPropertyValue<FapResMultiLang>(resMultiLang, "Res" + (multiLang == "" ? CurrentLanguageName : multiLang));
+                return GetObjectPropertyValue<FapResMultiLang>(resMultiLang, "Res" + (multiLang.IsMissing() ? CurrentLanguageName : multiLang));
             }
             else
             {

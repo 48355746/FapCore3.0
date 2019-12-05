@@ -39,11 +39,11 @@ namespace Fap.Core.Infrastructure.Domain
             var builder = services.AddFapBuilder();
             builder.AddFap();
             return builder;
-
         }
+      
         public static IFapBuilder AddFap(this IFapBuilder builder)
         {
-            //httpcontext,httpclient
+            //httpcontext,httpclient            
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddHttpClient();
             //数据库访问
@@ -52,28 +52,12 @@ namespace Fap.Core.Infrastructure.Domain
             builder.Services.AddSingleton<IDbContext, DbContext>();
             //AOP代理
             builder.Services.AddSingleton<ProxyGenerator>();
-            builder.Services.AddScoped<IInterceptor, TransactionalInterceptor>();
+            builder.Services.AddSingleton<IInterceptor, TransactionalInterceptor>();
             //应用程序域，需要初始化为单例
-            builder.Services.AddSingleton<IFapPlatformDomain, FapPlatfromDomain>();           
+            builder.Services.AddSingleton<IFapPlatformDomain, FapPlatfromDomain>();
             //Fap应用上下文
             builder.Services.AddSingleton<IFapApplicationContext, FapApplicationContext>();
-     
-            //业务配置
-            //builder.Services.AddSingleton<IFapConfigService, FapConfigService>();
-            ////多语服务类
-            //builder.Services.AddSingleton<IMultiLangService, MultiLangService>();           
-            ////统计图表
-            //builder.Services.AddScoped<IStatisticService, StatisticService>();
-            ////Rbac
-            ////使用session，获取acsession           
-            //builder.Services.AddTransient<IRbacService, RbacService>();
-            //builder.Services.AddTransient<ILoginService, LoginService>();
-            ////信息发送
-            //builder.Services.AddTransient<IMessageSendService, MessageSendService>();
-            ////元数据
-            //builder.Services.AddTransient<IMetaDataService, MetaDataService>();
-            ////文件支持
-            //builder.Services.AddTransient<IFapFileService, FapFileService>();
+
             return builder;
         }
         /// <summary>

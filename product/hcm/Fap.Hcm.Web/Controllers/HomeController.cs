@@ -9,23 +9,24 @@ using Fap.Hcm.Web.Models;
 using Fap.Core;
 using Fap.Core.DataAccess;
 using Fap.Core.Rbac;
+using Fap.AspNetCore.Infrastructure;
 
 namespace Fap.Hcm.Web.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : FapController
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly ILoginService _userService1;
-       
-        public HomeController(ILogger<HomeController> logger, ILoginService userService1)
+        private readonly ILoginService _loginService;
+        private readonly IRbacService _rbacService;
+        public HomeController(IServiceProvider serviceProvider,ILoginService loginService,IRbacService rbacService) : base(serviceProvider)
         {
-            _logger = logger;
-            _userService1 = userService1;
+            _logger = _loggerFactory.CreateLogger<HomeController>();
+            _loginService = loginService;
+            _rbacService = rbacService;
         }
 
         public IActionResult Index()
         {
-            ViewBag.CC = _userService1.Login("hr");
             return View();
         }
 

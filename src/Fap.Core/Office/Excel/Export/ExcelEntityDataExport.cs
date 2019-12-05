@@ -24,8 +24,8 @@ namespace Fap.Core.Office.Excel.Export
         /// <param name="exportWhere">导出条件</param>
         /// <param name="exportCols">导出列</param>
         /// <param name="dataSql">导出数据sql</param>
-        public ExcelEntityDataExport(IDbContext dataAccessor, IFapPlatformDomain platformDomain, ExportModel exportModel)
-            : base(dataAccessor, platformDomain, exportModel.FileName)
+        public ExcelEntityDataExport(IDbContext dataAccessor, ExportModel exportModel)
+            : base(dataAccessor, exportModel.FileName)
         {
             _dataAccessor = dataAccessor;
             this.tableName = exportModel.TableName;

@@ -13,8 +13,8 @@ namespace Fap.Core.Office.Excel.Export
     {
         private string tableName;
 
-        public ExcelEntityTemplateExport(IDbContext dataAccessor,IFapPlatformDomain platformDomain, string tableName, string fileName)
-            : base(dataAccessor,platformDomain, fileName)
+        public ExcelEntityTemplateExport(IDbContext dataAccessor, string tableName, string fileName)
+            : base(dataAccessor, fileName)
         {
             this.tableName = tableName;
         }

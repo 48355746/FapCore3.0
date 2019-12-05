@@ -94,11 +94,10 @@ namespace Fap.Core.Office.Excel.Export
         }
 
         protected readonly IFapPlatformDomain _platformDomain;
-        public ExcelExportBase(IDbContext dataAccessor,IFapPlatformDomain platformDomain, string fileName)
+        public ExcelExportBase(IDbContext dataAccessor, string fileName)
         {
             _dataAccessor = dataAccessor;
             this.fileName = fileName;
-            _platformDomain = platformDomain;
         }
 
         /// <summary>

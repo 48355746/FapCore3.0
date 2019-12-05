@@ -3,6 +3,7 @@ using Fap.Core.DataAccess;
 using Fap.Core.DI;
 using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Domain;
+using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.Utility;
 using Microsoft.Extensions.Logging;
 using System;
@@ -133,14 +134,17 @@ namespace Fap.Core.Infrastructure.Config
             else
             {
                 //单据没有配置的时候 返回默认的值
-                if (_appDomain.TableSet.FirstOrDefault(t=>t.TableName==tableName).TableFeature.Contains("BillFeature"))
+                if (_appDomain.TableSet.TryGetValueByName(tableName,out FapTable table))
                 {
-                    //CfgBillCodeRule bc = new CfgBillCodeRule();
-                    //bc.FieldName = "BillCode";
-                    int seq = GetSequence(tableName);
-                    //bc.BillCode = seq.ToString().PadLeft(7, '0');
-                    string billcode = seq.ToString().PadLeft(7, '0');
-                    dictCodes.Add("BillCode", billcode);
+                    if (table.TableFeature.Contains("BillFeature"))
+                    {
+                        //CfgBillCodeRule bc = new CfgBillCodeRule();
+                        //bc.FieldName = "BillCode";
+                        int seq = GetSequence(tableName);
+                        //bc.BillCode = seq.ToString().PadLeft(7, '0');
+                        string billcode = seq.ToString().PadLeft(7, '0');
+                        dictCodes.Add("BillCode", billcode);
+                    }
                 }
 
             }

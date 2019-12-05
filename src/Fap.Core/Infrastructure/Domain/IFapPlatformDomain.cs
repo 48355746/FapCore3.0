@@ -23,7 +23,7 @@ namespace Fap.Core.Infrastructure.Domain
         /// 产品
         /// </summary>
         string Product { get; set; }
-
+        void InitPlatformDomain();
         /// <summary>
         /// 平台注册码信息
         /// </summary>

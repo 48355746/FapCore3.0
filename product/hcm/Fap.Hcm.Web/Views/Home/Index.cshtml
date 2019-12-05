@@ -1,6 +1,5 @@
 ﻿
 @{
-    Layout = null;
     string bgimg = _config.GetSysParamValue("sys.web.login.backgroudimg");
     if (bgimg == "")
     {
@@ -8,25 +7,14 @@
     }
     string systemName = _config.GetSysParamValue("sys.web.name");
 
-    string currentLang = ViewBag.MultiLang; //当前语种
-    string password = string.Empty;
-    string username = string.Empty;
-    if(ViewBag.Un!=null)
-    {
-        username = ViewBag.Un;
-    }
-    if(ViewBag.Pwd!=null)
-    {
-        password = ViewBag.Pwd;
-    }
-    string isCheck = string.IsNullOrEmpty(password) ? "" : "checked";
+    string currentLang = ViewBag.MultiLang; //当前语种   
 }
 <!DOCTYPE html>
 <html lang="zh-cn">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta charset="utf-8" />
-    <title>@_multiLangService.GetResName("login_page_title", "用户登录", currentLang)</title>
+    <title><fap-multilang default-content="用户登录" lang-key="login_page_title" ></fap-multilang></title>
 
     <meta name="description" content="User login page" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
@@ -330,14 +318,14 @@
                                                     <span class="block input-icon input-icon-right">
                                                         <input name="returnUrl" class="hidden" value='@ViewBag.ReturnUrl' />
 
-                                                        <input type="text" class="form-control" id="username" value="@username" name="username" placeholder="@_multiLangService.GetResName("logion_username", "用户名", currentLang)" />
+                                                        <input type="text" class="form-control" id="username" value="" name="username" placeholder="@_multiLangService.GetResName("logion_username", "用户名", currentLang)" />
                                                         <i class="ace-icon fa fa-user"></i>
                                                     </span>
                                                 </label>
 
                                                 <label class="block clearfix form-group">
                                                     <span class="block input-icon input-icon-right">
-                                                        <input type="password" class="form-control" id="userpwd" name="userpwd" value="@password" placeholder="@_multiLangService.GetResName(" login_password", "密码", currentLang)" />
+                                                        <input type="password" class="form-control" id="userpwd" name="userpwd" value="" placeholder="@_multiLangService.GetResName("login_password", "密码", currentLang)" />
                                                         <i class="ace-icon fa fa-lock"></i>
                                                     </span>
                                                 </label>
@@ -351,13 +339,13 @@
                                                             </a>
                                                         </span><!-- /.col -->
 
-                                                        <span class="col-sm-6">
+                                                        @*<span class="col-sm-6">
                                                             <label class="pull-right inline">
                                                                 <small class="muted smaller-90">@_multiLangService.GetResName("login_rememberme", "记住我", currentLang):</small>
                                                                 <input type="checkbox" name="rememberme" id="rememberme" @isCheck value="true" class="ace ace-switch ace-switch-5" />
                                                                 <span class="lbl middle"></span>
                                                             </label>
-                                                        </span><!-- /.col -->
+                                                        </span>*@<!-- /.col -->
                                                     </h4><!-- /.row -->
                                                 </div>
 
