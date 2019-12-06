@@ -7,7 +7,7 @@
     }
     string systemName = _config.GetSysParamValue("sys.web.name");
 
-    string currentLang = ViewBag.MultiLang; //当前语种   
+    string currentLang =_applicationContext.Language.ToString(); //当前语种   
 }
 <!DOCTYPE html>
 <html lang="zh-cn">
@@ -280,16 +280,16 @@
             <div class="navbar-header pull-right ace-navbar-buttons">
                 <ul class="nav ace-nav">
                     <li class="margin-2 no-border">
-                        <a href="~/Home/Index?mutilang=ZhCn" data-rel="multilanguage" data-multilang="ZhCn">简体中文</a>
+                        <a href="~/Home/Index?Lang=ZhCn" data-rel="multilanguage" data-multilang="ZhCn">简体中文</a>
                     </li>
                     <li class="margin-2 no-border">
-                        <a href="~/Home/Index?mutilang=En" data-rel="multilanguage" data-multilang="En">English</a>
+                        <a href="~/Home/Index?Lang=En" data-rel="multilanguage" data-multilang="En">English</a>
                     </li>
                     <li class="margin-2 no-border">
-                        <a href="~/Home/Index?mutilang=ZhTW" data-rel="multilanguage" data-multilang="ZhTW">繁體中文</a>
+                        <a href="~/Home/Index?Lang=ZhTW" data-rel="multilanguage" data-multilang="ZhTW">繁體中文</a>
                     </li>
                     <li class="margin-2 no-border">
-                        <a href="~/Home/Index?mutilang=Jp" data-rel="multilanguage" data-multilang="Jp">日本語</a>
+                        <a href="~/Home/Index?Lang=Ja" data-rel="multilanguage" data-multilang="Ja">日本語</a>
                     </li>
                 </ul>
             </div>
@@ -307,7 +307,7 @@
                                     <div class="widget-main">
                                         <h5 class="header blue lighter bigger">
                                             <i class="ace-icon fa fa-coffee green"></i>
-                                            @_multiLangService.GetResName("login_title", "请输入你的信息", currentLang)
+                                            <fap-multilang default-content="请输入你的信息" lang-key="login_title"></fap-multilang>                            
                                         </h5>
 
                                         <div class="space-6"></div>
@@ -335,17 +335,10 @@
                                                         <span class="toolbar col-sm-6">
                                                             <a href="#" data-target="#forgot-box" class="forgot-password-link">
                                                                 <i class="ace-icon fa fa-arrow-left"></i>
-                                                                @_multiLangService.GetResName("login_forget", "忘记密码？", currentLang)
+                                                                <fap-multilang default-content="忘记密码？" lang-key="login_forget"></fap-multilang>
                                                             </a>
                                                         </span><!-- /.col -->
-
-                                                        @*<span class="col-sm-6">
-                                                            <label class="pull-right inline">
-                                                                <small class="muted smaller-90">@_multiLangService.GetResName("login_rememberme", "记住我", currentLang):</small>
-                                                                <input type="checkbox" name="rememberme" id="rememberme" @isCheck value="true" class="ace ace-switch ace-switch-5" />
-                                                                <span class="lbl middle"></span>
-                                                            </label>
-                                                        </span>*@<!-- /.col -->
+                                                      
                                                     </h4><!-- /.row -->
                                                 </div>
 
@@ -353,7 +346,9 @@
                                                 <input type="text" class="form-control hide" id="language" value="@currentLang" name="language" />
                                                 <button class="btn btn-primary btn-block btn-round" id="btnLogon">
                                                     <i class="ace-icon fa fa-key"></i>
-                                                    <span class="bigger-110">@_multiLangService.GetResName("login_ok", "登录", currentLang)</span>
+                                                    <span class="bigger-110">
+                                                        <fap-multilang default-content="登录" lang-key="login_ok"></fap-multilang>
+                                                    </span>
                                                 </button>
                                             </fieldset>
                                         </form>
@@ -384,12 +379,12 @@
                                     <div class="widget-main">
                                         <h4 class="header red lighter bigger">
                                             <i class="ace-icon fa fa-key"></i>
-                                            @_multiLangService.GetResName("login_password_recovery", "找回密码", currentLang)
+                                            <fap-multilang default-content="找回密码" lang-key="login_password_recovery"></fap-multilang>
                                         </h4>
 
                                         <div class="space-6"></div>
                                         <p>
-                                            @_multiLangService.GetResName("login_password_recoverytooltip", "录入你的Email找回你的信息", currentLang)
+                                            <fap-multilang default-content="录入你的Email找回你的信息" lang-key="login_password_recoverytooltip"></fap-multilang>
                                         </p>
 
                                         <form id="frm-retrieve" action="~/Home/RetrievePassword" method="post">
@@ -404,7 +399,8 @@
                                                 <div class="clearfix">
                                                     <button type="button" id="btnRecovery" class="width-35 pull-right btn btn-sm btn-danger">
                                                         <i class="ace-icon fa fa-lightbulb-o"></i>
-                                                        <span class="bigger-110">@_multiLangService.GetResName("login_password_buttonrecovery", "找回!", currentLang)</span>
+                                                        <span class="bigger-110">
+                                                            <fap-multilang default-content="找回!" lang-key="login_password_buttonrecovery"></fap-multilang></span>
                                                     </button>
                                                 </div>
                                             </fieldset>
@@ -413,7 +409,7 @@
                                     <span id="pwdmsg" class=" red"></span>
                                     <div class="toolbar center">
                                         <a href="#" data-target="#login-box" class="back-to-login-link">
-                                            @_multiLangService.GetResName("login_password_backlogin", "回登录界面", currentLang)
+                                            <fap-multilang default-content="回登录界面" lang-key="login_password_backlogin"></fap-multilang>
                                             <i class="ace-icon fa fa-arrow-right"></i>
                                         </a>
                                     </div>

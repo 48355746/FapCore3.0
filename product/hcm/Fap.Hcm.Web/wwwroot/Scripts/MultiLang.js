@@ -152,6 +152,7 @@ login_title: {'ZhCn': '请输入你的信息', 'ZhTW': '請輸入你的信息', 
 ,rcrtmain_entrypreparation_page_prepareitems: {'ZhCn': '物品准备', 'ZhTW': '物品準備', 'En': 'Items ready', 'Ja': ''}
 ,rcrtmain_entrypreparation_page_entrykanban: {'ZhCn': '入职看板', 'ZhTW': '入職看板', 'En': 'Entry Kanban', 'Ja': ''}
 ,rcrtmain_entrypreparation_page_readystate: {'ZhCn': '准备状态', 'ZhTW': '準備狀態', 'En': 'Readiness', 'Ja': ''}
+,ess_essrepot_page_dayweekpresentation: {'ZhCn': '日报周报', 'ZhTW': '日報周報', 'En': 'Daily Weekly', 'Ja': ''}
 ,ess_tmdayresult_page_title: {'ZhCn': '日结果', 'ZhTW': '日結果', 'En': 'Day Results', 'Ja': ''}
 ,ess_tmdayresult_page_undefindclockdata: {'ZhCn': '未找到打卡数据', 'ZhTW': '未找到打卡數據', 'En': 'Punch card data found', 'Ja': ''}
 ,ess_tmdayresult_page_clocktime: {'ZhCn': '打卡时间', 'ZhTW': '打卡時間', 'En': 'Punch time', 'Ja': ''}

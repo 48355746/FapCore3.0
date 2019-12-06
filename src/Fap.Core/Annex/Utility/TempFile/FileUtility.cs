@@ -1,4 +1,5 @@
 ﻿using Fap.Core.Exceptions;
+using Fap.Core.Infrastructure.Domain;
 using System;
 using System.IO;
 
@@ -6,14 +7,10 @@ namespace Fap.Core.Annex.Utility.TempFile
 {
     internal class FileUtility
     {
-        /// <summary>
-        /// 临时文件夹名
-        /// </summary>
-        private const string TEMP_DIR_NAME = "temps";
 
         public static string GetTemporaryDir()
         {
-            string dirPath = Path.Combine(Environment.CurrentDirectory, TEMP_DIR_NAME);
+            string dirPath = Path.Combine(Environment.CurrentDirectory,FapPlatformConstants.TemporaryFolder);
            
             if (!Directory.Exists(dirPath))
             {

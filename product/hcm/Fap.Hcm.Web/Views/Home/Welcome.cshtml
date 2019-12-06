@@ -1,0 +1,17 @@
+﻿
+<title>欢迎</title>
+<div class="row">
+    <div class="col-xs-12">
+       Welcome to HCM System
+    </div>
+</div>
+<script>
+    var scripts = [null,null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+               //destroy,remove
+            })
+        })
+    })
+</script>

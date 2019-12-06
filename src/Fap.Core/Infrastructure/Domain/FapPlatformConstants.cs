@@ -11,6 +11,10 @@ namespace Fap.Core.Infrastructure.Domain
         /// </summary>
         public const string Administrator = "hr";
         /// <summary>
+        /// 临时文件夹，临时存放导入上传的文件等
+        /// </summary>
+        public const string TemporaryFolder = "Temporary";
+        /// <summary>
         /// 变量替换正则表达式${Variable}
         /// </summary>
         public const string VariablePattern = @"\$\{\S+?\}";
@@ -42,7 +46,6 @@ namespace Fap.Core.Infrastructure.Domain
         /// <summary>
         ///部门权限替换字符
         /// </summary>
-
         public const string DepartmentAuthority = "FAP::&&DEPTAUTHORITY&&";
         //邮件发送配置
         public const string MailAccount = "system.mail.account";

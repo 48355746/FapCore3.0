@@ -36,6 +36,7 @@ namespace Fap.Hcm.Web
             services.AddResponseCompression();
             //添加内存缓存
             services.AddMemoryCache();
+            services.AddSession();
             //添加认证
             services.AddAuthentication(options =>
             {
@@ -52,6 +53,12 @@ namespace Fap.Hcm.Web
                 {
                     IsEssential = false // required for auth to work without explicit user consent; adjust to suit your privacy policy
                 };
+            });
+            services.AddMiniProfiler(options =>
+            {
+                options.PopupRenderPosition = StackExchange.Profiling.RenderPosition.BottomLeft;
+                options.PopupShowTimeWithChildren = true;
+                options.RouteBasePath = "/profiler";
             });
             services.AddControllersWithViews();
         }
@@ -87,15 +94,15 @@ namespace Fap.Hcm.Web
             app.UseStaticFiles(new StaticFileOptions()
             {
                 ServeUnknownFileTypes = true,
-                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"UploadFiles")),
-                RequestPath = new PathString("/UploadFiles")
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), $"{FapPlatformConstants.TemporaryFolder}")),
+                RequestPath = new PathString($"/{FapPlatformConstants.TemporaryFolder}")
             });
             app.UseRouting();
             //认证
             app.UseAuthentication();
             //鉴权
             app.UseAuthorization();
-
+            app.UseMiniProfiler();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(

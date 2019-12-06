@@ -1,16 +1,11 @@
 ﻿
-using Fap.Core.DataAccess;
 using Fap.Core.Extensions;
-using Fap.Core.Infrastructure.Cache;
-using Fap.Core.Infrastructure.Enums;
 using Fap.Core.MultiLanguage;
-using Fap.Core.Rbac.Model;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Text;
 
 namespace Fap.Core.Infrastructure.Domain
 {
@@ -65,7 +60,17 @@ namespace Fap.Core.Infrastructure.Domain
         /// <summary>
         /// 当前语言
         /// </summary>
-        public MultiLanguageEnum Language => _httpContextAccessor?.HttpContext == null ? MultiLanguageEnum.ZhCn : (MultiLanguageEnum)Enum.Parse(typeof(MultiLanguageEnum), _httpContextAccessor?.HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Sid)?.Value ?? "ZhCn");
+        public MultiLanguageEnum Language
+        {
+            get
+            {
+                if (_httpContextAccessor?.HttpContext.Items["language"] != null)
+                {
+                    return (MultiLanguageEnum)Enum.Parse(typeof(MultiLanguageEnum), _httpContextAccessor?.HttpContext.Items["language"].ToString());
+                }
+                return _httpContextAccessor?.HttpContext == null ? MultiLanguageEnum.ZhCn : (MultiLanguageEnum)Enum.Parse(typeof(MultiLanguageEnum), _httpContextAccessor?.HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Sid)?.Value ?? "ZhCn");
+            }
+        }
         /// <summary>
         /// 在线用户
         /// </summary>
@@ -86,7 +91,7 @@ namespace Fap.Core.Infrastructure.Domain
         public ISession Session => _httpContextAccessor?.HttpContext.Session;
         public HttpContext HttpContext => _httpContextAccessor?.HttpContext;
         public string ClientIpAddress => Request.Headers["X-Forwarded-For"].FirstOrDefault().IsMissing() ? HttpContext.Connection.RemoteIpAddress.ToString() : Request.Headers["X-Forwarded-For"].FirstOrDefault();
-        public string Broswer=> Request.Headers["User-Agent"].ToString();
-        public string BaseUrl=> $"{Request.Scheme}://{Request.Host.Host}:{Request.Host.Port}";
+        public string Broswer => Request.Headers["User-Agent"].ToString();
+        public string BaseUrl => $"{Request.Scheme}://{Request.Host.Host}:{Request.Host.Port}";
     }
 }

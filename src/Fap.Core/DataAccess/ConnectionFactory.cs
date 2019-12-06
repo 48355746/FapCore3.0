@@ -10,6 +10,8 @@ using System.Data.SqlClient;
 using MySql.Data.MySqlClient;
 using System.Threading;
 using Dapper.Contrib.Extensions;
+using StackExchange.Profiling.Data;
+using StackExchange.Profiling;
 
 namespace Fap.Core.DataAccess
 {
@@ -81,8 +83,8 @@ namespace Fap.Core.DataAccess
 
         private IDbConnection GetConnection(string connectionString) => DatabaseDialect switch
         {
-            DatabaseDialectEnum.MSSQL => new SqlConnection(connectionString),
-            DatabaseDialectEnum.MYSQL => new MySqlConnection(connectionString),
+            DatabaseDialectEnum.MSSQL =>new ProfiledDbConnection(new SqlConnection(connectionString),MiniProfiler.Current),
+            DatabaseDialectEnum.MYSQL => new ProfiledDbConnection(new MySqlConnection(connectionString), MiniProfiler.Current),
             _ => throw new NotImplementedException()
         };
         public IDbConnection GetDbConnection()
