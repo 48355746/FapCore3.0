@@ -28,7 +28,7 @@ namespace Fap.Hcm.Web.ViewComponents
             int todoCount = _dataAccessor.ExecuteScalar<int>(sqlToDo);
             var agents = _dataAccessor.QueryAll<WfAgentSetting>().Where(a => a.Agent == _applicationContext.EmpUid && a.State == 1);
             //获取待办
-            var listCount = _dataAccessor.Query($"select count(0) C,WfTask.BizTypeUid from WfTask,WfActivityInstance,WfProcessInstance where WfTask.ActivityInsUid=WfActivityInstance.Fid and WfTask.ProcessInsUid= WfProcessInstance.Fid and  WfProcessInstance.ProcessState='Running' and  WfActivityInstance.ActivityState in('{WfActivityInstanceState.Running}','{WfActivityInstanceState.Ready}') and WfTask.TaskState='{WfTaskState.Handling}' and WfTask.ExecutorEmpUid in (@Agents) group by WfTask.BizTypeUid", new DynamicParameters(new { Agents = agents.Select(a => a.Principal) }));
+            var listCount = _dataAccessor.Query($"select count(0) C,WfTask.BizTypeUid from WfTask,WfActivityInstance,WfProcessInstance where WfTask.ActivityInsUid=WfActivityInstance.Fid and WfTask.ProcessInsUid= WfProcessInstance.Fid and  WfProcessInstance.ProcessState='Running' and  WfActivityInstance.ActivityState in('{WfActivityInstanceState.Running}','{WfActivityInstanceState.Ready}') and WfTask.TaskState='{WfTaskState.Handling}' and WfTask.ExecutorEmpUid in @Agents group by WfTask.BizTypeUid", new DynamicParameters(new { Agents = agents.Select(a => a.Principal) }));
             int agentCount = 0;
             foreach (var item in listCount)
             {

@@ -1,0 +1,211 @@
+﻿@using Fap.AspNetCore.Controls.JqGrid
+@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+    Layout = null;
+    //增加操作列
+    Column column = new Column("oper");
+    column.SetLabel("操作");
+    column.SetSortable(false);
+    column.SetWidth(70);
+}
+<title>任务调度</title>
+<div class="row">
+    <div class="col-xs-12 col-sm-3">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">任务组</h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-ctrl="widgetAction" data-action="add" class="orange2">
+                        <i class="ace-icon fa fa-plus-circle purple"></i>
+                    </a>
+
+                    <a href="#" data-ctrl="widgetAction" data-action="edit">
+                        <i class="ace-icon fa fa-pencil blue"></i>
+                    </a>
+
+                    <a href="#" data-ctrl="widgetAction" data-action="delete">
+                        <i class="ace-icon fa fa-trash-o red"></i>
+                    </a>
+                    <a href="#" data-ctrl="widgetAction" data-action="refresh">
+                        <i class="ace-icon fa fa-refresh"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main">
+                    <fap-tree id="jobgroup" is-async="true" get-url="/SystemApi/Manage/JobGroup/" edit-url="/SystemApi/Manage/OperJobGroup"></fap-tree>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-9">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">任务调度</h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar">
+                    <div class="btn-group ">
+                        <button id="btnDisabled" data-param="Disabled" class="btn btn-white  btnoper">
+                            <i class="ace-icon fa fa-ban red"></i>
+                            禁用
+                        </button>
+                        <button id="btnEnabled" data-param="Enabled" class="btn btn-white btnoper">
+                            <i class="ace-icon fa fa-circle light-green"></i>
+                            启用
+                        </button>
+
+                    </div>
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    <fap-grid id="fapjob" attach-column="column" query-option="@Model.QueryOption" auto-width="true" post-data="@Model.PostData" wrapper="widget-main" on-form-init-add="afterInitFormCallback" oper-cud="true" on-grid-complete="initMenu"></fap-grid>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function initMenu() {
+         var ids = jQuery("#grid-fapjob").jqGrid('getDataIDs');
+        for (var i = 0; i < ids.length; i++) {
+            var de = '';
+            var cl = ids[i];
+            var ret = jQuery('#grid-fapjob').jqGrid('getRowData', cl);
+            var fid = ret.Fid;
+            var execState = ret.ExecState;//执行状态
+            var jobState = ret.JobState;//任务状态
+            if (jobState === 'Enabled') {
+                if (execState === 'Execing') {
+                   //执行中
+                    de += "<a  href='javascript:void(0)' onclick='operJob(\"" + fid + "\",\"Suspend\")'>暂停</a>  ";
+
+                } else if (execState === 'NoExec') {
+                    //未执行
+                    de += "<a  href='javascript:void(0)' onclick='operJob(\"" + fid + "\",\"Add\")'>加入</a>  ";
+
+                } else if (execState === 'Suspend') {
+                    //暂停
+                    de += "<a  href='javascript:void(0)' onclick='operJob(\"" + fid + "\",\"Resume\")'>恢复</a>";
+                }
+            }
+            jQuery('#grid-fapjob').jqGrid('setRowData', ids[i], { oper: de });
+        }
+    }
+    function operJob(fid, param) {
+        $.post("@Url.Content("~/SystemApi/Manage/OperJobState")", { fid: fid, state: param }, function (data) {
+            if (data) {
+                bootbox.alert("操作成功");
+                $("#grid-fapjob").jqGrid('setGridParam', {
+                    datatype: 'json',
+                    page: 1
+                }).trigger("reloadGrid"); //重新载入
+            }
+        })
+    }
+    var afterInitFormCallback = function () {
+        var tree = $('#tree-jobgroup').jstree(true);
+        var sel = tree.get_selected();
+        if (sel.length) {
+            $("#JobGroup").val(sel[0]).next().val(tree.get_node(sel[0]).text);
+        }
+        $("#ExecState").val('NoExec');
+    }
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+                $('#tree-jobgroup').jstree('destroy');
+            })
+            $(document).off(ace.click_event, '[data-ctrl=widgetAction]').on(ace.click_event, '[data-ctrl=widgetAction]', function (ev) {
+                ev.preventDefault();
+                var $this = $(this);
+                var $action = $this.data('action');
+                var ref = $('#tree-jobgroup').jstree(true),
+                                sel = ref.get_selected();
+                if ($action == 'refresh') {
+                    ref.refresh();
+                    return;
+                }
+                if (!sel.length) { return false; }
+                sel = sel[0];
+                if ($action == 'add') {
+                    sel = ref.create_node(sel);
+
+                } else if ($action == 'edit') {
+                    ref.edit(sel);
+                } else if ($action == 'delete') {
+                    bootbox.confirm('确定删除?', function (result) {
+                        if(result)
+                        {
+                            ref.delete_node(sel);
+
+                        }
+                    })
+                }
+
+            })
+            $('#tree-jobgroup').on("changed.jstree", function (e, data) {
+                if (data && data.selected && data.selected.length) {
+                    var jobgroupId = data.selected[0];
+                    //显示所有角色组的角色
+                    if (jobgroupId == "0") {
+                        $("#grid-fapjob").jqGrid('setGridParam', {
+                            datatype: 'json',
+                            postData: { filters: {} }, //发送数据
+                            page: 1
+                        }).trigger("reloadGrid"); //重新载入
+                        return;
+                    }
+                    var jobgroupName = data.node.text;
+
+                    var filter = '{"groupOp":"AND","rules":[{"field":"JobGroup","op":"eq","data":"' + jobgroupId + '"}]}'
+                    $("#grid-fapjob").jqGrid('setGridParam', {
+                        datatype: 'json',
+                        postData: { 'filters': filter }, //发送数据
+                        page: 1
+                    }).trigger("reloadGrid"); //重新载入
+                }
+                //console.log(data.selected);
+            });
+
+            $(".btnoper").off(ace.click_event).on(ace.click_event, function () {
+                var id = jQuery("#grid-fapjob").jqGrid('getGridParam', 'selrow');
+                var obj = $("#grid-fapjob").jqGrid('getRowData', id);
+                if (id == null) {
+                    bootbox.alert("请选择要操作的调度");
+                    return;
+                }
+                var param = $(this).data("param");
+                var jobState = obj.JobState;//任务状态
+                if (jobState === 'Disabled' && jobState === param) {
+                    bootbox.alert('已经处于禁用状态，不需要禁用！');
+                    return;
+                }
+                if (jobState === 'Enabled' && jobState === param) {
+
+                    bootbox.alert('已经处于启用状态，不需要启用！');
+                    return;
+                }
+                $.post("@Url.Content("~/SystemApi/Manage/OperJobState")", { fid: obj.Fid, state: param }, function (data) {
+                    if (data) {
+                        bootbox.alert("操作成功");
+                        $("#grid-fapjob").jqGrid('setGridParam', {
+                            datatype: 'json',
+                            page: 1
+                        }).trigger("reloadGrid"); //重新载入
+                    }
+                })
+            })
+        })
+    })
+</script>

@@ -4,13 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Fap.AspNetCore.Model
+namespace Fap.Core.Infrastructure.Model
 {
     /// <summary>
     /// 自由表单
     /// </summary>
     [Table("CfgFreeForm")]
-    public class CfgFreeForm :BaseModel
+    public class CfgFreeForm : BaseModel
     {
         /// <summary>
         /// 编码

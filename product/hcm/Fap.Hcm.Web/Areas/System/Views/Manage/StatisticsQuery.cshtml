@@ -1,0 +1,22 @@
+﻿
+@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+    Layout = null;
+}
+<title>统计查询</title>
+<div class="row">
+    <div class="col-xs-12">
+        <fap-grid id="cfgstatisticsquery" query-option="@Model.QueryOption" post-data="Model.PostData" auto-width="true" shrink-fit="false" oper-cud="true"></fap-grid>
+    </div>
+</div>
+
+<script>
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+            })
+        })
+    })
+</script>
+

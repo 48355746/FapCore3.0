@@ -1,0 +1,39 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+    Layout = null;
+}
+<title>在线用户管理</title>
+<div class="row">
+    <div class="col-xs-12 col-sm-12">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">在线用户</h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    <fap-grid id="onlineuser" query-option="@Model.QueryOption" auto-width="true" post-data="@Model.PostData" view-records="true"  ></fap-grid>
+          
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+            })
+        })
+    })
+</script>
+
+
+

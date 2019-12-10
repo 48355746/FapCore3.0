@@ -172,7 +172,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
         private bool _logicDelete = true;
         private IDbContext _dataAccessor;
         private ILoggerFactory _loggerFactory;
-        private IFapApplicationContext  _applicationContext;
+        private IFapApplicationContext _applicationContext;
         private IMultiLangService _multiLang;
         //分布式缓存
         //IDistributedCache
@@ -288,10 +288,13 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 _defaultValues = queryset.DefaultValues;
             }
             Pageable queryOption = new Pageable(_dataAccessor) { TableName = queryset.TableName, QueryCols = queryset.QueryCols };
-            var queryColList = queryset.QueryCols.Split(',');
-            IEnumerable<FapColumn> fapColumns =_dataAccessor.Columns(queryset.TableName).Where(c=> queryColList.Contains(c.ColName));
-            _fapColumns = fapColumns;
-            if (fapColumns.Any())
+            _fapColumns = _dataAccessor.Columns(queryset.TableName);
+            if (!queryset.QueryCols.EqualsWithIgnoreCase("*"))
+            {
+                var queryColList = queryset.QueryCols.Split(',');
+                _fapColumns = _fapColumns.Where(c => queryColList.Contains(c.ColName));
+            }
+            if (_fapColumns.Any())
             {
                 string[] disCols = { };
                 string[] hideCols = { };
@@ -335,7 +338,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 {
                     hideCols = queryset.HiddenCols.Split(',', StringSplitOptions.RemoveEmptyEntries);
                 }
-                List<Column> grdColumns = _fapColumns.OrderBy(c => c.ColOrder).ToColumns(_loggerFactory,_dataAccessor,  _multiLang,  disCols, hideCols).ToList();
+                List<Column> grdColumns = _fapColumns.OrderBy(c => c.ColOrder).ToColumns(_loggerFactory, _dataAccessor, _multiLang, disCols, hideCols).ToList();
 
                 _columns.AddRange(grdColumns);
 
@@ -2051,7 +2054,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
 
             // onSelectRow event
 
-            if (_editUrl.EqualsWithIgnoreCase("clientArray")&&_pager.IsPresent())
+            if (_editUrl.EqualsWithIgnoreCase("clientArray") && _pager.IsPresent())
             {
                 script.AppendLine("onSelectRow:editRow,");
             }
@@ -2285,8 +2288,8 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 sb.AppendLine("                        keys: true,initdata:" + initData.ToString() + "");
                 sb.AppendLine("                    }");
                 sb.AppendLine("                });");
-                if (_editUrl.EqualsWithIgnoreCase("clientArray")&& _pager.IsPresent())
-                {                    
+                if (_editUrl.EqualsWithIgnoreCase("clientArray") && _pager.IsPresent())
+                {
                     var gid = _id.Replace('-', '_');
                     sb.AppendLine("            var lastSelection_" + gid + ";");
                     sb.AppendLine("            function editRow(id) {");
@@ -2442,7 +2445,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
         {
             string token = UUIDUtils.Fid;
             //保存的时候校验此值 (加上表名，避免连续打开连个表单，session就不同了)
-            _applicationContext.Session.SetString($"{TableName.ToLower()}{FapWebConstants.AVOID_REPEAT_TOKEN}-del",token);
+            _applicationContext.Session.SetString($"{TableName.ToLower()}{FapWebConstants.AVOID_REPEAT_TOKEN}-del", token);
             script.AppendLine(@" 
                     jQuery('#" + _id + @"').jqGrid('navButtonAdd', '#" + _pager + @"',{
                       caption:'',
@@ -2551,7 +2554,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
             compressor.Encoding = Encoding.UTF8;
             script.Append(compressor.Compress(RenderJavascript()));
             script.AppendLine("</script>");
-            
+
             // Insert grid id where needed (in columns)
             script.Replace("##gridid##", _id);
 

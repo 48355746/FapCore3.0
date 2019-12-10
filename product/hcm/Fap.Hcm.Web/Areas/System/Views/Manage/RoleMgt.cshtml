@@ -1,0 +1,128 @@
+﻿
+@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+    Layout = null;
+}
+<title>角色管理</title>
+<div class="row">
+    <div class="col-xs-12 col-sm-3">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">角色组</h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-ctrl="widgetAction" data-action="add" class="orange2">
+                        <i class="ace-icon fa fa-plus-circle purple"></i>
+                    </a>
+
+                    <a href="#" data-ctrl="widgetAction" data-action="edit">
+                        <i class="ace-icon fa fa-pencil blue"></i>
+                    </a>
+
+                    <a href="#" data-ctrl="widgetAction" data-action="delete">
+                        <i class="ace-icon fa fa-trash-o red"></i>
+                    </a>
+                    <a href="#" data-ctrl="widgetAction" data-action="refresh">
+                        <i class="ace-icon fa fa-refresh"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main">
+                    <fap-tree id="rolegroup" is-async="true" get-url="/SystemApi/Manage/RoleGroup" edit-url="/SystemApi/Manage/OperRoleGroup"></fap-tree>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-9">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">角色</h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    <fap-grid id="role" query-option="@Model.QueryOption" post-data="@Model.PostData" view-records="true" auto-width="true" multi-box-only="true" multi-select="true" on-form-init-add="afterInitFormCallback" oper-cud="true"></fap-grid>
+             
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    var afterInitFormCallback = function () {
+        var tree = $('#tree-rolegroup').jstree(true);
+        var sel = tree.get_selected();
+        if (sel.length) {
+            $("#RoleGroupUid").val(sel[0]).next().val(tree.get_node(sel[0]).text);
+        }
+    }
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+                $('#tree-rolegroup').jstree("destroy");
+            })
+            $(document).off(ace.click_event, '[data-ctrl=widgetAction]').on(ace.click_event, '[data-ctrl=widgetAction]', function (ev) {
+                ev.preventDefault();
+                debugger
+                var $this = $(this);
+               
+                var $action = $this.data('action');
+                var ref = $('#tree-rolegroup').jstree(true),
+                                sel = ref.get_selected();
+                if ($action == 'refresh') {
+                    ref.refresh();
+                    return;
+                }
+                if (!sel.length) { return false; }
+                sel = sel[0];
+                if ($action == 'add') {
+                    sel = ref.create_node(sel);
+
+                } else if ($action == 'edit') {
+                    ref.edit(sel);
+                } else if ($action == 'delete') {
+                    bootbox.confirm("确认删除？", function (result) {
+                        if (result) {
+                            ref.delete_node(sel)
+                        }
+                    })
+                }
+            })
+            $('#tree-rolegroup').on("changed.jstree", function (e, data) {
+                if (data && data.selected && data.selected.length) {
+                    var roleGroupId = data.selected[0];
+                    //显示所有角色组的角色
+                    if (roleGroupId == "0") {
+                        $("#grid-role").jqGrid('setGridParam', {
+                            datatype: 'json',
+                            postData: { filters: {}}, //发送数据
+                            page: 1
+                        }).trigger("reloadGrid"); //重新载入
+                        return;
+                    }
+                    var roleGroupName = data.node.text;
+                   
+                    var filter = '{"groupOp":"AND","rules":[{"field":"RoleGroupUid","op":"eq","data":"' + roleGroupId + '"}]}'
+                    $("#grid-role").jqGrid('setGridParam', {
+                        datatype: 'json',
+                        postData: { 'filters': filter}, //发送数据
+                        page: 1
+                    }).trigger("reloadGrid"); //重新载入
+                }
+                //console.log(data.selected);
+            });
+        })
+    })
+</script>
+

@@ -25,6 +25,10 @@ namespace Fap.Core.Infrastructure.Domain
         /// </summary>
         public string EmpName => _httpContextAccessor?.HttpContext == null ? "~" : _httpContextAccessor?.HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Surname)?.Value;
         /// <summary>
+        /// 员工照片
+        /// </summary>
+        public string EmpPhoto => _httpContextAccessor?.HttpContext == null ? "~" : _httpContextAccessor?.HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Actor)?.Value;
+        /// <summary>
         /// 用户Fid
         /// </summary>
         public string UserUid => _httpContextAccessor?.HttpContext == null ? "~" : _httpContextAccessor?.HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
@@ -72,10 +76,6 @@ namespace Fap.Core.Infrastructure.Domain
             }
         }
         /// <summary>
-        /// 在线用户
-        /// </summary>
-        public string OnlineUserUid => _httpContextAccessor?.HttpContext == null ? "~" : _httpContextAccessor?.HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Actor)?.Value ?? "temp";
-        /// <summary>
         /// 所有角色UID
         /// </summary>
         public IEnumerable<string> Roles => _httpContextAccessor?.HttpContext == null ? Array.Empty<string>() : _httpContextAccessor?.HttpContext.User.FindAll(c => c.Type == ClaimTypes.Role)?.Select(r => r.Value);
@@ -93,5 +93,9 @@ namespace Fap.Core.Infrastructure.Domain
         public string ClientIpAddress => Request.Headers["X-Forwarded-For"].FirstOrDefault().IsMissing() ? HttpContext.Connection.RemoteIpAddress.ToString() : Request.Headers["X-Forwarded-For"].FirstOrDefault();
         public string Broswer => Request.Headers["User-Agent"].ToString();
         public string BaseUrl => $"{Request.Scheme}://{Request.Host.Host}:{Request.Host.Port}";
+        /// <summary>
+        /// 是否为管理员
+        /// </summary>
+        public bool IsAdministrator => UserName==FapPlatformConstants.Administrator;
     }
 }

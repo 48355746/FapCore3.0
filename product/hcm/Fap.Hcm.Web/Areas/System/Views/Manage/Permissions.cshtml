@@ -1,0 +1,908 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+    Layout = null;
+}
+<title>权限管理</title>
+
+<script id="roleusers" type="text/x-jquery-tmpl">
+    <!-- #section:pages/profile.feed -->
+
+    <div class="profile-activity clearfix">
+        <div>
+            @*<img class="pull-left" alt="Alex Doe's avatar" src="../assets/avatars/avatar5.png" />*@
+            <a class="user" href="#"> ${UserName}</a>
+            (${UserCode})
+
+            <div class="time">
+                <i class="ace-icon fa fa-user bigger-120 blue"></i>
+                ${UserIdentityMC}
+            </div>
+            <div class="time">
+                <i class="ace-icon fa fa-envelope bigger-120 pink"></i>
+                <a href="javascript:void(0)">${UserEmail}</a>
+            </div>
+        </div>
+
+        <div class="tools action-buttons">
+            <a href="#" data-userfid="${Fid}" data-action="deluser" onclick="delUser('${Fid}')" class="red">
+                <i class="ace-icon fa fa-times bigger-125"></i>
+            </a>
+        </div>
+    </div>
+
+</script>
+
+<div class="row">
+    <div class="col-xs-12 col-sm-3 widget-container-col">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">角色</h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main">
+                    <fap-tree id="roleandgroup" is-async="true" get-url="/SystemApi/Manage/RoleAndGroup"></fap-tree>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 widget-container-col">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">权限</h4>
+                <div class="widget-toolbar">
+                    <a href="#" id="clearcache" data-rel="tooltip" title="清理缓存" class="blue">
+                        <i class="ace-icon fa fa-refresh"></i>
+
+                    </a>
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+
+                <div class="widget-toolbar no-border">
+                    <ul class="nav nav-tabs" id="myTab">
+                        <li class="active">
+                            <a data-toggle="tab" href="#pmenu">菜单</a>
+                        </li>
+
+                        <li>
+                            <a data-toggle="tab" href="#pdept">部门</a>
+                        </li>
+
+                        <li>
+                            <a data-toggle="tab" href="#pentity">实体</a>
+                        </li>
+
+                        <li>
+                            <a data-toggle="tab" href="#edata">数据</a>
+                        </li>
+                        <li>
+                            <a data-toggle="tab" href="#ebutton">按钮</a>
+                        </li>
+                        <li>
+                            <a data-toggle="tab" href="#preport">报表</a>
+                        </li>
+                        <li>
+                            <a data-toggle="tab" href="#prole">角色</a>
+                        </li>
+                        @*<li>
+                                <a href="#" data-action="clearcache" title="清理缓存" class="blue">
+                                    <i class="ace-icon fa fa-refresh"></i>
+                                    清理缓存
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" data-action="fullscreen" class="orange2">
+                                    <i class="ace-icon fa fa-expand"></i>
+                                </a>
+                            </li>*@
+                    </ul>
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    <div class="tab-content padding-0">
+                        <div id="pmenu" class="tab-pane in active">
+                            <div class="widget-box transparent">
+                                <div class="widget-header widget-header-small">
+                                    <div class="widget-toolbar action-buttons">
+                                        @*<a href="#" data-action="reload" data-rel="tooltip" class="tooltip-warning" title="刷新">
+                                                <i class="ace-icon fa fa-refresh blue"></i>
+                                            </a>*@
+                                        @*&nbsp;
+                                            <button class="btn btn-white btn-info btn-bold btn-sm">
+                                                <i class="ace-icon fa fa-floppy-o"></i>
+                                                授权
+                                            </button>*@
+
+                                        <a href="#" id="btnSaveMenus" class=" tooltip-info" data-rel="tooltip" title="授权">
+                                            <i class="ace-icon fa fa-floppy-o bigger-120 blue"></i>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="widget-body">
+                                    <div class="widget-main padding-8">
+                                        <fap-tree id="moduleandmenu" is-async="true" get-url="/SystemApi/Manage/ModuleAndMenu" plugin-checkbox="true"></fap-tree>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="pdept" class="tab-pane">
+                            <div class="widget-box transparent">
+                                <div class="widget-header widget-header-small">
+                                    <div class="widget-toolbar action-buttons">
+                                        @*<a href="#" data-action="reload" data-rel="tooltip" title="刷新">
+                                                <i class="ace-icon fa fa-refresh blue"></i>
+                                            </a>
+                                            &nbsp;*@
+                                        <a href="#" id="btnSaveOrgDepts" class="grey" data-rel="tooltip" title="授权">
+                                            <i class="ace-icon fa fa-floppy-o bigger-120 blue"></i>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="widget-body">
+                                    <div class="widget-main padding-8">
+                                        <fap-tree id="orgdept" is-async="true" get-url="/SystemApi/Manage/AllDepts" plugin-checkbox="true"></fap-tree>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="pentity" class="tab-pane">
+                            <div class="widget-box transparent">
+                                <div class="widget-header widget-header-small">
+                                    <div class="widget-toolbar action-buttons">
+
+                                        <a href="#" id="btnSaveColumnsEditAble" class="grey" data-rel="tooltip" title="授权可编辑">
+                                            <i class="ace-icon fa fa-floppy-o bigger-120 blue"></i><i class="ace-icon glyphicon glyphicon-pencil bigger-110 blue"></i>
+                                        </a>
+                                        &nbsp;
+                                        <a href="#" id="btnSaveColumnsViewAble" class="grey" data-rel="tooltip" title="授权可见">
+                                            <i class="ace-icon fa fa-floppy-o bigger-120 blue"></i><i class="ace-icon fa fa-eye bigger-110 orange"></i>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="widget-body">
+                                    <div class="widget-main padding-8">
+                                        <fap-tree id="dataentity" is-async="true" get-url="/SystemApi/Manage/FapTables" plugin-checkbox="true"></fap-tree>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="edata" class="tab-pane">
+                            <div class="widget-box transparent">
+                                <div class="widget-header widget-header-small">
+                                    <div class="widget-toolbar action-buttons">
+
+                                        <a href="#" id="btnAddEData" class="grey" data-rel="tooltip" title="新增">
+                                            <i class="ace-icon glyphicon glyphicon-plus bigger-110 purple"></i>
+                                        </a>
+                                        &nbsp;
+                                        <a href="#" id="btnEditEData" class="grey" data-rel="tooltip" title="编辑">
+                                            <i class="ace-icon glyphicon glyphicon-pencil bigger-110 blue"></i>
+                                        </a>
+                                        &nbsp;
+                                        <a href="#" id="btnDeleteEData" class="grey" data-rel="tooltip" title="删除">
+                                            <i class="ace-icon glyphicon glyphicon-remove bigger-120 red"></i>
+                                        </a>
+                                        <a href="#" id="btnHelperEData" class="popover-warning" data-rel="popover" title="帮助" data-content="条件中的常用变量表示：
+                                            <ul class='list-unstyled'>    <li>当前登录人 <span class='purple'>${EmpUid}</span> </li>    <li> 当前登录人部门UID <span class='purple'>${DeptUid}</span></li><li> 当前登录人部门编码 <span class='purple'>${DeptCode}</span></li></ul>例如:只能查看当前登录人所在部门的员工，选择实体：员工表，条件：    <span class='purple'>DeptUid='${DeptUid}'</span>">
+                                            <i class="ace-icon fa fa-question bigger-120 warning"></i>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="widget-body">
+                                    <div class="widget-main padding-0">
+                                        <fap-grid id="roledata" query-option="@Model.QueryOption" wrapper="myTab,edata" post-data="@Model.PostData" view-records="true"></fap-grid>
+                               
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="ebutton" class="tab-pane">
+                            <div class="widget-box transparent">
+                                <div class="widget-header widget-header-small">
+                                    <div class="widget-toolbar action-buttons">
+                                        <a href="#" id="btnSaveButtons" class=" tooltip-info" data-rel="tooltip" title="授权">
+                                            <i class="ace-icon fa fa-floppy-o bigger-120 blue"></i>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="widget-body">
+                                    <div class="widget-main padding-8">
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="preport" class="tab-pane">
+                            <div class="widget-box transparent">
+                                <div class="widget-header widget-header-small">
+                                    <div class="widget-toolbar action-buttons">
+                                        <a href="#" id="btnSaveReport" class=" tooltip-info" data-rel="tooltip" title="授权">
+                                            <i class="ace-icon fa fa-floppy-o bigger-120 blue"></i>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="widget-body">
+                                    <div class="widget-main padding-8">
+                                        <fap-tree id="reporttemplate" is-async="true" get-url="/SystemApi/Manage/SimpleReport" plugin-checkbox="true"></fap-tree>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="prole" class="tab-pane">
+                            <div class="widget-box transparent">
+                                <div class="widget-header widget-header-small">
+                                    <div class="widget-toolbar action-buttons">
+                                        <a href="#" id="btnSavePRole" class=" tooltip-info" data-rel="tooltip" title="授权">
+                                            <i class="ace-icon fa fa-floppy-o bigger-120 blue"></i>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="widget-body">
+                                    <div class="widget-main padding-8">
+                                        <fap-tree id="powerroleandgroup" is-async="true" get-url="/SystemApi/Manage/RoleAndGroup" plugin-checkbox="true"></fap-tree>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-3 widget-container-col">
+        <div id="widget-box-user" class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">用户</h4>
+                <div class="widget-toolbar">
+                    <a href="#" data-ctrl="widgetAction" data-action="adduser" class="orange2" data-rel="tooltip" title="添加用户">
+                        <i class="ace-icon fa fa-plus-circle purple"></i>
+                    </a>
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    <div id="profile-feed-user" class="profile-feed">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    var delUser = function (fid) {
+        var treeRole = $('#tree-roleandgroup').jstree(true);
+        var selRole = treeRole.get_selected();
+        if (treeRole.get_icon(selRole[0]) == "icon-folder purple ace-icon fa fa-users") {
+            bootbox.alert("请选中角色进行设置");
+            return;
+        }
+        if (!selRole.length) {
+            bootbox.alert("请选中角色");
+            return;
+        }
+        //保存User
+        $.ajax({
+            url: "@Url.Content("~/SystemApi/Manage/DelRoleUser")",   //请求的url地址
+            dataType: "json",   //返回格式为json
+            async: true, //请求是否异步，默认为异步，这也是ajax重要特性
+            data: { "RoleUid": selRole[0], "UserUid": fid },    //参数值
+            type: "POST",   //请求方式
+            success: function (req) {
+                //请求成功时处理
+                if (req.success) {
+                    $("[data-userfid='" + fid + "']").parent().parent().remove();
+                } else {
+                    bootbox.alert("删除失败");
+                }
+            },
+            complete: function () {
+                //请求完成的处理
+            },
+            error: function () {
+                //请求出错处理
+                bootbox.alert("出现错误");
+            }
+        });
+    }
+
+</script>
+
+<script>
+    var scripts = [null, "/Content/js/jquery.tmpl.js", null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+                $('#tree-roleandgroup').jstree('destroy');
+                $('#tree-reporttemplate').jstree('destroy');
+            })
+            window.users = [];
+
+            $('#tree-roleandgroup').on("changed.jstree", function (event, data) {
+                if (data && data.selected && data.selected.length) {
+                    //判断是否为角色
+                    var isRole = data.node.data.isRole;
+                    if (isRole == false) {
+                        return;
+                    }
+                    var roleUid = data.selected[0];
+                    var treeRole = $('#tree-roleandgroup').jstree(true);
+                    //if (treeRole.get_icon(roleUid) == "icon-folder purple ace-icon fa fa-users") {
+                    //    return;
+                    //}
+                    //window.roleFid = roleUid;
+                    $.ajax({
+                        type: "get",
+                        url: "@Url.Content("~/SystemApi/Manage/Authority")",
+                        data: { rolefid: roleUid },
+                        dataType: "json",
+                        success: function (data) {
+                            //角色人员
+                            window.users = data.users;
+                            $("#profile-feed-user").html("");
+                            $("#roleusers").tmpl(data.users).appendTo("#profile-feed-user");
+                            //权限树
+                            var treeMenu = $("#tree-moduleandmenu").jstree(true);
+                            var treeDept = $("#tree-orgdept").jstree(true);
+                            var treeEntity = $("#tree-dataentity").jstree(true);
+                            var treeRpt = $("#tree-reporttemplate").jstree(true);
+                            var treePRole = $("#tree-powerroleandgroup").jstree(true);
+                            treeMenu.uncheck_all();
+                            treeDept.uncheck_all();
+                            treeEntity.uncheck_all();
+                            treeRpt.uncheck_all();
+                            treePRole.uncheck_all();
+                            treeEntity.element.find(".jstree-themeicon-custom.orange.fa.fa-eye").removeClass("jstree-themeicon-custom orange fa fa-eye").addClass("jstree-themeicon-custom green fa fa-tag");
+                            treeEntity.element.find(".jstree-themeicon-custom.blue.fa.fa-pencil-square-o").removeClass("jstree-themeicon-custom blue fa fa-pencil-square-o").addClass("jstree-themeicon-custom green fa fa-tag");
+                            //jstree-icon jstree-themeicon green fa fa-tag jstree-themeicon-custom
+                            //jstree-icon jstree-themeicon green fa fa-tag jstree-themeicon-custom
+                            //菜单
+                            $.each(data.menus, function (i, v) {
+                                treeMenu.check_node(v);
+                            });
+                            //部门
+                            $.each(data.depts, function (i, v) {
+                                treeDept.check_node(v);
+                            });
+                            //数据
+                            var filter = { "groupOp": "AND" };
+                            var rules = [];
+                            rules.push({ "field": "RoleUid", "op": "eq", "data": roleUid });
+                            filter.rules = rules;
+                            $("#grid-roledata").jqGrid('setGridParam', {
+                                datatype: 'json',
+                                postData: { filters: JSON.stringify(filter), }, //发送数据
+                                page: 1
+                            }).trigger("reloadGrid"); //重新载入
+                            //报表
+                            $.each(data.rpts, function (i, v) {
+                                treeRpt.check_node(v);
+                            });
+                            //角色
+                            $.each(data.roles, function (i, v) {
+                                treePRole.check_node(v);
+                            });
+                            //实体
+                            $.each(data.columns, function (i, v) {
+                                treeEntity.check_node(v.ColumnUid);
+                                var dom = treeEntity.get_node(treeEntity.get_node(v.ColumnUid), true).children(".jstree-anchor").children(".jstree-themeicon");
+                                if (v.EditAble == "1") {
+                                    //可编辑
+                                    if (dom.length < 1) {
+                                        treeEntity.get_node(v.ColumnUid).icon = 'blue fa fa-pencil-square-o';
+                                    } else {
+
+                                        $(dom).attr("class", "jstree-icon jstree-themeicon blue fa fa-pencil-square-o jstree-themeicon-custom");
+                                    }
+                                    //treeEntity.set_icon(v.ColumnUid, "blue fa fa-pencil-square-o");
+                                } else
+                                    if (v.ViewAble == "1") {
+                                        //可见
+                                        if (dom.length < 1) {
+                                            treeEntity.get_node(v.ColumnUid).icon = 'orange fa fa-eye';
+                                        } else {
+
+                                            $(dom).attr("class", "jstree-icon jstree-themeicon orange fa fa-eye jstree-themeicon-custom");
+                                        }
+                                        //treeEntity.set_icon(v.ColumnUid, "orange fa fa-eye");
+                                    }
+                            });
+                        }
+                    });
+                }
+
+            });
+            //保存菜单
+            $("#btnSaveMenus").on(ace.click_event, function (ev) {
+                ev.preventDefault();
+                var treeRole = $('#tree-roleandgroup').jstree(true);
+                var selRole = treeRole.get_selected();
+                if (!selRole.length) { return false; }
+                if (treeRole.get_node(selRole[0]).data.isRole == false) {
+                    bootbox.alert("请选中角色进行设置");
+                    return;
+                }
+
+                var treeMenu = $('#tree-moduleandmenu').jstree(true),
+                                    checks = treeMenu.get_checked();
+                //筛选是菜单的节点
+                var sels = $.grep(checks, function (d, i) {
+
+                    return treeMenu.get_node(d).data.isMenu == true;
+
+                });
+
+                //if (!sels.length) { return false; }
+                $.ajax({
+                    url: "@Url.Content("~/SystemApi/Manage/SaveAuthority")",   //请求的url地址
+                    dataType: "json",   //返回格式为json
+                    async: true, //请求是否异步，默认为异步，这也是ajax重要特性
+                    data: { "RoleUid": selRole[0], "MenuUids": sels, "AType": 1 },    //参数值
+                    type: "POST",   //请求方式
+                    success: function (req) {
+                        //请求成功时处理
+                        if (req.success) {
+                            bootbox.alert("搞定");
+                        }
+                    },
+                    complete: function () {
+                        //请求完成的处理
+                    },
+                    error: function () {
+                        //请求出错处理
+                        bootbox.alert("出现错误");
+                    }
+                });
+            });
+
+            //保存部门
+            $("#btnSaveOrgDepts").on(ace.click_event, function (ev) {
+                ev.preventDefault();
+                var treeRole = $('#tree-roleandgroup').jstree(true);
+                var selRole = treeRole.get_selected();
+                if (!selRole.length) { return false; }
+                if (treeRole.get_node(selRole[0]).data.isRole == false) {
+                    bootbox.alert("请选中角色进行设置");
+                    return;
+                }
+                var treeDept = $('#tree-orgdept').jstree(true),
+                                    sels = treeDept.get_checked();
+
+                //if (!sels.length) { return false; }
+
+                $.ajax({
+                    url: "@Url.Content("~/SystemApi/Manage/SaveAuthority")",   //请求的url地址
+                    dataType: "json",   //返回格式为json
+                    async: true, //请求是否异步，默认为异步，这也是ajax重要特性
+                    data: { "RoleUid": selRole[0], "OrgDeptUids": sels, "AType": 2 },    //参数值
+                    type: "POST",   //请求方式
+                    success: function (req) {
+                        //请求成功时处理
+                        if (req.success) {
+                            bootbox.alert("搞定");
+                        }
+                    },
+                    complete: function () {
+                        //请求完成的处理
+                    },
+                    error: function () {
+                        //请求出错处理
+                        bootbox.alert("出现错误");
+                    }
+                });
+            });
+            //保存可编辑
+            $("#btnSaveColumnsEditAble").on(ace.click_event, function (ev) {
+                ev.preventDefault();
+                var treeRole = $('#tree-roleandgroup').jstree(true);
+                var selRole = treeRole.get_selected();
+                if (!selRole.length) { return false; }
+                if (treeRole.get_node(selRole[0]).data.isRole == false) {
+                    bootbox.alert("请选中角色进行设置");
+                    return;
+                }
+                var treeColumn = $('#tree-dataentity').jstree(true),
+                                    checks = treeColumn.get_checked();
+                //过滤列，其他的移除
+                var sels = $.grep(checks, function (d, i) {
+                    return treeColumn.get_node(d).data.isColumn == true;
+
+                })
+                //if (!sels.length) { return false; }
+                var cols = [];
+                $.each(sels, function (i, c) {
+                    cols.push({ "tablename": treeColumn.get_node(c).data.tableName, "coluid": c });
+                })
+                $.ajax({
+                    url: "@Url.Content("~/SystemApi/Manage/SaveAuthority")",   //请求的url地址
+                    dataType: "json",   //返回格式为json
+                    async: true, //请求是否异步，默认为异步，这也是ajax重要特性
+                    data: { "RoleUid": selRole[0], "ColumnUids": cols, "AType": 3 },    //参数值
+                    type: "POST",   //请求方式
+                    success: function (req) {
+                        //请求成功时处理
+                        if (req.success) {
+                            bootbox.alert("搞定");
+                        }
+                    },
+                    complete: function () {
+                        //请求完成的处理
+                    },
+                    error: function () {
+                        //请求出错处理
+                        bootbox.alert("出现错误");
+                    }
+                });
+            });
+            //保存可见
+            $("#btnSaveColumnsViewAble").on(ace.click_event, function (ev) {
+                ev.preventDefault();
+                var treeRole = $('#tree-roleandgroup').jstree(true);
+                var selRole = treeRole.get_selected();
+                if (!selRole.length) { return false; }
+                if (treeRole.get_node(selRole[0]).data.isRole == false) {
+                    bootbox.alert("请选中角色进行设置");
+                    return;
+                }
+                var treeColumn = $('#tree-dataentity').jstree(true),
+                                   checks = treeColumn.get_checked();
+                var sels = $.grep(checks, function (d, i) {
+                    return treeColumn.get_node(d).data.isColumn == true;
+                })
+                //if (!sels.length) { return false; }
+
+                var cols = [];
+                $.each(sels, function (i, c) {
+                    cols.push({ "tableName": treeColumn.get_node(c).data.tableName, "colUid": c });
+                })
+
+                $.ajax({
+                    url: "@Url.Content("~/SystemApi/Manage/SaveAuthority")",   //请求的url地址
+                    dataType: "json",   //返回格式为json
+                    async: true, //请求是否异步，默认为异步，这也是ajax重要特性
+                    data: { "RoleUid": selRole[0], "ColumnUids": cols, "AType": 4 },    //参数值
+                    type: "POST",   //请求方式
+                    success: function (req) {
+                        //请求成功时处理
+                        if (req.success) {
+                            bootbox.alert("搞定");
+                        }
+                    },
+                    complete: function () {
+                        //请求完成的处理
+                    },
+                    error: function () {
+                        //请求出错处理
+                        bootbox.alert("出现错误");
+                    }
+                });
+            });
+            //新增数据权限
+            $("#btnAddEData").on(ace.click_event, function (ev) {
+                var treeRole = $('#tree-roleandgroup').jstree(true);
+                var selRole = treeRole.get_selected();
+                if (!selRole.length) {
+                    bootbox.alert("请选中角色进行设置");
+                    return false;
+                }
+                var node = treeRole.get_node(selRole[0]);
+                if (node.data.isRole == false) {
+                    bootbox.alert("请选中角色进行设置");
+                    return;
+                }
+                loadFormMessageBox(MultiLangHelper.getResName("global_oper_new", "新增"), 'grid-roledata', 'fa fa-plus', 'FapRoleData', 0, function () {
+                    $("#frm-FapRoleData #FapRoleDataRoleUidMC").val(node.text);
+                    $("#frm-FapRoleData #RoleUid").val(selRole[0]);
+                    $("#frm-FapRoleData #FapRoleDataRoleUidMC").attr("disabled", "disabled");
+                });
+            })
+            $("#btnEditEData").on(ace.click_event, function (ev) {
+                var gsr = jQuery('#grid-roledata').jqGrid('getGridParam', 'selrow');
+                if (gsr) {
+                    var ret = jQuery('#grid-roledata').jqGrid('getRowData', gsr);
+                    loadFormMessageBox(MultiLangHelper.getResName("global_oper_edit", "编辑"), 'grid-roledata', 'fa fa-pencil-square-o', 'FapRoleData', ret.Id, function () {
+                        $("#frm-FapRoleData #FapRoleDataRoleUidMC").attr("disabled", "disabled");
+                        //$("#frm-FapRoleData #FapRoleDataTableUidMC").attr("disabled", "disabled");
+                    });
+                } else {
+                    $.msg(MultiLangHelper.getResName("global_oper_selectrow", "请选择一条数据"))
+                }
+            })
+            $("#btnDeleteEData").on(ace.click_event, function (ev) {
+                deleteGridRow('grid-roledata', 'FapRoleData',false,'');
+
+            })
+            //保存报表
+            $("#btnSaveReport").on(ace.click_event, function (ev) {
+
+                ev.preventDefault();
+                var treeRole = $('#tree-roleandgroup').jstree(true);
+                var selRole = treeRole.get_selected();
+                if (!selRole.length) { return false; }
+                if (treeRole.get_node(selRole[0]).data.isRole == false) {
+                    bootbox.alert("请选中角色进行设置");
+                    return;
+                }
+
+                var treeRpt = $('#tree-reporttemplate').jstree(true),
+                                    checks = treeRpt.get_checked();
+                //筛选是报表的节点
+                var sels = $.grep(checks, function (d, i) {
+
+                    return treeRpt.get_node(d).data.isRpt == true;
+
+                });
+
+                //if (!sels.length) { return false; }
+                $.ajax({
+                    url: "@Url.Content("~/SystemApi/Manage/SaveAuthority")",   //请求的url地址
+                    dataType: "json",   //返回格式为json
+                    async: true, //请求是否异步，默认为异步，这也是ajax重要特性
+                    data: { "RoleUid": selRole[0], "RptUids": sels, "AType": 6 },    //参数值
+                    type: "POST",   //请求方式
+                    success: function (req) {
+                        //请求成功时处理
+                        if (req.success) {
+                            bootbox.alert("搞定");
+                        }
+                    },
+                    complete: function () {
+                        //请求完成的处理
+                    },
+                    error: function () {
+                        //请求出错处理
+                        bootbox.alert("出现错误");
+                    }
+                });
+            })
+            //保存角色角色
+            $("#btnSavePRole").on(ace.click_event, function (ev) {
+
+                ev.preventDefault();
+                var treeRole = $('#tree-roleandgroup').jstree(true);
+                var selRole = treeRole.get_selected();
+                if (!selRole.length) { return false; }
+                if (treeRole.get_node(selRole[0]).data.isRole == false) {
+                    bootbox.alert("请选中角色进行设置");
+                    return;
+                }
+
+                var treeRR = $('#tree-powerroleandgroup').jstree(true),
+                                    checks = treeRR.get_checked();
+                //筛选是报表的节点
+                var sels = $.grep(checks, function (d, i) {
+
+                    return treeRR.get_node(d).data.isRole == true;
+
+                });
+
+                //if (!sels.length) { return false; }
+                $.ajax({
+                    url: "@Url.Content("~/SystemApi/Manage/SaveAuthority")",   //请求的url地址
+                    dataType: "json",   //返回格式为json
+                    async: true, //请求是否异步，默认为异步，这也是ajax重要特性
+                    data: { "RoleUid": selRole[0], "PRoleUids": sels, "AType": 7 },    //参数值
+                    type: "POST",   //请求方式
+                    success: function (req) {
+                        //请求成功时处理
+                        if (req.success) {
+                            bootbox.alert("搞定");
+                        }
+                    },
+                    complete: function () {
+                        //请求完成的处理
+                    },
+                    error: function () {
+                        //请求出错处理
+                        bootbox.alert("出现错误");
+                    }
+                });
+            })
+            $("#clearcache").on(ace.click_event, function () {
+                $.get("@Url.Content("~/SystemApi/Manage/Setting/ClearPermissionsCache")", function (rv) {
+                    if (rv.success == "success") {
+                        bootbox.alert('成功清理');
+                    }
+                })
+            })
+
+            $('[data-rel=tooltip]').tooltip();
+            $('[data-rel=popover]').popover({ html: true });
+
+            $('#my-ui-list').sortable({ connectWith: '.otherlist' });
+
+            $(document).off(ace.click_event, '[data-ctrl=widgetAction]').on(ace.click_event, '[data-ctrl=widgetAction]', function (ev) {
+                ev.preventDefault();
+                var $this = $(this);
+                var $action = $this.data('action');
+                if ($action == 'adduser') {
+                    //添加使用人
+                    var dialog = bootbox.dialog({
+                        title: "添加用户",
+                        message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                        buttons: {
+                            success: {
+                                label: "确定", className: "btn-primary",
+                                callback: function () {
+                                    var emp = getSelectedRows("grid-fapuser");
+                                    if (emp == null) {
+                                        bootbox.alert("您没有选中人员");
+                                        return;
+                                    };
+                                    var tempUser = [];
+                                    if (window.users.length > 0) {
+                                        $.each(emp, function (n, v) {
+                                            var flag = false;
+                                            $.each(window.users, function (n, value) {
+                                                if (v.Fid == value.Fid) {
+                                                    flag = true;
+                                                }
+                                            })
+                                            if (!flag) {
+                                                window.users.push(v);
+                                                tempUser.push(v.Fid);
+                                            }
+                                        })
+                                    } else {
+                                        window.users = emp;
+                                        $.each(emp, function (n, v) {
+                                            tempUser.push(v.Fid);
+                                        })
+                                    }
+                                    if (tempUser.length > 0) {
+                                        var treeRole = $('#tree-roleandgroup').jstree(true);
+                                        var selRole = treeRole.get_selected();
+                                        if (treeRole.get_icon(selRole[0]) == "icon-folder purple ace-icon fa fa-users") {
+                                            bootbox.alert("请选中角色进行设置");
+                                            return;
+                                        }
+                                        if (!selRole.length) {
+                                            bootbox.alert("请选中角色");
+                                            return;
+                                        }
+
+                                        //保存User
+                                        $.ajax({
+                                            url: "@Url.Content("~/SystemApi/Manage/SaveAuthority")",   //请求的url地址
+                                            dataType: "json",   //返回格式为json
+                                            async: true, //请求是否异步，默认为异步，这也是ajax重要特性
+                                            data: { "RoleUid": selRole[0], "UserUids": tempUser, "AType": 5 },    //参数值
+                                            type: "POST",   //请求方式
+                                            success: function (req) {
+                                                //请求成功时处理
+                                                if (req.success) {
+                                                    $("#profile-feed-user").html("");
+                                                    $("#roleusers").tmpl(window.users).appendTo("#profile-feed-user");
+                                                } else {
+                                                    bootbox.alert("添加失败");
+                                                }
+                                            },
+                                            complete: function () {
+                                                //请求完成的处理
+                                            },
+                                            error: function () {
+                                                //请求出错处理
+                                                bootbox.alert("出现错误");
+                                            }
+                                        });
+                                    }
+                                }
+                            },
+                            cancel: {
+                                label: "关闭", className: "btn-default"
+                            }
+                        }
+
+                    });
+                    dialog.on("shown.bs.modal", function () {
+                        $(window).triggerHandler('resize.jqGrid');//触发窗口调整,使Grid得到正确的大小
+                    });
+                    dialog.init(function () {
+                        var url = basePath + '/System/Manage/UserSelector/';
+                        $.get(url, function (ev) {
+                            dialog.find('.bootbox-body').html(ev);
+                        })
+                    });
+
+
+
+                    @*var option = $("#win-treegriduser").data("winoption");
+                    option.buttons[0].click = function () {
+                        var emp = GetCompontentReturnValue();
+                        if (emp == false) {
+                            bootbox.alert("您没有选中人员");
+                            return;
+                        };
+                        var tempUser = [];
+                        if (window.users.length > 0) {
+                            $.each(emp, function (n, v) {
+                                var flag = false;
+                                $.each(window.users, function (n, value) {
+                                    if (v.Fid == value.Fid) {
+                                        flag = true;
+                                    }
+                                })
+                                if (!flag) {
+                                    window.users.push(v);
+                                    tempUser.push(v.Fid);
+                                }
+                            })
+                        } else {
+                            window.users = emp;
+                            $.each(emp, function (n, v) {
+                                tempUser.push(v.Fid);
+                            })
+                        }
+                        if (tempUser.length > 0) {
+                            var treeRole = $('#tree-roleandgroup').jstree(true);
+                            var selRole = treeRole.get_selected();
+                            if (treeRole.get_icon(selRole[0]) == "icon-folder purple ace-icon fa fa-users") {
+                                bootbox.alert("请选中角色进行设置");
+                                return;
+                            }
+                            if (!selRole.length) {
+                                bootbox.alert("请选中角色");
+                                return;
+                            }
+
+                            //保存User
+                            $.ajax({
+                                url: "@Url.Content("~/SystemApi/Manage/SaveAuthority")",   //请求的url地址
+                                dataType: "json",   //返回格式为json
+                                async: true, //请求是否异步，默认为异步，这也是ajax重要特性
+                                data: { "RoleUid": selRole[0], "UserUids": tempUser, "AType": 5 },    //参数值
+                                type: "POST",   //请求方式
+                                success: function (req) {
+                                    //请求成功时处理
+                                    if (req.success) {
+                                        $("#profile-feed-user").html("");
+                                        $("#roleusers").tmpl(window.users).appendTo("#profile-feed-user");
+                                    } else {
+                                        bootbox.alert("添加失败");
+                                    }
+                                },
+                                complete: function () {
+                                    //请求完成的处理
+                                },
+                                error: function () {
+                                    //请求出错处理
+                                    bootbox.alert("出现错误");
+                                }
+                            });
+                        }
+                        //alert(JSON.stringify(emp));
+                        $(this).dialog("close");
+                    }
+                    //根据option弹出window
+                    $("#win-treegriduser").removeClass("hide").dialog(option);*@
+
+                }
+
+            })
+
+        })
+
+    })
+</script>

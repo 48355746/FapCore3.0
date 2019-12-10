@@ -3,7 +3,7 @@ using Fap.Core.Rbac.Model;
 
 namespace Fap.Core.Rbac
 {
-    public interface IOnlineUserManager
+    public interface IOnlineUserService
     {
         FapOnlineUser AddOnlineUser(FapOnlineUser onlineUser);
         IEnumerable<FapOnlineUser> GetAllOnlineUser();

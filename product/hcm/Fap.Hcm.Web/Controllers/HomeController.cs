@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Fap.Hcm.Web.Models;
-using Fap.Core;
 using Fap.Core.Extensions;
 using Fap.Core.Rbac;
 using Fap.AspNetCore.Infrastructure;
@@ -14,19 +13,27 @@ using Microsoft.AspNetCore.Authorization;
 using Fap.Core.Rbac.Model;
 using Fap.Core.Utility;
 using Fap.Core.Infrastructure.Domain;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Security.Claims;
+using Fap.Core.Infrastructure.Model;
+using System.IO;
+using Fap.AspNetCore.ViewModel;
 
 namespace Fap.Hcm.Web.Controllers
 {
     public class HomeController : FapController
     {
+        private const string LoginUrl = "LoginUrl";
+        private const string HomeUrl = "HomeUrl";
         private readonly ILogger<HomeController> _logger;
         private readonly ILoginService _loginService;
-        private readonly IRbacService _rbacService;
-        public HomeController(IServiceProvider serviceProvider, ILoginService loginService, IRbacService rbacService) : base(serviceProvider)
+        private readonly IOnlineUserService _onlineUserService;
+        public HomeController(IServiceProvider serviceProvider, ILoginService loginService, IOnlineUserService onlineUserService) : base(serviceProvider)
         {
             _logger = _loggerFactory.CreateLogger<HomeController>();
             _loginService = loginService;
-            _rbacService = rbacService;
+            _onlineUserService = onlineUserService;
         }
         [AllowAnonymous]
         public IActionResult Index(string Lang, string ReturnUrl, string msg)
@@ -52,119 +59,27 @@ namespace Fap.Hcm.Web.Controllers
         public async Task<IActionResult> Logon(string username, string userpwd, string language, string returnUrl)
         {
             string errorMsg = string.Empty;
-            string languge = language.IsMissing() ? "ZhCn" : language;
+            string currLanguage = language.IsMissing() ? "ZhCn" : language;
             //管理员账号
-            var developer =FapPlatformConstants.Administrator;
+            var developer = FapPlatformConstants.Administrator;
             //获取用户
             FapUser loginUser = _loginService.Login(username);
             Employee emp = null;
-            ValideUser();
-            if (!string.IsNullOrEmpty(errorMsg))
+            LocalRedirectResult errorResult = CheckUser();
+            if (errorResult != null)
             {
-                string loginUrl = _configService.GetSysParamValue(LoginUrl);// FapPlatformConfig.PlatformLoginUrl;
-                if (loginUrl.IsNullOrEmpty())
-                {
-                    loginUrl = "~/";
-                }
-                return Redirect(loginUrl + "?msg=" + System.Net.WebUtility.UrlEncode(errorMsg));
+                return errorResult;
             }
-            //更新最近登录时间
-            loginUser.LastLoginTime = PublicUtils.GetSysDateTimeStr();
-            loginUser.PasswordTryTimes = 0;
-            _loginService.UpdateLastLoginTime(loginUser);
-            //添加在线用户
-            var userRoles = _loginService.GetUserRoles(loginUser.Fid);
-            FapRole currRole = userRoles.First();
-            FapOnlineUser onlineUser = new FapOnlineUser()
-            {
-                Fid = PublicUtils.GetFid(),
-                UserUid = loginUser.Fid,
-                ClientIP = this.GetRemoteIPAddress(),
-                DeptUid = emp.DeptUid,
-                EmpUid = emp.Fid,
-                RoleUid = currRole.Fid,
-                LoginName = loginUser.UserName,
-                LoginTime = PublicUtils.CurrentDateTimeStr,
-                OnlineState = FapOnlineUser.CONST_LOGON,
-                EnableDate = PublicUtils.CurrentDateTimeStr,
-                DisableDate = PublicUtils.PermanentTimeStr,
-                Dr = 0,
-                Ts = PublicUtils.Ts
-            };
-            OnlineUserManager oum = new OnlineUserManager(_dataAccessor);
-            oum.AddOnlineUser(onlineUser);
-            //初始化身份卡片
-            var claims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, loginUser.UserName),//用户名
-                    new Claim(ClaimTypes.NameIdentifier,loginUser.Fid),//用户Fid
-                    new Claim(ClaimTypes.UserData, loginUser.UserIdentity),//员工Fid
-                    new Claim(ClaimTypes.Surname,emp.EmpName),//员工姓名
-                    new Claim(ClaimTypes.PrimarySid,emp.DeptUid??"-"),//员工部门
-                    new Claim(ClaimTypes.PrimaryGroupSid,emp.DeptCode??""),//部门编码
-                    new Claim(ClaimTypes.System,emp.DeptUidMC??""),//部门名称
-                    new Claim(ClaimTypes.DenyOnlyPrimaryGroupSid,emp.GroupUid??""),//集团
-                    new Claim(ClaimTypes.DenyOnlyPrimarySid,emp.OrgUid??""),//组织
-                    new Claim(ClaimTypes.Sid,language??"ZhCn"),//语言
-                    new Claim(ClaimTypes.Actor,onlineUser.Fid)//在线用户Fid
-                };
-            foreach (var role in userRoles)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, role.Fid));
-            }
-            //组装身份
-            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            ClaimsPrincipal claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+            var onlineUser = LoginLogging();
+            var claimsPrincipal = CreateClaimsPrincipal();
+            var authenticationProperties = CreateAuthenticationProperties();
 
-            var authProperties = new AuthenticationProperties
-            {
-                //AllowRefresh = <bool>,
-                // Refreshing the authentication session should be allowed.
-
-                //ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(1),
-                // The time at which the authentication ticket expires. A 
-                // value set here overrides the ExpireTimeSpan option of 
-                // CookieAuthenticationOptions set with AddCookie.
-
-                IsPersistent = rememberme,
-                // Whether the authentication session is persisted across 
-                // multiple requests. Required when setting the 
-                // ExpireTimeSpan option of CookieAuthenticationOptions 
-                // set with AddCookie. Also required when setting 
-                // ExpiresUtc.
-
-                //IssuedUtc = <DateTimeOffset>,
-                // The time at which the authentication ticket was issued.
-
-                //RedirectUri = <string>
-                // The full path or absolute URI to be used as an http 
-                // redirect response value.
-            };
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
-                claimsPrincipal, authProperties);
-            #region AcSession设置
-            IFapAcSession acSession = new FapAcSession(loginUser, emp, onlineUser, currRole, (MultiLanguageEnum)Enum.Parse(typeof(MultiLanguageEnum), languge));
-            //放入缓存把acSession,键-在线用户Fid
-            _cache.Add(onlineUser.Fid, acSession, TimeSpan.FromMinutes(30));
-            #endregion
-            if (string.IsNullOrWhiteSpace(returnUrl))
-            {
-                if (userpwd == _configService.GetSysParamValue("employee.user.password"))
-                {
-                    //等于默认密码需要跳转到修改密码页
-                    return LocalRedirect("~/Home/MainFrame#SelfService/Ess/ResetPassword/true");
-                }
-                else
-                {
-                    return LocalRedirect(_configService.GetSysParamValue(HomeUrl));
-                }
-            }
-            else
-            {
-                return LocalRedirect(returnUrl);
-            }
-            void ValideUser()
+                claimsPrincipal, authenticationProperties);
+            return Redirect();
+
+            LocalRedirectResult CheckUser()
             {
                 PasswordHasher passwordHasher = new PasswordHasher();
                 if (loginUser == null)
@@ -173,11 +88,11 @@ namespace Fap.Hcm.Web.Controllers
                 }
                 else if (loginUser.EnableState == 0)
                 {
-                    errorMsg = "对不起，该账户已被禁用";
+                    errorMsg = "该账户已被禁用";
                 }
                 else if (loginUser.IsLocked == 1)
                 {
-                    errorMsg = "对不起，该账户暂被锁定,请联系管理员解锁。";
+                    errorMsg = "该账户暂被锁定";
                 }
                 else if (!passwordHasher.VerifyHashedPassword(loginUser.UserPassword, userpwd))
                 {
@@ -192,20 +107,137 @@ namespace Fap.Hcm.Web.Controllers
                 else
                 {
                     if (loginUser.UserIdentity.IsMissing())
-                    {//开发者情况
-                        emp = new Employee { Fid = "00000000000000000000", EmpCode = "Developer", EmpName = "开发者" };
+                    {
+                        if (loginUser.UserName.Equals(developer))
+                        {
+                            emp = new Employee { Fid = "00000000000000000000", EmpCode = "Administrator", EmpName = "Administrator" };
+                        }
+                        else
+                        {
+                            errorMsg = "用户关联的人员不存在";
+                        }
                     }
                     else
                     {
                         emp = _dbContext.Get<Employee>(loginUser.UserIdentity, true);
-
-                    }
-                    if (emp == null)
-                    {
-                        errorMsg = "用户关联的人员不存在";
+                        if (emp == null)
+                        {
+                            errorMsg = "用户关联的人员不存在";
+                        }
                     }
                 }
+                if (errorMsg.IsPresent())
+                {
+                    string loginUrl = _configService.GetSysParamValue(LoginUrl);// FapPlatformConfig.PlatformLoginUrl;
+                    if (loginUrl.IsMissing())
+                    {
+                        loginUrl = "~/";
+                    }
+                    return LocalRedirect(loginUrl + "?msg=" + System.Net.WebUtility.UrlEncode(errorMsg));
+                }
+                return null;
             }
+            FapOnlineUser LoginLogging()
+            {
+                //更新最近登录时间
+                loginUser.LastLoginTime = DateTimeUtils.CurrentDateTimeStr;
+                loginUser.PasswordTryTimes = 0;
+                _loginService.UpdateLastLoginTime(loginUser);
+                //添加在线用户日志               
+                FapOnlineUser onlineUser = new FapOnlineUser()
+                {
+                    Fid = UUIDUtils.Fid,
+                    UserUid = loginUser.Fid,
+                    ClientIP = _applicationContext.ClientIpAddress,
+                    DeptUid = emp.DeptUid,
+                    EmpUid = emp.Fid,
+                    //RoleUid = currRole.Fid,
+                    LoginName = loginUser.UserName,
+                    LoginTime = loginUser.LastLoginTime,
+                    OnlineState = FapOnlineUser.CONST_LOGON
+                };
+                _onlineUserService.AddOnlineUser(onlineUser);
+                return onlineUser;
+            }
+            ClaimsPrincipal CreateClaimsPrincipal()
+            {
+                //初始化身份卡片
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, loginUser.UserName),//用户名
+                    new Claim(ClaimTypes.NameIdentifier,loginUser.Fid),//用户Fid
+                    new Claim(ClaimTypes.UserData, loginUser.UserIdentity),//员工Fid
+                    new Claim(ClaimTypes.Surname,emp.EmpName),//员工姓名
+                    new Claim(ClaimTypes.PrimarySid,emp.DeptUid??"-"),//员工部门
+                    new Claim(ClaimTypes.PrimaryGroupSid,emp.DeptCode??""),//部门编码
+                    new Claim(ClaimTypes.System,emp.DeptUidMC??""),//部门名称
+                    new Claim(ClaimTypes.DenyOnlyPrimaryGroupSid,emp.GroupUid??""),//集团
+                    new Claim(ClaimTypes.DenyOnlyPrimarySid,emp.OrgUid??""),//组织
+                    new Claim(ClaimTypes.Sid,currLanguage),//语言
+                    new Claim(ClaimTypes.Actor,emp.EmpPhoto)//用户图像
+                };
+                var userRoles = _loginService.GetUserRoles(loginUser.Fid);
+                foreach (var role in userRoles)
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role.Fid));
+                }
+                //组装身份
+                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                return new ClaimsPrincipal(claimsIdentity);
+
+            }
+            AuthenticationProperties CreateAuthenticationProperties()
+            {
+                return new AuthenticationProperties
+                {
+                    //AllowRefresh = <bool>,
+                    // Refreshing the authentication session should be allowed.
+
+                    //ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(1),
+                    // The time at which the authentication ticket expires. A 
+                    // value set here overrides the ExpireTimeSpan option of 
+                    // CookieAuthenticationOptions set with AddCookie.
+
+                    IsPersistent = true,
+                    // Whether the authentication session is persisted across 
+                    // multiple requests. Required when setting the 
+                    // ExpireTimeSpan option of CookieAuthenticationOptions 
+                    // set with AddCookie. Also required when setting 
+                    // ExpiresUtc.
+
+                    //IssuedUtc = <DateTimeOffset>,
+                    // The time at which the authentication ticket was issued.
+
+                    //RedirectUri = <string>
+                    // The full path or absolute URI to be used as an http 
+                    // redirect response value.
+                };
+            }
+            LocalRedirectResult Redirect()
+            {
+                if (returnUrl.IsMissing())
+                {
+                    if (userpwd == _configService.GetSysParamValue("employee.user.password"))
+                    {
+                        //等于默认密码需要跳转到修改密码页
+                        return LocalRedirect("~/Home/MainFrame#SelfService/Ess/ResetPassword/true");
+                    }
+                    else
+                    {
+                        return LocalRedirect(_configService.GetSysParamValue(HomeUrl));
+                    }
+                }
+                else
+                {
+                    return LocalRedirect(returnUrl);
+                }
+            }
+        }
+        public async Task<IActionResult> SignOut()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            _applicationContext.Session.Clear();
+            return LocalRedirect("/");
         }
         /// <summary>
         /// 集团注册
@@ -216,8 +248,70 @@ namespace Fap.Hcm.Web.Controllers
         [AllowAnonymous]
         public ActionResult Register(FapGroup fapGroup)
         {
-            _dataAccessor.Insert<FapGroup>(fapGroup);
+            _dbContext.Insert<FapGroup>(fapGroup);
             return LocalRedirect("/" + "?msg=" + System.Net.WebUtility.UrlEncode("注册成功，请登录。"));
+        }
+        /// <summary>
+        /// 设置密码
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult ResetPassword(string id)
+        {
+            if (id.IsPresent() && id == "true")
+            {
+                ViewBag.IsOri = 1;
+            }
+            else
+            {
+                ViewBag.IsOri = 0;
+            }
+            return View();
+        }
+        /// <summary>
+        /// 密码重置 
+        /// </summary>
+        /// <param name="frm"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public JsonResult ResetPassword(string op, string np, string cp)
+        {
+            PasswordHasher pwdHasher = new PasswordHasher();
+            string errorMsg = string.Empty;
+            string oriPwd = op;
+            string newPwd = np;
+            string confirmPwd = cp;
+            FapUser user = _dbContext.Get<FapUser>(_applicationContext.UserUid);
+            if (!pwdHasher.VerifyHashedPassword(user.UserPassword, oriPwd))
+            {
+                errorMsg = _multiLangService.GetResName("EssApi_Key1", "原始密码错误");
+            }
+            else
+            {
+                if (newPwd != confirmPwd)
+                {
+                    errorMsg = _multiLangService.GetResName("EssApi_Key2", "两次输入密码不一致");
+                }
+                else
+                {
+                    user.UserPassword = pwdHasher.HashPassword(newPwd);
+                    user.PasswordTryTimes = 0;
+                    _dbContext.Update<FapUser>(user);
+                }
+            }
+            return Json(new ResponseViewModel { msg = errorMsg });
+        }
+        /// <summary>
+        /// 切换角色
+        /// </summary>
+        /// <param name="fid"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public ActionResult ChangeRole(string fid)
+        {
+            //设置当前角色
+            _applicationContext.CurrentRoleUid = fid;
+            return LocalRedirect(_configService.GetSysParamValue(HomeUrl));
         }
 
         /// <summary>
@@ -228,9 +322,6 @@ namespace Fap.Hcm.Web.Controllers
         {
             return View();
         }
-
-
-
         public IActionResult Privacy()
         {
             return View();

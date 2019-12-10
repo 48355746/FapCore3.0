@@ -2170,19 +2170,8 @@ namespace Fap.Core.DataAccess
         {
             DynamicParameters dynamicParameters = new DynamicParameters();
             InitParamers(dynamicParameters);
-            string sql = string.Empty;
-            if (_dbSession.DatabaseDialect == DatabaseDialectEnum.MSSQL)
-            {
-                sql = PagingMSSQL(pageable);
-            }
-            else if (_dbSession.DatabaseDialect == DatabaseDialectEnum.MYSQL)
-            {
-                sql = PagingMySQL(pageable);
-            }
-            else
-            {
-                throw new NotImplementedException("jqgrid 分页脚本为实现，暂不支持");
-            }
+            string sql = PagingSQL(pageable, _dbSession.DatabaseDialect);
+
             //返回总数
             string[] sqls = sql.Split(';', StringSplitOptions.RemoveEmptyEntries);
             Dictionary<string, object> parameterMap = pageable.Parameters;
@@ -2209,18 +2198,8 @@ namespace Fap.Core.DataAccess
             DynamicParameters dynamicParameters = new DynamicParameters();
             InitParamers(dynamicParameters);
             string sql = string.Empty;
-            if (_dbSession.DatabaseDialect == DatabaseDialectEnum.MSSQL)
-            {
-                sql = PagingMSSQL(pageable);
-            }
-            else if (_dbSession.DatabaseDialect == DatabaseDialectEnum.MYSQL)
-            {
-                sql = PagingMySQL(pageable);
-            }
-            else
-            {
-                throw new NotImplementedException("jqgrid 分页脚本为实现，暂不支持");
-            }
+            sql = PagingSQL(pageable, _dbSession.DatabaseDialect);
+
             //返回总数
             string[] sqls = sql.Split(';', StringSplitOptions.RemoveEmptyEntries);
             Dictionary<string, object> parameterMap = pageable.Parameters;
@@ -2233,7 +2212,10 @@ namespace Fap.Core.DataAccess
             page.PageSize = pageable.PageSize;
             page.TotalSizes = ExecuteScalar<int>(sqls[1], dynamicParameters);
             page.Items = Query(sqls[0], dynamicParameters, true);
-            page.MaxIdValue = page.Items.Max(a => a.Id);
+            if (page.Items.Count() > 0)
+            {
+                page.MaxIdValue = page.Items.Max(a => a.Id);
+            }
             page.PageNumber = pageable.PageNumber;
             string statSql = StatisticsSql(pageable);
             if (statSql.IsPresent())
@@ -2243,7 +2225,7 @@ namespace Fap.Core.DataAccess
             return page;
         }
         #region page sql
-        private string PagingMSSQL(Pageable pageable)
+        private string PagingSQL(Pageable pageable, DatabaseDialectEnum databaseDialect)
         {
             //Orderby条件
             string orderBy = pageable.Wraper.MakeOrderBySql();
@@ -2261,68 +2243,41 @@ namespace Fap.Core.DataAccess
 
             //Where条件
             string where = pageable.Wraper.MakeWhereSql();
-            if (!string.IsNullOrEmpty(where))
+            if (where.IsPresent())
             {
                 where = $" where {where}";
             }
             //过滤条件
             string filter = pageable.Wraper.MakeFilterSql();
-            if (!string.IsNullOrWhiteSpace(filter))
+            if (filter.IsPresent())
             {
-                where = where.IsPresent() ? $"({where}) and ({filter})" : where;
+                where = where.IsPresent() ? $"({where}) and ({filter})" : $" where {filter}";
             }
-            string countWhere = where;
             if (pageable.MaxId != null)
             {
-                where = where.IsPresent() ? $"({where}) and Id>{pageable.MaxId}" : where;
+                where = where.IsPresent() ? $"({where}) and Id>{pageable.MaxId}" : $" where Id>{pageable.MaxId}";
             }
             StringBuilder sql = new StringBuilder();
-            sql.Append($"select {pageable.Wraper.MakeSelectSql()} from {pageable.Wraper.MakeFromSql()} {join} {where} {orderBy}  offset {pageable.Offset} rows fetch next {pageable.PageSize} rows only ;");
-
-            //总数sql
-            sql.Append($"SELECT count(0) FROM {pageable.Wraper.MakeFromSql()} {join} {countWhere}");
-            return sql.ToString();
-
-        }
-
-        private string PagingMySQL(Pageable pageable)
-        {
-            //Orderby条件
-            string orderBy = pageable.Wraper.MakeOrderBySql();
-            if (!string.IsNullOrEmpty(orderBy))
+            if (databaseDialect == DatabaseDialectEnum.MSSQL)
             {
-                orderBy = $" ORDER BY {orderBy}";
+                sql.Append($"select {pageable.Wraper.MakeSelectSql()} from {pageable.Wraper.MakeFromSql()} {join} {where} {orderBy}  offset {pageable.Offset} rows fetch next {pageable.PageSize} rows only ;");
+
+                //总数sql
+                sql.Append($"SELECT count(0) FROM {pageable.Wraper.MakeFromSql()} {join} {where}");
+            }
+            else if (databaseDialect == DatabaseDialectEnum.MYSQL)
+            {
+                sql.Append($"select {pageable.Wraper.MakeSelectSql()} from {pageable.Wraper.MakeFromSql()} {join} {where} {orderBy}   limit {pageable.Offset},{pageable.PageSize};");
+
+                //总数sql
+                sql.Append($"SELECT count(0) FROM {pageable.Wraper.MakeFromSql()} {join} {where}");
             }
             else
             {
-                orderBy = " order by Id ";
+                throw new NotImplementedException("jqgrid 分页脚本为实现，暂不支持");
             }
-            //Join条件
-            string join = pageable.Wraper.MakeJoinSql();
-
-            //Where条件
-            string where = pageable.Wraper.MakeWhereSql();
-            if (!string.IsNullOrEmpty(where))
-            {
-                where = $" where {where}";
-            }
-            //过滤条件
-            string filter = pageable.Wraper.MakeFilterSql();
-            if (!string.IsNullOrWhiteSpace(filter))
-            {
-                where = where.IsPresent() ? $"({where}) and ({filter})" : where;
-            }
-            string countWhere = where;
-            StringBuilder sql = new StringBuilder();
-            if (pageable.MaxId != null)
-            {
-                where = where.IsPresent() ? $"({where}) and Id>{pageable.MaxId}" : where;
-            }
-            sql.Append($"select {pageable.Wraper.MakeSelectSql()} from {pageable.Wraper.MakeFromSql()} {join} {where} {orderBy}   limit {pageable.Offset},{pageable.PageSize};");
-
-            //总数sql
-            sql.Append($"SELECT count(0) FROM {pageable.Wraper.MakeFromSql()} {join} {countWhere}");
             return sql.ToString();
+
         }
 
         private string StatisticsSql(Pageable pageable)

@@ -6,7 +6,7 @@
 }
 <li class="light-blue">
     <a data-toggle="dropdown" href="#" class="dropdown-toggle">
-        <img class="nav-user-photo" src="@Url.Content("~/Home/UserPhoto")" alt="" />
+        <img class="nav-user-photo" src="@Url.Content($"~/Public/Photo/{_applicationContext.EmpPhoto}")" alt="" />
         <span class="user-info">
             <small>欢迎,</small>
            
@@ -44,7 +44,7 @@
             </a>
         </li>
         <li>
-            <a href="#SelfService/Ess/ResetPassword/">
+            <a href="#Home/ResetPassword/">
                 <i class="ace-icon fa fa-lock"></i>
                 修改密码
             </a>

@@ -70,7 +70,7 @@ namespace Fap.AspNetCore.Model
         /// <summary>
         /// 查询结果数据集合（符合jqGrid）
         /// </summary>
-        public IEnumerable<dynamic> DataListForJqGrid { get; set; }
+        public IEnumerable<IDictionary<string,object>> DataListForJqGrid { get; set; }
 
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace Fap.AspNetCore.Model
         {
             if (DataListForJqGrid == null || DataListForJqGrid.Count() == 0)
             {
-                return new JqGridData { Total = 0, Page = 0, Records = 0, Rows =Enumerable.Empty<dynamic>(), Userdata = StatFieldData };
+                return new JqGridData { Total = 0, Page = 0, Records = 0, Rows =Enumerable.Empty<IDictionary<string,object>>(), Userdata = StatFieldData };
             }
 
             var jsonObj = new JqGridData

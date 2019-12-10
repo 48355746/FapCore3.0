@@ -1,11 +1,11 @@
 ﻿
 @{
-    string bgimg = _config.GetSysParamValue("sys.web.login.backgroudimg");
+    string bgimg = _configService.GetSysParamValue("sys.web.login.backgroudimg");
     if (bgimg == "")
     {
         bgimg = "/Content/images/hcmbg.jpg";
     }
-    string systemName = _config.GetSysParamValue("sys.web.name");
+    string systemName = _configService.GetSysParamValue("sys.web.name");
 
     string currentLang =_applicationContext.Language.ToString(); //当前语种   
 }

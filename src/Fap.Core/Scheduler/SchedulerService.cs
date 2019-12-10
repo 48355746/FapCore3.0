@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Fap.Core.DI;
 using System.Threading.Tasks;
+using Fap.Core.DataAccess;
 
 namespace Fap.Core.Scheduler
 {
@@ -21,6 +22,12 @@ namespace Fap.Core.Scheduler
         {
             _logger = serviceProvider.GetService<ILoggerFactory>().CreateLogger<SchedulerService>();
             _serviceProvider = serviceProvider;
+        }
+        [Transactional]
+        public string JobGroupOperation(string operation, string id, string parent, string text)
+        {
+            var jobManager = new JobManager(_serviceProvider);
+            return jobManager.JobGroupOperation(operation, id, parent, text);
         }
 
         /// <summary>

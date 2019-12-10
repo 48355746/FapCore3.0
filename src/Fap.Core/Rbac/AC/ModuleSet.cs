@@ -15,7 +15,7 @@ namespace Fap.Core.Rbac.AC
         private bool _initialized;
         private readonly IDbSession _dbSession;
         private readonly IFapPlatformDomain _fapPlatformDomain;
-        internal ModuleSet(IDbSession dbSession,IFapPlatformDomain fapPlatformDomain)
+        internal ModuleSet(IDbSession dbSession, IFapPlatformDomain fapPlatformDomain)
         {
             _dbSession = dbSession;
             _fapPlatformDomain = fapPlatformDomain;
@@ -34,18 +34,18 @@ namespace Fap.Core.Rbac.AC
             lock (Locker)
             {
                 #region 获取所有module
-               
-                    List<FapModule> allModules = _dbSession.Query<FapModule>($"select * from FapModule where ActiveFlag=1 and ProductUid in('FAP','HCM')").ToList();
 
-                    //根据注册码中的授权模块进行过滤
-                    List<string> authoredModules = _fapPlatformDomain.ServiceRegisterInfo.AuthoredModules;
-                    if (authoredModules != null)
-                    {
-                        _allModules.Clear();
-                        List<FapModule> modules = allModules.Where(m => authoredModules.Contains(m.ModuleCode)).ToList();
-                        _allModules.AddRange(modules);
-                    }
-               
+                List<FapModule> allModules = _dbSession.Query<FapModule>($"select * from FapModule where ActiveFlag=1 and ProductUid in('FAP','HCM')").ToList();
+                _allModules = allModules;
+                //根据注册码中的授权模块进行过滤
+                //List<string> authoredModules = _fapPlatformDomain.ServiceRegisterInfo.AuthoredModules;
+                //if (authoredModules != null)
+                //{
+                //    _allModules.Clear();
+                //    List<FapModule> modules = allModules.Where(m => authoredModules.Contains(m.ModuleCode)).ToList();
+                //    _allModules.AddRange(modules);
+                //}
+
                 #endregion
                 _initialized = true;
             }

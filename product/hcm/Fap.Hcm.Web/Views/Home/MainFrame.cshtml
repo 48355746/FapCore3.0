@@ -1,6 +1,6 @@
 ﻿@{
     string currentLanguangeName = _multiLangService.CurrentLanguageName; //当前语种
-    string systemName = _config.GetSysParamValue("sys.web.name");//系统名称
+    string systemName = _configService.GetSysParamValue("sys.web.name");//系统名称
 }
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -84,6 +84,7 @@
     <!--[if !IE]> -->
     <script type="text/javascript">
         window.jQuery || document.write("<script src='/Content/js/jquery.js'>" + "<" + "/script>");
+
     </script>
     <script src="~/Content/nprogress/nprogress.js"></script>
     <!-- <![endif]-->
@@ -108,7 +109,7 @@
     <script src="/Scripts/MultiLang.js"></script>
     <script>
         //全局根路径
-        var basePath = "http://" + window.location.host;
+        var basePath = window.location.protocol+ "//" + window.location.host;
         var language = '@currentLanguangeName'; //当前语种
         MultiLangHelper.initLang(language);
         NProgress.configure({ parent:".page-content"})
@@ -364,7 +365,7 @@
         </a>
     </div><!-- /.main-container -->
 
-    <mini-profiler/>
+    <mini-profiler />
 
     <script type="text/javascript">
         if ('ontouchstart' in document.documentElement) document.write("<script src='/Content/js/jquery.mobile.custom.js'>" + "<" + "/script>");

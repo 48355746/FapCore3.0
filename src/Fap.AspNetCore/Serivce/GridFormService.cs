@@ -213,7 +213,7 @@ namespace Fap.AspNetCore.Serivce
                     dataResultView.TotalNum = pi.TotalPages;
                     dataResultView.CurrentPageIndex = pi.PageNumber;
                     dataResultView.OrginData = pi.Items;
-                    dataResultView.DataListForJqGrid = pi.Items;
+                    dataResultView.DataListForJqGrid = pi.Items as IEnumerable<IDictionary<string,object>>;
                     dataResultView.PageCount = pi.PageSize;
                     //统计字段
                     dataResultView.StatFieldData = pi.StatFieldData;

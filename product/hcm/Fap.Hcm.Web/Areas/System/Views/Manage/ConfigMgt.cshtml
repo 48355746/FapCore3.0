@@ -1,0 +1,289 @@
+﻿
+@{
+    Layout = null;
+}
+<title>系统设置</title>
+<div class="row">
+    <div class="col-xs-12 col-sm-3">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">配置组</h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-ctrl="widgetAction" data-action="add" class="orange2">
+                        <i class="ace-icon fa fa-plus-circle purple"></i>
+                    </a>
+
+                    <a href="#" data-ctrl="widgetAction" data-action="edit">
+                        <i class="ace-icon fa fa-pencil blue"></i>
+                    </a>
+
+                    <a href="#" data-ctrl="widgetAction" data-action="delete">
+                        <i class="ace-icon fa fa-trash-o red"></i>
+                    </a>
+                    <a href="#" data-ctrl="widgetAction" data-action="refresh">
+                        <i class="ace-icon fa fa-refresh"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main">
+                    <fap-tree id="configgroup" is-async="true" get-url="/SystemApi/Manage/ConfigGroup/" edit-url="/SystemApi/Manage/OperConfigGroup"></fap-tree>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-9">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">配置项</h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar no-border">
+                    <div class="btn-group">
+                        <button id="btnClearCache" class="btn btn-white">
+                            <i class="ace-icon fa fa-refresh blue"></i>
+                            清除系统数据缓存
+                        </button>
+                        <button id="btnClearConfigCache" class="btn btn-white">
+                            <i class="ace-icon fa fa-refresh blue"></i>
+                            清除系统配置缓存
+                        </button>
+                        <button id="btnAddConfigItem" class="btn btn-white">
+                            <i class="ace-icon fa fa-plus green"></i>
+                            添加
+                        </button>
+                        <button id="btnSaveConfig" class="btn btn-white">
+                            <i class="ace-icon fa fa-floppy-o blue"></i>
+                            保存
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    <form class="form-horizontal" id="frmConfigTemplate" role="form"></form>
+                </div>
+            </div>
+           
+        </div>
+    </div>
+</div>
+
+
+<script id="configTemplate" type="text/x-jquery-tmpl">
+    <h3 class="header smaller lighter orange">${grp}</h3>
+    {{each configs}}
+    {{if $value.ctrlType=='TEXT'}}
+    <!-- #section:elements.form -->
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="${$value.fid}">  ${$value.paramName} </label>
+
+        <div class="col-sm-6">
+            <input type="text" id="${$value.fid}" data-name="${$value.paramKey}" value="${$value.paramValue}" class="form-control" />
+        </div>
+    </div>
+    {{else  $value.ctrlType=='CHECKBOX'}}
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="${$value.fid}">  ${$value.paramName} </label>
+
+        <div class="col-sm-6">
+            <div class="checkbox">
+                <label>
+                    {{if $value.paramValue=='true'}}
+                    <input id="${$value.fid}" data-name="${$value.paramKey}" type="checkbox" checked="checked" value="true" class="ace form-control" />
+                    {{else}}
+                    <input id="${$value.fid}" data-name="${$value.paramKey}" type="checkbox" value="true" class="ace form-control" />
+                    {{/if}}
+                    <span class="lbl"> </span>
+                </label>
+            </div>
+
+        </div>
+    </div>
+    {{else $value.ctrlType=='COMBOBOX'}}
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="${$value.fid}">  ${$value.paramName} </label>
+
+        <div class="col-sm-6">
+            <select class="form-control" id="${$value.fid}" data-name="${$value.paramKey}">
+                {{each $value.dictSource}}
+                <option value="${$value.code}" {{if $value.selected}} selected="selected"{{else}}{{/if}}> ${$value.name}</option>
+                {{/each}}
+            </select>
+        </div>
+    </div>
+    {{else $value.ctrlType=='PASSWORD'}}
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="${$value.fid}">  ${$value.paramName} </label>
+
+        <div class="col-sm-6">
+            <input type="password" class="form-control" id="${$value.fid}" data-name="${$value.paramKey}" value="${$value.paramValue}" />
+
+        </div>
+    </div>
+    {{else $value.ctrlType=='DOUBLE'||$value.ctrlType=='MONEY'||$value.ctrlType=='INT'}}
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="${$value.fid}">  ${$value.paramName} </label>
+
+        <div class="col-sm-6">
+            <input type="number" class="form-control" id="${$value.fid}" data-name="${$value.paramKey}" value="${$value.paramValue}" />
+
+        </div>
+    </div>
+    {{/if}}
+
+    {{/each}}
+</script>
+<script>
+    var scripts = [null, "/Content/js/jquery.tmpl.js", null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+                $('#tree-configgroup').jstree('destroy');
+            })
+            $(document).off(ace.click_event, '[data-ctrl=widgetAction]').on(ace.click_event, '[data-ctrl=widgetAction]', function (ev) {
+                ev.preventDefault();
+                var $this = $(this);
+                var $action = $this.data('action');
+                var ref = $('#tree-configgroup').jstree(true),
+                                sel = ref.get_selected();
+                if ($action == 'refresh') {
+                    ref.refresh();
+                    return;
+                }
+                if (!sel.length) { return false; }
+                sel = sel[0];
+                if ($action == 'add') {
+                    sel = ref.create_node(sel);
+
+                } else if ($action == 'edit') {
+                    ref.edit(sel);
+                } else if ($action == 'delete') {
+                    ref.delete_node(sel)
+                }
+
+            })
+            $('#tree-configgroup').on("changed.jstree", function (e, data) {
+                debugger
+                if (data && data.selected && data.selected.length) {
+                    var configGroupId = data.selected[0];
+                    //显示所有角色组的角色
+                    if (configGroupId == "0") {
+                        return;
+                    }
+                    $.get("@Url.Content("~/SystemApi/Manage/Config/")", { cfgrpUid: configGroupId }, function (data) {
+                        if (data) {
+                            //alert(JSON.stringify(data));
+                            $("#frmConfigTemplate").empty();
+                            $("#configTemplate").tmpl(data).appendTo("#frmConfigTemplate");
+                        }
+                    })
+
+                }
+                //console.log(data.selected);
+            });
+            $("#btnClearCache").click(function () {
+                $.ajax({
+                    type: 'POST',
+                    url: "/SystemApi/Manage/Setting/ClearCache",
+                    data: {},
+                    async: false,
+                    success: function (data) {
+                        if (data.success == 'success') {
+                            bootbox.alert("刷新系统数据缓存成功");
+                        } else {
+                            bootbox.alert("刷新系统数据缓存失败，请重新刷新");
+                        }
+                    },
+                    dataType: "JSON"
+                });
+            });
+
+            $("#btnClearConfigCache").click(function () {
+                $.ajax({
+                    type: 'POST',
+                    url: "/SystemApi/Manage/Setting/ClearConfigCache",
+                    data: {},
+                    async: false,
+                    success: function (data) {
+                        if (data.success == 'success') {
+                            bootbox.alert("刷新系统配置缓存成功");
+                        } else {
+                            bootbox.alert("刷新系统配置缓存失败，请重新刷新");
+                        }
+                    },
+                    dataType: "JSON"
+                });
+            });
+
+            //增加配置项
+            $("#btnAddConfigItem").on(ace.click_event, function () {
+                var url = $.randomUrl(basePath + '/PublicCtrl/Dataform/0?tn=FapConfig&frm=frmfapconfig');
+                $.get(url, function (rv) {
+                    bootbox.dialog({
+                        title: "添加配置项",
+                        message: rv,
+                        buttons: {
+                            success: {
+                                label: "保存",
+                                className: "btn-primary",
+                                callback: function () {
+                                    var formid = "frmfapconfig";
+                                    //持久化
+                                    var res = Persistence("frm-frmfapconfig", '');
+                                    if (res == false) {
+                                        return false;
+                                    }
+                                    if (res.success == true) {
+                                        var ref = $('#tree-configgroup').jstree(true);
+
+                                    } else {
+                                        return false;
+                                    }
+                                }
+                            },
+                            cancel: {
+                                label: "取消", className: "btn-default"
+                            }
+                        }
+                    })
+                })
+            })
+            $("#btnSaveConfig").on(ace.click_event, function () {
+                var configData = [];
+                $("#frmConfigTemplate .form-control").each(function () {
+                    var configItem = {};
+                    configItem.Fid = $(this).attr("id");
+                    configItem.ParamKey = $(this).data("name");
+                    if ($(this).attr("type") == "checkbox") {
+                        if ($(this).is(':checked')) {
+                            configItem.ParamValue = $(this).val();
+                        } else {
+                            configItem.ParamValue = false;
+                        }
+                    } else {
+                        configItem.ParamValue = $(this).val();
+                    }
+                    configData.push(configItem);
+                })
+                debugger
+                $.post("@Url.Content("~/SystemApi/Manage/ConfigSet")", {configs: configData }, function (data) {
+                    if(data.success==true)
+                    {
+                        bootbox.alert("设置成功");
+                    }
+                    else {
+                        bootbox.alert(data.msg);
+                    }
+                })
+                //alert(JSON.stringify(configData));
+            })
+        })
+    })
+</script>

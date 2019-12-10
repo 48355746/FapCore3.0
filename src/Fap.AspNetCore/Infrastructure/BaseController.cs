@@ -31,37 +31,22 @@ namespace Fap.AspNetCore.Infrastructure
         /// 编码UTF-8
         /// </summary>
         protected Encoding ENCODE_UTF8 = Encoding.GetEncoding("UTF-8");
-        protected IDbContext _dbContext => ServiceProvider.GetService<IDbContext>();
-        protected IFapPlatformDomain _fapPlatformDomain => ServiceProvider.GetService<IFapPlatformDomain>();
-        protected IFapConfigService _fapConfigService => ServiceProvider.GetService<IFapConfigService>();
-        protected IMultiLangService _multiLangService => ServiceProvider.GetService<IMultiLangService>();
-        protected IFapApplicationContext _applicationContext => ServiceProvider.GetService<IFapApplicationContext>();
-        protected ILoggerFactory _loggerFactory => ServiceProvider.GetService<ILoggerFactory>();
-        protected IRbacService _rbacService => ServiceProvider.GetService<IRbacService>();
+        protected IDbContext _dbContext => _serviceProvider.GetService<IDbContext>();
+        protected IFapPlatformDomain _platformDomain => _serviceProvider.GetService<IFapPlatformDomain>();
+        protected IFapConfigService _configService => _serviceProvider.GetService<IFapConfigService>();
+        protected IMultiLangService _multiLangService => _serviceProvider.GetService<IMultiLangService>();
+        protected IFapApplicationContext _applicationContext => _serviceProvider.GetService<IFapApplicationContext>();
+        protected ILoggerFactory _loggerFactory => _serviceProvider.GetService<ILoggerFactory>();
+        protected IRbacService _rbacService => _serviceProvider.GetService<IRbacService>();
 
-        public IServiceProvider ServiceProvider { get; set; }
-        public IGridFormService _gridFormService => ServiceProvider.GetService<IGridFormService>();
+        public IServiceProvider _serviceProvider { get; set; }
+        public IGridFormService _gridFormService => _serviceProvider.GetService<IGridFormService>();
         public BaseController(IServiceProvider serviceProvider)
         {
-            ServiceProvider = serviceProvider;
+            _serviceProvider = serviceProvider;
         }
 
 
-        #region 获取JqGrid的数据集合（通用方法）
-        /// <summary>
-        /// 获取JqGrid的数据集合（通用方法）
-        /// </summary>
-        /// <param name="tableName"></param>
-        /// <param name="model"></param>
-        /// <param name="handler"></param>
-        /// <returns></returns>
-        protected JsonResult GetJqGridDataList(JqGridPostData model, Action<Pageable> handler = null)
-        {
-            var jqJson = _gridFormService.QueryPageDataResultView(model, handler);
-            return Json(jqJson);
-        }
-
-        #endregion
 
         #region 构造树表数据格式
 

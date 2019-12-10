@@ -2,6 +2,7 @@
 using Fap.AspNetCore.Model;
 using Fap.Core.DataAccess;
 using Fap.Core.Infrastructure.Domain;
+using Fap.Core.Infrastructure.Model;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 

@@ -724,13 +724,7 @@ namespace Fap.Core.DataAccess
             CurrentConnection?.Dispose();
         }
         public void Dispose()
-        {
-            CurrentTransaction?.Dispose();
-            if (CurrentConnection?.State != ConnectionState.Closed)
-            {
-                CurrentConnection?.Close();
-            }
-            CurrentConnection?.Dispose();
+        {      
             CurrentConnection = null;
             CurrentTransaction = null;
         }

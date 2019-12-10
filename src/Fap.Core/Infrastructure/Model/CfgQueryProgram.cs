@@ -4,10 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Fap.AspNetCore.Model
+namespace Fap.Core.Infrastructure.Model
 {
     [Table("CfgQueryProgram")]
-    public class CfgQueryProgram :BaseModel
+    public class CfgQueryProgram : BaseModel
     {
         /// <summary>
         /// 方案名称

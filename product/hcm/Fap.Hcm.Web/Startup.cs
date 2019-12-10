@@ -60,7 +60,7 @@ namespace Fap.Hcm.Web
                 options.PopupShowTimeWithChildren = true;
                 options.RouteBasePath = "/profiler";
             });
-            services.AddControllersWithViews();
+            services.AddControllersWithViews().AddNewtonsoftJson();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -112,7 +112,7 @@ namespace Fap.Hcm.Web
 
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{controller=Home}/{action=Index}/{id?}");               
             });
         }
     }

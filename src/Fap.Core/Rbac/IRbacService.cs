@@ -5,6 +5,17 @@ namespace Fap.Core.Rbac
 {
     public interface IRbacService
     {
+        IEnumerable<FapUserGroup> GetUserGroups();
+        string UserGroupOperation(string operation, string id, string parent, string text);
+        FapRole GetCurrentRole();
+        string RoleGroupOperation(string operation, string id, string parent, string text);
+        string BusinessRoleOperation(string operation, string id, string parent, string text);
+        bool AddRoleMenu(string roleUid, IEnumerable<FapRoleMenu> menus);
+        bool AddRoleDept(string roleUid, IEnumerable<FapRoleDept> depts);
+        bool AddRoleColumn(string roleUid, IEnumerable<FapRoleColumn> columns, int editType);
+        void AddRoleUser(IEnumerable<FapRoleUser> users);
+        void AddRoleReport(string roleUid, IEnumerable<FapRoleReport> rpts);
+        void AddRoleRole(string roleUid, IEnumerable<FapRoleRole> roleRoles);
         bool IsInRole(string roleFid);
         string GetRoleDataWhere(string tableName);
         IEnumerable<FapRoleColumn> GetUserColumnList();

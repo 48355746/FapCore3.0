@@ -3,6 +3,8 @@ using Fap.Core.DataAccess;
 using Fap.Core.DI;
 using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Domain;
+using Fap.Core.Infrastructure.Enums;
+using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.Rbac.Model;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,18 +18,211 @@ namespace Fap.Core.Rbac
         /// <summary>
         /// 这样写，RbacServcie就不暴露Commonservice的方法。RbacServcie只实现自己的内部方法
         /// </summary>
-        private IDbContext _dataAccessor;
-        private IFapPlatformDomain _appDomain;
+        private IDbContext _dbContext;
+        private IFapPlatformDomain _platformDomain;
         private IFapApplicationContext _applicationContext;
-        private ILoginService _loginService;
-        public RbacService(IDbContext db, IFapPlatformDomain appDomain, IFapApplicationContext applicationContext, ILoginService loginService)
+        public RbacService(IDbContext dbContext, IFapPlatformDomain platformDomain, IFapApplicationContext applicationContext)
         {
-            _dataAccessor = db;
-            _appDomain = appDomain;
+            _dbContext = dbContext;
+            _platformDomain = platformDomain;
             _applicationContext = applicationContext;
-            _loginService = loginService;
+        }
+        /// <summary>
+        /// 用户组
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<FapUserGroup> GetUserGroups()
+        {
+            return _dbContext.QueryAll<FapUserGroup>();
+        }
+        public string UserGroupOperation(string operation, string id, string parent, string text)
+        {
+            string result = "0";
+            if (operation == TreeNodeOper.DELETE_NODE)
+            {
+                int c = _dbContext.Count("FapUser", "UserGroupUid=@GroupUid", new DynamicParameters(new { GroupUid = id }));
+                if (c == 0)
+                {
+                    result = "" + _dbContext.Execute("delete from FapUserGroup where Fid=@Id", new DynamicParameters(new { Id = id }));
+                }
+            }
+            else if (operation == TreeNodeOper.CREATE_NODE)
+            {
+                dynamic fdo = new FapDynamicObject("FapUserGroup");
+                fdo.Pid = id;
+                fdo.UserGroupName = text;
+                long rv = _dbContext.InsertDynamicData(fdo);
+                result = fdo.Fid;
+            }
+            else if (operation == TreeNodeOper.RENAME_NODE)
+            {
+                result = "" + _dbContext.Execute("update FapUserGroup set UserGroupName=@UserGroupName where Fid=@Id", new DynamicParameters(new { UserGroupName = text, Id = id }));
+            }
+            else if (operation == "move_node")
+            {
+                result = "" + _dbContext.Execute("update FapUserGroup set Pid=@Pid where Fid=@Id", new DynamicParameters(new { Pid = parent, Id = id }));
+            }
+            else if (operation == TreeNodeOper.COPY_NODE)
+            {
+
+            }
+
+            return result;
+        }
+        public FapRole GetCurrentRole()
+        {
+            return _dbContext.QueryFirstOrDefault<FapRole>("select * from FapRole where Fid=@Fid", new DynamicParameters(new { Fid = _applicationContext.CurrentRoleUid }));
+        }
+        public string RoleGroupOperation(string operation, string id, string parent, string text)
+        {
+            string result = "0";
+            if (operation ==TreeNodeOper.DELETE_NODE)
+            {
+                int c = _dbContext.Count("FapRole", "RoleGroupUid=@RoleGroupUid", new DynamicParameters(new { RoleGroupUid = id }));
+                if (c == 0)
+                {
+                    result = "" + _dbContext.Execute("delete from FapRoleGroup where Fid=@Id", new DynamicParameters(new { Id = id }));
+                }
+            }
+            else if (operation ==TreeNodeOper.CREATE_NODE)
+            {
+                dynamic fdo = new FapDynamicObject("FapRoleGroup");
+                fdo.Pid = id;
+                fdo.RoleGroupName = text;
+                long rv = _dbContext.InsertDynamicData(fdo);
+                result = fdo.Fid;
+            }
+            else if (operation ==TreeNodeOper.RENAME_NODE)
+            {
+                result = "" + _dbContext.Execute("update FapRoleGroup set RoleGroupName=@RoleGroupName where Fid=@Id", new DynamicParameters(new { RoleGroupName = text, Id = id }));
+            }
+            else if (operation == "move_node")
+            {
+                _dbContext.Execute("update FapRoleGroup set Pid=@Pid where Fid=@Id", new DynamicParameters(new { Pid = parent, Id = id }));
+            }
+            else if (operation ==TreeNodeOper.COPY_NODE)
+            {
+
+            }
+
+            return result;
         }
 
+        public string BusinessRoleOperation(string operation, string id, string parent, string text)
+        {
+            string result = "0";
+            if (operation ==TreeNodeOper.DELETE_NODE)
+            {
+                result = "" + _dbContext.Execute("delete from FapBizRole where Fid=@Id", new DynamicParameters(new { Id = id }));
+            }
+            else if (operation ==TreeNodeOper.CREATE_NODE)
+            {
+                dynamic fdo = new FapDynamicObject("FapBizRole");
+                fdo.Pid = id;
+                fdo.BizRoleName = text;
+                long rv = _dbContext.InsertDynamicData(fdo);
+                result = fdo.Fid;
+            }
+            else if (operation == TreeNodeOper.RENAME_NODE)
+            {
+                result = "" + _dbContext.Execute("update FapBizRole set BizRoleName=@BizRoleName where Fid=@Id", new DynamicParameters(new { BizRoleName = text, Id = id }));
+            }
+            else if (operation ==TreeNodeOper.MOVE_NODE)
+            {
+                result = "" + _dbContext.Execute("update FapBizRole set Pid=@Pid where Fid=@Id", new DynamicParameters(new { Pid = parent, Id = id }));
+            }
+            else if (operation ==TreeNodeOper.COPY_NODE)
+            {
+
+            }
+
+            return result;
+        }
+        [Transactional]
+        public bool AddRoleMenu(string roleUid,IEnumerable<FapRoleMenu> menus)
+        {
+            _dbContext.Execute("delete from FapRoleMenu where RoleUid=@RoleUid", new DynamicParameters(new { RoleUid =roleUid}));
+            if (menus.Count() > 0)
+            {
+                _dbContext.InsertBatch<FapRoleMenu>(menus);
+               
+            }
+            return true;
+        }
+        [Transactional]
+        public bool AddRoleDept(string roleUid,IEnumerable<FapRoleDept> depts)
+        {
+            _dbContext.Execute("delete from FapRoleDept where RoleUid=@RoleUid", new DynamicParameters(new { RoleUid = roleUid }));
+            if (depts.Count() > 0)
+            {
+                _dbContext.InsertBatch<FapRoleDept>(depts);
+            }
+            return true;
+        }
+        [Transactional]
+        public bool AddRoleColumn(string roleUid,IEnumerable<FapRoleColumn> columns,int editType)
+        {
+            if (columns.Count() > 0)
+            {
+                DynamicParameters param = new DynamicParameters();
+                param.Add("RoleUid", roleUid);
+                if (editType == 3)
+                {
+                    string sql = "delete from FapRoleColumn where RoleUid=@RoleUid and EditAble=1";
+                    _dbContext.Execute(sql, new DynamicParameters(new { RoleUid = roleUid }));
+                }
+                else
+                {
+                    string sql = "delete from FapRoleColumn where RoleUid=@RoleUid and ViewAble=1";
+                    _dbContext.Execute(sql, new DynamicParameters(new { RoleUid = roleUid }));
+                }
+                var cids = columns.Select(c => "'" + c.ColumnUid + "'");
+                if (cids != null)
+                {
+                    //删除包含权限的列，重新分配
+                    string delSql = "delete from FapRoleColumn where RoleUid=@RoleUid and ColumnUid in @ColumnUids";
+                    _dbContext.Execute(delSql, new DynamicParameters(new { RoleUid = roleUid , ColumnUids =cids}));
+                }
+                _dbContext.InsertBatch<FapRoleColumn>(columns);
+            }
+            else
+            {
+                if (editType == 3)
+                {
+                    string sql = "delete from FapRoleColumn where RoleUid=@RoleUid and EditAble=1";
+                    _dbContext.Execute(sql, new DynamicParameters(new { RoleUid = roleUid }));
+                }
+                else
+                {
+                    string sql = "delete from FapRoleColumn where RoleUid=@RoleUid and ViewAble=1";
+                    _dbContext.Execute(sql, new DynamicParameters(new { RoleUid = roleUid }));
+                }
+            }
+            return true;
+        }
+
+        public void AddRoleUser(IEnumerable<FapRoleUser> users)
+        {
+            _dbContext.InsertBatch<FapRoleUser>(users);
+        }
+        [Transactional]
+        public void AddRoleReport(string roleUid,IEnumerable<FapRoleReport> rpts)
+        {
+            _dbContext.Execute("delete from FapRoleReport where RoleUid=@RoleUid", new DynamicParameters(new{ RoleUid = roleUid }));
+            if (rpts.Count() > 0)
+            {
+                _dbContext.InsertBatch<FapRoleReport>(rpts);
+            }
+        }
+        [Transactional]
+        public void AddRoleRole(string roleUid,IEnumerable<FapRoleRole> roleRoles)
+        {
+            _dbContext.Execute("delete from FapRoleRole where RoleUid=@RoleUid", new DynamicParameters(new { RoleUid = roleUid }));
+            if (roleRoles.Count() > 0)
+            {
+                _dbContext.InsertBatch<FapRoleRole>(roleRoles);           
+            }
+        }
         /// <summary>
         /// 判断属于某个角色
         /// </summary>
@@ -47,7 +242,7 @@ namespace Fap.Core.Rbac
         {
             //if (_session.IsDeveloper)
             //{
-            //    return _appDomain.OrgDeptSet.ToList<OrgDept>();
+            //    return _platformDomain.OrgDeptSet.ToList<OrgDept>();
             //}
             //IEnumerable<string> roles =_loginService.GetUserRoles(_session.UserUid).Select(r => r.Fid);
             IEnumerable<OrgDept> roleOrgDepts = new List<OrgDept>();
@@ -56,11 +251,11 @@ namespace Fap.Core.Rbac
             {
                 IEnumerable<OrgDept> roleDepts = null;
                 List<OrgDept> powerDepts = new List<OrgDept>();
-                var result = _appDomain.RoleDeptSet.Where<FapRoleDept>(f => f.RoleUid == roleId);
+                var result = _platformDomain.RoleDeptSet.Where<FapRoleDept>(f => f.RoleUid == roleId);
                 IEnumerable<OrgDept> allDepts = null;
 
-                _dataAccessor.HistoryDateTime = historyDate;
-                allDepts = _dataAccessor.QueryAll<OrgDept>();
+                _dbContext.HistoryDateTime = historyDate;
+                allDepts = _dbContext.QueryAll<OrgDept>();
 
                 if (allDepts.Any())
                 {
@@ -101,7 +296,7 @@ namespace Fap.Core.Rbac
             else
             {
                 IEnumerable<OrgDept> depts = new List<OrgDept>();
-                if (_appDomain.RoleDeptSet.TryGetValueByRole(roleId, out depts))
+                if (_platformDomain.RoleDeptSet.TryGetValueByRole(roleId, out depts))
                 {
                     if (depts != null && depts.Any())
                     {
@@ -109,12 +304,12 @@ namespace Fap.Core.Rbac
                     }
                 }
                 //管辖部门，作为部门经理或直属领导
-                var myDepts = _appDomain.OrgDeptSet.Where(d => d.DeptManager == _applicationContext.EmpUid || d.Director == _applicationContext.EmpUid);
+                var myDepts = _platformDomain.OrgDeptSet.Where(d => d.DeptManager == _applicationContext.EmpUid || d.Director == _applicationContext.EmpUid);
                 if (myDepts.Any())
                 {
                     foreach (var mydept in myDepts)
                     {
-                        var myAllDepts = _appDomain.OrgDeptSet.Where(d => d.DeptCode.StartsWith(mydept.DeptCode)).ToList();
+                        var myAllDepts = _platformDomain.OrgDeptSet.Where(d => d.DeptCode.StartsWith(mydept.DeptCode)).ToList();
                         roleOrgDepts = roleOrgDepts.Union(myAllDepts);
                     }
                 }
@@ -190,7 +385,7 @@ namespace Fap.Core.Rbac
             string where = string.Empty;
             string roleUid = _applicationContext.CurrentRoleUid;
             IEnumerable<FapRoleData> roleDatas = null;
-            if (_appDomain.RoleDataSet.TryGetValueByRole(roleUid, out roleDatas))
+            if (_platformDomain.RoleDataSet.TryGetValueByRole(roleUid, out roleDatas))
             {
                 if (roleDatas != null && roleDatas.Any())
                 {
@@ -219,7 +414,7 @@ namespace Fap.Core.Rbac
                                 string deptCode = _applicationContext.DeptCode;
                                 if (deptCode.IsMissing())
                                 {
-                                    OrgDept dept = _dataAccessor.Get<OrgDept>(_applicationContext.DeptUid);
+                                    OrgDept dept = _dbContext.Get<OrgDept>(_applicationContext.DeptUid);
                                     deptCode = dept.DeptCode;
                                 }
                                 where = where.Replace(mtch.ToString(), deptCode);
@@ -239,7 +434,7 @@ namespace Fap.Core.Rbac
         public IEnumerable<FapRoleReport> GetUserReportList()
         {
             IEnumerable<FapRoleReport> roleReports = new List<FapRoleReport>();
-            if (_appDomain.RoleReportSet.TryGetValueByRole(_applicationContext.CurrentRoleUid, out roleReports))
+            if (_platformDomain.RoleReportSet.TryGetValueByRole(_applicationContext.CurrentRoleUid, out roleReports))
             {
                 return roleReports;
             }
@@ -254,7 +449,7 @@ namespace Fap.Core.Rbac
         public IEnumerable<FapRoleMenu> GetUserMenuList()
         {
             IEnumerable<FapRoleMenu> roleMenuUids = new List<FapRoleMenu>();
-            if (_appDomain.RoleMenuSet.TryGetValueByRole(_applicationContext.CurrentRoleUid, out roleMenuUids))
+            if (_platformDomain.RoleMenuSet.TryGetValueByRole(_applicationContext.CurrentRoleUid, out roleMenuUids))
             {
                 return roleMenuUids;
             }
@@ -271,7 +466,7 @@ namespace Fap.Core.Rbac
         public IEnumerable<FapRoleColumn> GetUserColumnList()
         {
             IEnumerable<FapRoleColumn> columns = new List<FapRoleColumn>();
-            if (_appDomain.RoleColumnSet.TryGetValueByRole(_applicationContext.CurrentRoleUid, out columns))
+            if (_platformDomain.RoleColumnSet.TryGetValueByRole(_applicationContext.CurrentRoleUid, out columns))
             {
                 return columns;
             }
@@ -290,7 +485,7 @@ namespace Fap.Core.Rbac
             string sql = "select * from FapRole where Fid in(select RoleUid  from FapRoleUser where UserUid=@UserUid)";
             DynamicParameters param = new DynamicParameters();
             param.Add("UserUid",_applicationContext.UserUid);
-            var list = _dataAccessor.Query<FapRole>(sql, param).AsList();
+            var list = _dbContext.Query<FapRole>(sql, param).AsList();
             if (list == null)
             {
                 list = new List<FapRole>();

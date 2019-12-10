@@ -8,13 +8,14 @@ namespace Fap.Core.Infrastructure.Domain
 {
     public interface IFapApplicationContext
     {
+        bool IsAdministrator { get; }
         string DeptCode { get; }
         string DeptName { get; }
         string DeptUid { get; }
         string EmpName { get; }
         string EmpUid { get; }
+        string EmpPhoto { get; }
         string GroupUid { get; }
-        string OnlineUserUid { get; }
         string OrgUid { get; }
         IEnumerable<string> Roles { get; }
         string CurrentRoleUid { get; set; }

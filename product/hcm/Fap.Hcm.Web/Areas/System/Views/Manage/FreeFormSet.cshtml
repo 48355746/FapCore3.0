@@ -1,0 +1,146 @@
+﻿@model Fap.Core.Infrastructure.Model.CfgFreeForm
+@using Fap.Core.Infrastructure.Metadata
+@{
+    Layout = "~/Views/Shared/_Layout_Empty.cshtml";
+    ViewBag.Title = "自由表单设计器";
+    IEnumerable<FapColumn> cols = ViewBag.DbFields;
+    IEnumerable<FapTable> childTables = ViewBag.ChildTables;
+}
+@section specificcss2{
+    <style>
+        .dropdown-preview {
+            margin: 0 5px;
+            display: inline-block;
+        }
+
+            .dropdown-preview > .dropdown-menu {
+                display: block;
+                position: static;
+                margin-bottom: 5px;
+            }
+    </style>
+}
+
+@section specificscript{
+    <script type="text/javascript" charset="utf-8" src="~/lib/ueditor/ueditor.config.js?v=2"></script>
+    <script type="text/javascript" charset="utf-8" src="~/lib/ueditor/ueditor.all.min.js?v=1"></script>
+    <script type="text/javascript" charset="utf-8" src="~/lib/ueditor/lang/zh-cn/zh-cn.js"></script>
+    <!-- 实例化编辑器 -->
+    <script type="text/javascript">
+        $(function () {
+            var ue = UE.getEditor('ffcontainer');
+            $("[data-action=insertfield]").click(function () {
+                var label = $(this).text();
+                var colName = $(this).data("colName");
+                var value = "${" + label + "}"
+                ue.execCommand('inserthtml', value);
+            })
+        })
+        var getContent = function () {
+            return UE.getEditor('ffcontainer').getContent();
+        }
+        @if (childTables != null && childTables.Any()) {
+            <text>
+        //增加一个自定义下拉框，选择子表
+        UE.registerUI('子表选择', function (editor, uiName) {
+            //注册按钮执行时的command命令,用uiName作为command名字，使用命令默认就会带有回退操作
+            editor.registerCommand(uiName, {
+            execCommand: function (cmdName, value) {
+                //设置jqgrid容器   
+                this.selection.getRange().startContainer.className="girdcontainer";
+                this.execCommand('inserthtml', "{{" + value + "}}");
+                },
+                queryCommandValue: function () {
+                    //这里借用fontsize的查询命令
+                    return this.queryCommandValue('inserthtml');
+                }
+            });
+
+
+            //创建下拉菜单中的键值对，这里我用字体大小作为例子
+            var items = [];
+            @foreach(var tb in childTables)
+        {
+                <text>
+            items.push({
+                //显示的条目
+                label: '@tb.TableComment',
+                //选中条目后的返回值
+                value: '@tb.TableName',
+                //针对每个条目进行特殊的渲染
+                renderLabelHtml: function () {
+                    //这个是希望每个条目的字体是不同的
+                    return '<div class="edui-label %%-label" style="line-height:2;font-size:16px">' + (this.label || '') + '</div>';
+                }
+                  });
+                    </text>
+    }
+            //创建下来框
+            var combox = new UE.ui.Combox({
+                //需要指定当前的编辑器实例
+                editor: editor,
+                //添加条目
+                items: items,
+                //当选中时要做的事情
+                onselect: function (t, index) {
+                    //拿到选中条目的值
+                    editor.execCommand(uiName, this.items[index].label);
+                },
+                //提示
+                title: uiName,
+                //当编辑器没有焦点时，combox默认显示的内容
+                initValue: uiName
+            });
+
+            editor.addListener('selectionchange', function (type, causeByUi, uiReady) {
+                if (!uiReady) {
+                    var state = editor.queryCommandState(uiName);
+                    if (state == -1) {
+                        combox.setDisabled(true);
+                    } else {
+                        combox.setDisabled(false);
+                        var value = editor.queryCommandValue(uiName);
+                        if (!value) {
+                            combox.setValue(uiName);
+                            return;
+                        }
+                        //ie下从源码模式切换回来时，字体会带单引号，而且会有逗号
+                        value && (value = value.replace(/['"]/g, '').split(',')[0]);
+                        combox.setValue(value);
+
+                    }
+                }
+
+            });
+            return combox;
+        });//, 2/*index 指定添加到工具栏上的那个位置，默认时追加到最后,editorId 指定这个UI是那个编辑器实例上的，默认是页面上所有的编辑器都会添加这个按钮*/);
+        </text>
+        }
+    </script>
+
+}
+
+<div class="row">
+    <div class="col-xs-2">
+        <div class="dropdown dropdown-preview">
+            <ul class="dropdown-menu">
+                @foreach (var field in cols)
+                {
+                    if (field.IsDefaultCol == 0)
+                    {
+                        <li>
+                            <a href="javascript:void(0)" data-action="insertfield" data-colname="@field.ColName" data-ctrltype="@field.CtrlType" tabindex="-1">@field.ColComment</a>
+                        </li>
+                    }
+                }
+            </ul>
+        </div>
+
+    </div>
+    <div class="col-xs-10">
+        <!-- 加载编辑器的容器 -->
+        <script id="ffcontainer" type="text/plain" style="height:500px;">
+            @Html.Raw(Model.FFContent)
+        </script>
+    </div>
+</div>

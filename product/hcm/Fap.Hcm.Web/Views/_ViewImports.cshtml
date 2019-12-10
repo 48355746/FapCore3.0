@@ -2,8 +2,8 @@
 @using Fap.Hcm.Web.Models
 @using StackExchange.Profiling
 @inject Fap.Core.Infrastructure.Domain.IFapApplicationContext _applicationContext
-@inject Fap.Core.Infrastructure.Domain.IFapPlatformDomain _appDomain
-@inject Fap.Core.Infrastructure.Config.IFapConfigService _config
+@inject Fap.Core.Infrastructure.Domain.IFapPlatformDomain _platformDomain
+@inject Fap.Core.Infrastructure.Config.IFapConfigService _configService
 @inject Fap.Core.MultiLanguage.IMultiLangService _multiLangService
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @addTagHelper *, Fap.AspNetCore

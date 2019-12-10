@@ -14,7 +14,7 @@ namespace Fap.Core.DI
         {
             var services = builder.Services;
             var basePath = AppDomain.CurrentDomain.RelativeSearchPath ?? AppDomain.CurrentDomain.BaseDirectory;
-            var assemblies = Directory.GetFiles(basePath, "*.dll").Select(Assembly.LoadFrom).ToArray();
+            var assemblies = Directory.GetFiles(basePath, "Fap.*.dll").Select(Assembly.LoadFrom).ToArray();
             var types = assemblies.SelectMany(a => a.DefinedTypes).Select(type => type.AsType()).Where(t => t.GetCustomAttribute<ServiceAttribute>() != null).ToArray();
             var implementTypes = types.Where(t => t.IsClass).ToArray();
            

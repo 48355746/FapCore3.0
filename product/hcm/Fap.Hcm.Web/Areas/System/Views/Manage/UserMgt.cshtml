@@ -1,0 +1,167 @@
+﻿
+@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+    Layout = null;
+}
+<title><fap-multilang lang-key="user_mgt" default-content= "用户管理"></fap-multilang></title>
+
+<div class="row">
+    <div class="col-xs-12 col-sm-3">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title"><fap-multilang lang-key="user_group" default-content="用户组"></fap-multilang></h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-ctrl="widgetAction" data-action="add" class="orange2">
+                        <i class="ace-icon fa fa-plus-circle purple"></i>
+                    </a>
+
+                    <a href="#" data-ctrl="widgetAction" data-action="edit">
+                        <i class="ace-icon fa fa-pencil blue"></i>
+                    </a>
+
+                    <a href="#" data-ctrl="widgetAction" data-action="delete">
+                        <i class="ace-icon fa fa-trash-o red"></i>
+                    </a>
+                    <a href="#" data-ctrl="widgetAction" data-action="refresh">
+                        <i class="ace-icon fa fa-refresh"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main treescrollable">
+                    <fap-tree id="usergroup" is-async="true" get-url="/SystemApi/Manage/UserGroup" edit-url="/SystemApi/Manage/OperUserGroup"></fap-tree>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-9">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title"><fap-multilang lang-key="user" default-content= "用户"></fap-multilang></h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-toolbox">
+                    <div class="btn-toolbar">
+                        <div class="btn-group">
+                            <button id="btnResetPassword" class="btn btn-white">
+                                <i class="ace-icon fa fa-undo blue"></i>
+                                重置密码
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="widget-main">
+                    <fap-grid id="user"query-option="@Model.QueryOption" post-data="@Model.PostData" auto-width="true" on-form-init-add="afterInitFormCallback" on-form-init-edit="initEdit" multi-box-only="true" multi-select="true"  on-select-row="editRow" oper-cud="true"></fap-grid>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    //行选择可以编辑，回车保存
+    var lastSelection;
+    function editRow(id,s) {
+        if (id && id !== lastSelection) {
+            var grid = $("#grid-user");
+            grid.jqGrid('restoreRow', lastSelection);
+            grid.jqGrid('editRow', id, {
+                keys: true});
+            lastSelection = id;
+        }
+    }  
+    var initEdit = function () {
+        //密码为空 默认不修改，新增为空，则默认为1
+        $("#UserPassword").val("");
+    }
+    var afterInitFormCallback = function () {
+        var tree = $('#tree-usergroup').jstree(true);
+        var sel = tree.get_selected();
+        if (sel.length) {
+            $("#UserGroupUid").val(sel[0]).next().val(tree.get_node(sel[0]).text);
+        }
+    }
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+                $('#tree-usergroup').jstree("destroy");
+            })
+            $("#btnResetPassword").on(ace.click_event, function () {
+                var rows = getSelectedRows("grid-user");
+                if (rows != null) {
+                    var fids = rows.map(function (d) { return d.Fid });
+                    $.post(basePath + "/SystemApi/Manage/ResetPassword", { "Fids": fids }, function (rv) {
+                        if (rv) {
+                            $.msg("重置成功！");
+                        } else {
+                            bootbox.alert("重置失败！");
+                        }
+                    })
+                }
+            })
+            $(document).off(ace.click_event, '[data-ctrl=widgetAction]').on(ace.click_event, '[data-ctrl=widgetAction]', function (ev) {
+                ev.preventDefault();
+
+                var $this = $(this);               
+
+                var $action = $this.data('action');
+                var ref = $('#tree-usergroup').jstree(true),
+                                sel = ref.get_selected();
+                if ($action == 'refresh') {
+                    ref.refresh();
+                    return;
+                }
+                if (!sel.length) { return false; }
+                sel = sel[0];
+                if ($action == 'add') {
+                    sel = ref.create_node(sel);
+
+                } else if ($action == 'edit') {
+                    ref.edit(sel);
+                } else if ($action == 'delete') {
+                    bootbox.confirm("确认删除吗？", function (result) {
+                        if (result) {
+                            ref.delete_node(sel)
+                        }
+                    })
+                }
+
+            })
+            $('#tree-usergroup').on("changed.jstree", function (e, data) {
+                if (data && data.selected && data.selected.length) {
+                    var userGrpid = data.selected[0];
+                    //根节点
+                    if (userGrpid == "0") {
+                        $("#grid-user").jqGrid('setGridParam', {
+                            datatype: 'json',
+                            postData: { filters: {} }, //发送数据
+                            page: 1
+                        }).trigger("reloadGrid"); //重新载入
+                        return;
+                    }
+                    var userGrpName = data.node.text;
+                   
+                    var filter = '{"groupOp":"AND","rules":[{"field":"UserGroupUid","op":"eq","data":"' + userGrpid + '"}]}';
+                    $("#grid-user").jqGrid('setGridParam', {
+                        datatype: 'json',
+                        postData: { filters: filter}, //发送数据
+                        page: 1
+                    }).trigger("reloadGrid"); //重新载入
+                }
+                //console.log(data.selected);
+            });
+        })
+    })
+</script>

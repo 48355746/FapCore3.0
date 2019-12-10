@@ -10,6 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Fap.Core.Infrastructure.Config;
 using Fap.Core.DataAccess;
 using Fap.Core.Extensions;
+using Fap.Core.Infrastructure.Metadata;
+using Fap.Core.Infrastructure.Enums;
 
 namespace Fap.Core.Scheduler
 {
@@ -29,6 +31,41 @@ namespace Fap.Core.Scheduler
             _dbContext = provider.GetService<IDbContext>();
             _logger = _logFactory.CreateLogger<JobManager>();
         }
+        public string JobGroupOperation(string operation, string id, string parent, string text)
+        {
+            string result = "0";
+            if (operation ==TreeNodeOper.DELETE_NODE)
+            {
+                int c = _dbContext.Count("FapJob", "JobGroup=@JobGroup", new DynamicParameters(new { JobGroup = id }));
+                if (c == 0)
+                {
+                    result = "" + _dbContext.Execute("delete from FapJobGroup where Fid=@Fid", new DynamicParameters(new { Fid = id }));
+                }
+            }
+            else if (operation ==TreeNodeOper.CREATE_NODE)
+            {
+                dynamic fdo = new FapDynamicObject("FapJobGroup");
+                fdo.Pid = id;
+                fdo.JobGroupName = text;
+                long rv = _dbContext.InsertDynamicData(fdo);
+                result = fdo.Fid;
+            }
+            else if (operation ==TreeNodeOper.RENAME_NODE)
+            {
+                result = "" + _dbContext.Execute("update FapJobGroup set JobGroupName=@JobGroupName where Fid=@Id", new DynamicParameters(new { JobGroupName = text, Id = id }));
+            }
+            else if (operation ==TreeNodeOper.MOVE_NODE)
+            {
+                result = "" + _dbContext.Execute("update FapJobGroup set Pid=@Pid where Id=@Id", new DynamicParameters(new { Pid = parent, Id = id }));
+            }
+            else if (operation == "copy_node")
+            {
+
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// 从数据库中加载调度任务
         /// </summary>

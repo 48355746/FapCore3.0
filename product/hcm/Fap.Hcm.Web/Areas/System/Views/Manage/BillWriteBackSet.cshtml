@@ -1,0 +1,525 @@
+﻿@using Fap.AspNetCore.Controls
+@using Fap.Core.Infrastructure.Config
+@using Fap.Core.Infrastructure.Metadata
+@model Fap.Core.Infrastructure.Config.CfgBillWriteBackRule
+@{
+    Layout = "~/Views/Shared/_Layout_Empty.cshtml";
+    ViewBag.Title = "单据回写设置";
+    CfgBillWriteBackRule cfg = Model;
+    string oper = "edit";
+    if (cfg == null)
+    {
+        cfg = new CfgBillWriteBackRule();
+        oper = "add";
+    }
+    List<FapDict> empCategory = _platformDomain.DictSet.Where(d => d.Category == "EmpCategory").ToList();
+    Select2Model modelBillEntry = new Select2Model { IdField = "TableName", NameField = "TableComment", TableName = "FapTable", Where = "TableFeature like '%BillFeature%'" };
+    Select2Model modelBizEntry = new Select2Model { IdField = "TableName", NameField = "TableComment", TableName = "FapTable", Where = "tablename not like '%Apply' and tablename not like 'EmpBiz%' and Tablename not like 'Fap%' and TableName not like 'Cfg%' and Tablename not like 'Wf%' and (ProductUid='HCM' or ProductUid='FAP')" };
+}
+@section specificcss{
+    <link href="~/Content/Select2/css/select2.min.css" rel="stylesheet" />
+    <link href="~/Content/css/codemirror/codemirror.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/Content/css/codemirror/theme/xq-light.css">
+    <style>
+        .popover-content {
+            word-wrap: break-word;
+        }
+
+        h6.smaller {
+            margin: 0;
+        }
+    </style>
+}
+@section specificscript{
+    <script src="~/Content/Select2/js/select2.js"></script>
+    <script src="~/Content/js/codemirror/codemirror.js"></script>
+    <script src="~/Content/js/codemirror/mode/sql/sql.js"></script>
+    <script>
+        $(function () {
+            var sqlEditor;
+            $('#myTab a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                if ($(e.target).attr('href') == "#sqlset") {
+                    if (!sqlEditor) {
+                        sqlEditor = CodeMirror.fromTextArea(document.getElementById("txtCustomSql"), {
+                            mode: 'text/x-mssql',
+                            theme: 'xq-light',
+                            indentWithTabs: true,
+                            smartIndent: true,
+                            lineNumbers: true,
+                            matchBrackets: true,
+                            autofocus: true
+                        });
+                        sqlEditor.setSize('auto', '230px');
+                        //公式内容变化的时候 及时赋值data对象
+                        sqlEditor.on("change", function (instance) {
+                            $("#txtCustomSql").val(instance.getValue());
+
+                        });
+                    }
+                }
+            })
+
+            $("a[data-provider='fap-formula']").on(ace.click_event, function () {
+                sqlEditor.replaceSelection($(this).data("handler").toString());
+            });
+            //单据字段设置
+            $("#selBillField2").on(ace.click_event, function () {
+                var $selBillField2 = $(this).children('option:selected');
+                var str = '${' + $selBillField2.data('tablename') + "_" + $selBillField2.val() + '}';
+                sqlEditor.replaceSelection(str);
+            });
+            //业务字段设置
+            $("#selBizField2").on(ace.click_event, function () {
+                var selBizField2 = $(this).children('option:selected');
+                var str = '${' + selBizField2.data('tablename') + "_" + selBizField2.val() + '}';
+                sqlEditor.replaceSelection(str);
+            });
+            $("#selField").select2({ width: 300, placeholder: "更新时选择", allowClear: true });
+            //$("select#selBillField").select2({ width: 200, placeholder: "单据属性", allowClear: true });
+            //$("select#selBizField").select2({ width: 200, placeholder: "业务属性", allowClear: true });
+            //$("select#selMappingItems").select2({ width: 400, placeholder: "映射关系", allowClear: true });
+            //$("select#selBillField2").select2({ width: 200, placeholder: "单据实体字段", allowClear: true });
+            //$("select#selBizField2").select2({ width: 200, placeholder: "业务实体字段", allowClear: true });
+            $("#deleteMappingResult").on(ace.click_event, function () {
+                $("#selMappingItems").find("option:selected").remove();
+            })
+            $("#addMapping").on(ace.click_event, function () {
+                debugger
+                var billTable = $("#sel-selBillEntity").val();
+                var billTableTxt = $("#sel-selBillEntity").select2('data')[0].text;
+                var billCol = $("#selBillField").val();
+                var billText = $("#selBillField").find("option:selected").text();
+                var bizTable = $("#sel-selBizEntity").val();
+                var bizTableTxt = $("#sel-selBizEntity").select2('data')[0].text;
+                var bizCol = $("#selBizField").val();
+                var bizText = $("#selBizField").find("option:selected").text()
+                if (billCol != '' && bizCol != '') {
+                    var value = billTable + "." + billCol + ',' + bizTable + "." + bizCol;
+                    var text = billTableTxt + "." + billText + '-->' + bizTableTxt + "." + bizText;
+                    $("#selMappingItems").append("<option value='" + value + "'>" + text + "</option>");
+                    //$("#selMappingItems").select2().trigger('change');
+                }
+            })
+            @if(oper=="edit")
+            {
+           <text>
+            var mapps =@Html.Raw(cfg.FieldMapping)
+            $.each(mapps, function (i, d) {
+                $("#selMappingItems").append("<option value='" + d.id + "'>" + d.text + "</option>");
+                })
+
+
+            </text>
+        }
+
+
+        });
+
+        //值变化事件，billtable 触发
+        var BillTableChange = function (e) {
+            var billVal = $("#sel-selBillEntity").val();
+
+            if (billVal == "") {
+                $("#selField").empty();//关联映射字段清空
+                $("#selBillField").empty();//单据字段列表清空
+                return;
+            }
+            $.get("@Url.Content("~/api/coreapi/fieldlist/")" + billVal, function (data) {
+        if (data) {
+            var filter = $.grep(data, function (d, i) {
+                return d.isDefaultCol != 1 || d.colName == 'Fid';
+            })
+                    $("#selField").empty();//关联映射字段清空
+                    $("#selBillField").empty();//单据字段列表清空
+                    $("#selField").append("<option></option>");
+                    $.each(filter, function (i, d) {
+                        $("#selField").append("<option value='" + d.colName + "'>" + d.colComment + "</option>");
+                        $("#selBillField").append("<option value='" + d.colName + "'>" + d.colComment + "</option>");
+            })
+
+                    $("#selField").val('@cfg.Association').trigger("change");
+
+                    $("#selBillField2").empty();//单据字段列表清空
+                    $.each(filter, function (i, d) {
+                        $("#selBillField2").append("<option value='" + d.colName + "' data-tablename='" + d.tableName + "'>" + d.colComment + "</option>");
+            })
+                }
+    });
+        }
+        //业务实体改变触发
+        var BizTableChange = function (e) {
+            var bizVal = $("#sel-selBizEntity").val();
+
+            if (bizVal == "") {
+                $("#selBizField").empty();
+                $("#selBizField2").empty();
+                return;
+            }
+            $.get("@Url.Content("~/api/coreapi/fieldlist/")" + bizVal, function (data) {
+        if (data) {
+            var filter = $.grep(data, function (d, i) {
+                return d.isDefaultCol != 1 || d.colName == 'Fid';
+            })
+                    $("#selBizField").empty();
+                    //$("#selBizField").append("<option></option>");
+                    $.each(filter, function (i, d) {
+                        $("#selBizField").append("<option value='" + d.colName + "'>" + d.colComment + "</option>");
+            })
+
+                    $("#selBizField2").empty();
+                    //$("#selBizField2").append("<option></option>");
+                    $.each(filter, function (i, d) {
+                        $("#selBizField2").append("<option value='" + d.colName + "' data-tablename='" + d.tableName + "'>" + d.colComment + "</option>");
+            })
+                }
+    });
+        }
+        var SaveSet = function () {
+            var billTable = $("#sel-selBillEntity").val();
+    var bizTable = $("#sel-selBizEntity").val();
+            if (billTable == '' || bizTable == '') {
+                alert('请选择单据或业务实体');
+                return false;
+            }
+            var associate = $("#selField").val();
+    //var mappings = $("#selMappingItems").select2('data');
+    //if (mappings == '')
+    //{
+    //    alert('您没有选择映射关系');
+    //    return false;
+    //}
+    var maps = [];
+            $("#selMappingItems option").each(function () {
+        maps.push({ id: $(this).val(), text: $(this).text() });
+    })
+            var setData = {};
+    setData.Id = '@cfg.Id';
+            setData.Fid = '@cfg.Fid';
+            setData.DocEntityUid = billTable;
+            setData.BizEntityUid = bizTable;
+            setData.Association = associate;
+            //提醒到工资
+            if ($("#form-msgtopayroll-checkbox").is(':checked')) {
+                setData.IsNotifyPayroll = 1;
+            } else {
+                setData.IsNotifyPayroll = 0;
+            }
+            var empcategorys = [];
+            $("[data-ctrl=empcategory]").each(function () {
+        if ($(this).is(":checked")) {
+            empcategorys.push($(this).val() + ":" + $(this).data("text"));
+        }
+    })
+            //人员类别过滤
+            setData.EmpCategoryFilter = empcategorys.join(";");
+            setData.FieldMapping = JSON.stringify(maps);
+            debugger
+            setData.CustomSql = $("#txtCustomSql").val();
+    setData.CallBackClass = $("#txtCallBack").val();
+    var result = false;
+            $.ajax({
+        url: "@Url.Content("~/SystemApi/Manage/Setting/BillWriteBackRule")",    //请求的url地址
+                dataType: "json",   //返回格式为json
+                async: false, //请求是否异步，默认为异步，这也是ajax重要特性
+                data: setData,    //参数值
+                type: "POST",   //请求方式
+                beforeSend: function () {
+            //请求前的处理
+        },
+                success: function (req) {
+            //请求成功时处理
+            if (req) {
+                result = true;
+            }
+        },
+                complete: function () {
+            //请求完成的处理
+        },
+                error: function () {
+            //请求出错处理
+        }
+    });
+            return result;
+        }
+    </script>
+}
+<div class="row">
+    <div class="col-xs-12">
+        <div class="tabbable">
+            <ul class="nav nav-tabs" id="myTab">
+                <li class="active">
+                    <a data-toggle="tab" href="#home">
+                        <i class="green ace-icon fa fa-home bigger-120"></i>
+                        基本信息
+                    </a>
+                </li>
+
+                <li>
+                    <a data-toggle="tab" href="#fieldmapping">
+                        字段映射
+                    </a>
+                </li>
+
+                <li>
+                    <a data-toggle="tab" href="#sqlset">
+                        脚本设置
+                    </a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div id="home" class="tab-pane fade in active">
+                    <form class="form-horizontal" role="form">
+                        <!-- #section:elements.form -->
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> 单据实体 </label>
+
+                            <div class="col-sm-9">
+                                <fap-select id="selBillEntity" default-value="@cfg.DocEntityUid" on-change="BillTableChange" select-model="@modelBillEntry"></fap-select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label no-padding-right" for="form-field-1-1"> 业务实体</label>
+
+                            <div class="col-sm-9">
+                                <fap-select id="selBizEntity" default-value="@cfg.BizEntityUid" on-change="BizTableChange" select-model="@modelBizEntry"></fap-select>
+                            </div>
+                        </div>
+
+                        <!-- /section:elements.form -->
+                        <div class="space-4"></div>
+
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label no-padding-right" for="form-field-2"> 关联属性 </label>
+
+                            <div class="col-sm-9">
+                                <select id="selField" class="select2-allowclear tag-input-style"></select>
+                                <span class="help-inline col-xs-12">
+                                    <span class="middle text-info">更新操作请选择此属性</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="space-4"></div>
+
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label no-padding-right" for="form-field-2">提醒到工资</label>
+
+                            <div class="col-sm-9">
+                                <label>
+                                    <input name="form-msgtopayroll-checkbox" id="form-msgtopayroll-checkbox" type="checkbox" @(cfg.IsNotifyPayroll == 0 ? "" : "checked='checked'") class="ace" />
+                                    <span class="lbl"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label no-padding-right" for="form-field-2">人员类别 </label>
+
+                            <div class="col-sm-9">
+                                @foreach (var item in empCategory)
+                                {
+                                    string chk = "";
+                                    if (string.IsNullOrWhiteSpace(cfg.EmpCategoryFilter))
+                                    {
+                                        chk = "checked='checked'";
+                                    }
+                                    else
+                                    {
+                                        string[] cats = cfg.EmpCategoryFilter.Replace(" ", "").Split(';');
+                                        if (cats != null && cats.Length > 0)
+                                        {
+                                            foreach (var c in cats)
+                                            {
+                                                if (c.Split(':').Contains(item.Code))
+                                                {
+                                                    chk = "checked='checked'";
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    <label>
+                                        <input data-ctrl="empcategory" name="form-field-checkbox-empcategory" value="@item.Code" data-text="@item.Name" type="checkbox" @chk class="ace" />
+                                        <span class="lbl"> @item.Name</span>
+                                    </label>
+
+                                }
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="fieldmapping" class="tab-pane fade">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="widget-box">
+                                <div class="widget-header widget-header-flat light-border">
+                                    <h5 class="widget-title">单据属性</h5>
+                                </div>
+
+                                <div class="widget-body">
+                                    <div class="widget-main">
+                                            <select id="selBillField" size="14" multiple style="width:100%"></select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="widget-box">
+                                <div class="widget-header widget-header-flat">
+                                    <h5 class="widget-title">业务属性</h5>
+                                    <div class="widget-toolbar no-border">
+                                        <button class="btn btn-xs  btn-primary dropdown-toggle" id="addMapping">
+                                            映射
+                                            <i class="ace-icon fa fa-arrow-right icon-on-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="widget-body">
+                                    <div class="widget-main">                                       
+                                            <select id="selBizField" size="14" multiple style="width:100%"></select>                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="widget-box">
+                                <div class="widget-header widget-header-flat">
+                                    <h5 class="widget-title">映射结果</h5>
+                                    <div class="widget-toolbar">
+                                        <a href="javascript:void(0)" data-action="custom" id="deleteMappingResult">
+                                            <i class="ace-icon fa fa-times red"></i>
+                                        </a>
+                                    </div>
+
+                                </div>
+
+                                <div class="widget-body">
+                                    <div class="widget-main">
+                                            <select id="selMappingItems" size="14" multiple style="width:100%"></select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="sqlset" class="tab-pane fade">
+
+                    <div class="widget-box widget-color-blue3">
+                        <div class="widget-header widget-header-small">
+                            <h6 class="widget-title">sql脚本设置</h6>
+                            <div class="widget-toolbar">
+                                <a href="#" id="btnHelperEData" class="popover-warning" data-rel="popover" data-placement="left" title="帮助" data-content="自定义SQL以分号分隔，支持多SQL语句。例如：update TmLeaveStat set LeaveDays=LeaveDays-${TmLeaveApply_IntervalDay} where Fid='${TmLeaveStat_Fid}';">
+                                    <i class=" ace-icon fa fa-question bigger-120 white">
+                                    </i>
+                                </a>
+                            </div>
+                            <div class="widget-toolbar no-border">
+                                <button class="btn btn-xs bigger btn-info  dropdown-toggle" data-toggle="dropdown">
+                                    常用函数
+                                    <i class="ace-icon fa fa-chevron-down icon-on-right"></i>
+                                </button>
+
+                                <ul class="dropdown-menu dropdown-warning dropdown-menu-right dropdown-caret dropdown-close">
+                                    <li>
+                                        <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" DATEPART(datepart,字段) ">日期格式</a>
+                                    </li>
+                                    <li>
+                                        <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" DATEADD (day,天数,字段) ">日期加减</a>
+                                    </li>
+
+                                    <li>
+                                        <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" DATEDIFF(day , 开始时间 , 结束时间) ">日期间隔</a>
+                                    </li>
+
+                                    <li>
+                                        <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" GETDATE() ">当前日期</a>
+                                    </li>
+                                    <li>
+                                        <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" YEAR(字段) ">年</a>
+                                    </li>
+                                    <li>
+                                        <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" MONTH(字段) ">月</a>
+                                    </li>
+                                    <li>
+                                        <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" DAY(字段) ">日</a>
+                                    </li>
+                                    <li class="divider"></li>
+
+                                    <li>
+                                        <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" ABS(字段) ">绝对值</a>
+                                    </li>
+                                </ul>
+                            </div>
+
+                        </div>
+
+                        <div class="widget-body">
+                            <div class="widget-main no-padding">
+                                <textarea class="form-control" id="txtCustomSql" rows="4" placeholder="自定义脚本Sql">@Html.Raw(cfg.CustomSql)</textarea>
+                            </div>
+                        </div>
+                        <div class="row clearfix" style="margin:0">
+                            <div class="col-sm-6">
+                                <h6 class="header smaller lighter blue">单据属性</h6>
+                                <select id="selBillField2" size="14" style="width:100%;height:150px"></select>
+                            </div>
+                            <div class="col-sm-6">
+                                <h6 class="header smaller lighter blue">业务属性</h6>
+                                <select id="selBizField2" size="14" style="width: 100%; height: 150px"></select>
+                            </div>
+                        </div>
+                    </div>
+
+                    @*<form class="form-horizontal" role="form">
+                            <div class="form-group">
+
+                                <div class="col-sm-9">
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <label>单据实体字段</label>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <select id="selBillField2"></select>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <button id="btnSelBillField2">插入字段</button>
+                                        </div>
+                                    </div>
+                                    <div class="space-4"></div>
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <label>业务实体字段</label>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <select id="selBizField2"></select>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <button id="btnSelBizField2">插入字段</button>
+                                        </div>
+                                    </div>
+                                    <div class="space-4"></div>
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <textarea class="form-control" id="txtCustomSql" rows="4" placeholder="自定义脚本Sql">@Html.Raw(cfg.CustomSql)</textarea>
+                                        </div>
+                                        <div class="col-sm-12">
+                                            <span class="help-inline col-xs-12">
+                                                <span class="middle text-info">自定义SQL以分号分隔，支持多SQL语句。<br>例子：计算请假天数 update TmLeaveStat set LeaveDays=LeaveDays-${TmLeaveApply_IntervalDay} where Fid='${TmLeaveStat_Fid}';</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </form>*@
+                </div>
+
+            </div>
+        </div>
+
+
+    </div>
+</div>

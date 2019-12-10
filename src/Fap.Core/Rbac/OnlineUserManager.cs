@@ -13,16 +13,16 @@ namespace Fap.Core.Rbac
     /// 在线用户管理类
     /// </summary>
     [Service(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton)]
-    public class OnlineUserManager : IOnlineUserManager
+    public class OnlineUserService : IOnlineUserService
     {
         private readonly IDbContext _dbContext;
-        public OnlineUserManager(IDbContext dbContext)
+        public OnlineUserService(IDbContext dbContext)
         {
             _dbContext = dbContext;
         }
 
         /// <summary>
-        /// 添加一个用户到在线用户表
+        /// 添加一个用户到在线用户表日志
         /// </summary>
         /// <param name="session"></param>
         /// <param name="user"></param>
@@ -31,11 +31,9 @@ namespace Fap.Core.Rbac
         {
             //开启了事务，所以原始操作要有事务
             //更新之前的在线用户状态
-            _dbContext.Execute($"update FapOnlineUser set OnlineState='{FapOnlineUser.CONST_LOGOUT}' where UserUid=@UserUid", new DynamicParameters(new { UserUid = onlineUser.UserUid }) { });
+            //_dbContext.Execute($"update FapOnlineUser set OnlineState='{FapOnlineUser.CONST_LOGOUT}' where UserUid=@UserUid", new DynamicParameters(new { UserUid = onlineUser.UserUid }) { });
             //insert 新在线用户
-            long id = _dbContext.Insert<FapOnlineUser>(onlineUser);
-            onlineUser.Id = id;
-
+            _dbContext.Insert<FapOnlineUser>(onlineUser);           
             return onlineUser;
         }
         public bool UpdateOnlineUser(string onlineUserUid, string roleUid)

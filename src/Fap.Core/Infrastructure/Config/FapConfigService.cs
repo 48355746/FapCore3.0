@@ -3,6 +3,7 @@ using Fap.Core.DataAccess;
 using Fap.Core.DI;
 using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Domain;
+using Fap.Core.Infrastructure.Enums;
 using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.Utility;
 using Microsoft.Extensions.Logging;
@@ -30,6 +31,42 @@ namespace Fap.Core.Infrastructure.Config
             _logger = logger;
             _appDomain = appDomain;
         }
+        [Transactional]
+        public string ConfigGroupOperation(string operation, string id, string parent, string text)
+        {
+            string result = "0";
+            if (operation ==TreeNodeOper.DELETE_NODE)
+            {
+                int c = _dbContext.Count("FapConfig", "ConfigGroup=@ConfigGroup", new DynamicParameters(new { ConfigGroup = id }));
+                if (c == 0)
+                {
+                    result = "" + _dbContext.Execute("delete from FapConfigGroup where Fid=@Id", new DynamicParameters(new { Id = id }));
+                }
+            }
+            else if (operation ==TreeNodeOper.CREATE_NODE)
+            {
+                dynamic fdo = new FapDynamicObject("FapConfigGroup");
+                fdo.Pid = id;
+                fdo.CfName = text;
+                long rv = _dbContext.InsertDynamicData(fdo);
+                result = fdo.Fid;
+            }
+            else if (operation ==TreeNodeOper.RENAME_NODE)
+            {
+                result = "" + _dbContext.Execute("update FapConfigGroup set CfName=@CfName where Fid=@Id", new DynamicParameters(new { CfName = text, Id = id }));
+            }
+            else if (operation ==TreeNodeOper.MOVE_NODE)
+            {
+                result = "" + _dbContext.Execute("update FapConfigGroup set Pid=@Pid where Fid=@Id", new DynamicParameters(new { Pid = parent, Id = id }));
+            }
+            else if (operation ==TreeNodeOper.COPY_NODE)
+            {
+
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// 获取系统配置参数值
         /// </summary>

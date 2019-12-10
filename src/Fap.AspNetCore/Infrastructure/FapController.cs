@@ -6,17 +6,35 @@ using System.Linq;
 using Fap.AspNetCore.Controls.JqGrid;
 using Fap.Core.Infrastructure.Query;
 using Fap.Core.Rbac.Model;
+using Microsoft.AspNetCore.Authorization;
+using Fap.AspNetCore.Model;
 
 namespace Fap.AspNetCore.Infrastructure
 {
     /// <summary>
     /// 所有控制器必须继承此类
     /// </summary>
+    [Authorize]
     public class FapController : BaseController
     {
         public FapController(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
+        #region 获取JqGrid的数据集合（通用方法）
+        /// <summary>
+        /// 获取JqGrid的数据集合（通用方法）
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <param name="model"></param>
+        /// <param name="handler"></param>
+        /// <returns></returns>
+        protected JqGridData GetJqGridDataList(JqGridPostData model, Action<Pageable> handler = null)
+        {
+            var jqJson = _gridFormService.QueryPageDataResultView(model, handler);
+            return jqJson;
+        }
+
+        #endregion
         protected FormViewModel GetFormViewModel(string tableName, string fid, Action<QuerySet> handler = null, int id = 0)
         {
             FormViewModel model = new FormViewModel();
@@ -71,7 +89,7 @@ namespace Fap.AspNetCore.Infrastructure
             {
                 handler(qs);
             }
-            var allCols = _fapPlatformDomain.ColumnSet.Where(c => c.TableName == tableName);
+            var allCols =_dbContext.Columns(tableName);
             //加权限
             if (qs.UsePermissions)
             {

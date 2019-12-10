@@ -1,0 +1,326 @@
+﻿@using Fap.AspNetCore.Controls.JqGrid
+@using Fap.Core.Utility
+@model Fap.AspNetCore.ViewModel.MultiJqGridViewModel
+@{
+    Layout = null;
+    //单据编码
+    Fap.AspNetCore.ViewModel.JqGridViewModel coderule = Model.JqGridViewModels["CfgBillCodeRule"];
+    //回写规则
+    Fap.AspNetCore.ViewModel.JqGridViewModel wbrule = Model.JqGridViewModels["CfgBillWriteBackRule"];
+    //自由表单
+    Fap.AspNetCore.ViewModel.JqGridViewModel freeform = Model.JqGridViewModels["WfFreeForm"];
+    //邮件模板
+    Fap.AspNetCore.ViewModel.JqGridViewModel mailTmpl = Model.JqGridViewModels["CfgEmailTemplate"];
+    //增加操作列
+    Column column = new Column("oper");
+    column.SetLabel("操作");
+    column.SetWidth(110);
+}
+<title>单据编码设置</title>
+<link href="~/Content/bootstrap-layer.css" rel="stylesheet" />
+<div class="row">
+    <div class="col-xs-12">
+        <div class="tabbable">
+            <ul class="nav nav-tabs" id="myTab">
+                <li class="active">
+                    <a data-toggle="tab" href="#coderule">
+                        <i class=" blue ace-icon fa  fa-cog bigger-120"></i>
+                        编码规则
+                    </a>
+                </li>
+
+                <li>
+                    <a data-toggle="tab" href="#wbrule">
+                        <i class="green ace-icon fa fa-cogs bigger-120"></i>
+                        回写规则
+                    </a>
+                </li>
+                <li>
+                    <a data-toggle="tab" href="#freeform">
+                        <i class="green ace-icon fa fa-pencil-square-o bigger-120"></i>
+                        自由表单
+                    </a>
+                </li>
+                <li>
+                    <a data-toggle="tab" href="#mailtemplate">
+                        <i class="green ace-icon fa fa-envelope bigger-120"></i>
+                        邮件模板
+                    </a>
+                </li>
+
+            </ul>
+
+            <div class="tab-content">
+                <div id="coderule" class="tab-pane fade in active">
+                    <fap-grid id="cfgbillcoderule" query-option="@coderule.QueryOption" auto-width="true" post-data="@coderule.PostData" wrapper="myTab,coderule"
+                              shrink-fit="false" view-records="true" oper-add="true" oper-update="true" oper-delete="true"></fap-grid>                 
+
+                </div>
+
+                <div id="wbrule" class="tab-pane fade">
+                    <div class="row">
+                        <div class="col-xs-12">                          
+                                <div class="btn-group ">
+                                    <button id="btnAddMapping" class="btn btn-white">
+                                        <i class="ace-icon fa fa-plus-circle green"></i>
+                                        新增
+                                    </button>
+                                    <button id="btnEditMapping" class="btn btn-white">
+                                        <i class="ace-icon fa fa-pencil blue" ></i>
+                                        编辑
+                                    </button>
+                                </div>                           
+                        </div>
+                    </div>
+                    <div class="space-4"></div>
+                    <fap-grid id="wfbusinessmapping" query-option="@wbrule.QueryOption" post-data="@wbrule.PostData" auto-width="true" view-records="true" wrapper="myTab,wbrule"></fap-grid>
+                </div>
+                <div id="freeform" class="tab-pane fade">
+                    <fap-grid id="wffreeform" attach-column="@column" query-option="@freeform.QueryOption" auto-width="true" wrapper="myTab,freeform" post-data="@freeform.PostData" oper-cud="true" on-grid-complete="initMenu"></fap-grid>
+               
+                </div>
+                <div id="mailtemplate" class="tab-pane fade">
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="btn-group ">
+                                <button id="btnAddMailTmpl" class="btn btn-white">
+                                    <i class="ace-icon fa fa-plus-circle green"></i>
+                                    新增
+                                </button>
+                                <button id="btnEditMailTmpl" class="btn btn-white">
+                                    <i class="ace-icon fa fa-pencil blue"></i>
+                                    编辑
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="space-4"></div>
+                    <fap-grid id="cfgemailtemplate" query-option="@mailTmpl.QueryOption" auto-width="true" post-data="@mailTmpl.PostData" oper-delete="true" wrapper="myTab,mailtemplate" view-records="true"></fap-grid>
+                   
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@*@(Html.Window("win-billmailtemplate").SetTitle("邮件模板设置", "fa fa-cogs").SetContent(@<text><div class="row"><div id="divmailtemplate" class="col-xs-12"></div></div></text>).SetConfirmButtons().SetMaximizing(true))*@
+<script>
+    var scripts = [null, "/Content/layer/layer.js", null];
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+            })
+            $("#btnAddMapping").on(ace.click_event, function () {
+                var index = layer.open({
+                    btn: ['保存', '关闭'],
+                    type: 2,
+                    title: '回写规则设置',
+                    shadeClose: true,
+                    shade: false,
+                    maxmin: true, //开启最大化最小化按钮
+                    area: ['900px', '600px'],
+                    content: basePath + '/System/Manage/BillWriteBackSet/0',
+                    yes: function (index, layero) {
+                        var iframeWin = layero.find('iframe')[0];
+                        var sels = iframeWin.contentWindow.SaveSet();
+                        if (sels == true) {
+                            layer.close(index); //如果设定了yes回调，需进行手工关闭
+                            $("#grid-wfbusinessmapping").jqGrid('setGridParam', {
+                                page: 1
+                            }).trigger("reloadGrid"); //重新载入
+
+                        } else {
+                            layer.alert('保存失败！');
+                        }
+
+
+                    },
+                    cancel: function () {
+                        //console.log('cancel');
+                    }
+                });
+            })
+
+            $("#btnEditMapping").on(ace.click_event, function () {
+                var gr = $("#grid-wfbusinessmapping").jqGrid('getGridParam', 'selrow');
+                if (gr === null) {
+                    bootbox.alert("请选中一个设置修改");
+                    return;
+                }
+                var rowData = $("#grid-wfbusinessmapping").getRowData(gr);
+                var index = layer.open({
+                    btn: ['保存', '关闭'],
+                    type: 2,
+                    title: '回写规则设置',
+                    shadeClose: true,
+                    shade: false,
+                    maxmin: true, //开启最大化最小化按钮
+                    area: ['900px', '600px'],
+                    content: basePath + '/System/Manage/BillWriteBackSet/' + rowData.Fid,
+                    yes: function (index, layero) {
+                        var iframeWin = layero.find('iframe')[0];
+                        var sels = iframeWin.contentWindow.SaveSet();
+                        if (sels == true) {
+                          
+                            refreshGrid("grid-wfbusinessmapping");
+                            layer.close(index); //如果设定了yes回调，需进行手工关闭
+
+                        } else {
+                            layer.alert('保存失败！');
+                        }
+                    },
+                    cancel: function () {
+                        //console.log('cancel');
+                    }
+                });
+            })
+            //添加邮件模板
+            $("#btnAddMailTmpl").on(ace.click_event, function () {
+         
+                layer.open({
+                    btn: ['保存', '关闭'],
+                    type: 2,
+                    title: '邮件模板设置',
+                    shadeClose: true,
+                    shade: false,
+                    maxmin: true, //开启最大化最小化按钮
+                    area: ['900px', '600px'],
+                    content: basePath + '/System/Manage/BillMailTemplate/0',
+                    yes: function (index, layero) {
+                        var iframeWin = layero.find('iframe')[0];
+                        var rv = iframeWin.contentWindow.saveMailTmpl();
+                        if (rv == true) {
+                            layer.close(index); //如果设定了yes回调，需进行手工关闭
+                            refreshGrid("grid-cfgemailtemplate");
+
+                        } else {
+                            layer.alert('保存失败！');
+                        }
+
+
+                    },
+                    cancel: function () {
+                        //console.log('cancel');
+                    }
+                });
+            })
+            function refreshGrid (gridid) {
+                $("#"+gridid).jqGrid('setGridParam', {
+                    page: 1
+                }).trigger("reloadGrid"); //重新载入
+
+            }
+            //编辑邮件模板
+            $("#btnEditMailTmpl").on(ace.click_event, function () {
+                var gr = $("#grid-cfgemailtemplate").jqGrid('getGridParam', 'selrow');
+                if (gr === null) {
+                    bootbox.alert("请选中一条模板修改");
+                    return;
+                }
+                var rowData = $("#grid-cfgemailtemplate").getRowData(gr);
+                @*var option = $("#win-billmailtemplate").data("winoption");
+                option.open = function () {
+                    $("#divmailtemplate").html("<h3 class=' smaller lighter grey'><i class='ace-icon fa fa-spinner fa-spin orange bigger-125'></i>正在加载，请稍后...</h3>");
+                    $("#divmailtemplate").load("@Url.Action("BillMailTemplate","SystemManage",new{area="System"})?id=" + rowData.Fid)
+                };
+                option.buttons[0].click = function () {
+
+                    var rv = saveMailTmpl();
+                    if (rv == true) {
+                        $("#grid-cfgemailtemplate").jqGrid('setGridParam', {
+                            page: 1
+                        }).trigger("reloadGrid"); //重新载入
+                        $(this).dialog("close");
+                    } else {
+
+                    }
+                }
+                //根据option弹出window
+                $("#win-billmailtemplate").removeClass("hide").dialog(option);*@
+                layer.open({
+                    btn: ['保存', '关闭'],
+                    type: 2,
+                    title: '邮件模板设置',
+                    shadeClose: true,
+                    shade: false,
+                    maxmin: true, //开启最大化最小化按钮
+                    area: ['900px', '600px'],
+                    content: basePath + '/System/Manage/BillMailTemplate/' + rowData.Fid,
+                    yes: function (index, layero) {
+                        var iframeWin = layero.find('iframe')[0];
+                        var rv = iframeWin.contentWindow.saveMailTmpl();
+                        if (rv == true) {
+                            layer.close(index); //如果设定了yes回调，需进行手工关闭
+                            refreshGrid("grid-cfgemailtemplate");
+
+                        } else {
+                            layer.alert('保存失败！');
+                        }
+
+
+                    },
+                    cancel: function () {
+                        //console.log('cancel');
+                    }
+                });
+            })
+        })
+    })
+    var initMenu = function () {
+        var ids = jQuery("#grid-wffreeform").jqGrid('getDataIDs');
+        for (var i = 0; i < ids.length; i++) {
+            var de = '';
+            var cl = ids[i];
+            var ret = jQuery('#grid-wffreeform').jqGrid('getRowData', cl);
+            var fid = ret.Fid;
+            var id = ret.Id;
+            de += "<a href='javascript:void(0)' onclick='setFreeForm(\"" + fid + "\",\"" + id + "\")'>设置 </a> ";
+
+            jQuery('#grid-wffreeform').jqGrid('setRowData', ids[i], { oper: de });
+        }
+    }
+
+    var setFreeForm = function (fid, id) {
+        debugger
+        var index = layer.open({
+            btn: ['保存', '关闭'],
+            type: 2,
+            title: '自由表单设置',
+            shadeClose: true,
+            shade: false,
+            skin: 'billskin',
+            maxmin: true, //开启最大化最小化按钮
+            //area: ['900px', '600px'],
+            content: basePath + '/System/Manage/FreeFormSet/' + fid,
+            yes: function (index, layero) {
+                //var iframeWin = window[layero.find('iframe')[0]['name']]; //得到iframe页的窗口对象，执行iframe页的方法：
+                var iframeWin = layero.find('iframe')[0];
+                var jsonStr = iframeWin.contentWindow.getContent();
+                //校验重复字段
+                var arr = jsonStr.match(/\$\{\S+?\}/g);
+                var arrStr = JSON.stringify(arr), str;
+                for (var i = 0; i < arr.length; i++) {
+                    if (arrStr.indexOf(arr[i]) != arrStr.lastIndexOf(arr[i])) {
+                        layer.alert('重复设置了字段，请删除重复字段！---' + arr[i])
+                        return;
+                    }
+                };
+
+                $.post("@Url.Content("~/api/coreapi/Persistence/")", { Id: id, Fid: fid, FFContent: jsonStr, Table_Name: 'CfgFreeForm', oper: 'edit' }, function (rv) {
+                    if (rv) {
+                        layer.msg('保存成功！');
+                    }
+                })
+                //alert(jsonStr);
+
+                //layer.close(index); //如果设定了yes回调，需进行手工关闭
+            },
+            cancel: function () {
+                //console.log('cancel');
+            }
+        });
+        layer.full(index);
+    }
+</script>
