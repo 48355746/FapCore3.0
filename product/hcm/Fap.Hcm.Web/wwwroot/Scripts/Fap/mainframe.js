@@ -5,7 +5,7 @@ $(function () {
     //获取注册码
     $("#btnGetRegistKey").on(ace.click_event, function () {
         $.ajax({
-            url: basePath+"/api/coreapi/requestcode/",
+            url: basePath+"/Api/Core/requestcode/",
             type: 'GET', async: false, cache: false,
             success: function (data) {
                 //bootbox.alert(data);
@@ -23,7 +23,7 @@ $(function () {
                 bootbox.alert("请输入您的产品密钥");
             } else {
                 $.ajax({
-                    url: basePath + "/api/coreapi/activate/",
+                    url: basePath + "/Api/Core/activate/",
                     type: 'POST', data: { registerCode: result }, async: false, cache: false, dataType: 'json',
                     success: function (data) {
                         if (data && data.success == '1') {

@@ -1,0 +1,12 @@
+﻿
+@model Fap.AspNetCore.ViewModel.FormViewModel
+@{
+    Layout = null;
+}
+<div class="row scrollable" data-size="430">
+    <div class="col-xs-12">
+        <div class="col-xs-12">
+            <fap-form id="@Model.FormId" default-data="@Model.DefaultData" form-status="View" query-option="@Model.QueryOption"></fap-form>
+        </div>
+    </div>
+</div>

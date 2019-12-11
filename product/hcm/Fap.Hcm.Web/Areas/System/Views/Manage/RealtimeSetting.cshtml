@@ -70,7 +70,7 @@
             $("#btnRealTimeSyn").off(ace.click_event).on(ace.click_event, function () {
                 var sels = getSelectedRows("grid-log");
                 if (sels) {
-                    $.post(basePath + "/SystemApi/Manage/RealtimeSyn", { logs: sels }, function (rv) {
+                    $.post(basePath + "/System/Api/Manage/RealtimeSyn", { logs: sels }, function (rv) {
                         if (rv.success) {
                             refreshGrid("grid-log");
                         }

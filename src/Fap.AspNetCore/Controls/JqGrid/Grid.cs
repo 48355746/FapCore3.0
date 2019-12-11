@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Yahoo.Yui.Compressor;
+using System.Text.Encodings.Web;
 
 namespace Fap.AspNetCore.Controls.JqGrid
 {
@@ -275,6 +276,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
             return this;
         }
         private List<DefaultValue> _defaultValues = new List<DefaultValue>();
+        private QuerySet _querySet;
         /// <summary>
         /// 设置简单查询设置，和SetFapColumns不同时使用
         /// </summary>
@@ -282,6 +284,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
         /// <returns></returns>
         public Grid SetQueryOption(QuerySet queryset)
         {
+            _querySet = queryset;
             //设置表单默认值
             if (queryset.DefaultValues != null && queryset.DefaultValues.Any())
             {
@@ -1166,7 +1169,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
 
         /// <summary>
         ///     The url of the file that holds the request
-        ///     可以不设置，默认为 api/coreapi/datalist
+        ///     可以不设置，默认为 Api/Core/datalist
         /// </summary>
         /// <param name = "url">Data url</param>
         public Grid SetUrl(string url)
@@ -1176,7 +1179,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
         }
         /// <summary>
         /// 持久化url，可以不设置，
-        /// 默认值为：api/coreapi/Persistence
+        /// 默认值为：Api/Core/Persistence
         /// </summary>
         /// <param name="editUrl"></param>
         /// <returns></returns>
@@ -1879,7 +1882,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
             }
             else
             {
-                script.AppendLine($"url:'{ _applicationContext.BaseUrl }/api/coreapi/datalist',");
+                script.AppendLine($"url:'{ _applicationContext.BaseUrl }/Api/Core/datalist',");
             }
             script.AppendFormat("tn:'{0}',", TableName).AppendLine();
             //EditUrl
@@ -2402,7 +2405,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                       var gsr = jQuery('#" + _id + @"').jqGrid('getGridParam', 'selrow');
                       if (gsr) {
                         var ret = jQuery('#" + _id + @"').jqGrid('getRowData', gsr);
-                        loadFormMessageBox('编辑','" + _id + "','fa fa-pencil-square-o','" + TableName + @"',ret.Id,function(){");
+                        loadFormMessageBox('编辑','" + _id + "','fa fa-pencil-square-o','" + TableName + @"',ret.Id,'"+UrlEncoder.Default.Encode(_querySet.QueryCols)+"',function(){");
             if (_onEditAfterInitDataForm.IsPresent())
             {
                 script.AppendLine(_onEditAfterInitDataForm);
@@ -2424,7 +2427,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                       position:'first',  
                       buttonicon:'ace-icon fa fa-plus-circle purple',
                       onClickButton : function() {
-                      loadFormMessageBox('新增','" + _id + "','fa fa-plus-circle','" + TableName + @"',0,function(){");
+                      loadFormMessageBox('新增','" + _id + "','fa fa-plus-circle','" + TableName + @"',0,'" + UrlEncoder.Default.Encode(_querySet.QueryCols) + "',function(){");
             if (_onAddAfterInitDataForm.IsPresent())
             {
                 script.AppendLine(_onAddAfterInitDataForm);

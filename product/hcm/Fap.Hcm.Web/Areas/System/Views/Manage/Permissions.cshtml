@@ -47,7 +47,7 @@
 
             <div class="widget-body">
                 <div class="widget-main">
-                    <fap-tree id="roleandgroup" is-async="true" get-url="/SystemApi/Manage/RoleAndGroup"></fap-tree>
+                    <fap-tree id="roleandgroup" is-async="true" get-url="/System/Api/Manage/RoleAndGroup"></fap-tree>
                 </div>
             </div>
         </div>
@@ -130,7 +130,7 @@
 
                                 <div class="widget-body">
                                     <div class="widget-main padding-8">
-                                        <fap-tree id="moduleandmenu" is-async="true" get-url="/SystemApi/Manage/ModuleAndMenu" plugin-checkbox="true"></fap-tree>
+                                        <fap-tree id="moduleandmenu" is-async="true" get-url="/System/Api/Manage/ModuleAndMenu" plugin-checkbox="true"></fap-tree>
                                     </div>
                                 </div>
                             </div>
@@ -151,7 +151,7 @@
 
                                 <div class="widget-body">
                                     <div class="widget-main padding-8">
-                                        <fap-tree id="orgdept" is-async="true" get-url="/SystemApi/Manage/AllDepts" plugin-checkbox="true"></fap-tree>
+                                        <fap-tree id="orgdept" is-async="true" get-url="/System/Api/Manage/AllDepts" plugin-checkbox="true"></fap-tree>
                                     </div>
                                 </div>
                             </div>
@@ -174,7 +174,7 @@
 
                                 <div class="widget-body">
                                     <div class="widget-main padding-8">
-                                        <fap-tree id="dataentity" is-async="true" get-url="/SystemApi/Manage/FapTables" plugin-checkbox="true"></fap-tree>
+                                        <fap-tree id="dataentity" is-async="true" get-url="/System/Api/Manage/FapTables" plugin-checkbox="true"></fap-tree>
                                     </div>
                                 </div>
                             </div>
@@ -239,7 +239,7 @@
 
                                 <div class="widget-body">
                                     <div class="widget-main padding-8">
-                                        <fap-tree id="reporttemplate" is-async="true" get-url="/SystemApi/Manage/SimpleReport" plugin-checkbox="true"></fap-tree>
+                                        <fap-tree id="reporttemplate" is-async="true" get-url="/System/Api/Manage/SimpleReport" plugin-checkbox="true"></fap-tree>
                                     </div>
                                 </div>
                             </div>
@@ -256,7 +256,7 @@
 
                                 <div class="widget-body">
                                     <div class="widget-main padding-8">
-                                        <fap-tree id="powerroleandgroup" is-async="true" get-url="/SystemApi/Manage/RoleAndGroup" plugin-checkbox="true"></fap-tree>
+                                        <fap-tree id="powerroleandgroup" is-async="true" get-url="/System/Api/Manage/RoleAndGroup" plugin-checkbox="true"></fap-tree>
                                     </div>
                                 </div>
                             </div>
@@ -305,7 +305,7 @@
         }
         //保存User
         $.ajax({
-            url: "@Url.Content("~/SystemApi/Manage/DelRoleUser")",   //请求的url地址
+            url: "@Url.Content("~/System/Api/Manage/DelRoleUser")",   //请求的url地址
             dataType: "json",   //返回格式为json
             async: true, //请求是否异步，默认为异步，这也是ajax重要特性
             data: { "RoleUid": selRole[0], "UserUid": fid },    //参数值
@@ -355,7 +355,7 @@
                     //window.roleFid = roleUid;
                     $.ajax({
                         type: "get",
-                        url: "@Url.Content("~/SystemApi/Manage/Authority")",
+                        url: "@Url.Content("~/System/Api/Manage/Authority")",
                         data: { rolefid: roleUid },
                         dataType: "json",
                         success: function (data) {
@@ -456,7 +456,7 @@
 
                 //if (!sels.length) { return false; }
                 $.ajax({
-                    url: "@Url.Content("~/SystemApi/Manage/SaveAuthority")",   //请求的url地址
+                    url: "@Url.Content("~/System/Api/Manage/SaveAuthority")",   //请求的url地址
                     dataType: "json",   //返回格式为json
                     async: true, //请求是否异步，默认为异步，这也是ajax重要特性
                     data: { "RoleUid": selRole[0], "MenuUids": sels, "AType": 1 },    //参数值
@@ -493,7 +493,7 @@
                 //if (!sels.length) { return false; }
 
                 $.ajax({
-                    url: "@Url.Content("~/SystemApi/Manage/SaveAuthority")",   //请求的url地址
+                    url: "@Url.Content("~/System/Api/Manage/SaveAuthority")",   //请求的url地址
                     dataType: "json",   //返回格式为json
                     async: true, //请求是否异步，默认为异步，这也是ajax重要特性
                     data: { "RoleUid": selRole[0], "OrgDeptUids": sels, "AType": 2 },    //参数值
@@ -536,7 +536,7 @@
                     cols.push({ "tablename": treeColumn.get_node(c).data.tableName, "coluid": c });
                 })
                 $.ajax({
-                    url: "@Url.Content("~/SystemApi/Manage/SaveAuthority")",   //请求的url地址
+                    url: "@Url.Content("~/System/Api/Manage/SaveAuthority")",   //请求的url地址
                     dataType: "json",   //返回格式为json
                     async: true, //请求是否异步，默认为异步，这也是ajax重要特性
                     data: { "RoleUid": selRole[0], "ColumnUids": cols, "AType": 3 },    //参数值
@@ -579,7 +579,7 @@
                 })
 
                 $.ajax({
-                    url: "@Url.Content("~/SystemApi/Manage/SaveAuthority")",   //请求的url地址
+                    url: "@Url.Content("~/System/Api/Manage/SaveAuthority")",   //请求的url地址
                     dataType: "json",   //返回格式为json
                     async: true, //请求是否异步，默认为异步，这也是ajax重要特性
                     data: { "RoleUid": selRole[0], "ColumnUids": cols, "AType": 4 },    //参数值
@@ -657,7 +657,7 @@
 
                 //if (!sels.length) { return false; }
                 $.ajax({
-                    url: "@Url.Content("~/SystemApi/Manage/SaveAuthority")",   //请求的url地址
+                    url: "@Url.Content("~/System/Api/Manage/SaveAuthority")",   //请求的url地址
                     dataType: "json",   //返回格式为json
                     async: true, //请求是否异步，默认为异步，这也是ajax重要特性
                     data: { "RoleUid": selRole[0], "RptUids": sels, "AType": 6 },    //参数值
@@ -700,7 +700,7 @@
 
                 //if (!sels.length) { return false; }
                 $.ajax({
-                    url: "@Url.Content("~/SystemApi/Manage/SaveAuthority")",   //请求的url地址
+                    url: "@Url.Content("~/System/Api/Manage/SaveAuthority")",   //请求的url地址
                     dataType: "json",   //返回格式为json
                     async: true, //请求是否异步，默认为异步，这也是ajax重要特性
                     data: { "RoleUid": selRole[0], "PRoleUids": sels, "AType": 7 },    //参数值
@@ -721,7 +721,7 @@
                 });
             })
             $("#clearcache").on(ace.click_event, function () {
-                $.get("@Url.Content("~/SystemApi/Manage/Setting/ClearPermissionsCache")", function (rv) {
+                $.get("@Url.Content("~/System/Api/Manage/Setting/ClearPermissionsCache")", function (rv) {
                     if (rv.success == "success") {
                         bootbox.alert('成功清理');
                     }
@@ -785,7 +785,7 @@
 
                                         //保存User
                                         $.ajax({
-                                            url: "@Url.Content("~/SystemApi/Manage/SaveAuthority")",   //请求的url地址
+                                            url: "@Url.Content("~/System/Api/Manage/SaveAuthority")",   //请求的url地址
                                             dataType: "json",   //返回格式为json
                                             async: true, //请求是否异步，默认为异步，这也是ajax重要特性
                                             data: { "RoleUid": selRole[0], "UserUids": tempUser, "AType": 5 },    //参数值
@@ -869,7 +869,7 @@
 
                             //保存User
                             $.ajax({
-                                url: "@Url.Content("~/SystemApi/Manage/SaveAuthority")",   //请求的url地址
+                                url: "@Url.Content("~/System/Api/Manage/SaveAuthority")",   //请求的url地址
                                 dataType: "json",   //返回格式为json
                                 async: true, //请求是否异步，默认为异步，这也是ajax重要特性
                                 data: { "RoleUid": selRole[0], "UserUids": tempUser, "AType": 5 },    //参数值

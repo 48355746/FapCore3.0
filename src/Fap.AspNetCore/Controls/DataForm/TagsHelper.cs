@@ -256,9 +256,10 @@ namespace Fap.AspNetCore.Controls.DataForm
         }
         public static string AsPassword(this FapColumn fapColumn,string editAble,string fieldValue)
         {
+            //密码控件不赋值
             string ngModel = "formData." + fapColumn.ColName;
             string ctrlName = fapColumn.ColName;
-            return $"<input type=\"password\" {editAble} class=\"form-control\"  id=\"{ctrlName}\" name=\"{ctrlName}\" ng-model=\"{ngModel}\" value=\"{fieldValue}\"/>";
+            return $"<input type=\"password\" {editAble} class=\"form-control\"  id=\"{ctrlName}\" name=\"{ctrlName}\" ng-model=\"{ngModel}\"/>";
         }
         public static string AsEmail(this FapColumn fapColumn, string editAble,  string fieldValue)
         {

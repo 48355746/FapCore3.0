@@ -35,7 +35,7 @@ namespace Fap.AspNetCore.Controls.DataForm
         private string _tableName;
         private FormStatus _formStatus = FormStatus.Add;
         private FapTable _tb;
-        private List<FapColumn> _fapColumns = new List<FapColumn>();
+        private IEnumerable<FapColumn> _fapColumns = new List<FapColumn>();
         private List<FapField> _fapFields = new List<FapField>();
         //设置自定义默认值
         private Dictionary<string, string> _cutomDefault = new Dictionary<string, string>();
@@ -67,9 +67,9 @@ namespace Fap.AspNetCore.Controls.DataForm
         /// <param name="id"></param>
         public FapForm(IServiceProvider serviceProvider, string id, FormStatus formStatus = FormStatus.Add) : base("")
         {
-            _dbContext = serviceProvider.GetService<IDbContext>(); 
+            _dbContext = serviceProvider.GetService<IDbContext>();
             _formStatus = formStatus;
-            _multiLangService = serviceProvider.GetService<IMultiLangService>(); 
+            _multiLangService = serviceProvider.GetService<IMultiLangService>();
             _rbacService = serviceProvider.GetService<IRbacService>(); ;
             _applicationContext = serviceProvider.GetService<IFapApplicationContext>();
             _serviceProvider = serviceProvider;
@@ -110,10 +110,9 @@ namespace Fap.AspNetCore.Controls.DataForm
         /// </summary>
         /// <param name="columns"></param>
         /// <returns></returns>
-        public FapForm SetFapClumns(List<FapColumn> columns)
+        public FapForm SetFapClumns()
         {
             string[] hidecols = { };
-            _fapColumns = columns;
             if (_fapColumns.Any())
             {
                 #region 权限
@@ -130,7 +129,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     var currRoleColumns = roleColumn.Where(t => t.TableUid == TableName);
                     if (currRoleColumns != null && currRoleColumns.Any())
                     {
-                        foreach (var column in columns)
+                        foreach (var column in _fapColumns)
                         {
                             var powerCol = currRoleColumns.FirstOrDefault(c => c.ColumnUid == column.Fid);
                             if (powerCol != null)
@@ -168,7 +167,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 foreach (var col in _fapColumns)
                 {
                     //隐藏列跳过
-                    if (hidecols != null &&  hidecols.AsList().Exists(c=>c.EqualsWithIgnoreCase(col.ColName)))
+                    if (hidecols != null && hidecols.AsList().Exists(c => c.EqualsWithIgnoreCase(col.ColName)))
                     {
                         continue;
                     }
@@ -177,7 +176,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     {
                         continue;
                     }
-                    string key = col.TableName + "_" + col.ColName;
+                    string key =  col.ColName;
                     var fv = FormData.Get(key);
                     object fvc = null;
                     if (col.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
@@ -214,12 +213,20 @@ namespace Fap.AspNetCore.Controls.DataForm
         {
             _tableName = qs.TableName;
             _hiddenCols = qs.HiddenCols ?? "";
-            _tb =_dbContext.Table(qs.TableName);
+            _tb = _dbContext.Table(qs.TableName);
             DynamicParameters parameters = new DynamicParameters();
             qs.Parameters.ForEach(q => parameters.Add(q.ParamKey, q.ParamValue));
-            var frmData = _dbContext.QueryFirstOrDefault(qs.ToString(), parameters);
-            var queryColList = qs.QueryCols.Split(',');
-            IEnumerable<FapColumn> fapColumns =_dbContext.Columns(qs.TableName).Where(c=> queryColList.Contains(c.ColName));
+            var frmData = _dbContext.QueryFirstOrDefault(qs.ToString(), parameters,true);
+            if (qs.QueryCols.EqualsWithIgnoreCase("*"))
+            {
+                _fapColumns = _dbContext.Columns(qs.TableName);
+            }
+            else
+            {
+                var queryColList = qs.QueryCols.Split(',');
+                _fapColumns = _dbContext.Columns(qs.TableName).Where(c => queryColList.Contains(c.ColName));
+
+            }
             if (frmData != null)
             {
                 FormData = (frmData as IDictionary<string, object>).ToFapDynamicObject(qs.TableName);
@@ -238,18 +245,17 @@ namespace Fap.AspNetCore.Controls.DataForm
                 IsDocument = true;
             }
             FidValue = FormData.Get("Fid");
-            if (fapColumns.Any())
+            if (_fapColumns.Any())
             {
-
-                SetFapClumns(fapColumns.ToList());
+                SetFapClumns();
                 //如果id为jqgriddataform的时候 formid改为frm-表名
                 if (_id.Equals("jqgriddataform", System.StringComparison.CurrentCultureIgnoreCase))
                 {
-                    _id = fapColumns.First().TableName;
+                    _id = _fapColumns.First().TableName;
                 }
             }
             return this;
-          
+
         }
         public override string ToString()
         {
@@ -283,7 +289,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             {
                 if (string.IsNullOrWhiteSpace(_tableName))
                 {
-                    return _fapColumns[0].TableName;
+                    return _fapColumns.First().TableName;
                 }
                 return _tableName;
             }
@@ -403,10 +409,10 @@ namespace Fap.AspNetCore.Controls.DataForm
             _applicationContext.Session.SetString($"{_tableName.ToLower()}{FapWebConstants.AVOID_REPEAT_TOKEN}", avoidRepeatToken);
             //XSRF/CSRF 防护
             IAntiforgery antiforgery = ActivatorUtilities.GetServiceOrCreateInstance<IAntiforgery>(_serviceProvider);
-            var context= _serviceProvider.GetService<IHttpContextAccessor>();
-            IHtmlContent antiforeryHtml= antiforgery.GetHtml(context.HttpContext);
+            var context = _serviceProvider.GetService<IHttpContextAccessor>();
+            IHtmlContent antiforeryHtml = antiforgery.GetHtml(context.HttpContext);
             var writer = new System.IO.StringWriter();
-            antiforeryHtml.WriteTo(writer, HtmlEncoder.Default);            
+            antiforeryHtml.WriteTo(writer, HtmlEncoder.Default);
             formHtml.AppendLine(writer.ToString());
             //放验证信息
             formHtml.AppendLine("<div class=\"error\">				</div>");
@@ -455,11 +461,11 @@ namespace Fap.AspNetCore.Controls.DataForm
                 {
                     continue;
                 }
-                if(!hasTextArea&&column.CtrlType== FapColumn.CTRL_TYPE_MEMO)
+                if (!hasTextArea && column.CtrlType == FapColumn.CTRL_TYPE_MEMO)
                 {
                     hasTextArea = true;
                 }
-                if(!needValidate&& ((column.NullAble == 0 && column.ShowAble == 1) || column.RemoteChkURL.IsPresent()))
+                if (!needValidate && ((column.NullAble == 0 && column.ShowAble == 1) || column.RemoteChkURL.IsPresent()))
                 {
                     needValidate = true;
                 }
@@ -487,7 +493,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     }
                     if (column.MinValue.HasValue)
                     {
-                        minDate =DateTimeUtils.DateFormat(DateTime.Now.AddDays((double)column.MinValue));
+                        minDate = DateTimeUtils.DateFormat(DateTime.Now.AddDays((double)column.MinValue));
                     }
                     if (column.MaxValue.HasValue)
                     {
@@ -599,7 +605,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                             fieldName = item.ToString().Substring(2, length);
                             //fieldName = item.Groups[1].ToString();
 
-                            FapColumn col = _fapColumns.Find(f => f.ColName.EqualsWithIgnoreCase(fieldName));
+                            FapColumn col = _fapColumns.FirstOrDefault(f => f.ColName.EqualsWithIgnoreCase(fieldName));
                             if (col != null)
                             {
                                 script.AppendLine("var conv=$('#" + fieldName + "').val();if(conv==''){bootbox.alert('【" + _multiLangService.GetLangColumnComent(col) + "】为空，请先设置。');return;}");
@@ -641,8 +647,8 @@ namespace Fap.AspNetCore.Controls.DataForm
                     script.AppendLine("var initFile" + _id + tempFid + "=function(){");
                     script.AppendLine("$(\"#" + _id + tempFid + "-FILE\").fileinput({");
                     script.AppendLine("language: 'zh',");
-                    script.AppendLine("uploadUrl:\"" + _applicationContext.BaseUrl + "/api/coreapi/uploadfile/" + field.FieldValue + "\",");
-                    //script.AppendLine("deleteUrl:\"http://" + HttpContext.Current.Request.Url.Authority + HttpContext.Current.Request.ApplicationPath  + "/api/coreapi/deletefile\",");
+                    script.AppendLine("uploadUrl:\"" + _applicationContext.BaseUrl + "/Api/Core/uploadfile/" + field.FieldValue + "\",");
+                    //script.AppendLine("deleteUrl:\"http://" + HttpContext.Current.Request.Url.Authority + HttpContext.Current.Request.ApplicationPath  + "/Api/Core/deletefile\",");
                     if (allowExt.IsPresent())
                     {
                         script.AppendLine("allowedFileExtensions : [" + allowExt + "],");
@@ -674,7 +680,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     //        attList.ForEach(a =>
                     //        {
                     //            initPre.AppendLine(" \"<img style='height:160px' src='" + _session.BaseURL + "/PublicCtrl/AttachmentImg/" + a.Fid + "'>\",");
-                    //            initPreC.AppendLine("{caption: \"" + a.FileName + "\", width: \"120px\", url: \"" + _session.BaseURL + "/api/coreapi/deletefile\", key: \"" + a.Fid + "\"},");
+                    //            initPreC.AppendLine("{caption: \"" + a.FileName + "\", width: \"120px\", url: \"" + _session.BaseURL + "/Api/Core/deletefile\", key: \"" + a.Fid + "\"},");
                     //        });
                     //        initPreC.AppendLine("],");
                     //        initPre.AppendLine(" ],");
@@ -858,7 +864,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 #region 评星级
                 else if (column.CtrlType == FapColumn.CTRL_TYPE_STAR)
                 {
-                    if (field.FieldValue?.ToString().IsMissing()??true)
+                    if (field.FieldValue?.ToString().IsMissing() ?? true)
                     {
                         field.FieldValue = "0";
                     }
@@ -1055,7 +1061,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                             }
                         }
                         jsonData += "}";
-                        script.AppendLine("$.post(basePath+'/api/coreapi/frminjection'," + jsonData + ",function(result){");
+                        script.AppendLine("$.post(basePath+'/Api/Core/frminjection'," + jsonData + ",function(result){");
                         script.AppendLine("$.each(result,function(name,value) {");
                         script.AppendLine("$('#'+name).val(value)");
                         script.AppendLine("});");

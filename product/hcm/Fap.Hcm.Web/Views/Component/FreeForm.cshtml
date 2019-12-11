@@ -1,0 +1,21 @@
+﻿@model Fap.AspNetCore.ViewModel.FormViewModel
+@{
+    Layout = null;
+}
+
+<div class="row scrollable frmContainer" data-size="430">
+    <div class="col-xs-12">
+        <div class="col-xs-12">
+            <fap-freeform id="@Model.FormId" default-data="@Model.DefaultData" query-option="@Model.QueryOption"></fap-freeform>
+        </div>
+    </div>
+</div>
+<script src="~/lib/ueditor/ueditor.parse.js"></script>
+
+<script>
+    uParse('.frmContainer', {
+        rootPath: '../'
+    })
+    
+</script>
+

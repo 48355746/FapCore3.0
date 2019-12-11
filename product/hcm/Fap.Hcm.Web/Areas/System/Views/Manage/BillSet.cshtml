@@ -308,7 +308,7 @@
                     }
                 };
 
-                $.post("@Url.Content("~/api/coreapi/Persistence/")", { Id: id, Fid: fid, FFContent: jsonStr, Table_Name: 'CfgFreeForm', oper: 'edit' }, function (rv) {
+                $.post("@Url.Content("~/Api/Core/Persistence/")", { Id: id, Fid: fid, FFContent: jsonStr, Table_Name: 'CfgFreeForm', oper: 'edit' }, function (rv) {
                     if (rv) {
                         layer.msg('保存成功！');
                     }

@@ -1,0 +1,60 @@
+﻿@using Fap.AspNetCore.Controls
+@model Fap.AspNetCore.ViewModel.JsTreeViewModel
+@{
+    Layout = null;
+    string frmCols=Model.TempData["frmCols"];
+}
+<script>
+    function GetRefResult() {
+        var ref = $('#tree-@Model.CtrlName').jstree(true),
+                        sel = ref.get_selected();
+
+        if (!sel.length) { return false; }
+        sel = sel[0];
+        if (ref.get_node(sel).data.selectable == false)
+        {
+            bootbox.alert("你没有权限选择此项！");
+            return;
+        }
+        var ext = "";
+        debugger
+        if (ref.get_node(sel).data!=null&&ref.get_node(sel).data.ext != undefined)
+        {
+            ext = ref.get_node(sel).data.ext;
+        }
+        var code = sel;
+        var name = ref.get_text(sel);
+        var result = { "code": code, "name": name,"ext":ext,"frmcols":'@frmCols' };
+        return result;
+
+
+    }
+
+    //由树加载完后，调用该方法
+    function treeLoadedCallback(e, data) {
+        //非移动端加滚动条
+        if (!isMobile.any()) {
+            //加载树的滚动条
+            $('.treeScrollable').ace_scroll({
+                //styleClass: 'scroll-left scroll-margin scroll-thin scroll-dark scroll-light no-track scroll-visible'
+                styleClass: 'scroll-top',
+                size: $(window).innerHeight() - 190 || 400,
+                mouseWheelLock: true,
+                observeContent: true
+            });
+            setTimeout(function () {
+                $('.treeScrollable').trigger("mouseenter.ace_scroll");
+            }, 0);
+        }
+    }
+
+
+</script>
+
+
+<div class="row">
+    <div class="col-xs-12 treeScrollable">
+        <fap-tree id="@Model.CtrlName" is-async="false" json-data="@Model.JsonData" plugin-dnd="false" on-loaded="treeLoadedCallback(e, data)"> </fap-tree>
+    </div>
+</div>
+

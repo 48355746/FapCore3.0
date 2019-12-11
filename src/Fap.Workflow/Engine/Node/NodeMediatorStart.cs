@@ -50,7 +50,7 @@ namespace Fap.Workflow.Engine.Node
             }
             catch (System.Exception ex)
             {
-                throw;
+                throw ex;
             }
         }
 

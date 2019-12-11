@@ -35,7 +35,7 @@
 
             <div class="widget-body">
                 <div class="widget-main">
-                    <fap-tree id="jobgroup" is-async="true" get-url="/SystemApi/Manage/JobGroup/" edit-url="/SystemApi/Manage/OperJobGroup"></fap-tree>
+                    <fap-tree id="jobgroup" is-async="true" get-url="/System/Api/Manage/JobGroup/" edit-url="/System/Api/Manage/OperJobGroup"></fap-tree>
                 </div>
             </div>
         </div>
@@ -102,7 +102,7 @@
         }
     }
     function operJob(fid, param) {
-        $.post("@Url.Content("~/SystemApi/Manage/OperJobState")", { fid: fid, state: param }, function (data) {
+        $.post("@Url.Content("~/System/Api/Manage/OperJobState")", { fid: fid, state: param }, function (data) {
             if (data) {
                 bootbox.alert("操作成功");
                 $("#grid-fapjob").jqGrid('setGridParam', {
@@ -196,7 +196,7 @@
                     bootbox.alert('已经处于启用状态，不需要启用！');
                     return;
                 }
-                $.post("@Url.Content("~/SystemApi/Manage/OperJobState")", { fid: obj.Fid, state: param }, function (data) {
+                $.post("@Url.Content("~/System/Api/Manage/OperJobState")", { fid: obj.Fid, state: param }, function (data) {
                     if (data) {
                         bootbox.alert("操作成功");
                         $("#grid-fapjob").jqGrid('setGridParam', {

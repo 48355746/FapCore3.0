@@ -1,0 +1,79 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+    Layout = null;
+    string frmCols = Model.TempData["frmCols"];
+    string refCols = Model.TempData["refCols"];
+    
+}
+
+<script>
+    function GetRefResult() {
+        var id = jQuery("#grid-@Model.CtrlName").jqGrid('getGridParam', 'selrow');
+
+        if (id) {
+            var ret = jQuery("#grid-@Model.CtrlName").jqGrid('getRowData', id);
+            var code=ret.@Model.TempData["refid"];
+            var name=ret.@Model.TempData["refname"];
+            var exts = [];
+            if('@refCols'!='')
+            {
+                var cols='@refCols'.split(',');
+                for (var i = 0; i < cols.length; i++) {
+                    exts.push($.trim(ret[cols[i]]));
+                }
+            }
+            var ext=exts.join("^-^");
+            var result={"code":code,"name":name,"ext":ext,"frmcols":'@frmCols' };
+            return result;
+
+        }
+        return "";
+    }
+    function GetResults() {
+        var ids = jQuery("#grid-@Model.CtrlName").jqGrid('getGridParam', 'selarrrow');
+        var result=[];
+        if (ids) {
+            for (var i = 0; i < ids.length; i++) {
+                var ret = jQuery("#grid-@Model.CtrlName").jqGrid('getRowData', ids[i]);
+                var code=ret.@Model.TempData["refid"];
+                var name=ret.@Model.TempData["refname"];
+                var exts = [];
+                if('@frmCols'!='')
+                {
+                    var cols='@frmCols'.split(',');
+                    for (var i = 0; i < cols.length; i++) {
+                        exts.push($.trim(ret[cols[i]]));
+                    }
+                }
+                var ext=exts.join("^-^");
+                var selObj={"code":code,"name":name,"ext":ext,"frmcols":'@frmCols'};
+                result.push(selObj);
+            }
+
+            return result;
+
+        }
+        return "";
+    }
+    //function OnComplete()
+    //{
+    //    //加载树的滚动条
+    //    $('.gridScrollable').ace_scroll({
+    //        //styleClass: 'scroll-left scroll-margin scroll-thin scroll-dark scroll-light no-track scroll-visible'
+    //        styleClass: 'scroll-top',
+    //        size: $(window).innerHeight() - 240 || 400,
+    //        mouseWheelLock: true,
+    //        observeContent: true
+    //    });
+    //    setTimeout(function () {
+    //        $('.treeScrollable').trigger("mouseenter.ace_scroll");
+    //    }, $(window).innerHeight() - 240 || 400);
+    //}
+</script>
+
+<div class="row">
+    <div class="col-xs-12 gridScrollable">
+        <fap-grid id="@Model.CtrlName" query-option="@Model.QueryOption" auto-width="true" post-data="@Model.PostData" height="196" search-toolbar="true" wrapper="gridScrollable" shrink-fit="false"></fap-grid>
+   
+    </div>
+</div>

@@ -19821,7 +19821,7 @@ th[aria-selected=true] {
 .ui-jqgrid-btable textarea,
 .ui-jqgrid-btable select {
     padding: 2px;
-    width: auto;
+    width: 100%;
     max-width: 100%;
     margin-bottom: 0;
 }

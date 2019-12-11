@@ -124,7 +124,7 @@
                 $("#selBillField").empty();//单据字段列表清空
                 return;
             }
-            $.get("@Url.Content("~/api/coreapi/fieldlist/")" + billVal, function (data) {
+            $.get("@Url.Content("~/Api/Core/fieldlist/")" + billVal, function (data) {
         if (data) {
             var filter = $.grep(data, function (d, i) {
                 return d.isDefaultCol != 1 || d.colName == 'Fid';
@@ -155,7 +155,7 @@
                 $("#selBizField2").empty();
                 return;
             }
-            $.get("@Url.Content("~/api/coreapi/fieldlist/")" + bizVal, function (data) {
+            $.get("@Url.Content("~/Api/Core/fieldlist/")" + bizVal, function (data) {
         if (data) {
             var filter = $.grep(data, function (d, i) {
                 return d.isDefaultCol != 1 || d.colName == 'Fid';
@@ -218,7 +218,7 @@
     setData.CallBackClass = $("#txtCallBack").val();
     var result = false;
             $.ajax({
-        url: "@Url.Content("~/SystemApi/Manage/Setting/BillWriteBackRule")",    //请求的url地址
+        url: "@Url.Content("~/System/Api/Manage/Setting/BillWriteBackRule")",    //请求的url地址
                 dataType: "json",   //返回格式为json
                 async: false, //请求是否异步，默认为异步，这也是ajax重要特性
                 data: setData,    //参数值

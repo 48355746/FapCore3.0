@@ -28,7 +28,7 @@ namespace Fap.Workflow.Engine.Utility
             }
             catch (System.Exception ex)
             {
-                throw;
+                throw ex;
             }
         }
 
@@ -47,7 +47,7 @@ namespace Fap.Workflow.Engine.Utility
             }
             catch(System.Exception ex)
             {
-                throw;
+                throw ex;
             }
         }
 
@@ -94,7 +94,7 @@ namespace Fap.Workflow.Engine.Utility
             }
             catch (System.Exception ex)
             {
-                throw;
+                throw ex;
             }
         }
 
@@ -115,7 +115,7 @@ namespace Fap.Workflow.Engine.Utility
             }
             catch (System.Exception ex)
             {
-                throw;
+                throw ex;
             }
         }
         #endregion

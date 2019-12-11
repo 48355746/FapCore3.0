@@ -31,7 +31,7 @@
 
             <div class="widget-body">
                 <div class="widget-main treescrollable">
-                    <fap-tree id="usergroup" is-async="true" get-url="/SystemApi/Manage/UserGroup" edit-url="/SystemApi/Manage/OperUserGroup"></fap-tree>
+                    <fap-tree id="usergroup" is-async="true" get-url="/System/Api/Manage/UserGroup" edit-url="/System/Api/Manage/OperUserGroup"></fap-tree>
                 </div>
             </div>
         </div>
@@ -39,16 +39,23 @@
     <div class="col-xs-12 col-sm-9">
         <div class="widget-box">
             <div class="widget-header widget-header-flat">
-                <h4 class="widget-title"><fap-multilang lang-key="user" default-content= "用户"></fap-multilang></h4>
+                <h4 class="widget-title"><fap-multilang lang-key="user" default-content="用户"></fap-multilang></h4>
 
-                <div class="widget-toolbar">
+                <div class="widget-toolbar">               
                     <a href="#" data-action="fullscreen" class="orange2">
                         <i class="ace-icon fa fa-expand"></i>
+                    </a>
+
+                </div>
+                <div class="widget-toolbar no-border">
+                    <a href="#" id="btnResetPassword" class="info">
+                        <i class="ace-icon fa fa-cog blue"></i>
+                        重置密码
                     </a>
                 </div>
             </div>
             <div class="widget-body">
-                <div class="widget-toolbox">
+                @*<div class="widget-toolbox">
                     <div class="btn-toolbar">
                         <div class="btn-group">
                             <button id="btnResetPassword" class="btn btn-white">
@@ -57,7 +64,7 @@
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>*@
                 <div class="widget-main">
                     <fap-grid id="user"query-option="@Model.QueryOption" post-data="@Model.PostData" auto-width="true" on-form-init-add="afterInitFormCallback" on-form-init-edit="initEdit" multi-box-only="true" multi-select="true"  on-select-row="editRow" oper-cud="true"></fap-grid>
 
@@ -102,7 +109,7 @@
                 var rows = getSelectedRows("grid-user");
                 if (rows != null) {
                     var fids = rows.map(function (d) { return d.Fid });
-                    $.post(basePath + "/SystemApi/Manage/ResetPassword", { "Fids": fids }, function (rv) {
+                    $.post(basePath + "/System/Api/Manage/ResetPassword", { "Fids": fids }, function (rv) {
                         if (rv) {
                             $.msg("重置成功！");
                         } else {

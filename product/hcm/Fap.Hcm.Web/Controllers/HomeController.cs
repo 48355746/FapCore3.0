@@ -220,7 +220,7 @@ namespace Fap.Hcm.Web.Controllers
                     if (userpwd == _configService.GetSysParamValue("employee.user.password"))
                     {
                         //等于默认密码需要跳转到修改密码页
-                        return LocalRedirect("~/Home/MainFrame#SelfService/Ess/ResetPassword/true");
+                        return LocalRedirect("~/Home/MainFrame#Home/ResetPassword/1");
                     }
                     else
                     {
@@ -258,7 +258,7 @@ namespace Fap.Hcm.Web.Controllers
         [HttpGet]
         public ActionResult ResetPassword(string id)
         {
-            if (id.IsPresent() && id == "true")
+            if (id.IsPresent() && id.ToBool())
             {
                 ViewBag.IsOri = 1;
             }

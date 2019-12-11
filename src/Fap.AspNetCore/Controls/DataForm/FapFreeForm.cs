@@ -614,8 +614,8 @@ namespace Fap.AspNetCore.Controls.DataForm
                     script.AppendLine("var initFile" + _id + tempFid + "=function(){");
                     script.AppendLine("$(\"#" + _id + tempFid + "-FILE\").fileinput({");
                     script.AppendLine("language: 'zh',");
-                    script.AppendLine("uploadUrl:\"" + _applicationContext.BaseUrl+ "/api/coreapi/uploadfile/" + field.FieldValue + "\",");
-                    //script.AppendLine("deleteUrl:\"http://" + HttpContext.Current.Request.Url.Authority + HttpContext.Current.Request.ApplicationPath  + "/api/coreapi/deletefile\",");
+                    script.AppendLine("uploadUrl:\"" + _applicationContext.BaseUrl+ "/Api/Core/uploadfile/" + field.FieldValue + "\",");
+                    //script.AppendLine("deleteUrl:\"http://" + HttpContext.Current.Request.Url.Authority + HttpContext.Current.Request.ApplicationPath  + "/Api/Core/deletefile\",");
                     if (allowExt.IsPresent())
                     {
                         script.AppendLine("allowedFileExtensions : [" + allowExt + "],");
@@ -647,7 +647,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     //        attList.ToList().ForEach(a =>
                     //        {
                     //            initPre.AppendLine(" \"<img style='height:160px' src='http://" + _session.BaseURL + "/Common/Home/AttachmentImg/" + a.Fid + "'>\",");
-                    //            initPreC.AppendLine("{caption: \"" + a.FileName + "\", width: \"120px\", url: \"http://" + _session + "/api/coreapi/deletefile\", key: \"" + a.Fid + "\"},");
+                    //            initPreC.AppendLine("{caption: \"" + a.FileName + "\", width: \"120px\", url: \"http://" + _session + "/Api/Core/deletefile\", key: \"" + a.Fid + "\"},");
                     //        });
                     //        initPreC.AppendLine("],");
                     //        initPre.AppendLine(" ],");
@@ -1009,7 +1009,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                             }
                         }
                         jsonData += "}";
-                        script.AppendLine("$.post(basePath+'/api/coreapi/frminjection'," + jsonData + ",function(result){");
+                        script.AppendLine("$.post(basePath+'/Api/Core/frminjection'," + jsonData + ",function(result){");
                         script.AppendLine("$.each(result,function(name,value) {");
                         script.AppendLine("$('#'+name).val(value)");
                         script.AppendLine("});");

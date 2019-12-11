@@ -103,7 +103,7 @@
             //加载初始化
             var initMailTmpl = function (fid) {
                 debugger
-                $.get("@Url.Content("~/SystemApi/Manage/MailTemplate/")" + fid, function (data) {
+                $.get("@Url.Content("~/System/Api/Manage/MailTemplate/")" + fid, function (data) {
                     if (data) {
                         $("#txtTemplateName").val(data.name);
                         $("#selTmplCategory").val(data.code);
@@ -132,7 +132,7 @@
             }
         }
         var getColsByTableName = function (tableName) {
-            $.get("@Url.Content("~/api/coreapi/fieldlist/")" + tableName, function (data) {
+            $.get("@Url.Content("~/Api/Core/fieldlist/")" + tableName, function (data) {
 
                 initColsToolBar(data);
             })

@@ -122,7 +122,7 @@ var Persistence = function (formid, tn, callback, noPrompt) {
             var result = false;
             $.ajax({
                 type: "get",
-                url: basePath + "/api/coreapi/filecount/" + fid,
+                url: basePath + "/Api/Core/filecount/" + fid,
                 async: false,
                 dataType: "text",
                 success: function (obj) {
@@ -160,7 +160,7 @@ var Persistence = function (formid, tn, callback, noPrompt) {
         var rv = { success: false };
         $.ajax({
             type: "post",
-            url: basePath + '/api/coreapi/Persistence?from=form',//这里不用带tn 因为 表单中有tn值
+            url: basePath + '/Api/Core/Persistence?from=form',//这里不用带tn 因为 表单中有tn值
             data: formData,
             async: false,
             dataType: "json",
@@ -213,7 +213,7 @@ $(function () {
         bootbox.confirm("确定删除此附件?", function (result) {
             if (result) {
                 //
-                $.post(basePath + "/api/coreapi/deletefile/", { key: fid }, function (rv) {
+                $.post(basePath + "/Api/Core/deletefile/", { key: fid }, function (rv) {
                     if (rv === "1") {
                         df.parent().parent().remove();
                     }
@@ -227,7 +227,7 @@ $(function () {
     $(document).on(ace.click_event, ".formctrl.attached-file", function (e) {
         e.preventDefault();
         var fid = $(this).data("filefid");
-        $.get(basePath + "/api/coreapi/viewfile/" + fid, function (data) {
+        $.get(basePath + "/Api/Core/viewfile/" + fid, function (data) {
             if (data.success) {
                 if (data.id === 'img') {
                     openNewWindow(basePath + "/UploadFiles/View/" + data.msg);
@@ -289,7 +289,7 @@ var loadRefMessageBox = function (title, frmid, colid, ctrlid, refurl, extra) {
             $(window).triggerHandler('resize.jqGrid');//触发窗口调整,使Grid得到正确的大小
     });
     dialog.init(function () {
-        var url = basePath + '/PublicCtrl/' + refurl + '/' + colid + '?frmid=' + frmid + '&ctrlid=' + ctrlid;
+        var url = basePath + '/Component/' + refurl + '/' + colid + '?frmid=' + frmid + '&ctrlid=' + ctrlid;
         if (extra != '') {
             var param = extra.join("&");
             url += "&" + param;
@@ -329,7 +329,7 @@ var loadFileList = function (frmid,ctrlName, bid,isFreeform) {
     var rules = [];
     rules.push({ "field": "Bid", "op": "eq", "data": bid});
     filter.rules = rules;
-    $.post(basePath + "/api/coreapi/querydata", { EntityName: "FapAttachment", QueryCols: "Id,Fid,FileName,FileType", filters: JSON.stringify(filter) }, function (rv) {
+    $.post(basePath + "/Api/Core/querydata", { EntityName: "FapAttachment", QueryCols: "Id,Fid,FileName,FileType", filters: JSON.stringify(filter) }, function (rv) {
         if (rv.success) {
             $("#frm-" + frmid + " #file" + frmid + ctrlName).parent().parent().parent().find(".filelist").remove();
             var data = rv.data;
@@ -346,7 +346,7 @@ var loadFileList = function (frmid,ctrlName, bid,isFreeform) {
                     '                <i class="ace-icon fa fa-paperclip bigger-110 "></i>',
                     '                <span class="attached-name">' + d.FileName +'</span> </a>',
                     '            <span class="action-buttons">',
-                    '                <a href="'+basePath+'/PublicCtrl/DownloadFile/'+d.Fid+'">',
+                    '                <a href="' + basePath +'/Component/DownloadFile/'+d.Fid+'">',
                     '                    <i class="ace-icon fa fa-download bigger-125 blue"></i>',
                     '                </a>',
                     '                <a href="#" data-filefid="'+d.Fid+'" class="formctrl deletefile">',
@@ -418,7 +418,7 @@ var loadImageControl = function (ctrlid) {
                 // ***UPDATE AVATAR HERE*** //
                 //for a working upload example you can replace the contents of this function with
                 //examples/profile-avatar-update.js
-                var submit_url = basePath + "/api/coreapi/uploadfile/";//please modify submit_url accordingly
+                var submit_url = basePath + "/Api/Core/uploadfile/";//please modify submit_url accordingly
                 var deferred = null;
                 var avatar = '#' + ctrlid;
                 //if value is empty (""), it means no valid files were selected

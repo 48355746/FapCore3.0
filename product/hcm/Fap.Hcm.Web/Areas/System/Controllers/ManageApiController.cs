@@ -24,8 +24,9 @@ using Fap.Core.Utility;
 
 namespace Fap.Hcm.Web.Areas.System.Controllers
 {
+    [Area("System")]
     [Produces(MediaTypeNames.Application.Json)]
-    [Route("SystemApi/Manage")]
+    [Route("[area]/Api/Manage")]
     public class ManageApiController : FapController
     {
         private ISchedulerService _schedule;

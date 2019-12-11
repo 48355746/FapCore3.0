@@ -1,0 +1,62 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+    Layout = null;
+    string gridid = "grid-" + Model.JqgridId;
+    string pagerid = "pager-" + Model.JqgridId;
+    string returnfields = Model.TempData["returnfields"];
+}
+<script>
+   
+    //获取组件返回值
+    var GetCompontentReturnValue=function(){
+        var multi=false;
+        @if (Model.IsMulti)
+            {
+               <text> multi = true;</text>
+            }
+        if(!multi)
+        {
+            return GetCompontentResult();
+        }else {
+            return GetCompontentResults();
+        }
+    }
+    var GetRefResult=GetCompontentReturnValue;
+    var GetCompontentResult = function () {
+        var id = jQuery("#@gridid").jqGrid('getGridParam', 'selrow');
+        if (id) {
+            var ret = jQuery("#@gridid").jqGrid('getRowData', id);
+            var result = {};
+            @foreach (var item in returnfields.Split(','))
+            {
+                <text>result.@item=ret.@item;</text>
+            }
+            return result;
+        }
+        return "";
+    }
+    var GetCompontentResults=function() {
+        var ids = jQuery("#@gridid").jqGrid('getGridParam', 'selarrrow');
+        var result=[];
+        if (ids) {
+            for (var i = 0; i < ids.length; i++) {
+                var ret = jQuery("#@gridid").jqGrid('getRowData', ids[i]);
+                var selObj = {};
+                @foreach (var item in returnfields.Split(','))
+                {
+                    <text>selObj.@item=ret.@item;</text>
+                }
+                result.push(selObj);
+            }
+        }
+        return result;
+    }
+</script>
+
+
+<div class="row">
+    <div class="col-xs-12">
+        <fap-grid id="@Model.JqgridId" query-option="@Model.QueryOption" wrapper="fapwindow" auto-width="true" post-data="@Model.PostData" view-records="true" multi-select="@Model.IsMulti" shrink-fit="false" search-toolbar="true"></fap-grid>
+    </div>
+</div>
+

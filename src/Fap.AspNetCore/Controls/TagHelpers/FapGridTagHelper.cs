@@ -234,7 +234,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                 }
                 else
                 {
-                    grid.SetEditUrl($"{_applicationContext.BaseUrl}/api/coreapi/Persistence?tn={QueryOption.TableName}&from=grid");
+                    grid.SetEditUrl($"{_applicationContext.BaseUrl}/Api/Core/Persistence?tn={QueryOption.TableName}&from=grid");
                 }
             }
             if (Caption.IsPresent())

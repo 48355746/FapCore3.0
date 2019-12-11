@@ -60,7 +60,7 @@ namespace Fap.Hcm.Web
                 options.PopupShowTimeWithChildren = true;
                 options.RouteBasePath = "/profiler";
             });
-            services.AddControllersWithViews().AddNewtonsoftJson();
+            services.AddControllersWithViews().AddNewtonsoftJson().AddRazorRuntimeCompilation();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

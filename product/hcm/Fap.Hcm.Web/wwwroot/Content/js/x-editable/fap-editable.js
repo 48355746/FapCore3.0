@@ -256,9 +256,9 @@ $(function(){
                     title_html: true,
                     open: function () {
                         $("#refContent-" + tablename + colname).html("<h3 class=' smaller lighter grey'><i class='ace-icon fa fa-spinner fa-spin orange bigger-125'></i>正在加载，请稍后...</h3>");
-                        var url = basePath + '/PublicCtrl/' + refurl + '/' + refid;//+ '?frmid=' + tablename + '&ctrlid=' + colname;
+                        var url = basePath + '/Component/' + refurl + '/' + refid;//+ '?frmid=' + tablename + '&ctrlid=' + colname;
                         if (component != '') {
-                            url = basePath + '/PublicCtrl/' + refurl + '/?fid=' + component;
+                            url = basePath + '/Component/' + refurl + '/?fid=' + component;
                             if (multi == true) {
                                 url = url + "&multi=1";
                             } else {

@@ -56,7 +56,7 @@ function refreshBaseJqGrid(grdid) {
 //callback 扩展js方法
 //title 标题;gid jqgrid的ID;icon 图标;tablename 表名（frm-tablename 表单名称）;
 //id业务数据主键值;fromInitCallback 表单初始化事件;saveCompletedCallback 保存完毕事件
-var loadFormMessageBox = function (title, gid, icon, tablename, id, fromInitCallback, saveCompletedCallback) {
+var loadFormMessageBox = function (title, gid, icon, tablename, id,queryCols, fromInitCallback, saveCompletedCallback) {
     var dialog = bootbox.dialog({
         title: '<i class="ace-icon ' + icon + '"></i> ' + title,
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
@@ -122,7 +122,7 @@ var loadFormMessageBox = function (title, gid, icon, tablename, id, fromInitCall
         initDialog();
     });
     function initDialog() {
-        var url = $.randomUrl(basePath + '/PublicCtrl/Dataform/' + id + '?tn=' + tablename);
+        var url = $.randomUrl(basePath + '/Component/Dataform/' + id + '?tn=' + tablename + '&qrycols=' + queryCols);
         $.get(url, function (ev) {
             dialog.find('.bootbox-body').html(ev);
             if ($.isFunction(fromInitCallback)) {
@@ -143,7 +143,7 @@ var viewFormMessageBox = function (fid, tablename) {
         footer:false
     });
     dialog.init(function () {
-        dialog.find('.bootbox-body').load(basePath + "/PublicCtrl/DataFormView/0", { fid: fid, tn: tablename });
+        dialog.find('.bootbox-body').load(basePath + "/Component/DataFormView/0", { fid: fid, tn: tablename });
 
     });
 };
@@ -173,7 +173,7 @@ var deleteGridRow = function (gid, tableName, logicDelete,formtoken, onCompleted
     if (dr) {
         bootbox.confirm('确定要删除选中的吗?', function (result) {
             if (result) {
-                $.post(basePath + "/api/coreapi/Persistence/", { "oper": "del", "Table_Name": tableName, "formtoken": formtoken ,"logicdelete": logicDelete, "Fid": dr }, function (rv) {
+                $.post(basePath + "/Api/Core/Persistence/", { "oper": "del", "Table_Name": tableName, "formtoken": formtoken ,"logicdelete": logicDelete, "Fid": dr }, function (rv) {
                     if (rv.success) {
                         if ($.isFunction(onCompletedCallback)) {
                             onCompletedCallback();
@@ -229,7 +229,7 @@ var openRefrenceWindow = function (title, colid,  refurl, selectcallback,clearca
             $(window).triggerHandler('resize.jqGrid');//触发窗口调整,使Grid得到正确的大小
     });
     dialog.init(function () {
-        var url = basePath + '/PublicCtrl/' + refurl + '/' + colid ;        
+        var url = basePath + '/Component/' + refurl + '/' + colid ;        
         $.get(url, function (ev) {
             dialog.find('.bootbox-body').html(ev);
 
@@ -307,7 +307,7 @@ var loadBatchUpdateMessageBox = function (title, gid, icon, tablename, id, callb
                 return;
             }
             $modal.find(".step-content [data-step=2]").html('<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>');
-            var url = $.randomUrl(basePath + '/PublicCtrl/Dataform/0?tn=' + tablename + "&frm=batchupdate&qrycols=" + fields.join());
+            var url = $.randomUrl(basePath + '/Component/Dataform/0?tn=' + tablename + "&frm=batchupdate&qrycols=" + fields.join());
             $.get(url, function (ev) {
                 $modal.find(".step-content [data-step=2]").html(ev);
             });
@@ -325,7 +325,7 @@ var loadBatchUpdateMessageBox = function (title, gid, icon, tablename, id, callb
         });
         var formData = GetFapFormData("frm-batchupdate");
         formData.Fids = fids;
-        $.post(basePath + "/api/coreapi/BatchUpdate", formData, function (rv) {
+        $.post(basePath + "/Api/Core/BatchUpdate", formData, function (rv) {
             if (rv.success) {
                 $modal.modal("hide");
                 $modal.remove();
@@ -345,7 +345,7 @@ var loadBatchUpdateMessageBox = function (title, gid, icon, tablename, id, callb
     $modal.find(".modal-body [data-step=1]").html("");
     $modal.find(".modal-body [data-step=1]").append($fieldList);
 
-    $.get(basePath + "/api/coreapi/fieldlist/" + tablename, function (data) {
+    $.get(basePath + "/Api/Core/fieldlist/" + tablename, function (data) {
         $fieldList.empty();
         $.each(data, function (i, d) {
             if (d.isDefaultCol === 1 || d.showAble === 0) {
@@ -392,7 +392,7 @@ var loadExportMessageBox = function (title, gid, icon, tablename, id, callback) 
                     postData.QuerySet.ExportCols = fields.join();
                     //var sqlRv = JSON.stringify(postData);
                     //alert(sqlRv);
-                    $.post(basePath + "/api/coreapi/export", postData, function (data) {
+                    $.post(basePath + "/Api/Core/export", postData, function (data) {
                         if (data.rv) {
                             window.location.href = basePath + "/UploadFiles/" + data.fn;
                             //bootbox.alert("生成成功");
@@ -412,7 +412,7 @@ var loadExportMessageBox = function (title, gid, icon, tablename, id, callback) 
     dialog.init(function () {
         dialog.find('.bootbox-body').html('');
         dialog.find('.bootbox-body').append($fieldList);
-        $.get(basePath + "/api/coreapi/fieldlist/" + tablename, function (data) {
+        $.get(basePath + "/Api/Core/fieldlist/" + tablename, function (data) {
             $fieldList.empty();
             $.each(data, function (i, d) {
                 if (d.isDefaultCol === 1 && d.colName !== 'Fid') {
@@ -436,7 +436,7 @@ var loadExportMessageBox = function (title, gid, icon, tablename, id, callback) 
 //title 标题
 //tablename 表名
 var loadExportTmplMessageBox = function (title, tablename) {
-    $.get(basePath + "/api/coreapi/exporttmpl/" + tablename, function (data) {
+    $.get(basePath + "/Api/Core/exporttmpl/" + tablename, function (data) {
         if (data.rv) {
             window.location.href = basePath + "/UploadFiles/" + data.fn;
             //bootbox.alert("生成成功");
@@ -447,7 +447,7 @@ var loadExportTmplMessageBox = function (title, tablename) {
 };
 var loadExportDataMessageBox = function (title, tableName) {
     var postData = { TableName: tableName };
-    $.post(basePath + "/api/coreapi/exportdata", postData, function (data) {
+    $.post(basePath + "/Api/Core/exportdata", postData, function (data) {
         if (data.rv) {
             window.location.href = basePath + "/UploadFiles/" + data.fn;
             //bootbox.alert("生成成功");
@@ -494,7 +494,7 @@ var loadImportDataMessageBox = function (title, gid, icon, tablename, id, callba
         });
         $file.fileinput({
             language: 'zh',
-            uploadUrl: basePath + '/api/coreapi/impdata/' + tablename,
+            uploadUrl: basePath + '/Api/Core/impdata/' + tablename,
             showCaption: false,
             allowedFileExtensions: ["xls", "xlsx"],
             showClose: true
@@ -528,7 +528,7 @@ var showAttachmentWin = function (fid, grdid) {
     dialog.init(function () {
         var loadUrl;
 
-        loadUrl = basePath + "/PublicCtrl/AttachmentInfo/" + fid;
+        loadUrl = basePath + "/Component/AttachmentInfo/" + fid;
 
         $.get(loadUrl, function (ev) {
             dialog.find('.bootbox-body').html(ev);

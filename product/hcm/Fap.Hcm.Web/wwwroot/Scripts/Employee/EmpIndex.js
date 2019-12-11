@@ -92,7 +92,7 @@
             file.ace_file_input('loading', true);
 
             deferred = $.ajax({
-                url: basePath + "/api/coreapi/uploadfile/" + empphoto,
+                url: basePath + "/Api/Core/uploadfile/" + empphoto,
                 type: "POST",
                 processData: false,//important
                 contentType: false,//important

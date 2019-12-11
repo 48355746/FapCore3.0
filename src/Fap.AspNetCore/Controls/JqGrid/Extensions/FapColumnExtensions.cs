@@ -20,22 +20,20 @@ namespace Fap.AspNetCore.Controls.JqGrid.Extensions
             {
                 if (fapColumns.Any())
                 {
-                    Stopwatch timePerParseTotal = Stopwatch.StartNew();
                     foreach (FapColumn fc in fapColumns)
                     {
                         if (systemDefaultFields.Contains(fc.ColName))
                             continue;
-                        Stopwatch timePerParse = Stopwatch.StartNew();
                         yield return fc.ToColumn( multiLang,dbContext, disCols, hideCols);
-                        timePerParse.Stop();
-                        var ts = timePerParse.ElapsedMilliseconds;
-
-                        logger.LogInformation($"{fc.ColName}==========={ts}毫秒");
+                        if(fc.CtrlType==FapColumn.CTRL_TYPE_REFERENCE)
+                        {
+                            FapColumn fcMC= (FapColumn)fc.Clone();
+                            fcMC.ColName = fc.ColName + "MC";
+                            fcMC.ShowAble = 0;
+                            yield return fcMC.ToColumn(multiLang, dbContext, disCols, hideCols);
+                        }
+                       
                     }
-                    timePerParseTotal.Stop();
-                    var tss = timePerParseTotal.ElapsedMilliseconds;
-
-                    logger.LogInformation($"总耗时：{tss}毫秒");
                 }
             }
         }
@@ -174,7 +172,7 @@ namespace Fap.AspNetCore.Controls.JqGrid.Extensions
                 }
                 else
                 {
-                    if (fmt.EqualsWithIgnoreCase("HH:mm"))
+                    if (fmt.IsPresent()&&fmt.EqualsWithIgnoreCase("HH:mm"))
                     {
                         fmt = "H:i";
                     }
