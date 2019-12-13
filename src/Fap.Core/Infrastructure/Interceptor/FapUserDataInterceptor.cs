@@ -1,20 +1,17 @@
-﻿using Fap.Core.Infrastructure.Interface;
-using Fap.Core.Infrastructure.Thirdparty;
-using Fap.Core.Utility;
-using Fap.Model;
-using Fap.Model.Infrastructure;
+﻿using Fap.Core.Utility;
 using System.Collections.Generic;
-using Fap.Core.DataAccess.DbContext;
-using Fap.Core.Rbac;
-using Fap.Core.Platform.Domain;
 using Microsoft.Extensions.Logging;
-using Fap.Core.Events;
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using Fap.Core.DataAccess.BaseAccess;
-using Fap.Model.MetaData;
+using Fap.Core.DataAccess.Interceptor;
+using Fap.Core.Tracker;
+using Fap.Core.Infrastructure.Enums;
+using Fap.Core.Rbac.Model;
+using Fap.Core.Extensions;
+using Fap.Core.Infrastructure.Config;
+using Fap.Core.DataAccess;
 
-namespace Fap.Core.Infrastructure.Support.Interceptor
+namespace Fap.Core.Infrastructure.Interceptor
 {
     /// <summary>
     /// FapUser元数据的数据拦截器
@@ -25,11 +22,9 @@ namespace Fap.Core.Infrastructure.Support.Interceptor
         private static string TableName = "FapUser";
 
         private ILogger _logger;
-        private readonly IEventBus _eventBus;
 
-        public FapUserDataInterceptor(IServiceProvider provider, IDbContext dataAccessor, DbSession dbSession) : base(provider, dataAccessor, dbSession)
+        public FapUserDataInterceptor(IServiceProvider provider, IDbContext dataAccessor) : base(provider, dataAccessor)
         {
-            _eventBus = provider.GetService<IEventBus>();
             _logger = _loggerFactory.CreateLogger<FapUserDataInterceptor>();
         }
 
@@ -48,7 +43,7 @@ namespace Fap.Core.Infrastructure.Support.Interceptor
                 {
                     string orginPassword = dynamicData.Get("UserPassword").ToString();
                     if (!string.IsNullOrEmpty(orginPassword))// && orginPassword.Length < 20)
-                    {                        
+                    {
                         dynamicData.Add("UserPassword", passwordHasher.HashPassword(orginPassword));
                     }
                     else
@@ -66,7 +61,7 @@ namespace Fap.Core.Infrastructure.Support.Interceptor
         /// </summary>
         public override void AfterDynamicObjectUpdate(dynamic dynamicData)
         {
-            this.DataSynchDynamicObject(dynamicData, RealtimeData.OPER_UPDATE);
+            this.DataSynchDynamicObject(dynamicData, DataChangeTypeEnum.UPDATE);
 
         }
 
@@ -80,16 +75,28 @@ namespace Fap.Core.Infrastructure.Support.Interceptor
                 if (dynamicData.ContainsKey("UserPassword"))
                 {
                     string orginPassword = dynamicData.Get("UserPassword").ToString();
-                    if (!string.IsNullOrEmpty(orginPassword))
+                    if (orginPassword.IsPresent())
                     {
-                        dynamicData.Add("UserPassword",passwordHasher.HashPassword(orginPassword));
+                        dynamicData.Add("UserPassword", passwordHasher.HashPassword(orginPassword));
                     }
                     else
                     {
                         dynamicData.Add("UserPassword", passwordHasher.HashPassword("1"));
                     }
                 }
-            } 
+                else
+                {
+                    //配置默认密码
+                    string password = _provider.GetService<IFapConfigService>().GetSysParamValue("employee.user.password");
+                    if (password.IsMissing())
+                    {
+                        password = "1";
+                    }
+                    PasswordHasher pwdHasher = new PasswordHasher();
+                    password = pwdHasher.HashPassword(password);
+                    dynamicData.Add("UserPassword", password);
+                }
+            }
         }
 
         /// <summary>
@@ -97,31 +104,33 @@ namespace Fap.Core.Infrastructure.Support.Interceptor
         /// </summary>
         public override void AfterDynamicObjectInsert(dynamic dynamicData)
         {
-            this.DataSynchDynamicObject(dynamicData, RealtimeData.OPER_ADD);
+            this.DataSynchDynamicObject(dynamicData, DataChangeTypeEnum.ADD);
         }
 
         /// <summary>
         /// 新增动态对象后
         /// </summary>
-        public override  void AfterDynamicObjectDelete(dynamic dynamicData)
+        public override void AfterDynamicObjectDelete(dynamic dynamicData)
         {
-            this.DataSynchDynamicObject(dynamicData, RealtimeData.OPER_DELETE);
+            this.DataSynchDynamicObject(dynamicData, DataChangeTypeEnum.DELETE);
         }
 
-        private void DataSynchDynamicObject(dynamic user, string oper)
+        private void DataSynchDynamicObject(dynamic user, DataChangeTypeEnum oper)
         {
-            RealtimeData data = new RealtimeData();
-            data.Oper = oper;
-            data.Type = "user";
-            List<dynamic> users = new List<dynamic>();
-            //users.Add(BaseModel.ToEntity<FapUser>(user));
-            users.Add(user);
-            data.Data = users;
-            //采用事件驱动，发布事件
-            this._eventBus.PublishAsync(new RealtimeSynEvent(data));
-            //RealtimeSynchServiceFactory.GetInstance().EnqueueQueue(data);
+            EventDataTracker tracker = _provider.GetService<EventDataTracker>();
+            _provider.GetService<EventDataReporter>().Subscribe(tracker);          
+            if (tracker != null)
+            {
+                EventData data = new EventData();
+                data.ChangeDataType = oper.ToString();
+                data.EntityName = TableName;
+                List<dynamic> users = new List<dynamic>();
+                users.Add(user);
+                data.ChangeData = users;
+                tracker.TrackEventData(data);
+            }
         }
-       
+
 
         #endregion 动态对象
 
@@ -135,9 +144,9 @@ namespace Fap.Core.Infrastructure.Support.Interceptor
             {
                 FapUser user = (FapUser)entity;
                 string orginPassword = user.UserPassword;
-                if (!string.IsNullOrEmpty(orginPassword) && orginPassword.Length < 80)
+                if (orginPassword.IsPresent() && orginPassword.Length < 80)
                 {
-                    user.UserPassword =passwordHasher.HashPassword(orginPassword);
+                    user.UserPassword = passwordHasher.HashPassword(orginPassword);
                 }
             }
         }
@@ -146,15 +155,15 @@ namespace Fap.Core.Infrastructure.Support.Interceptor
         /// <summary>
         /// 更新实体对象后
         /// </summary>
-        public override  void AfterEntityUpdate(object entity)
+        public override void AfterEntityUpdate(object entity)
         {
-            this.DataSynchEntity(entity, RealtimeData.OPER_UPDATE);
+            this.DataSynchEntity(entity, DataChangeTypeEnum.UPDATE);
         }
 
         /// <summary>
         /// 新增实体对象前
         /// </summary>
-        public override  void BeforeEntityInsert(object entity)
+        public override void BeforeEntityInsert(object entity)
         {
             if (entity != null && entity is FapUser)
             {
@@ -162,7 +171,7 @@ namespace Fap.Core.Infrastructure.Support.Interceptor
                 string orginPassword = user.UserPassword;
                 if (!string.IsNullOrEmpty(orginPassword))
                 {
-                    user.UserPassword =passwordHasher.HashPassword(orginPassword);
+                    user.UserPassword = passwordHasher.HashPassword(orginPassword);
                 }
                 else
                 {
@@ -176,7 +185,7 @@ namespace Fap.Core.Infrastructure.Support.Interceptor
         /// </summary>
         public override void AfterEntityInsert(object entity)
         {
-            this.DataSynchEntity(entity, RealtimeData.OPER_ADD);
+            this.DataSynchEntity(entity, DataChangeTypeEnum.ADD);
         }
 
         /// <summary>
@@ -184,27 +193,30 @@ namespace Fap.Core.Infrastructure.Support.Interceptor
         /// </summary>
         public override void AfterEntityDelete(object entity)
         {
-            this.DataSynchEntity(entity, RealtimeData.OPER_DELETE);
+            this.DataSynchEntity(entity, DataChangeTypeEnum.DELETE);
         }
-       
 
-        private void DataSynchEntity(object entity, string oper)
+
+        private void DataSynchEntity(object entity, DataChangeTypeEnum oper)
         {
-            RealtimeData data = new RealtimeData();
-            data.Oper = oper;
-            data.Type = "user";
-            if (entity is FapUser)
+            EventDataTracker tracker = _provider.GetService<EventDataTracker>();
+            if (tracker != null)
             {
-                List<FapUser> users = new List<FapUser>();
-                users.Add(entity as FapUser);
-                data.Data = users;
+                EventData data = new EventData();
+                data.ChangeDataType = oper.ToString();
+                data.EntityName = TableName;
+                if (entity is FapUser)
+                {
+                    List<FapUser> users = new List<FapUser>();
+                    users.Add(entity as FapUser);
+                    data.ChangeData = users;
+                }
+                else if (entity is List<FapUser>)
+                {
+                    data.ChangeData = entity as List<FapUser>;
+                }
+                tracker.TrackEventData(data);
             }
-            else if (entity is List<FapUser>)
-            {
-                data.Data = entity as List<FapUser>;
-            }
-
-            RealtimeSynchServiceFactory.GetInstance().EnqueueQueue(data);
         }
 
         //public override void BeforeDynamicObjectDelete(FapDynamicObject dynamicData)

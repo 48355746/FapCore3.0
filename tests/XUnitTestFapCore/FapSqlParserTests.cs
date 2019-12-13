@@ -79,5 +79,14 @@ namespace XUnitTestFapCore
             string rv= parser.ParserSqlStatement();
             Assert.True(rv.Length > 0);
         }
+        [Fact]
+        public void TestCount()
+        {
+            //string sql = "select count(1) from Employee";
+            string sql = "select count(1) from fapuser where UserName=@UserName and Fid!='3534239123093061632'";
+            FapSqlParser parser = new FapSqlParser(_appDomain, sql, true);
+            string rv = parser.ParserSqlStatement();
+            Assert.True(rv.Length > 0);
+        }
     }
 }

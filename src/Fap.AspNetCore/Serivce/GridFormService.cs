@@ -62,7 +62,7 @@ namespace Fap.AspNetCore.Serivce
                     jqGridPostData.Page = 1;
                 }
                 QuerySet qs = jqGridPostData.QuerySet;
-                IEnumerable<FapColumn> fapColumns =_dbContext.Columns(qs.TableName);
+                IEnumerable<FapColumn> fapColumns = _dbContext.Columns(qs.TableName);
                 Pageable queryOption = new Pageable(_dbContext) { TableName = qs.TableName, QueryCols = qs.QueryCols, HistoryTimePoint = jqGridPostData.TimePoint };
                 //设置统计
                 if (qs.Statsetlist != null && qs.Statsetlist.Any())
@@ -153,7 +153,7 @@ namespace Fap.AspNetCore.Serivce
                     //{
                     //    queryOption.Filter = strFilter;
                     //}
-                    FilterCondition filterCondition =JsonFilterToSql.BuildFilterCondition(fapColumns, jqGridPostData.Filters);
+                    FilterCondition filterCondition = JsonFilterToSql.BuildFilterCondition(fapColumns, jqGridPostData.Filters);
                     if (filterCondition != null)
                     {
                         queryOption.FilterCondition = filterCondition;
@@ -213,11 +213,11 @@ namespace Fap.AspNetCore.Serivce
                     dataResultView.TotalNum = pi.TotalPages;
                     dataResultView.CurrentPageIndex = pi.PageNumber;
                     dataResultView.OrginData = pi.Items;
-                    dataResultView.DataListForJqGrid = pi.Items as IEnumerable<IDictionary<string,object>>;
+                    dataResultView.DataListForJqGrid = pi.Items as IEnumerable<IDictionary<string, object>>;
                     dataResultView.PageCount = pi.PageSize;
                     //统计字段
                     dataResultView.StatFieldData = pi.StatFieldData;
-                    dataResultView.StatFieldDataJson = JsonConvert.SerializeObject(pi.StatFieldData); 
+                    dataResultView.StatFieldDataJson = JsonConvert.SerializeObject(pi.StatFieldData);
 
                     return dataResultView;
 
@@ -229,6 +229,7 @@ namespace Fap.AspNetCore.Serivce
 
             }
         }
+        private static object lockSave = new object();
         public async Task<ResponseViewModel> PersistenceAsync(IFormCollection formCollection)
         {
             //响应消息
@@ -261,9 +262,9 @@ namespace Fap.AspNetCore.Serivce
             {
                 tableName = tn;
             }
-            if (_applicationContext.Request.Query[FapWebConstants.QUERY_TABLENAME][0].IsPresent())
+            if (_applicationContext.Request.Query.TryGetValue(FapWebConstants.QUERY_TABLENAME, out StringValues value))
             {
-                tableName = _applicationContext.Request.Query[FapWebConstants.QUERY_TABLENAME];
+                tableName = value;
             }
             if (tableName.IsMissing())
             {
@@ -281,15 +282,19 @@ namespace Fap.AspNetCore.Serivce
             {
                 return ResponseViewModelUtils.Failure("不存在防重复提交令牌");
             }
-            string avoid_repeat_tokenKey = tableName.ToLower() + FapWebConstants.AVOID_REPEAT_TOKEN;
-            if (oper.Equals("del"))
+            lock (lockSave)
             {
-                avoid_repeat_tokenKey += "-del";
-            }
-
-            if (_applicationContext.Session.GetString(avoid_repeat_tokenKey) != avoid_repeat_token)
-            {
-                return ResponseViewModelUtils.Failure("请勿重复提交数据");
+                string avoid_repeat_tokenKey = tableName.ToLower() + FapWebConstants.AVOID_REPEAT_TOKEN;
+                if (oper.Equals("del"))
+                {
+                    avoid_repeat_tokenKey += "-del";
+                }
+                if (_applicationContext.Session.GetString(avoid_repeat_tokenKey) != avoid_repeat_token)
+                {
+                    return ResponseViewModelUtils.Failure("请勿重复提交数据");
+                }
+                //移除重复提交标记
+                _applicationContext.Session.Remove(avoid_repeat_tokenKey);
             }
             //CSRF 令牌验证
             try
@@ -320,7 +325,7 @@ namespace Fap.AspNetCore.Serivce
 
             (dynamic mainData, Dictionary<string, IEnumerable<dynamic>> childsData) BuilderData()
             {
-                var columnList =_dbContext.Columns(tableName);
+                var columnList = _dbContext.Columns(tableName);
                 //undefined 父文本编辑框控件要去掉,logicdelete逻辑删除,childsData子表格数据
                 string[] exclude = new string[]
                 {
@@ -363,6 +368,7 @@ namespace Fap.AspNetCore.Serivce
         [Transactional]
         public ResponseViewModel SaveChange(OperEnum oper, FapDynamicObject mainDataKeyValues, Dictionary<string, IEnumerable<dynamic>> childDataList = null)
         {
+            ResponseViewModel rvm = new ResponseViewModel();
             dynamic mainData = mainDataKeyValues;
             if (oper == OperEnum.add)
             {
@@ -372,15 +378,20 @@ namespace Fap.AspNetCore.Serivce
             }
             else if (oper == OperEnum.edit)
             {
-                _dbContext.UpdateDynamicData(mainData);
+                //返回原因
+                bool rv = _dbContext.UpdateDynamicData(mainData);
                 SaveChildData(mainData, childDataList);
-                return ResponseViewModelUtils.Sueecss("更新成功");
+                rvm.success = rv;
+                rvm.msg = rv ? "更新成功" : "更新失败，请重试";
+                return rvm;
             }
             else if (oper == OperEnum.del)
             {
-                _dbContext.DeleteDynamicData(mainDataKeyValues);
+                bool rv= _dbContext.DeleteDynamicData(mainDataKeyValues);
                 DeleteChildData(mainData);
-                return ResponseViewModelUtils.Sueecss("删除成功");
+                rvm.success = rv;
+                rvm.msg = rv ? "删除成功" : "删除失败，请重试";
+                return rvm;
             }
             return ResponseViewModelUtils.Sueecss();
             void SaveChildData(dynamic mainData, Dictionary<string, IEnumerable<dynamic>> childDataList)
@@ -390,7 +401,7 @@ namespace Fap.AspNetCore.Serivce
                     foreach (var item in childDataList)
                     {
                         //获取外键字段
-                        var childColumnList =_dbContext.Columns(item.Key);
+                        var childColumnList = _dbContext.Columns(item.Key);
                         string foreignKey = childColumnList.First(f => f.RefTable == mainData.TableName).ColName;
                         //先删除后增加
                         _dbContext.DeleteExec(item.Key, $"{foreignKey}='{mainData.Get("Fid")}'");
@@ -406,7 +417,7 @@ namespace Fap.AspNetCore.Serivce
             void DeleteChildData(dynamic mainData)
             {
                 //检查子表，删除子表数据
-                var childtableList =_dbContext.Tables(t => t.ExtTable == mainData.TableName);
+                var childtableList = _dbContext.Tables(t => t.ExtTable == mainData.TableName);
                 if (childtableList != null && childtableList.Any())
                 {
                     foreach (var childTable in childtableList)

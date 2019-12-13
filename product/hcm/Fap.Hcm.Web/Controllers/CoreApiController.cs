@@ -7,6 +7,8 @@ using Fap.AspNetCore.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Fap.Core.Extensions;
 using Dapper;
+using Microsoft.AspNetCore.Http;
+using System.Threading.Tasks;
 
 namespace Fap.Hcm.Web.Controllers
 {
@@ -17,7 +19,19 @@ namespace Fap.Hcm.Web.Controllers
         public CoreApiController(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
-
+        /// <summary>
+        /// 持久化表格数据
+        /// </summary>
+        /// <param name="formObj"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("Persistence/")]
+        // POST: api/Common
+        public async Task<JsonResult> PostPersistence(IFormCollection keyValues)
+        {
+            var rv= await _gridFormService.PersistenceAsync(keyValues);
+            return Json(rv);
+        }
         /// <summary>
         /// 获取表格数据
         /// </summary>

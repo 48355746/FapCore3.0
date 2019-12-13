@@ -63,7 +63,7 @@ namespace Fap.Core.DataAccess
                 timer.Restart();//开始计算时间
                 var result = func(parameters);
                 timer.Stop();//结束点
-                message = $"SQL语句为：{sql},{Environment.NewLine}参数:{(parameters != null ?string.Join("," ,parameters.ParameterNames.Select((key)=>$"{key}={parameters.Get<object>(key)}")) : "")}{Environment.NewLine}执行时间：{ timer.ElapsedMilliseconds}毫秒";
+                message = $"SQL语句为：{sql},{Environment.NewLine}参数:{(parameters != null ? string.Join(",", parameters.ParameterNames.Select((key) => $"{key}={parameters.Get<object>(key)}")) : "")}{Environment.NewLine}执行时间：{ timer.ElapsedMilliseconds}毫秒";
                 _logger.LogTrace(message);
                 return result;
             }
@@ -556,19 +556,17 @@ namespace Fap.Core.DataAccess
 
         public bool Update(FapDynamicObject keyValues)
         {
-            if (keyValues.TableName.IsMissing())
-            {
-                Guard.Against.NullOrEmpty("Update（FapDynamicObject keyValues）异常，tableName不能为null", nameof(FapDynamicObject));
-            }
+            string tableName = keyValues.TableName;
+
+            Guard.Against.NullOrEmpty(tableName, nameof(tableName));
             dynamic d = keyValues as dynamic;
-            if (d.Get("Id") == null)
-            {
-                Guard.Against.NullOrEmpty("Update（FapDynamicObject keyValues）异常，Id不能为null", nameof(FapDynamicObject));
-            }
-            if (d.Get("Ts") == null)
-            {
-                Guard.Against.NullOrEmpty("Update（FapDynamicObject keyValues）异常，Ts不能为null", nameof(FapDynamicObject));
-            }
+            long id = d.Get("Id");
+            long ts = d.Get("Ts");
+
+            Guard.Against.Zero(id, nameof(id));
+
+            Guard.Against.Zero(ts, nameof(ts));
+
             if (CurrentTransaction != null)
             {
                 return CurrentConnection.Update(keyValues.TableName, keyValues, CurrentTransaction, CommandTimeout);
@@ -582,16 +580,13 @@ namespace Fap.Core.DataAccess
         /// <typeparam name="T"></typeparam>
         /// <param name="entityUpdate"></param>
         /// <returns></returns>
-        public bool UpdateWithTimestamp<T>(T entityUpdate)where T : BaseModel
+        public bool UpdateWithTimestamp<T>(T entityUpdate) where T : BaseModel
         {
-            if ((entityUpdate.Id) < 1)
-            {
-                Guard.Against.Null("Id不能为null", nameof(UpdateWithTimestamp));
-            }
-            if ((entityUpdate.Ts) < 1)
-            {
-                Guard.Against.Null("Ts不能为null", nameof(UpdateWithTimestamp));
-            }
+            long id = entityUpdate.Id;
+            long ts = entityUpdate.Ts;
+
+            Guard.Against.Zero(id, nameof(id));
+            Guard.Against.Zero(ts, nameof(ts));
             if (CurrentConnection != null)
             {
                 return CurrentConnection.Update(entityUpdate, CurrentTransaction, CommandTimeout);
@@ -697,7 +692,7 @@ namespace Fap.Core.DataAccess
         public void BeginTransaction()
         {
             CurrentConnection = GetDbConnection(DataSourceEnum.MASTER);
-            if(CurrentConnection.State== ConnectionState.Closed)
+            if (CurrentConnection.State == ConnectionState.Closed)
             {
                 CurrentConnection.Open();
             }
@@ -724,7 +719,7 @@ namespace Fap.Core.DataAccess
             CurrentConnection?.Dispose();
         }
         public void Dispose()
-        {      
+        {
             CurrentConnection = null;
             CurrentTransaction = null;
         }

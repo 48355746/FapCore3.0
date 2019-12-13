@@ -69,26 +69,26 @@ namespace Fap.Core.DataAccess
         /// <returns></returns>
         public static bool Update(this IDbConnection connection, string tableName, dynamic dynamicToUpdate, IDbTransaction transaction = null, int? commandTimeout = null)
         {
-            var id = dynamicToUpdate.Get(FapDbConstants.FAPCOLUMN_FIELD_Id);
-            if (id == null)
-            {
-                Guard.Against.NullOrEmpty("更新数据Id必须设置.", nameof(dynamicToUpdate));
-            }
-            var ts = dynamicToUpdate.Get(FapDbConstants.FAPCOLUMN_FIELD_Ts);
-            if (ts == null)
-            {
-                Guard.Against.NullOrEmpty("更新数据Ts必须设置.", nameof(dynamicToUpdate));
-            }
+            long id = dynamicToUpdate.Get(FapDbConstants.FAPCOLUMN_FIELD_Id);
+            long ts = dynamicToUpdate.Get(FapDbConstants.FAPCOLUMN_FIELD_Ts);
+            Guard.Against.Zero(id, nameof(id));
+            Guard.Against.Zero(ts, nameof(ts));
+            
             var adapter = GetFormatter(connection);
             StringBuilder sqlBuilder = new StringBuilder();
             sqlBuilder.Append(" UPDATE ").Append(tableName).Append(" SET ");
-            foreach (string fildName in dynamicToUpdate.Keys())
+            foreach (string fieldName in dynamicToUpdate.Keys())
             {
-                if ("Id".EqualsWithIgnoreCase(fildName))
+                if ("Id".EqualsWithIgnoreCase(fieldName))
                 {
                     continue;
                 }
-                adapter.AppendColumnNameEqualsValue(sqlBuilder, fildName);
+                //规定计算字段以MC结尾，此处也可以比较元数据
+                if (fieldName.EndsWith("MC"))
+                {
+                    continue;
+                }
+                adapter.AppendColumnNameEqualsValue(sqlBuilder, fieldName);
                 sqlBuilder.Append(",");
             }
             sqlBuilder.Remove(sqlBuilder.Length - 1, 1);
@@ -106,15 +106,11 @@ namespace Fap.Core.DataAccess
 
         public static bool Update<T>(this IDbConnection connection, T entityUpdate, IDbTransaction transaction = null, int? commandTimeout = null) where T : BaseModel
         {
-            var id = entityUpdate.Id;
-            if (id < 1)
-            {
-                Guard.Against.NullOrEmpty("更新数据Id必须设置.", nameof(entityUpdate));
-            }
-            if (entityUpdate.Ts < 1)
-            {
-                Guard.Against.NullOrEmpty("更新数据Ts必须设置.", nameof(entityUpdate));
-            }
+            long id = entityUpdate.Id;
+            long ts = entityUpdate.Ts;
+            
+            Guard.Against.Zero(id, nameof(id));
+            Guard.Against.Zero(ts, nameof(ts));
             var type = typeof(T);
             var adapter = GetFormatter(connection);
             StringBuilder sqlBuilder = new StringBuilder();

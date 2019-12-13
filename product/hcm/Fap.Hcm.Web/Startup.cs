@@ -31,7 +31,7 @@ namespace Fap.Hcm.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddFapService().AddAutoInjection();
+            services.AddFapService().AddAutoInjection().AddDataTracker();
             //response 压缩giz
             services.AddResponseCompression();
             //添加内存缓存
@@ -91,12 +91,12 @@ namespace Fap.Hcm.Web
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSession();
-            app.UseStaticFiles(new StaticFileOptions()
-            {
-                ServeUnknownFileTypes = true,
-                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), $"{FapPlatformConstants.TemporaryFolder}")),
-                RequestPath = new PathString($"/{FapPlatformConstants.TemporaryFolder}")
-            });
+            //app.UseStaticFiles(new StaticFileOptions()
+            //{
+            //    ServeUnknownFileTypes = true,
+            //    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), $"{FapPlatformConstants.TemporaryFolder}")),
+            //    RequestPath = new PathString($"/{FapPlatformConstants.TemporaryFolder}")
+            //});
             app.UseRouting();
             //认证
             app.UseAuthentication();

@@ -84,10 +84,8 @@ namespace Fap.Workflow.Service
         /// <param name="processUids"></param>
         public bool AllowDeleteProcessTemplate(string processUids)
         {
-            if (processUids.IsMissing())
-            {
-                Guard.Against.Null(processUids, nameof(processUids));
-            }
+            Guard.Against.NullOrEmpty(processUids, nameof(processUids));
+
             string[] fids = processUids.Split(',');
             int count = _dataAccessor.ExecuteScalar<int>("select count(0) from WfBusiness a, WfProcess b where a.WfProcessUid=b.Fid and b.Fid IN @Fids", new DynamicParameters(new { Fids = fids }));
             return count == 0;

@@ -19,57 +19,48 @@ namespace Fap.AspNetCore.Extensions
         /// <returns></returns>
         public static dynamic ToDynamicObject(this IFormCollection fcs, IEnumerable<FapColumn> columnList, params string[] excludeKeys)
         {
-            dynamic dynamciObj  = new FapDynamicObject(columnList.First().TableName);
+            dynamic dynamciObj = new FapDynamicObject(columnList.First().TableName);
             ICollection<string> formKeys = fcs.Keys;
+            var sanitizer = new HtmlSanitizer();
             foreach (var frmKey in formKeys)
             {
                 if (excludeKeys.Contains(frmKey)) continue;
 
-                if ("id".Equals(frmKey))
+                FapColumn column = columnList.Where(c => c.ColName == frmKey).FirstOrDefault();
+                if (column != null)
                 {
-                    if (!(string.IsNullOrEmpty(fcs[frmKey]) || "_empty".Equals(fcs[frmKey])))
+                    if (column.IsIntType()) //整型
                     {
-                        dynamciObj.Add("Id", fcs[frmKey].ToString());
+                        dynamciObj.Add(frmKey, fcs[frmKey][0].ToInt());
                     }
-                }
-                else
-                {
-                    var sanitizer = new HtmlSanitizer();
-                    FapColumn column = columnList.Where(c => c.ColName == frmKey).FirstOrDefault();
-                    if (column != null)
+                    else if (column.IsLongType()) //长整型
                     {
-                        if (column.IsIntType()) //整型
-                        {
-                            dynamciObj.Add(frmKey, fcs[frmKey][0].ToInt());
-                        }
-                        else if (column.IsLongType()) //长整型
-                        {
-                            dynamciObj.Add(frmKey, fcs[frmKey][0].ToLong());
-                        }
-                        else if (column.IsDoubleType()) //浮点型
-                        {
-                            dynamciObj.Add(frmKey, fcs[frmKey][0].ToDecimal());
-                        }
-                        else if (column.CtrlType == FapColumn.CTRL_TYPE_RICHTEXTBOX)
-                        {
-                            //富文本防止XSS
-                            dynamciObj.Add(frmKey, sanitizer.Sanitize(fcs[frmKey].ToString()));
-                        }
-                        else //字符串
-                        {
-                            dynamciObj.Add(frmKey, fcs[frmKey].ToString());
-                        }
+                        dynamciObj.Add(frmKey, fcs[frmKey][0].ToLong());
                     }
-                    else
+                    else if (column.IsDoubleType()) //浮点型
+                    {
+                        dynamciObj.Add(frmKey, fcs[frmKey][0].ToDecimal());
+                    }
+                    else if (column.CtrlType == FapColumn.CTRL_TYPE_RICHTEXTBOX)
+                    {
+                        //富文本防止XSS
+                        dynamciObj.Add(frmKey, sanitizer.Sanitize(fcs[frmKey].ToString()));
+                    }
+                    else //字符串
                     {
                         dynamciObj.Add(frmKey, fcs[frmKey].ToString());
                     }
                 }
+                else
+                {
+                    dynamciObj.Add(frmKey, fcs[frmKey].ToString());
+                }
+
             }
             return dynamciObj;
         }
 
-      
-    
+
+
     }
 }

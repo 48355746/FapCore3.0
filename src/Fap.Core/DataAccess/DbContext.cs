@@ -421,45 +421,38 @@ namespace Fap.Core.DataAccess
         }
 
         #region inner Get       
-        private T GetById<T>(long? id) where T : BaseModel
+        private T GetById<T>(long id) where T : BaseModel
         {
-            if (id == null)
-            {
-                Guard.Against.Null("Id 不能为null", nameof(GetById));
-            }
+            Guard.Against.Zero(id, nameof(id));
+
             string sqlOri = $"select * from {typeof(T).Name} where id=@Id";
             DynamicParameters param = new DynamicParameters();
             param.Add("Id", id);
             return _dbSession.QueryFirstOrDefault<T>(sqlOri, param);
         }
-        private Task<T> GetByIdAsync<T>(long? id) where T : BaseModel
+        private Task<T> GetByIdAsync<T>(long id) where T : BaseModel
         {
-            if (id == null)
-            {
-                Guard.Against.Null("Id 不能为null", nameof(GetById));
-            }
+            Guard.Against.Zero(id, nameof(id));
+
             string sqlOri = $"select * from {typeof(T).Name} where id=@Id";
             DynamicParameters param = new DynamicParameters();
             param.Add("Id", id);
             return _dbSession.QueryFirstOrDefaultAsync<T>(sqlOri, param);
         }
-        private dynamic GetById(string tableName, long? id)
+        private dynamic GetById(string tableName, long id)
         {
-            if (id == null)
-            {
-                Guard.Against.Null("Id 不能为null", nameof(GetById));
-            }
+            Guard.Against.NullOrEmpty(tableName, nameof(tableName));
+            Guard.Against.Zero(id, nameof(id));
+
             string sqlOri = $"select * from {tableName} where id=@Id";
             DynamicParameters param = new DynamicParameters();
             param.Add("Id", id);
             return _dbSession.QueryFirstOrDefault(sqlOri, param);
         }
-        private Task<dynamic> GetByIdAsync(string tableName, long? id)
+        private Task<dynamic> GetByIdAsync(string tableName, long id)
         {
-            if (id == null)
-            {
-                Guard.Against.Null("Id 不能为null", nameof(GetById));
-            }
+            Guard.Against.NullOrEmpty(tableName, nameof(tableName));
+            Guard.Against.Zero(id, nameof(id));
             string sqlOri = $"select * from {tableName} where id=@Id";
             DynamicParameters param = new DynamicParameters();
             param.Add("Id", id);
@@ -1872,15 +1865,12 @@ namespace Fap.Core.DataAccess
         #region CRUD dynamic
         public long InsertDynamicData(FapDynamicObject fapDynData)
         {
-            if (fapDynData.TableName == null)
-            {
-                Guard.Against.NullOrWhiteSpace("tableName不能为null", nameof(FapDynamicObject));
-            }
-            FapTable table = Table(fapDynData.TableName);
-            if (table == null)
-            {
-                Guard.Against.Null("实体元数据未发现或未注册", nameof(FapTable));
-            }
+            string tableName = fapDynData.TableName;
+            Guard.Against.NullOrWhiteSpace(tableName, nameof(tableName));
+
+            FapTable table = Table(tableName);
+
+            Guard.Against.Null(table, nameof(table));
 
             try
             {
@@ -1893,7 +1883,7 @@ namespace Fap.Core.DataAccess
             {
                 Rollback();
                 _logger.LogError($"insert dynamic error:{ex.Message}");
-                throw;
+                throw ex;
             }
             long InsertDynamicData(dynamic fapDynData, FapTable table)
             {
@@ -1939,40 +1929,23 @@ namespace Fap.Core.DataAccess
         public bool UpdateDynamicData(FapDynamicObject fapDynData)
         {
             string tableName = fapDynData.TableName;
-            if (tableName.IsMissing())
-            {
-                Guard.Against.Null("请指定表名", "UpdateDynamicData");
-            }
-            FapTable table = Table(tableName);
-            if (table == null)
-            {
-                Guard.Against.Null($"未找到实体{tableName}元数据", nameof(FapDynamicObject));
-            }
-            dynamic dataObject = fapDynData;
-            long? id = dataObject.Get(FapDbConstants.FAPCOLUMN_FIELD_Id);
-            long? ts = dataObject.Get(FapDbConstants.FAPCOLUMN_FIELD_Ts);
-            if ((id ?? 0) < 1)
-            {
-                Guard.Against.Null($"更新数据，请设置Key Id的值", nameof(FapDynamicObject));
-            }
-            if ((ts ?? 0) < 1)
-            {
-                Guard.Against.Null($"更新数据，请设置Ts 的值", nameof(FapDynamicObject));
-            }
-            dynamic oriData = GetById(tableName, id);
-            if (oriData.Ts != ts)
-            {
-                _logger.LogInformation("数据已经被其他人更新，你需要刷新数据,重新编辑");
-                return false;
-            }
-            if (oriData.DisableDate != DateTimeUtils.PermanentTimeStr)
-            {
-                _logger.LogInformation("数据已经失效,不能再编辑");
-                return false;
-            }
-            return UpdateDynamicData(dataObject, table, oriData);
 
-            bool UpdateDynamicData(FapDynamicObject dataObject, FapTable table, dynamic oriData)
+            Guard.Against.NullOrEmpty(tableName, nameof(tableName));
+
+            FapTable table = Table(tableName);
+
+            Guard.Against.Null(table, nameof(table));
+
+            dynamic dataObject = fapDynData;
+            long id = dataObject.Get(FapDbConstants.FAPCOLUMN_FIELD_Id);
+            long ts = dataObject.Get(FapDbConstants.FAPCOLUMN_FIELD_Ts);
+
+            Guard.Against.Zero(id, nameof(id));
+            Guard.Against.Zero(ts, nameof(ts));
+           
+            return UpdateDynamicData(dataObject, table);
+
+            bool UpdateDynamicData(FapDynamicObject dataObject, FapTable table)
             {
                 bool execResult = false;
                 InitDynamicToUpdate(dataObject);
@@ -1984,6 +1957,7 @@ namespace Fap.Core.DataAccess
                     bool isTrace = table.TraceAble.ToString().ToBool();
                     if (isTrace)
                     {
+                        dynamic oriData = GetById(tableName, id);
                         execResult = TraceDynamicUpdate(dataObject, table.TableName, oriData);
                     }
                     else
@@ -2005,6 +1979,7 @@ namespace Fap.Core.DataAccess
                     Rollback();
                     execResult = false;
                     _logger.LogError($"更新dynamic失败：{ex.Message}");
+                    throw ex;
                 }
                 return execResult;
                 bool DynamicObjectUpdate(dynamic dynamicData)
@@ -2014,7 +1989,7 @@ namespace Fap.Core.DataAccess
                 bool TraceDynamicUpdate(dynamic dynamicData, string tableName, dynamic oriData)
                 {
                     var fieldList = Columns(tableName).Select(c => c.ColName);
-                    long? id = dynamicData.Id;
+                    long id = dynamicData.Id;
                     //将旧数据变成历史数据， 更新后的数据为最新数据
                     try
                     {
@@ -2037,9 +2012,10 @@ namespace Fap.Core.DataAccess
                         return _dbSession.Update(oldUpdate);
 
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
-                        throw;
+                        _logger.LogError(ex.Message);
+                        throw ex;
                     }
 
                 }
@@ -2062,16 +2038,13 @@ namespace Fap.Core.DataAccess
         public bool DeleteDynamicData(FapDynamicObject dataObject)
         {
             string tableName = dataObject.TableName;
-            if (tableName.IsMissing())
-            {
-                Guard.Against.Null("删除实体表名不能为null", nameof(DeleteDynamicData));
-            }
+            
+            Guard.Against.NullOrEmpty(tableName, nameof(tableName));           
             dynamic dynamicData = dataObject;
-            long? id = dynamicData.Id;
-            if ((id ?? 0) < 1)
-            {
-                Guard.Against.Null("删除实体Key不能为null", nameof(DeleteDynamicData));
-            }
+            long id = dynamicData.Id;
+           
+            Guard.Against.Zero(id, nameof(id));
+           
             FapTable table = Table(tableName);
 
             return TraceDynamicDelete(dynamicData, table);
@@ -2093,7 +2066,6 @@ namespace Fap.Core.DataAccess
                     if (isTrace) //逻辑删除(历史追溯)
                     {
                         execRv = TraceDelete(dynamicData, id, tableName);
-
                     }
                     else //逻辑删除
                     {
@@ -2129,18 +2101,15 @@ namespace Fap.Core.DataAccess
                     var fieldList = Columns(tn).Select(c => c.ColName);
                     var currDate = DateTimeUtils.CurrentDateTimeStr;
                     //insert new data
-                    var newData = GetById(dynamicData.TableName, id);
-                    if (newData == null)
-                    {
-                        Guard.Against.Null("要删除的数据不能为null", "deleteData");
-                    }
-                    SetNewDynamicToDelete(newData, currDate);
+                    var deleteData = GetById(dynamicData.TableName, id);
+                    Guard.Against.FapRuntime(new Exception("要删除数据为空"));
+                    SetNewDynamicToDelete(deleteData, currDate);
                     string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
                     string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
-                    long newId = _dbSession.Insert(tableName, columnList, paramList, newData);
+                    long newId = _dbSession.Insert(tableName, columnList, paramList, deleteData);
                     //_logger.LogInformation($"-----{newId}-----");
                     //update old data invalid
-                    dynamic dyData = new FapDynamicObject(tableName, id, newData.Ts);
+                    dynamic dyData = new FapDynamicObject(tableName, id, deleteData.Ts);
 
                     SetOldDynamicInvalid(dyData, currDate);
                     return _dbSession.Update(dyData);

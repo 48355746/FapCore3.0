@@ -653,7 +653,7 @@ namespace SQLGeneration.Parsing
             Define(ModulusOperator, @"%");
             Define(Comma, @",");
             Define(EqualTo, @"=");
-            Define(NotEqualTo, @"<>");
+            Define(NotEqualTo, @"<>|!=");
             Define(LessThanEqualTo, @"<=");
             Define(GreaterThanEqualTo, @">=");
             Define(LessThan, @"<");

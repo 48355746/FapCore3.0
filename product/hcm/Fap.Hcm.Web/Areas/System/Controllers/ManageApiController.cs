@@ -21,6 +21,8 @@ using Fap.Core.Infrastructure.Model;
 using System.Net.Mime;
 using Fap.Hcm.Web.Models;
 using Fap.Core.Utility;
+using Fap.Core.Tracker;
+using System.Threading.Tasks;
 
 namespace Fap.Hcm.Web.Areas.System.Controllers
 {
@@ -30,11 +32,11 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
     public class ManageApiController : FapController
     {
         private ISchedulerService _schedule;
-        private IRealtimeSynchService _realtimeSynService;
-
-        public ManageApiController(Sys.IServiceProvider serviceProvider, ISchedulerService schedulerService) : base(serviceProvider)
+        private IEventDataHandler _dataHandler;
+        public ManageApiController(Sys.IServiceProvider serviceProvider, ISchedulerService schedulerService,IEventDataHandler dataHandler) : base(serviceProvider)
         {
             _schedule = schedulerService;
+            _dataHandler = dataHandler;
         }
 
 
@@ -1038,16 +1040,15 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         #region 实时同步
         [HttpPost]
         [Route("RealtimeSyn")]
-        public JsonResult PostRealtimeSyn(JObject synLog)
+        public async Task<JsonResult> PostRealtimeSyn(RealtimeSynLog model)
         {
-            JArray logs = synLog.GetValue("logs") as JArray;
-            List<FapRealtimeSynLog> ls = logs.ToObject<List<FapRealtimeSynLog>>();
+            List<FapRealtimeSynLog> ls = model.Logs;
             ResponseViewModel rv = new ResponseViewModel { success = true };
             if (ls != null && ls.Count > 0)
             {
                 foreach (var log in ls)
                 {
-                    SynchResult result = _realtimeSynService.PostWebRequest(log.RemoteUrl, "data=" + Sys.Web.HttpUtility.UrlEncode(log.SynData), 3);
+                    SynchResult result =await _dataHandler.PostEventData(log.RemoteUrl,log.SynData);
                     if (!result.Success)
                     {
                         log.SynState = 0;
@@ -1061,7 +1062,6 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
                     _dbContext.Update<FapRealtimeSynLog>(log);
                 }
             }
-
             return Json(rv);
         }
         #endregion

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dapper;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -52,6 +53,24 @@ namespace Fap.Core.Extensions
             return value.Equals(target, StringComparison.OrdinalIgnoreCase);
         }
         /// <summary>
+        /// 逗号拆分同时去掉内容的空格
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static List<string> SplitComma(this string value)
+        {
+            return value.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).AsList();
+        }
+        /// <summary>
+        /// 分号拆分同时去掉内容的空格
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static List<string> SplitSemicolon(this string value)
+        {
+            return value.Split(new char[] { ';', ' ' }, StringSplitOptions.RemoveEmptyEntries).AsList();
+        }
+        /// <summary>
         /// 转化为整形
         /// </summary>
         /// <param name="value"></param>
@@ -59,6 +78,10 @@ namespace Fap.Core.Extensions
         [DebuggerStepThrough]
         public static int ToInt(this string value)
         {
+            if (value.IsMissing())
+            {
+                return 0;
+            }
             return Convert.ToInt32(value);
         }
         public static bool ToBool(this string value)
@@ -69,10 +92,18 @@ namespace Fap.Core.Extensions
         }
         public static long ToLong(this string value)
         {
+            if (value.IsMissing())
+            {
+                return 0;
+            }
             return Convert.ToInt64(value);
         }
         public static decimal ToDecimal(this string value)
         {
+            if (value.IsMissing())
+            {
+                return 0.0M;
+            }
             return Convert.ToDecimal(value);
         }
         /// <summary>

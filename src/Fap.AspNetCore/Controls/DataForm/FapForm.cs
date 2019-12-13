@@ -112,7 +112,7 @@ namespace Fap.AspNetCore.Controls.DataForm
         /// <returns></returns>
         public FapForm SetFapClumns()
         {
-            string[] hidecols = { };
+            List<string> hidecols = new List<string>();
             if (_fapColumns.Any())
             {
                 #region 权限
@@ -162,12 +162,12 @@ namespace Fap.AspNetCore.Controls.DataForm
                 #endregion
                 if (_hiddenCols.IsPresent())
                 {
-                    hidecols = _hiddenCols.Split(',');
+                    hidecols = _hiddenCols.ToLower().SplitComma();
                 }
                 foreach (var col in _fapColumns)
                 {
                     //隐藏列跳过
-                    if (hidecols != null && hidecols.AsList().Exists(c => c.EqualsWithIgnoreCase(col.ColName)))
+                    if (hidecols != null && hidecols.Exists(c => c.EqualsWithIgnoreCase(col.ColName.ToLower())))
                     {
                         continue;
                     }
@@ -176,7 +176,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     {
                         continue;
                     }
-                    string key =  col.ColName;
+                    string key = col.ColName;
                     var fv = FormData.Get(key);
                     object fvc = null;
                     if (col.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
@@ -216,16 +216,12 @@ namespace Fap.AspNetCore.Controls.DataForm
             _tb = _dbContext.Table(qs.TableName);
             DynamicParameters parameters = new DynamicParameters();
             qs.Parameters.ForEach(q => parameters.Add(q.ParamKey, q.ParamValue));
-            var frmData = _dbContext.QueryFirstOrDefault(qs.ToString(), parameters,true);
-            if (qs.QueryCols.EqualsWithIgnoreCase("*"))
+            var frmData = _dbContext.QueryFirstOrDefault(qs.ToString(), parameters, true);
+            _fapColumns = _dbContext.Columns(qs.TableName);
+            if (!qs.QueryCols.EqualsWithIgnoreCase("*"))
             {
-                _fapColumns = _dbContext.Columns(qs.TableName);
-            }
-            else
-            {
-                var queryColList = qs.QueryCols.Split(',');
-                _fapColumns = _dbContext.Columns(qs.TableName).Where(c => queryColList.Contains(c.ColName));
-
+                var queryColList = qs.QueryCols.ToLower().SplitComma();
+                _fapColumns = _dbContext.Columns(qs.TableName).Where(c => queryColList.Contains(c.ColName.ToLower()));
             }
             if (frmData != null)
             {
@@ -322,7 +318,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             }
             var grpFields = _fapFields.GroupBy(f => f.FieldGroup);
             //隐藏字段
-            string[] hideCols = _hiddenCols.ToLower().Split(',');
+            List<string> hideCols = _hiddenCols.ToLower().SplitComma();
             foreach (var item in grpFields)
             {
                 if (grpFields.Count() != 1 && item.Key != "默认分组")
@@ -637,7 +633,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     string allowExt = string.Empty;
                     if (column.FileSuffix.IsPresent())
                     {
-                        string[] suffix = column.FileSuffix.Split(',');
+                        List<string> suffix = column.FileSuffix.SplitComma();
                         if (suffix.Any())
                         {
                             allowExt = string.Join(",", suffix.Select(s => "'" + s + "'").ToList());
@@ -1054,7 +1050,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                         string jsonData = "{'Fid':'" + inject.Fid + "','" + changCol.ColName + "':$('#" + changCol.ColName + "').val()";
                         if (inject.ParamColumns.IsPresent())
                         {
-                            var paramCols = inject.ParamColumns.Split(',');
+                            var paramCols = inject.ParamColumns.SplitComma();
                             foreach (var pc in paramCols)
                             {
                                 jsonData += ",'" + pc + "':$('#" + pc + "').val()";

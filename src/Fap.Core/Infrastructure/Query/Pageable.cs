@@ -263,10 +263,6 @@ namespace Fap.Core.Infrastructure.Query
             {
                 var _mainTable =_dbContext.Table(_queryOption.TableName);
 
-                if (_mainTable == null)
-                {
-                    Guard.Against.Null(_mainTable, "主表元数据");
-                }
                 return _mainTable;
             }
         }
@@ -275,11 +271,7 @@ namespace Fap.Core.Infrastructure.Query
         {
             get
             {
-                var _mainColumnList = _dbContext.Columns(_queryOption.TableName);
-                if (_mainColumnList == null || _mainColumnList.Count() == 0)
-                {
-                    Guard.Against.Null(_mainColumnList, "主表字段元数据");
-                }
+                var _mainColumnList = _dbContext.Columns(_queryOption.TableName);              
 
                 return _mainColumnList;
             }

@@ -19,7 +19,7 @@ namespace Fap.AspNetCore.Controls.DataForm
         private FapColumn _fapColumn;
         private IDbContext _dataAccessor;
         private IMultiLangService _multiLangService;
-        public FapField(IDbContext dataAccessor,IMultiLangService multiLangService)
+        public FapField(IDbContext dataAccessor, IMultiLangService multiLangService)
         {
             _dataAccessor = dataAccessor;
             _multiLangService = multiLangService;
@@ -150,7 +150,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             else
             {
                 sbFormGroup.AppendLine("<div class='clearfix'>");
-                BuilderDataFormField(frmid, lableName,  editAble, sbFormGroup);
+                BuilderDataFormField(frmid, lableName, editAble, sbFormGroup);
                 sbFormGroup.AppendLine("</div>");
             }
             sbFormGroup.AppendLine("</div>");
@@ -177,10 +177,8 @@ namespace Fap.AspNetCore.Controls.DataForm
             }
             else if (_fapColumn.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX)
             {
-                if (_fapColumn.RefTable.IsMissing())
-                {
-                    Guard.Against.Null(_fapColumn.RefTable, "字典未设置");
-                }
+                Guard.Against.Null(_fapColumn.RefTable, nameof(_fapColumn.RefTable));
+
                 List<string> tempList = new List<string>();
                 if (_fapColumn.MultiAble == 1)
                 {
@@ -190,7 +188,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                         GetMultiSelValues(tempList);
                     }
                 }
-                IEnumerable<FapDict> dicList =_dataAccessor.Dictionarys(_fapColumn.RefTable);
+                IEnumerable<FapDict> dicList = _dataAccessor.Dictionarys(_fapColumn.RefTable);
                 sbFormGroup.AppendLine(_fapColumn.AsCombobox(editAble, dicList, tempList, FieldValue.ToString()));
             }
             else if (_fapColumn.CtrlType == FapColumn.CTRL_TYPE_CHECKBOXLIST)
@@ -244,7 +242,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             }
             else if (_fapColumn.CtrlType == FapColumn.CTRL_TYPE_IMAGE)
             {
-                sbFormGroup.AppendLine(_fapColumn.AsImage( FieldValue.ToString()));
+                sbFormGroup.AppendLine(_fapColumn.AsImage(FieldValue.ToString()));
             }
             else if (_fapColumn.CtrlType == FapColumn.CTRL_TYPE_PASSWORD)
             {
@@ -298,24 +296,24 @@ namespace Fap.AspNetCore.Controls.DataForm
                         string value = FormData.Get(_fapColumn.TableName + "_" + cname);
                         dicLangValue.Add(cname, value);
                     }
-                    sbFormGroup.AppendLine(_fapColumn.AsMultiLanguageTextBox(editAble, currCtrlName,  currentLangDesc, dicLangValue, FieldValue.ToString()));
+                    sbFormGroup.AppendLine(_fapColumn.AsMultiLanguageTextBox(editAble, currCtrlName, currentLangDesc, dicLangValue, FieldValue.ToString()));
 
                 }
                 else
                 {
 
-                    sbFormGroup.AppendLine(_fapColumn.AsTextBox(editAble,  FieldValue.ToString()));
+                    sbFormGroup.AppendLine(_fapColumn.AsTextBox(editAble, FieldValue.ToString()));
                 }
             }
             else if (_fapColumn.CtrlType == FapColumn.CTRL_TYPE_CITY)
             {
                 //城市
-                sbFormGroup.AppendFormat(_fapColumn.AsCity(editAble,FieldValue.ToString()));
+                sbFormGroup.AppendFormat(_fapColumn.AsCity(editAble, FieldValue.ToString()));
             }
             else if (_fapColumn.CtrlType == FapColumn.CTRL_TYPE_NATIVE)
             {
                 //籍贯
-                sbFormGroup.AppendFormat(_fapColumn.AsNative(editAble,FieldValue.ToString()));
+                sbFormGroup.AppendFormat(_fapColumn.AsNative(editAble, FieldValue.ToString()));
             }
             else if (_fapColumn.CtrlType == FapColumn.CTRL_TYPE_STAR)
             {
@@ -489,34 +487,8 @@ namespace Fap.AspNetCore.Controls.DataForm
             }
             else if (_fapColumn.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX)
             {
-                //if (string.IsNullOrWhiteSpace(_fapColumn.RefTable))
-                //{
-                //    throw new FapException("下拉框表没设置！");
-                //}
-                //sbFormGroup.AppendFormat(" <select id=\"{0}\" name=\"{0}\" ng-model=\"{1}\" " + editAble + " class=\"form-control\">", ctrlName, ngModel).AppendLine();
-                //sbFormGroup.AppendLine("<option value=''>--请选择--</option>");
-                //DataAccessor coms = new DataAccessor();
-                //IEnumerable<FapDict> dicList = coms.GetDictList(_fapColumn.RefTable);
+                Guard.Against.NullOrEmpty(_fapColumn.RefTable, nameof(_fapColumn.RefTable));
 
-                //if (dicList.Any())
-                //{
-                //    foreach (FapDict dict in dicList)
-                //    {
-                //        if (dict.Code == FieldValue.ToString())
-                //        {
-                //            sbFormGroup.AppendLine("<option value='" + dict.Code + "' selected>" + dict.Name + "</option>");
-                //        }
-                //        else
-                //        {
-                //            sbFormGroup.AppendLine("<option value='" + dict.Code + "' >" + dict.Name + "</option>");
-                //        }
-                //    }
-                //}
-                //sbFormGroup.AppendLine("</select>");
-                if (string.IsNullOrWhiteSpace(_fapColumn.RefTable))
-                {
-                    Guard.Against.Null(_fapColumn.RefTable, "字典未设置");
-                }
                 List<string> tempList = new List<string>();
                 if (_fapColumn.MultiAble == 1)
                 {
@@ -710,7 +682,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 //sbFormGroup.AppendLine("</div>");
                 sbFormGroup.AppendFormat("<button id=\"file{0}{1}\" " + editAble + " class=\"btn btn-info\" type=\"button\"><i class=\"ace-icon fa fa-paperclip\"></i>附件</button>", frmid, ctrlName).AppendLine();
                 sbFormGroup.AppendFormat("<input type=\"text\" class=\"form-control attachment hidden\"  id=\"{0}\" name=\"{0}\" ng-model=\"{1}\"  value=\"{2}\" data-text=\"{3}\" data-nullable={4} data-editable={5} />", ctrlName, ngModel, FieldValue, FieldComment, _fapColumn.NullAble, _fapColumn.EditAble).AppendLine();
-                sbFormGroup.AppendFormat("<label class=\"text-muted\">支持文件格式({0})</label>", _fapColumn.FileSuffix.IsMissing()? "*.*" : _fapColumn.FileSuffix).AppendLine();
+                sbFormGroup.AppendFormat("<label class=\"text-muted\">支持文件格式({0})</label>", _fapColumn.FileSuffix.IsMissing() ? "*.*" : _fapColumn.FileSuffix).AppendLine();
 
             }
             else if (_fapColumn.CtrlType == FapColumn.CTRL_TYPE_IMAGE)
@@ -765,7 +737,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                         }
                     }
                     sbFormGroup.AppendLine("<span class=\"input-icon input-icon-right\">");
-                    sbFormGroup.AppendFormat("<input type=\"text\" " + editAble + " class=\"form-control\" id=\"{0}\" name=\"{0}\" ng-model=\"{1}\" value=\"{2}\"/>", currCtrlName, ngModel,HtmlEncoder.Default.Encode(FieldValue.ToString())).AppendLine();
+                    sbFormGroup.AppendFormat("<input type=\"text\" " + editAble + " class=\"form-control\" id=\"{0}\" name=\"{0}\" ng-model=\"{1}\" value=\"{2}\"/>", currCtrlName, ngModel, HtmlEncoder.Default.Encode(FieldValue.ToString())).AppendLine();
                     sbFormGroup.AppendFormat("<i class=\"ace-icon fa fa-language green\" data-fid=\"{0}\"></i></span>", _fapColumn.Fid);
                     var langList = EnumExtensions.GetDictionary(typeof(MultiLanguageEnum));
                     //style="top: 26px; left: 155.656px; display: block;"
@@ -788,7 +760,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 }
                 else
                 {
-                    sbFormGroup.AppendFormat("<input type=\"text\" " + editAble + " class=\"form-control\" id=\"{0}\" name=\"{0}\" ng-model=\"{1}\" value=\"{2}\"/>", ctrlName, ngModel,HtmlEncoder.Default.Encode(FieldValue.ToString())).AppendLine();
+                    sbFormGroup.AppendFormat("<input type=\"text\" " + editAble + " class=\"form-control\" id=\"{0}\" name=\"{0}\" ng-model=\"{1}\" value=\"{2}\"/>", ctrlName, ngModel, HtmlEncoder.Default.Encode(FieldValue.ToString())).AppendLine();
                 }
             }
             else if (_fapColumn.CtrlType == FapColumn.CTRL_TYPE_CITY)
@@ -808,7 +780,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             }
             else
             {
-                sbFormGroup.AppendFormat("<input type=\"text\" " + editAble + " class=\"form-control\" id=\"{0}\" name=\"{0}\" ng-model=\"{1}\" value=\"{2}\"/>", ctrlName, ngModel,HtmlEncoder.Default.Encode(FieldValue.ToString())).AppendLine();
+                sbFormGroup.AppendFormat("<input type=\"text\" " + editAble + " class=\"form-control\" id=\"{0}\" name=\"{0}\" ng-model=\"{1}\" value=\"{2}\"/>", ctrlName, ngModel, HtmlEncoder.Default.Encode(FieldValue.ToString())).AppendLine();
             }
             sbFormGroup.AppendLine("</div>");
 

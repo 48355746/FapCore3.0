@@ -2,11 +2,16 @@
 using Fap.Core.DataAccess;
 using Fap.Core.DataAccess.Interceptor;
 using Fap.Core.MultiLanguage;
+using Fap.Core.Tracker;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Polly;
+using Polly.Extensions.Http;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Fap.Core.Infrastructure.Domain
 {
@@ -42,12 +47,25 @@ namespace Fap.Core.Infrastructure.Domain
             builder.AddFap();
             return builder;
         }
-      
+
         public static IFapBuilder AddFap(this IFapBuilder builder)
         {
             //httpcontext,httpclient            
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddHttpClient();
+            var retryPolicy = HttpPolicyExtensions.HandleTransientHttpError()
+                .WaitAndRetryAsync(new[]
+                {
+                    TimeSpan.FromSeconds(1),
+                    TimeSpan.FromSeconds(5),
+                    TimeSpan.FromSeconds(10)
+                }, onRetryAsync: async (outcome, timespan, retryCount, context) =>
+                 {
+                     context["RetriesInvoked"] = retryCount;
+                     await Task.CompletedTask;
+                    // ...
+                });
+            builder.Services.AddHttpClient("Retry").AddPolicyHandler(retryPolicy);
             //数据库访问
             builder.Services.AddSingleton<IConnectionFactory, ConnectionFactory>();
             builder.Services.AddSingleton<IDbSession, DbSession>();
@@ -63,19 +81,25 @@ namespace Fap.Core.Infrastructure.Domain
             return builder;
         }
         /// <summary>
-        /// 添加三方同步
+        /// 数据变化触发（用于第三方系统同步变化数据）
         /// </summary>
         /// <param name="services"></param>
-        //public static IFapBuilder AddThirdpartySynchronize(this IFapBuilder builder)
-        //{
-        //    //实时同步
-        //    builder.Services.AddTransient<IRealtimeSynchService, RealtimeSynchUrlService>();
-        //    #region 事件驱动
-        //    builder.Services.AddTransient<IEventHandler, RealtimeSynEventHandler>();
-        //    builder.Services.AddSingleton<IEventBus, PassThroughEventBus>();
-        //    #endregion
-        //    return builder;
-        //}
+        public static IFapBuilder AddDataTracker(this IFapBuilder builder)
+        {
+            builder.Services.AddSingleton<EventDataTracker>();
+            builder.Services.AddSingleton<EventDataReporter>();
+            #region 订阅
+            //builder.Services.AddSingleton(typeof(EventDataReporter), provider =>
+            //{
+            //    var tracker = provider.GetService<EventDataTracker>();
+            //    var dataHandler = provider.GetService<IEventDataHandler>();
+            //    var logger = provider.GetService<ILogger<EventDataReporter>>();
+            //    EventDataReporter userReporter = new EventDataReporter(logger, dataHandler);                
+            //    return userReporter;
+            //});
+            #endregion
+            return builder;
+        }
         /// <summary>
         /// 添加调度
         /// </summary>

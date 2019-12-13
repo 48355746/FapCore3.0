@@ -9,7 +9,6 @@ namespace Fap.Core.Infrastructure.Metadata
     /// 字段元数据定义
     /// by sunchangtan
     /// </summary>
-    [Serializable]
     [Table("FapColumn")]
     public class FapColumn : BaseModel
     {
@@ -265,7 +264,7 @@ namespace Fap.Core.Infrastructure.Metadata
         /// <returns></returns>
         public bool IsLongType()
         {
-            return this.ColType == FapColumn.COL_TYPE_LONG;
+            return this.ColType == FapColumn.COL_TYPE_LONG||this.ColType==FapColumn.COL_TYPE_PK;
         }
         public override bool Equals(object obj)
         {

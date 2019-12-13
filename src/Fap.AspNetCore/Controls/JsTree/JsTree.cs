@@ -83,7 +83,7 @@ namespace Fap.AspNetCore.Controls
             }
             else
             {
-                powerDepts =_platformDomain.OrgDeptSet.OrderBy(d => d.DeptOrder);
+                powerDepts = _platformDomain.OrgDeptSet.OrderBy(d => d.DeptOrder);
             }
 
 
@@ -280,7 +280,7 @@ namespace Fap.AspNetCore.Controls
         private IFapApplicationContext _applicationContext;
         private IFapPlatformDomain _platformDomain;
         private IRbacService _rbacService;
-        public JsTree(IDbContext dataAccessor, IFapApplicationContext applicationContext, IFapPlatformDomain platformDomain,IRbacService rbacService,string id):base("")
+        public JsTree(IDbContext dataAccessor, IFapApplicationContext applicationContext, IFapPlatformDomain platformDomain, IRbacService rbacService, string id) : base("")
         {
             _id = id;
             _dbContext = dataAccessor;
@@ -429,7 +429,7 @@ namespace Fap.AspNetCore.Controls
                 script.AppendLine("     \"check_callback\" : true,");
                 script.AppendLine("     'force_text' : true,");
                 script.AppendLine("     \"themes\": {\"stripes\": true},");
-                script.AppendLine("        'data' : " +( _jsonData.IsMissing()?"{ }": _jsonData));
+                script.AppendLine("        'data' : " + (_jsonData.IsMissing() ? "{ }" : _jsonData));
 
                 if (!string.IsNullOrWhiteSpace(_types))
                 {
@@ -515,14 +515,10 @@ namespace Fap.AspNetCore.Controls
 
         private void LoadTreeData()
         {
-            if (_treeModel != null && _treeModel.TableName.IsMissing())
-            {
-                Guard.Against.Null(_treeModel.TableName, nameof(_treeModel.TableName));
-            }
-            if (_treeModel != null && _treeModel.DisplayField.IsMissing())
-            {
-                Guard.Against.Null(_treeModel.DisplayField, nameof(_treeModel.DisplayField));
-            }
+            Guard.Against.Null(_treeModel, nameof(_treeModel));
+            Guard.Against.NullOrEmpty(_treeModel.TableName, nameof(_treeModel.TableName));
+            Guard.Against.NullOrEmpty(_treeModel.DisplayField, nameof(_treeModel.DisplayField));
+
             if (_treeModel != null && !_treeModel.NodeIcon.IsMissing())
             {
                 _nodeIcon = _treeModel.NodeIcon;
@@ -544,7 +540,7 @@ namespace Fap.AspNetCore.Controls
             {
                 sql += " order by " + _treeModel.SortBy;
             }
-            var dataList =_dbContext.Query(sql);
+            var dataList = _dbContext.Query(sql);
 
             //将List<dynamic>转换成List<TreeDataView>
             List<TreeDataView> treeList = new List<TreeDataView>();

@@ -34,5 +34,9 @@ namespace Fap.Core.Exceptions
         {
             throw new FapException(message, exception);
         }
+        public static void FapRuntime(this IGuardClause guardClause,  Exception exception)
+        {
+            throw new FapException(exception.Message, exception);
+        }
     }
 }

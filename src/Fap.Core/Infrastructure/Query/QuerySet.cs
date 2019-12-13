@@ -1,4 +1,7 @@
-﻿using Fap.Core.Extensions;
+﻿using Dapper;
+using Fap.Core.DataAccess;
+using Fap.Core.Extensions;
+using Fap.Core.Infrastructure.Metadata;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -60,6 +63,24 @@ namespace Fap.Core.Infrastructure.Query
             if (InitWhere.IsPresent())
             {
                 where = where.IsMissing() ? InitWhere : $"{where} and {InitWhere}";
+            }
+            if (!QueryCols.EqualsWithIgnoreCase("*"))
+            {
+                var queryColList =QueryCols.Split(',').AsList();
+                //id,fid,ts 必选
+                if (!queryColList.Contains(FapDbConstants.FAPCOLUMN_FIELD_Id))
+                {
+                    queryColList.Add(FapDbConstants.FAPCOLUMN_FIELD_Id);
+                }
+                if (!queryColList.Contains(FapDbConstants.FAPCOLUMN_FIELD_Fid))
+                {
+                    queryColList.Add(FapDbConstants.FAPCOLUMN_FIELD_Fid);
+                }
+                if (!queryColList.Contains(FapDbConstants.FAPCOLUMN_FIELD_Ts))
+                {
+                    queryColList.Add(FapDbConstants.FAPCOLUMN_FIELD_Ts);
+                }
+                QueryCols = string.Join(',', queryColList);
             }
             return $"select {QueryCols} from {TableName} where {where}";
         }

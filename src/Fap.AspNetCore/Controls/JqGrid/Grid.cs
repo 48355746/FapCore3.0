@@ -294,16 +294,16 @@ namespace Fap.AspNetCore.Controls.JqGrid
             _fapColumns = _dataAccessor.Columns(queryset.TableName);
             if (!queryset.QueryCols.EqualsWithIgnoreCase("*"))
             {
-                var queryColList = queryset.QueryCols.Split(',');
-                _fapColumns = _fapColumns.Where(c => queryColList.Contains(c.ColName));
+                var queryColList = queryset.QueryCols.ToLower().SplitComma();
+                _fapColumns = _fapColumns.Where(c => queryColList.Contains(c.ColName.ToLower()));
             }
             if (_fapColumns.Any())
             {
-                string[] disCols = { };
-                string[] hideCols = { };
+                List<string> disCols = new List<string>();
+                List<string> hideCols = new List<string>(); ;
                 if (queryset.DispalyCols.IsPresent())
                 {
-                    disCols = queryset.DispalyCols.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                    disCols = queryset.DispalyCols.ToLower().SplitComma();
                 }
                 //权限
                 #region 权限 不再在次处理，改为FapController中处理
@@ -339,7 +339,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 #endregion
                 if (queryset.HiddenCols.IsPresent())
                 {
-                    hideCols = queryset.HiddenCols.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                    hideCols = queryset.HiddenCols.ToLower().SplitComma() ;
                 }
                 List<Column> grdColumns = _fapColumns.OrderBy(c => c.ColOrder).ToColumns(_loggerFactory, _dataAccessor, _multiLang, disCols, hideCols).ToList();
 
