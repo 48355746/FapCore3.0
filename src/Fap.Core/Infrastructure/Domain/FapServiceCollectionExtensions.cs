@@ -87,18 +87,15 @@ namespace Fap.Core.Infrastructure.Domain
         public static IFapBuilder AddDataTracker(this IFapBuilder builder)
         {
             builder.Services.AddSingleton<EventDataTracker>();
-            builder.Services.AddSingleton<EventDataReporter>();
-            #region 订阅
-            //builder.Services.AddSingleton(typeof(EventDataReporter), provider =>
-            //{
-            //    var tracker = provider.GetService<EventDataTracker>();
-            //    var dataHandler = provider.GetService<IEventDataHandler>();
-            //    var logger = provider.GetService<ILogger<EventDataReporter>>();
-            //    EventDataReporter userReporter = new EventDataReporter(logger, dataHandler);                
-            //    return userReporter;
-            //});
-            #endregion
+            builder.Services.AddSingleton<EventDataReporter>();           
             return builder;
+        }
+        public static void UseDataTracker(this IApplicationBuilder app)
+        {
+            var provider= app.ApplicationServices;
+            EventDataReporter reporter = provider.GetService<EventDataReporter>();
+            EventDataTracker tracker = provider.GetService<EventDataTracker>();
+            reporter.Subscribe(tracker);
         }
         /// <summary>
         /// 添加调度

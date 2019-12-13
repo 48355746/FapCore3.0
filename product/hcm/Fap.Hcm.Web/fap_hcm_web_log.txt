@@ -8050,3 +8050,360 @@ System.IO.IOException: The client reset the request stream.
 2019-12-13 15:58:30.535 +08:00 [INF] System.Threading.Tasks.Task`1[Fap.AspNetCore.ViewModel.ResponseViewModel] PersistenceAsync(Microsoft.AspNetCore.Http.IFormCollection)执行时间为：2257毫秒
 2019-12-13 15:58:30.629 +08:00 [INF] System.String GetRoleDataWhere(System.String)执行时间为：0毫秒
 2019-12-13 15:58:30.688 +08:00 [INF] Fap.AspNetCore.Model.JqGridData QueryPageDataResultView(Fap.AspNetCore.ViewModel.JqGridPostData, System.Action`1[Fap.Core.Infrastructure.Query.Pageable])执行时间为：0毫秒
+2019-12-13 16:18:14.626 +08:00 [INF] 初始化元数据
+2019-12-13 16:18:15.022 +08:00 [INF] 初始化元数据结束
+2019-12-13 16:18:15.100 +08:00 [INF] 初始化多语结束
+2019-12-13 16:18:15.155 +08:00 [INF] 初始化字典结束
+2019-12-13 16:18:15.212 +08:00 [INF] 初始化模块结束
+2019-12-13 16:18:15.284 +08:00 [INF] 初始化菜单结束
+2019-12-13 16:18:15.316 +08:00 [INF] 初始化组织部门结束
+2019-12-13 16:18:15.351 +08:00 [INF] 初始化角色结束
+2019-12-13 16:18:15.394 +08:00 [INF] 初始化系统设置结束
+2019-12-13 16:18:15.415 +08:00 [INF] 初始化用户结束
+2019-12-13 16:18:15.439 +08:00 [INF] 初始化角色列结束
+2019-12-13 16:18:15.458 +08:00 [INF] 初始化角色部门结束
+2019-12-13 16:18:15.484 +08:00 [INF] 初始化角色菜单结束
+2019-12-13 16:18:15.501 +08:00 [INF] 初始化角色报表结束
+2019-12-13 16:18:15.522 +08:00 [INF] 初始化角色数据结束
+2019-12-13 16:18:15.544 +08:00 [INF] 初始化角色角色结束
+2019-12-13 16:18:15.576 +08:00 [INF] 初始化单据编码规则集结束
+2019-12-13 16:18:15.790 +08:00 [INF] Void InitMultiLangResJS()执行时间为：9毫秒
+2019-12-13 16:18:17.250 +08:00 [INF] System.String GetSysParamValue(System.String)执行时间为：0毫秒
+2019-12-13 16:18:17.252 +08:00 [INF] System.String GetSysParamValue(System.String)执行时间为：0毫秒
+2019-12-13 16:18:17.265 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：1毫秒
+2019-12-13 16:18:17.285 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：0毫秒
+2019-12-13 16:18:17.366 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：0毫秒
+2019-12-13 16:18:17.368 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：0毫秒
+2019-12-13 16:18:17.369 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：0毫秒
+2019-12-13 16:18:17.372 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：0毫秒
+2019-12-13 16:18:17.373 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：0毫秒
+2019-12-13 16:18:17.373 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：0毫秒
+2019-12-13 16:18:17.376 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：0毫秒
+2019-12-13 16:18:17.376 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：0毫秒
+2019-12-13 16:18:26.737 +08:00 [ERR] An unhandled exception has occurred while executing the request.
+System.IO.IOException: The client reset the request stream.
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpRequestPipeReader.ReadAsync(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.WebUtilities.FormPipeReader.ReadFormAsync(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Http.Features.FormFeature.InnerReadFormAsync(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Mvc.ModelBinding.FormValueProviderFactory.AddValueProviderAsync(ValueProviderFactoryContext context)
+   at Microsoft.AspNetCore.Mvc.ModelBinding.CompositeValueProvider.CreateAsync(ActionContext actionContext, IList`1 factories)
+   at Microsoft.AspNetCore.Mvc.ModelBinding.CompositeValueProvider.TryCreateAsync(ActionContext actionContext, IList`1 factories)
+   at Microsoft.AspNetCore.Mvc.Controllers.ControllerBinderDelegateProvider.<>c__DisplayClass0_0.<<CreateBinderDelegate>g__Bind|0>d.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeNextResourceFilter>g__Awaited|24_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Rethrow(ResourceExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.InvokeFilterPipelineAsync()
+--- End of stack trace from previous location where exception was thrown ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|6_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at StackExchange.Profiling.MiniProfilerMiddleware.Invoke(HttpContext context) in C:\projects\dotnet\src\MiniProfiler.AspNetCore\MiniProfilerMiddleware.cs:line 107
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Session.SessionMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Session.SessionMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.ResponseCompression.ResponseCompressionMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware.Invoke(HttpContext context)
+2019-12-13 16:18:27.133 +08:00 [INF] Fap.Core.Rbac.Model.FapUser Login(System.String)执行时间为：394毫秒
+2019-12-13 16:18:27.263 +08:00 [INF] Fap.Core.Rbac.Model.FapUser UpdateLastLoginTime(Fap.Core.Rbac.Model.FapUser)执行时间为：52毫秒
+2019-12-13 16:18:27.367 +08:00 [INF] Fap.Core.Rbac.Model.FapOnlineUser AddOnlineUser(Fap.Core.Rbac.Model.FapOnlineUser)执行时间为：91毫秒
+2019-12-13 16:18:27.424 +08:00 [INF] System.Collections.Generic.IEnumerable`1[Fap.Core.Rbac.Model.FapRole] GetUserRoles(System.String)执行时间为：53毫秒
+2019-12-13 16:18:27.433 +08:00 [INF] AuthenticationScheme: Cookies signed in.
+2019-12-13 16:18:27.436 +08:00 [INF] System.String GetSysParamValue(System.String)执行时间为：0毫秒
+2019-12-13 16:18:27.469 +08:00 [INF] System.String get_CurrentLanguageName()执行时间为：0毫秒
+2019-12-13 16:18:27.469 +08:00 [INF] System.String GetSysParamValue(System.String)执行时间为：0毫秒
+2019-12-13 16:18:27.901 +08:00 [INF] System.Collections.Generic.IEnumerable`1[Fap.Core.Rbac.Model.FapRole] GetUserRoles(System.String)执行时间为：36毫秒
+2019-12-13 16:18:28.006 +08:00 [INF] System.Collections.Generic.IEnumerable`1[Fap.Core.Rbac.Model.FapRoleMenu] GetUserMenuList()执行时间为：1毫秒
+2019-12-13 16:18:28.013 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.017 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.019 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.023 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.024 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.025 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.026 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.027 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.029 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.030 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.031 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.032 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.033 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.034 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.035 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.037 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.040 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.041 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.042 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.043 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.045 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.046 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.047 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.048 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.050 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.051 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.052 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.053 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.054 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.056 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.058 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.059 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.062 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.063 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.064 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.065 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.067 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.071 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.072 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.073 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.075 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.075 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.076 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.078 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.079 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.080 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.082 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.083 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.084 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.086 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.088 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.089 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.090 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.091 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.094 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.095 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.096 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.097 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.099 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.102 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.105 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.107 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.107 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.109 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.111 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.112 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.113 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.114 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.117 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.118 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.121 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.122 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.123 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.130 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.132 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.134 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.136 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.137 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.138 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.139 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.140 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.141 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.143 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.146 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.147 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.148 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.150 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.152 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.153 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.154 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.156 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.158 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.159 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.160 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:18:28.163 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.164 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.167 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.168 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:28.169 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:18:30.486 +08:00 [INF] System.Collections.Generic.IEnumerable`1[Fap.Core.Rbac.Model.FapRoleColumn] GetUserColumnList()执行时间为：0毫秒
+2019-12-13 16:18:30.498 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：0毫秒
+2019-12-13 16:18:30.499 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：0毫秒
+2019-12-13 16:18:30.597 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：0毫秒
+2019-12-13 16:18:30.618 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:18:30.622 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:18:30.622 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:18:30.623 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:18:30.624 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:18:30.625 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:18:30.625 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:18:30.627 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:18:30.822 +08:00 [INF] System.Collections.Generic.IEnumerable`1[Fap.Core.Rbac.Model.FapUserGroup] GetUserGroups()执行时间为：26毫秒
+2019-12-13 16:18:30.877 +08:00 [INF] System.String GetRoleDataWhere(System.String)执行时间为：1毫秒
+2019-12-13 16:18:30.976 +08:00 [INF] Fap.AspNetCore.Model.JqGridData QueryPageDataResultView(Fap.AspNetCore.ViewModel.JqGridPostData, System.Action`1[Fap.Core.Infrastructure.Query.Pageable])执行时间为：1毫秒
+2019-12-13 16:18:33.320 +08:00 [INF] System.String GetSysParamValue(System.String)执行时间为：0毫秒
+2019-12-13 16:18:33.448 +08:00 [INF] System.Collections.Generic.IEnumerable`1[Fap.Core.Rbac.Model.FapRoleColumn] GetUserColumnList()执行时间为：0毫秒
+2019-12-13 16:18:33.468 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:18:33.516 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:18:33.520 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:18:33.520 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:18:33.523 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:18:33.523 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:18:37.121 +08:00 [INF] System.Threading.Tasks.Task`1[Fap.AspNetCore.ViewModel.ResponseViewModel] PersistenceAsync(Microsoft.AspNetCore.Http.IFormCollection)执行时间为：284毫秒
+2019-12-13 16:18:37.189 +08:00 [INF] System.String GetRoleDataWhere(System.String)执行时间为：0毫秒
+2019-12-13 16:18:37.258 +08:00 [INF] Fap.AspNetCore.Model.JqGridData QueryPageDataResultView(Fap.AspNetCore.ViewModel.JqGridPostData, System.Action`1[Fap.Core.Infrastructure.Query.Pageable])执行时间为：0毫秒
+2019-12-13 16:24:25.964 +08:00 [INF] 初始化元数据
+2019-12-13 16:24:26.108 +08:00 [INF] 初始化元数据结束
+2019-12-13 16:24:26.175 +08:00 [INF] 初始化多语结束
+2019-12-13 16:24:26.233 +08:00 [INF] 初始化字典结束
+2019-12-13 16:24:26.289 +08:00 [INF] 初始化模块结束
+2019-12-13 16:24:26.345 +08:00 [INF] 初始化菜单结束
+2019-12-13 16:24:26.369 +08:00 [INF] 初始化组织部门结束
+2019-12-13 16:24:26.411 +08:00 [INF] 初始化角色结束
+2019-12-13 16:24:26.446 +08:00 [INF] 初始化系统设置结束
+2019-12-13 16:24:26.512 +08:00 [INF] 初始化用户结束
+2019-12-13 16:24:26.547 +08:00 [INF] 初始化角色列结束
+2019-12-13 16:24:26.563 +08:00 [INF] 初始化角色部门结束
+2019-12-13 16:24:26.580 +08:00 [INF] 初始化角色菜单结束
+2019-12-13 16:24:26.597 +08:00 [INF] 初始化角色报表结束
+2019-12-13 16:24:26.631 +08:00 [INF] 初始化角色数据结束
+2019-12-13 16:24:26.658 +08:00 [INF] 初始化角色角色结束
+2019-12-13 16:24:26.679 +08:00 [INF] 初始化单据编码规则集结束
+2019-12-13 16:24:26.868 +08:00 [INF] Void InitMultiLangResJS()执行时间为：8毫秒
+2019-12-13 16:24:28.278 +08:00 [INF] System.String GetSysParamValue(System.String)执行时间为：1毫秒
+2019-12-13 16:24:28.281 +08:00 [INF] System.String GetSysParamValue(System.String)执行时间为：0毫秒
+2019-12-13 16:24:28.291 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：1毫秒
+2019-12-13 16:24:28.308 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：0毫秒
+2019-12-13 16:24:28.384 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：0毫秒
+2019-12-13 16:24:28.386 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：0毫秒
+2019-12-13 16:24:28.387 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：0毫秒
+2019-12-13 16:24:28.391 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：0毫秒
+2019-12-13 16:24:28.392 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：0毫秒
+2019-12-13 16:24:28.392 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：0毫秒
+2019-12-13 16:24:28.394 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：0毫秒
+2019-12-13 16:24:28.395 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：0毫秒
+2019-12-13 16:25:15.863 +08:00 [INF] Fap.Core.Rbac.Model.FapUser Login(System.String)执行时间为：415毫秒
+2019-12-13 16:25:16.078 +08:00 [INF] Fap.Core.Rbac.Model.FapUser UpdateLastLoginTime(Fap.Core.Rbac.Model.FapUser)执行时间为：54毫秒
+2019-12-13 16:25:16.234 +08:00 [INF] Fap.Core.Rbac.Model.FapOnlineUser AddOnlineUser(Fap.Core.Rbac.Model.FapOnlineUser)执行时间为：143毫秒
+2019-12-13 16:25:16.290 +08:00 [INF] System.Collections.Generic.IEnumerable`1[Fap.Core.Rbac.Model.FapRole] GetUserRoles(System.String)执行时间为：54毫秒
+2019-12-13 16:25:16.300 +08:00 [INF] AuthenticationScheme: Cookies signed in.
+2019-12-13 16:25:16.302 +08:00 [INF] System.String GetSysParamValue(System.String)执行时间为：0毫秒
+2019-12-13 16:25:16.337 +08:00 [INF] System.String get_CurrentLanguageName()执行时间为：0毫秒
+2019-12-13 16:25:16.338 +08:00 [INF] System.String GetSysParamValue(System.String)执行时间为：0毫秒
+2019-12-13 16:25:16.875 +08:00 [INF] System.Collections.Generic.IEnumerable`1[Fap.Core.Rbac.Model.FapRole] GetUserRoles(System.String)执行时间为：35毫秒
+2019-12-13 16:25:16.970 +08:00 [INF] System.Collections.Generic.IEnumerable`1[Fap.Core.Rbac.Model.FapRoleMenu] GetUserMenuList()执行时间为：0毫秒
+2019-12-13 16:25:16.974 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:16.976 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:16.977 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:16.978 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:16.978 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:16.979 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:16.979 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:16.981 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:16.981 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:16.982 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:16.982 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:16.983 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:16.983 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:16.985 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:16.985 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:16.986 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:16.986 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:16.987 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:16.987 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:16.988 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:16.988 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:16.990 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:16.990 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:16.990 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:16.991 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:16.991 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:16.992 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:16.993 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:16.993 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:16.994 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:16.994 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:16.995 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:16.995 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:16.996 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:16.996 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:16.997 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:16.997 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.000 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:17.001 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.001 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:17.002 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.002 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.003 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.003 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.004 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:17.004 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.005 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.005 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.006 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.006 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:17.007 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.007 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.009 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.013 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.013 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:17.014 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.014 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.015 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.015 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.016 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:17.016 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.017 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.017 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.018 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.019 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:17.020 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.020 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.021 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.021 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.022 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:17.022 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.023 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.023 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.024 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.024 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:17.025 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.025 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.026 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.026 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.027 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:17.027 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.028 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.029 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.030 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.031 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:17.031 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.032 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.032 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.033 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.033 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:17.034 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.034 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.035 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.035 +08:00 [INF] System.String GetLangModuleName(Fap.Core.Infrastructure.Metadata.FapModule)执行时间为：0毫秒
+2019-12-13 16:25:17.036 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:17.036 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:17.037 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:17.037 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:17.039 +08:00 [INF] System.String GetLangMenuName(Fap.Model.Infrastructure.FapMenu)执行时间为：0毫秒
+2019-12-13 16:25:22.181 +08:00 [INF] System.Collections.Generic.IEnumerable`1[Fap.Core.Rbac.Model.FapRoleColumn] GetUserColumnList()执行时间为：0毫秒
+2019-12-13 16:25:22.194 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：0毫秒
+2019-12-13 16:25:22.195 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：0毫秒
+2019-12-13 16:25:22.295 +08:00 [INF] System.String GetResName(System.String, System.String, System.String)执行时间为：0毫秒
+2019-12-13 16:25:22.311 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:25:22.315 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:25:22.315 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:25:22.316 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:25:22.316 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:25:22.317 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:25:22.317 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:25:22.319 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:25:22.534 +08:00 [INF] System.Collections.Generic.IEnumerable`1[Fap.Core.Rbac.Model.FapUserGroup] GetUserGroups()执行时间为：37毫秒
+2019-12-13 16:25:22.596 +08:00 [INF] System.String GetRoleDataWhere(System.String)执行时间为：1毫秒
+2019-12-13 16:25:22.696 +08:00 [INF] Fap.AspNetCore.Model.JqGridData QueryPageDataResultView(Fap.AspNetCore.ViewModel.JqGridPostData, System.Action`1[Fap.Core.Infrastructure.Query.Pageable])执行时间为：1毫秒
+2019-12-13 16:25:24.265 +08:00 [INF] System.String GetSysParamValue(System.String)执行时间为：0毫秒
+2019-12-13 16:25:24.391 +08:00 [INF] System.Collections.Generic.IEnumerable`1[Fap.Core.Rbac.Model.FapRoleColumn] GetUserColumnList()执行时间为：0毫秒
+2019-12-13 16:25:24.412 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:25:24.484 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:25:24.487 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:25:24.488 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:25:24.488 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:25:24.489 +08:00 [INF] System.String GetLangColumnComent(Fap.Core.Infrastructure.Metadata.FapColumn)执行时间为：0毫秒
+2019-12-13 16:25:27.828 +08:00 [INF] Void SaveEventData(Fap.Core.Tracker.EventData)执行时间为：40毫秒
+2019-12-13 16:25:27.832 +08:00 [INF] UPDATE: The current EventData is [["[Id, 350]","[Fid, 3534239123093061632]","[UserCode, changxin]","[UserName, changxin]","[UserEmail, 7777@qq.com]","[UserPhone, 1234567]","[UserIdentity, 3534239088607494144]","[FapUserUserIdentityMC, 常鑫]","[Ts, 654960394430840832]","[UpdateBy, 3521928112763830273]","[UpdateName, 王燕飞]","[UpdateDate, 2019-12-13 16:25:27]"]], FapUser
+2019-12-13 16:25:27.841 +08:00 [INF] System.Threading.Tasks.Task`1[Fap.AspNetCore.ViewModel.ResponseViewModel] PersistenceAsync(Microsoft.AspNetCore.Http.IFormCollection)执行时间为：40毫秒
+2019-12-13 16:25:27.879 +08:00 [INF] System.String GetRoleDataWhere(System.String)执行时间为：0毫秒
+2019-12-13 16:25:27.939 +08:00 [INF] Fap.AspNetCore.Model.JqGridData QueryPageDataResultView(Fap.AspNetCore.ViewModel.JqGridPostData, System.Action`1[Fap.Core.Infrastructure.Query.Pageable])执行时间为：0毫秒

@@ -118,7 +118,6 @@ namespace Fap.Core.Infrastructure.Interceptor
         private void DataSynchDynamicObject(dynamic user, DataChangeTypeEnum oper)
         {
             EventDataTracker tracker = _provider.GetService<EventDataTracker>();
-            _provider.GetService<EventDataReporter>().Subscribe(tracker);          
             if (tracker != null)
             {
                 EventData data = new EventData();

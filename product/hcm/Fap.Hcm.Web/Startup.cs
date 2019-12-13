@@ -68,7 +68,8 @@ namespace Fap.Hcm.Web
         {
             // force the en-US culture, so that the app behaves the same even on machines with different default culture
             var supportedCultures = new[] { new CultureInfo("en-US") };
-
+            //应用数据跟踪器呼应AddDataTracker();
+            app.UseDataTracker();
             app.UseRequestLocalization(new RequestLocalizationOptions
             {
                 DefaultRequestCulture = new RequestCulture("en-US"),
