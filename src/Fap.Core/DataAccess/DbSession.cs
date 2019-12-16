@@ -122,7 +122,7 @@ namespace Fap.Core.DataAccess
             else
             {
                 using var connection = GetDbConnection(DataSourceEnum.MASTER);
-                return DbExecProxy<int>((param) => connection.Execute(sql, param, null, null, commandType), sql, parameters);
+                return DbExecProxy<int>((param) => connection.Execute(sql, param, CurrentTransaction, null, commandType), sql, parameters);
             }
         }
         public Task<int> ExecuteAsync(string sql, DynamicParameters parameters = null, CommandType? commandType = null)

@@ -287,7 +287,7 @@ namespace Fap.AspNetCore.Controls.JqGrid.Extensions
                 editoptions.DataInit = @"function (element) {
                                 $(element).find('input:text').on(ace.click_event,function(e){$(this).next().trigger(ace.click_event);e.preventDefault();});
                                 $(element).find('input:text').next().on(ace.click_event, function(){ var $this=$(this).prev();
-                                    openRefrenceWindow('" + fapColumn.ColComment + "选择','" + fapColumn.Id + @"','" + fapColumn.RefType + @"',function(code,name){
+                                    openRefrenceWindow('" + fapColumn.ColComment + "选择','" + fapColumn.Fid + @"','" + fapColumn.RefType + @"',function(code,name){
                                         $this.val(name).data('value',code);
                                         $this.closest('td').next().find('input:text').val(name);
                                     },function(){

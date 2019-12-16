@@ -113,7 +113,7 @@ namespace Fap.Hcm.Web
 
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");               
+                    pattern: "{controller=Home}/{action=Index}/{fid?}");               
             });
         }
     }

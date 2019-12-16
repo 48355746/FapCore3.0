@@ -8,6 +8,7 @@ using Fap.Core.Infrastructure.Query;
 using Fap.Core.Rbac.Model;
 using Microsoft.AspNetCore.Authorization;
 using Fap.AspNetCore.Model;
+using Fap.Core.Utility;
 
 namespace Fap.AspNetCore.Infrastructure
 {
@@ -35,11 +36,11 @@ namespace Fap.AspNetCore.Infrastructure
         }
 
         #endregion
-        protected FormViewModel GetFormViewModel(string tableName, string fid, Action<QuerySet> handler = null, int id = 0)
+        protected FormViewModel GetFormViewModel(string tableName, string fid, Action<QuerySet> handler = null)
         {
             FormViewModel model = new FormViewModel();
             model.FormId = $"frm-{tableName}";
-           
+
             QuerySet qs = new QuerySet();
             qs.TableName = tableName;
             qs.InitWhere = "";
@@ -50,17 +51,14 @@ namespace Fap.AspNetCore.Infrastructure
             if (handler != null)
             {
                 handler(qs);
-            }            
-            if (fid.IsPresent())
-            {
-                qs.InitWhere = "Fid=@Fid";
-                qs.Parameters.Add(new Parameter("Fid", fid));
             }
-            else
+            if (fid.IsMissing())
             {
-                qs.InitWhere = "Id=@Id";
-                qs.Parameters.Add(new Parameter("Id", id));
+                fid = UUIDUtils.Fid;
             }
+            qs.InitWhere = "Fid=@Fid";
+            qs.Parameters.Add(new Parameter("Fid", fid));
+
             model.QueryOption = qs;
             model.TableName = tableName;
             return model;
@@ -89,7 +87,7 @@ namespace Fap.AspNetCore.Infrastructure
             {
                 handler(qs);
             }
-            var allCols =_dbContext.Columns(tableName);
+            var allCols = _dbContext.Columns(tableName);
             //加权限
             if (qs.UsePermissions)
             {

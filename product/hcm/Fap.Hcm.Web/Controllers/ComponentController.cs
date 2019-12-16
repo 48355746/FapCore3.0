@@ -27,7 +27,6 @@ namespace Fap.Hcm.Web.Controllers
         {
             _fapFileService = fapFileService;
         }
-        [HttpGet("{fid}")]
         public FileResult Photo(string fid)
         {
             if (fid.IsMissing())
@@ -54,7 +53,7 @@ namespace Fap.Hcm.Web.Controllers
         /// 表格参照
         /// </summary>
         /// <returns></returns>
-        public IActionResult GridReference(int id)
+        public IActionResult GridReference(string fid)
         {
             string formid = "frm";
             string ctrlid = "ctrl";
@@ -67,7 +66,7 @@ namespace Fap.Hcm.Web.Controllers
                 ctrlid = Request.Query["ctrlid"].ToString();
             }
             string refcondition = string.Empty;
-            _platformDomain.ColumnSet.TryGetValue(id, out FapColumn fc);
+            _platformDomain.ColumnSet.TryGetValue(fid, out FapColumn fc);
             //fc.RefCondition替换参数的值
             if (fc.RefCondition.IsPresent())
             {
@@ -206,7 +205,7 @@ namespace Fap.Hcm.Web.Controllers
         /// 树参照
         /// </summary>
         /// <returns></returns>
-        public IActionResult TreeReference(int id)
+        public IActionResult TreeReference(string fid)
         {
             string formid = "frm";
             string ctrlid = "ctrl";
@@ -219,7 +218,7 @@ namespace Fap.Hcm.Web.Controllers
                 ctrlid = Request.Query["ctrlid"].ToString();
             }
             string refcondition = string.Empty;
-            _platformDomain.ColumnSet.TryGetValue(id, out FapColumn fc);
+            _platformDomain.ColumnSet.TryGetValue(fid, out FapColumn fc);
             //fc.RefCondition替换参数的值
             if (fc.RefCondition.IsPresent())
             {
@@ -403,7 +402,7 @@ namespace Fap.Hcm.Web.Controllers
         /// <param name="frm">表单ID</param>
         /// <param name="qrycols">查询列</param>
         /// <returns></returns>
-        public IActionResult DataForm(int id, string fid = "", string tn = "", string frm = "", string qrycols = "")
+        public IActionResult DataForm(string fid, string tn = "", string frm = "", string qrycols = "")
         {
             if (frm == "")
             {
@@ -422,26 +421,19 @@ namespace Fap.Hcm.Web.Controllers
                 {
                     qs.QueryCols = qrycols;
                 }
-            }, id);
+            });
             fd.FormId = frm;
 
-            if (id > 0 || fid.IsPresent())
-            {
-                ViewBag.Scroll = hasScroll;
-                return View(fd);
-            }
-            else
-            {
-                ViewBag.Scroll = hasScroll;
-                return View(fd);
-            }
+            ViewBag.Scroll = hasScroll;
+            return View(fd);
+
 
         }
         /// <summary>
         /// 表单查看
         /// </summary>
         /// <returns></returns>
-        public IActionResult DataFormView(int id, string fid = "", string tn = "", string frm = "")
+        public IActionResult DataFormView(string fid, string tn = "", string frm = "")
         {
             FormViewModel fvm = this.GetFormViewModel(tn, fid, qs =>
             {
@@ -458,7 +450,7 @@ namespace Fap.Hcm.Web.Controllers
         /// <param name="tn"></param>
         /// <param name="frm"></param>
         /// <returns></returns>
-        public IActionResult FreeForm(int id, string fid = "", string tn = "", string frm = "")
+        public IActionResult FreeForm(string fid = "", string tn = "", string frm = "")
         {
             if (frm == "")
             {
@@ -475,29 +467,16 @@ namespace Fap.Hcm.Web.Controllers
             fd.FormId = frm;
             QuerySet sq = new QuerySet();
             sq.TableName = tn;
-            if (fid.IsPresent())
-            {
-                sq.InitWhere = "Fid=@Fid";
-                sq.Parameters.Add(new Parameter("Fid", fid));
-            }
-            else
-            {
-                sq.InitWhere = "Id=@Id";
-                sq.Parameters.Add(new Parameter("Id", id));
-            }
+
+            sq.InitWhere = "Fid=@Fid";
+            sq.Parameters.Add(new Parameter("Fid", fid));
+
 
             fd.QueryOption = sq;
             fd.TableName = tn;
-            if (id > 0 || fid.IsPresent())
-            {
-                ViewBag.Scroll = hasScroll;
-                return View(fd);
-            }
-            else
-            {
-                ViewBag.Scroll = hasScroll;
-                return View(fd);
-            }
+            ViewBag.Scroll = hasScroll;
+            return View(fd);
+
 
         }
         /// <summary>
@@ -508,7 +487,7 @@ namespace Fap.Hcm.Web.Controllers
         /// <param name="tn"></param>
         /// <param name="frm"></param>
         /// <returns></returns>
-        public IActionResult FreeFormView(int id, string fid = "", string tn = "", string frm = "")
+        public IActionResult FreeFormView(string fid, string tn = "", string frm = "")
         {
             if (frm == "")
             {
@@ -525,30 +504,15 @@ namespace Fap.Hcm.Web.Controllers
             fd.FormId = frm;
             QuerySet sq = new QuerySet();
             sq.TableName = tn;
-            if (fid.IsPresent())
-            {
-                sq.InitWhere = "Fid=@Fid";
-                sq.Parameters.Add(new Parameter("Fid", fid));
-            }
-            else
-            {
-                sq.InitWhere = "Id=@Id";
-                sq.Parameters.Add(new Parameter("Id", id));
-            }
+
+            sq.InitWhere = "Fid=@Fid";
+            sq.Parameters.Add(new Parameter("Fid", fid));
+
 
             fd.QueryOption = sq;
             fd.TableName = tn;
-            if (id > 0 || fid.IsPresent())
-            {
-                ViewBag.Scroll = hasScroll;
-                return View(fd);
-            }
-            else
-            {
-                ViewBag.Scroll = hasScroll;
-                return View(fd);
-            }
-
+            ViewBag.Scroll = hasScroll;
+            return View(fd);
         }
         /// <summary>
         /// 表格组件
@@ -729,10 +693,10 @@ namespace Fap.Hcm.Web.Controllers
             return View(model);
         }
         #region 附件相关
-        public PartialViewResult AttachmentInfo(string id)
+        public PartialViewResult AttachmentInfo(string fid)
         {
             DynamicParameters param = new DynamicParameters();
-            param.Add("Bid", id);
+            param.Add("Bid", fid);
             IEnumerable<FapAttachment> atts = _dbContext.QueryWhere<FapAttachment>("Bid=@Bid", param);
             return PartialView(atts);
         }
@@ -741,9 +705,9 @@ namespace Fap.Hcm.Web.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public FileResult AttachmentImg(string id)
+        public FileResult AttachmentImg(string fid)
         {
-            FapAttachment attachment = _fapFileService.DownloadFileByFid(id, out Stream strm);
+            FapAttachment attachment = _fapFileService.DownloadFileByFid(fid, out Stream strm);
             if (attachment == null || strm == null)
             {
                 return File("~/Content/avatars/profile-pic.jpg", "image/png");
@@ -759,9 +723,9 @@ namespace Fap.Hcm.Web.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public ActionResult DownloadFile(string id)
+        public ActionResult DownloadFile(string fid)
         {
-            FapAttachment attachment = _fapFileService.DownloadFileByFid(id, out Stream strm);
+            FapAttachment attachment = _fapFileService.DownloadFileByFid(fid, out Stream strm);
             if (attachment == null || strm == null)
             {
                 return Content("服务器未找到文件");
@@ -779,17 +743,17 @@ namespace Fap.Hcm.Web.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public FileStreamResult DownloadZipFile(string id)
+        public FileStreamResult DownloadZipFile(string fid)
         {
             FileStreamResult streamResult = null;
-            _fapFileService.DownloadZip(id, (zipStream) =>
+            _fapFileService.DownloadZip(fid, (zipStream) =>
             {
                 if (zipStream == null)
                 {
                     throw new FileNotFoundException("服务器未找到文件");
                 }
 
-                streamResult = File(zipStream, "application/x-zip-compressed", id + ".zip");
+                streamResult = File(zipStream, "application/x-zip-compressed", fid + ".zip");
             });
 
             return streamResult;

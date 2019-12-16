@@ -244,7 +244,7 @@ $(function () {
 });
 
 //extra 参照form上控件的值 array
-var loadRefMessageBox = function (title, frmid, colid, ctrlid, refurl, extra) {
+var loadRefMessageBox = function (title, frmid, colfid, ctrlid, refurl, extra) {
     var dialog = bootbox.dialog({
         title: title,
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
@@ -289,7 +289,7 @@ var loadRefMessageBox = function (title, frmid, colid, ctrlid, refurl, extra) {
             $(window).triggerHandler('resize.jqGrid');//触发窗口调整,使Grid得到正确的大小
     });
     dialog.init(function () {
-        var url = basePath + '/Component/' + refurl + '/' + colid + '?frmid=' + frmid + '&ctrlid=' + ctrlid;
+        var url = basePath + '/Component/' + refurl + '/' + colfid + '?frmid=' + frmid + '&ctrlid=' + ctrlid;
         if (extra != '') {
             var param = extra.join("&");
             url += "&" + param;

@@ -59,9 +59,7 @@ namespace Fap.Core.DataAccess
                 {
                     SlaverConnectionStrings.Add(configuration[$"ConnectionString:{connKey}"]);
                 }
-
             }
-            GetSlaverConnection();
         }
         /// <summary>
         /// 数据库方言集合

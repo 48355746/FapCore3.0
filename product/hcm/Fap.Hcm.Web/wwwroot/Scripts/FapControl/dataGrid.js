@@ -56,7 +56,7 @@ function refreshBaseJqGrid(grdid) {
 //callback 扩展js方法
 //title 标题;gid jqgrid的ID;icon 图标;tablename 表名（frm-tablename 表单名称）;
 //id业务数据主键值;fromInitCallback 表单初始化事件;saveCompletedCallback 保存完毕事件
-var loadFormMessageBox = function (title, gid, icon, tablename, id,queryCols, fromInitCallback, saveCompletedCallback) {
+var loadFormMessageBox = function (title, gid, icon, tablename, fid,queryCols, fromInitCallback, saveCompletedCallback) {
     var dialog = bootbox.dialog({
         title: '<i class="ace-icon ' + icon + '"></i> ' + title,
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
@@ -122,7 +122,7 @@ var loadFormMessageBox = function (title, gid, icon, tablename, id,queryCols, fr
         initDialog();
     });
     function initDialog() {
-        var url = $.randomUrl(basePath + '/Component/Dataform/' + id + '?tn=' + tablename + '&qrycols=' + queryCols);
+        var url = $.randomUrl(basePath + '/Component/Dataform/' + fid + '?tn=' + tablename + '&qrycols=' + queryCols);
         $.get(url, function (ev) {
             dialog.find('.bootbox-body').html(ev);
             if ($.isFunction(fromInitCallback)) {
@@ -143,7 +143,7 @@ var viewFormMessageBox = function (fid, tablename) {
         footer:false
     });
     dialog.init(function () {
-        dialog.find('.bootbox-body').load(basePath + "/Component/DataFormView/0", { fid: fid, tn: tablename });
+        dialog.find('.bootbox-body').load(basePath + "/Component/DataFormView/"+fid, { tn: tablename });
 
     });
 };
@@ -195,7 +195,7 @@ var deleteGridRow = function (gid, tableName, logicDelete,formtoken, onCompleted
     }
 
 };
-var openRefrenceWindow = function (title, colid,  refurl, selectcallback,clearcallback) {
+var openRefrenceWindow = function (title, colfid,  refurl, selectcallback,clearcallback) {
     var dialog = bootbox.dialog({
         title: title,
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
@@ -229,7 +229,7 @@ var openRefrenceWindow = function (title, colid,  refurl, selectcallback,clearca
             $(window).triggerHandler('resize.jqGrid');//触发窗口调整,使Grid得到正确的大小
     });
     dialog.init(function () {
-        var url = basePath + '/Component/' + refurl + '/' + colid ;        
+        var url = basePath + '/Component/' + refurl + '/' + colfid ;        
         $.get(url, function (ev) {
             dialog.find('.bootbox-body').html(ev);
 
@@ -307,7 +307,7 @@ var loadBatchUpdateMessageBox = function (title, gid, icon, tablename, id, callb
                 return;
             }
             $modal.find(".step-content [data-step=2]").html('<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>');
-            var url = $.randomUrl(basePath + '/Component/Dataform/0?tn=' + tablename + "&frm=batchupdate&qrycols=" + fields.join());
+            var url = $.randomUrl(basePath + '/Component/Dataform/?tn=' + tablename + "&frm=batchupdate&qrycols=" + fields.join());
             $.get(url, function (ev) {
                 $modal.find(".step-content [data-step=2]").html(ev);
             });

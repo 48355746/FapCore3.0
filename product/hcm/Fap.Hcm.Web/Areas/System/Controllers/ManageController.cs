@@ -200,14 +200,14 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public IActionResult BillWriteBackSet(string id)
+        public IActionResult BillWriteBackSet(string fid)
         {
-            CfgBillWriteBackRule model = _dbContext.Get<CfgBillWriteBackRule>(id);
+            CfgBillWriteBackRule model = _dbContext.Get<CfgBillWriteBackRule>(fid);
             return View(model);
         }
-        public IActionResult FreeFormSet(string id)
+        public IActionResult FreeFormSet(string fid)
         {
-            CfgFreeForm ffModel = _dbContext.Get<CfgFreeForm>(id);
+            CfgFreeForm ffModel = _dbContext.Get<CfgFreeForm>(fid);
             IEnumerable<FapTable> childTables=  _platformDomain.TableSet.Where(t => t.ExtTable == ffModel.BillTable);
             ViewBag.DbFields = _dbContext.Columns(ffModel.BillTable);
             ViewBag.ChildTables = childTables;
@@ -218,9 +218,9 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         /// </summary>
         /// <param name="id">fid</param>
         /// <returns></returns>
-        public ViewResult BillMailTemplate(string id)
+        public ViewResult BillMailTemplate(string fid)
         {
-            ViewBag.Fid = id;
+            ViewBag.Fid = fid;
             return View();
         }
         /// <summary>
@@ -228,9 +228,9 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public IActionResult BusinessDynRoleSet(string id)
+        public IActionResult BusinessDynRoleSet(string fid)
         {
-            FapBizDynRole model = _dbContext.Get<FapBizDynRole>(id);
+            FapBizDynRole model = _dbContext.Get<FapBizDynRole>(fid);
             return View(model);
         }
 

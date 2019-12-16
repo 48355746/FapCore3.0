@@ -580,7 +580,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                             }
                         }
                     }
-                    script.AppendLine("loadRefMessageBox('" + dispalyName + "','" + _id + "'," + column.Id + ",'" + column.ColName + "','" + refUrl + "',extra)");
+                    script.AppendLine("loadRefMessageBox('" + dispalyName + "','" + _id + "','" + column.Fid + "','" + column.ColName + "','" + refUrl + "',extra)");
                     script.AppendLine("});");
                     script.AppendLine("$(\"#frm-" + _id + " #" + _id + column.ColName + "\"+\"MC\").on(ace.click_event,function(e){$(this).next().trigger(ace.click_event);e.preventDefault();})");
                 }
