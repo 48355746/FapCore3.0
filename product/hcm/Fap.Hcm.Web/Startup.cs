@@ -16,6 +16,7 @@ using Microsoft.Extensions.FileProviders;
 using System.IO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Newtonsoft.Json;
 
 namespace Fap.Hcm.Web
 {
@@ -60,7 +61,12 @@ namespace Fap.Hcm.Web
                 options.PopupShowTimeWithChildren = true;
                 options.RouteBasePath = "/profiler";
             });
-            services.AddControllersWithViews().AddNewtonsoftJson().AddRazorRuntimeCompilation();
+            services.AddControllersWithViews().AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+            }).AddJsonOptions(options=> {
+                options.JsonSerializerOptions.IgnoreNullValues = true;
+            }).AddRazorRuntimeCompilation();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -113,7 +119,7 @@ namespace Fap.Hcm.Web
 
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{fid?}");               
+                    pattern: "{controller=Home}/{action=Index}/{fid?}");
             });
         }
     }

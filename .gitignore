@@ -5,6 +5,7 @@
 /.vs/fap-netcore
 /product/hcm/Fap.Hcm.Web/bin/Debug/netcoreapp3.0
 /product/hcm/Fap.Hcm.Web/obj
+/product/hcm/Fap.Hcm.Web/*.txt
 /src/Fap.Core/bin/Debug
 /src/Fap.AspNetCore/bin/Debug
 /src/Fap.Core/obj
