@@ -1,8 +1,11 @@
-﻿using Dapper;
+﻿using Ardalis.GuardClauses;
+using Dapper;
+using Fap.Core.DataAccess;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
 using System.Text;
 
 namespace Fap.Core.Infrastructure.Metadata
@@ -11,27 +14,14 @@ namespace Fap.Core.Infrastructure.Metadata
     /// 动态类型对象，用来获取动态数据
     /// by sunchangtan
     /// </summary>
-    public class FapDynamicObject : System.Dynamic.DynamicObject, IEnumerable<KeyValuePair<string, object>>
+    public class FapDynamicObject
+        : IDynamicMetaObjectProvider
+        , IDictionary<string, object>
+        , IReadOnlyDictionary<string, object>
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="tableName">table name</param>
-        /// <param name="id">primarykey value</param>
-        /// <param name="ts">timestamp</param>
-        public FapDynamicObject(string tableName, long id = 0, long ts = 0)
-        {
-            TableName = tableName;
-            if (id>0)
-            {
-                ((dynamic)this).Id = id;
-            }
-            if (ts>0)
-            {
-                ((dynamic)this).Ts = ts;
-            }
-        }
-        private IDictionary<string, object> map = new Dictionary<string, object>();
+        //存储值
+        private IDictionary<string, object> fapKeyValues = new Dictionary<string, object>();
+        private IEnumerable<FapColumn> _fapColumns;
         /// <summary>
         /// 表名
         /// </summary>
@@ -39,207 +29,233 @@ namespace Fap.Core.Infrastructure.Metadata
         /// <summary>
         /// 主键
         /// </summary>
-        public string PrimaryKey { get; set; } = "ID";
-        public override IEnumerable<string> GetDynamicMemberNames()
-        {
-            return map.Keys;
-        }
+        public string PrimaryKey { get; set; }
         /// <summary>
-        /// 重写get方法
+        /// 构造函数
         /// </summary>
-        /// <param name="binder"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        public override bool TryGetMember(System.Dynamic.GetMemberBinder binder, out object result)
+        /// <param name="tableName">table name</param>
+        /// <param name="id">primarykey value</param>
+        /// <param name="ts">timestamp</param>
+        public FapDynamicObject(IEnumerable<FapColumn> fapColumns)
         {
-            if (map.ContainsKey(binder.Name))
-            {
-                result = map[binder.Name];
-                return true;
-            }
-            else if (map.ContainsKey(TableName + "_" + binder.Name))
-            {
-                result = map[TableName + "_" + binder.Name];
-                return true;
-            }
-            else
-            {
-                result = "Invalid Property!";
-                return false;
-            }
-        }
+            Guard.Against.Null(fapColumns, nameof(fapColumns));
+            _fapColumns = fapColumns;
+            TableName = fapColumns.First().TableName;
+            PrimaryKey = fapColumns.First(c => c.ColType == FapColumn.COL_TYPE_PK)?.ColName ?? FapDbConstants.FAPCOLUMN_FIELD_Id;
 
-        /// <summary>
-        /// 设置属性值
-        /// </summary>
-        /// <param name="binder"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public override bool TrySetMember(SetMemberBinder binder, object value)
-        {
-            map[binder.Name] = value;
-
-            return true;
-        }
-        /// <summary>
-        /// 本身直接转换为Dictionary。例如Dictionary dic=dynamicObj;
-        /// </summary>
-        /// <param name="binder"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        public override bool TryConvert(ConvertBinder binder, out object result)
-        {
-            if (binder.Type == typeof(IDictionary<string, object>))
-            {
-                result = map;
-                return true;
-            }
-            return base.TryConvert(binder, out result);
-        }
-        public const string OperGet = "Get";
-        public const string OperAdd = "Add";
-        public const string OperKeys = "Keys";
-        public const string OperContainsKey = "ContainsKey";
-        public const string OperRemove = "Remove";
-        public const string OperParamKeys = "ParamKeys";
-        public const string OperColumnKeys = "ColumnKeys";
-        public const string OperParameters = "DynamicParameters";
-        public override bool TryInvokeMember(System.Dynamic.InvokeMemberBinder binder, object[] args, out object result)
-        {
-            if (binder.Name == OperAdd && binder.CallInfo.ArgumentCount == 2)
-            {
-                string key = args[0] as string;
-                if (key == null)
-                {
-                    //throw new ArgumentException("name");
-                    result = null;
-                    return false;
-                }
-                object value = args[1];
-                if (map == null)
-                {
-                    map = new Dictionary<string, object>();
-                }
-                if (map.ContainsKey(key))
-                {
-                    map[key] = value;
-                    result = value;
-                }
-                else if (map.TryAdd(key, value))
-                {
-                    result = value;
-                }
-                else
-                {
-                    result = null;
-                }
-                return true;
-
-            }
-            else if (binder.Name == OperGet && binder.CallInfo.ArgumentCount == 1)
-            {
-                string key = args[0] as string;
-                if (map.TryGetValue(key, out object obj))
-                {
-                    result = obj;
-                }
-                else
-                {
-                    result = null;
-                }
-                return true;
-            }
-            else if (binder.Name == OperKeys && binder.CallInfo.ArgumentCount == 0)
-            {
-                result = new List<string>(map.Keys);
-                return true;
-            }
-            else if (binder.Name == OperContainsKey && binder.CallInfo.ArgumentCount == 1)
-            {
-                string key = args[0] as string;
-                result = map.ContainsKey(key);
-                return true;
-            }
-            else if (binder.Name == OperRemove && binder.CallInfo.ArgumentCount == 1)
-            {
-                string key = args[0] as string;
-                if (map.ContainsKey(key))
-                {
-                    result = map.Remove(key);
-                }
-                else
-                {
-                    result = false;
-                }
-                return true;
-            }
-            else if (binder.Name == OperParamKeys && binder.CallInfo.ArgumentCount == 0)
-            {
-                List<string> paramKeys = new List<string>();
-                foreach (var key in map.Keys)
-                {
-                    //排除自增长Id
-                    if (key.Equals("Id", StringComparison.CurrentCultureIgnoreCase))
-                        continue;
-                    //排除带MC的字段
-                    if (key.EndsWith("MC"))
-                        continue;
-                    paramKeys.Add($"@{key}");
-                }
-                result = paramKeys;
-                return true;
-            }
-            else if (binder.Name == OperColumnKeys && binder.CallInfo.ArgumentCount == 0)
-            {
-                List<string> columnKeys = new List<string>();
-                foreach (var key in map.Keys)
-                {
-                    //排除自增长Id
-                    if (key.Equals("Id", StringComparison.CurrentCultureIgnoreCase))
-                        continue;
-                    //排除带MC的字段
-                    if (key.EndsWith("MC"))
-                        continue;
-                    columnKeys.Add(key);
-                }
-                result = columnKeys;
-                return true;
-            }
-            else if (binder.Name == OperParameters && binder.CallInfo.ArgumentCount == 0)
-            {
-                DynamicParameters parameters = new DynamicParameters();
-                foreach (var entry in map)
-                {
-                    parameters.Add(entry.Key, entry.Value);
-                }
-                result = parameters;
-                return true;
-            }
-            return base.TryInvokeMember(binder, args, out result);
         }
 
         public override int GetHashCode()
         {
             int hashCode = 17; // we *know* we are using this in a dictionary, so pre-compute this
-            List<string> keyList = new List<string>(map.Keys);
+            List<string> keyList = new List<string>(fapKeyValues.Keys);
             foreach (var key in keyList)
             {
-                object obj = map[key];
+                object obj = fapKeyValues[key];
                 hashCode = hashCode * 23 + (obj == null ? 0 : obj.GetHashCode());
             }
             return hashCode;
         }
 
+        int ICollection<KeyValuePair<string, object>>.Count => fapKeyValues.Count;
+        #region custom
+        public bool ContainsKey(string key)
+        {
+            return fapKeyValues.ContainsKey(key);
+        }
+        public ICollection<string> Keys => fapKeyValues.Keys;
+        #endregion
+        public object Get(string key)
+        {
+            TryGetValue(key, out object value);
+            return value;
+        }
+
+        public bool TryGetValue(string key, out object value)
+        {
+            if (fapKeyValues.TryGetValue(key, out object v))
+            {
+                value = v;
+            }
+            else
+            {
+                value = null;
+                return false;
+            }
+            return true;
+        }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder().Append($"{{{nameof(FapDynamicObject)}}}");
+            foreach (var kv in this)
+            {
+                var value = kv.Value;
+                sb.Append(", ").Append(kv.Key);
+                if (value != null)
+                {
+                    sb.Append(" = '").Append(kv.Value).Append('\'');
+                }
+                else
+                {
+                    sb.Append(" = NULL");
+                }
+            }
+
+            return sb.Append('}').ToString();
+        }
+
+        System.Dynamic.DynamicMetaObject System.Dynamic.IDynamicMetaObjectProvider.GetMetaObject(
+            System.Linq.Expressions.Expression parameter)
+        {
+            return new FapRowDataMetaObject(parameter, System.Dynamic.BindingRestrictions.Empty, this);
+        }
+
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
         {
-            return map.GetEnumerator();
+            foreach (var entry in fapKeyValues)
+            {
+                yield return new KeyValuePair<string, object>(entry.Key, entry.Value);
+            }
+
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return map.GetEnumerator();
+            return GetEnumerator();
         }
 
+        #region Implementation of ICollection<KeyValuePair<string,object>>
+
+        void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item)
+        {
+            IDictionary<string, object> dic = this;
+            dic.Add(item.Key, item.Value);
+        }
+
+        void ICollection<KeyValuePair<string, object>>.Clear()
+        {
+            fapKeyValues.Clear();
+        }
+
+        bool ICollection<KeyValuePair<string, object>>.Contains(KeyValuePair<string, object> item)
+        {
+            return TryGetValue(item.Key, out object value) && Equals(value, item.Value);
+        }
+
+        void ICollection<KeyValuePair<string, object>>.CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
+        {
+            foreach (var kv in this)
+            {
+                array[arrayIndex++] = kv; // if they didn't leave enough space; not our fault
+            }
+        }
+
+        bool ICollection<KeyValuePair<string, object>>.Remove(KeyValuePair<string, object> item)
+        {
+            IDictionary<string, object> dic = this;
+            return dic.Remove(item.Key);
+        }
+
+        bool ICollection<KeyValuePair<string, object>>.IsReadOnly => false;
+        #endregion
+
+        #region Implementation of IDictionary<string,object>
+
+        bool IDictionary<string, object>.ContainsKey(string key)
+        {
+            return fapKeyValues.ContainsKey(key);
+        }
+
+        void IDictionary<string, object>.Add(string key, object value)
+        {
+            SetValue(key, value, true);
+        }
+
+        bool IDictionary<string, object>.Remove(string key)
+        {
+            return fapKeyValues.Remove(key);
+        }
+
+        object IDictionary<string, object>.this[string key]
+        {
+            get { TryGetValue(key, out object val); return val; }
+            set { SetValue(key, value, false); }
+        }
+
+        public object SetValue(string key, object value)
+        {
+            return SetValue(key, value, false);
+        }
+
+        private object SetValue(string key, object value, bool isAdd)
+        {
+            Guard.Against.Null(key, nameof(key));
+            string colName = key;
+            if (key.EndsWith("MC"))
+            {
+                colName = key.Substring(0, key.Length - 2);
+            }
+            if (_fapColumns.FirstOrDefault(c => c.ColName.Equals(colName, StringComparison.OrdinalIgnoreCase)) != null)
+            {
+                if (fapKeyValues.ContainsKey(key) && isAdd)
+                {
+                    // then semantically, this value already exists
+                    throw new ArgumentException("An item with the same key has already been added", nameof(key));
+                }
+                if (!fapKeyValues.TryAdd(key, value))
+                {
+                    fapKeyValues[key] = value;
+                }
+                return value;
+            }
+            else
+            {
+                throw new ArgumentException("key 非法，不包含在元数据中", nameof(key));
+            }
+        }
+
+        ICollection<string> IDictionary<string, object>.Keys
+        {
+            get { return this.Select(kv => kv.Key).ToArray(); }
+        }
+
+        ICollection<object> IDictionary<string, object>.Values
+        {
+            get { return this.Select(kv => kv.Value).ToArray(); }
+        }
+
+        #endregion
+
+
+        #region Implementation of IReadOnlyDictionary<string,object>
+
+
+        int IReadOnlyCollection<KeyValuePair<string, object>>.Count => fapKeyValues.Count;
+
+
+        bool IReadOnlyDictionary<string, object>.ContainsKey(string key)
+        {
+            return fapKeyValues.ContainsKey(key);
+        }
+
+        object IReadOnlyDictionary<string, object>.this[string key]
+        {
+            get { TryGetValue(key, out object val); return val; }
+        }
+
+        IEnumerable<string> IReadOnlyDictionary<string, object>.Keys
+        {
+            get { return this.Select(kv => kv.Key); }
+        }
+
+        IEnumerable<object> IReadOnlyDictionary<string, object>.Values
+        {
+            get { return this.Select(kv => kv.Value); }
+        }
+
+        #endregion
 
     }
+
 }

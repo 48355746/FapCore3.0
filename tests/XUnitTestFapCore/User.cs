@@ -20,14 +20,18 @@ namespace XUnitTestFapCore
         public bool DeleteDynamicLogic()
         {
             var emp = _dbContext.Get("FapUser", 31);
-            dynamic empd = new FapDynamicObject("FapUser", emp.Id, emp.Ts);
+            dynamic empd = new FapDynamicObject(_dbContext.Columns("FapUser"));
+            empd.Id = emp.Id;
+            empd.Ts = emp.Ts;
             return _dbContext.DeleteDynamicData(empd);
         }
 
         public bool DeleteDynamicTrace()
         {
             var emp = _dbContext.Get("Employee", 73);
-            dynamic empd = new FapDynamicObject("Employee", emp.Id, emp.Ts);
+            dynamic empd = new FapDynamicObject(_dbContext.Columns("Employee"));
+            empd.Id = emp.Id;
+            empd.Ts=emp.Ts;
            return  _dbContext.DeleteDynamicData(empd);
         }
 
@@ -60,7 +64,10 @@ namespace XUnitTestFapCore
         public bool ModifyEmployeeDynamic(string pinyin)
         {
             var emp= _dbContext.Get("Employee", 3094);
-            dynamic empd = new FapDynamicObject("Employee", emp.Id, emp.Ts);
+          
+            dynamic empd = new FapDynamicObject(_dbContext.Columns("Employee"));
+            empd.Id = emp.Id;
+            empd.Ts = emp.Ts;
             empd.EmpPinYin = pinyin;
             return _dbContext.UpdateDynamicData(empd);
         }
@@ -84,7 +91,9 @@ namespace XUnitTestFapCore
         public bool ModifyUserDynamic(string pinyin)
         {
             var emp = _dbContext.Get("FapUser", 152);
-            dynamic empd = new FapDynamicObject("FapUser", emp.Id, emp.Ts);
+            dynamic empd = new FapDynamicObject(_dbContext.Columns("FapUser"));
+            empd.Id = emp.Id;
+            empd.Ts = emp.Ts;
             empd.UserPhone = pinyin;
             return _dbContext.UpdateDynamicData(empd);
         }

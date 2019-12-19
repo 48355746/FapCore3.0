@@ -11,6 +11,7 @@ using Fap.Core.Rbac.Model;
 using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.Utility;
 using Fap.Core.Scheduler;
+using Fap.Core.Extensions;
 
 namespace XUnitTestFapCore
 {
@@ -203,7 +204,7 @@ namespace XUnitTestFapCore
         [Fact]
         public void InsertDynamic()
         {
-            dynamic emp = new FapDynamicObject("FapUser", 0,UUIDUtils.Ts);
+            dynamic emp = new FapDynamicObject(_dbContext.Columns("FapUser"));
             emp.UserName = "jeke";
             emp.UserCode = "jeke zhang";
             emp.UserEmail = "jeke@leo.com";
@@ -220,6 +221,17 @@ namespace XUnitTestFapCore
             var emp= _dbContext.Query(sql);
             //Assert.Equal(5, emps.Count());
             Assert.Null(emp);
+        }
+        [Fact]
+        public void TestFapDynamicObject()
+        {
+            var cols= _dbContext.Columns("FapUser");
+            FapDynamicObject u = new FapDynamicObject(cols);
+            u.SetValue("UserCode", "123");
+            u.SetValue("UserName", "wyf");
+            u.SetValue("UserName", "wangyfb");
+            u.Remove("UserCode", out _);
+            string s= u.ToJson();
         }
        
     }

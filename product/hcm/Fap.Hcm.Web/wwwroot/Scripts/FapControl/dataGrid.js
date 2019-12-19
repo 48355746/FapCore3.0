@@ -567,7 +567,7 @@ var unformatImage = function (cellValue, options, cellObject) {
     return $(cellObject.innerHTML).attr("originalValue");
 };
 var formatReference = function (cellValue, options, rowObject) {
-    if (cellValue === undefined) {
+    if (cellValue === "undefined") {
         return "<label data-value=''></label>";
     }
     var colName = options.colModel.name + "MC";

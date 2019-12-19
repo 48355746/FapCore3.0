@@ -39,7 +39,7 @@ namespace Fap.AspNetCore.Controls.DataForm
         private List<FapField> _fapFields = new List<FapField>();
         //设置自定义默认值
         private Dictionary<string, string> _cutomDefault = new Dictionary<string, string>();
-        private dynamic FormData { get; set; }
+        private FapDynamicObject FormData { get; set; }
         /// <summary>
         /// 表单Fid的值
         /// </summary>
@@ -225,7 +225,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             }
             if (frmData != null)
             {
-                FormData = (frmData as IDictionary<string, object>).ToFapDynamicObject(qs.TableName);
+                FormData = (frmData as IDictionary<string, object>).ToFapDynamicObject(_fapColumns);
                 if (_formStatus != FormStatus.View)
                 {
                     _formStatus = FormStatus.Edit;
@@ -240,7 +240,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             {
                 IsDocument = true;
             }
-            FidValue = FormData.Get("Fid");
+            FidValue = FormData.Get("Fid").ToString();
             if (_fapColumns.Any())
             {
                 SetFapClumns();
@@ -949,7 +949,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                         }
                         if (col.RemoteChkURL.IsPresent())
                         {
-                            string oriValue = FormData.Get(col.TableName + "_" + col.ColName);
+                            string oriValue = FormData.Get(col.ColName).ToString();
                             script.AppendLine("				remote: '" + _applicationContext.BaseUrl + col.RemoteChkURL + "&fid=" + HttpUtility.UrlEncode(FidValue) + "&orivalue=" + HttpUtility.UrlEncode(oriValue) + "&currcol=" + HttpUtility.UrlEncode(col.ColName) + "',");
                         }
                         script.AppendLine("			},");

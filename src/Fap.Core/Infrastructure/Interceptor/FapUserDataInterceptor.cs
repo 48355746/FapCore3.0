@@ -10,6 +10,7 @@ using Fap.Core.Rbac.Model;
 using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Config;
 using Fap.Core.DataAccess;
+using Fap.Core.Infrastructure.Metadata;
 
 namespace Fap.Core.Infrastructure.Interceptor
 {
@@ -33,7 +34,7 @@ namespace Fap.Core.Infrastructure.Interceptor
         /// <summary>
         /// 更新动态对象前
         /// </summary>
-        public override void BeforeDynamicObjectUpdate(dynamic dynamicData)
+        public override void BeforeDynamicObjectUpdate(FapDynamicObject dynamicData)
         {
             if (dynamicData == null) { return; }
 
@@ -44,12 +45,12 @@ namespace Fap.Core.Infrastructure.Interceptor
                     string orginPassword = dynamicData.Get("UserPassword").ToString();
                     if (!string.IsNullOrEmpty(orginPassword))// && orginPassword.Length < 20)
                     {
-                        dynamicData.Add("UserPassword", passwordHasher.HashPassword(orginPassword));
+                        dynamicData.SetValue("UserPassword", passwordHasher.HashPassword(orginPassword));
                     }
                     else
                     {
                         //密码为空 将保持密码不变
-                        dynamicData.Remove("UserPassword");
+                        dynamicData.Remove("UserPassword",out _);
                     }
                 }
             }
@@ -59,7 +60,7 @@ namespace Fap.Core.Infrastructure.Interceptor
         /// <summary>
         /// 更新动态对象后
         /// </summary>
-        public override void AfterDynamicObjectUpdate(dynamic dynamicData)
+        public override void AfterDynamicObjectUpdate(FapDynamicObject dynamicData)
         {
             this.DataSynchDynamicObject(dynamicData, DataChangeTypeEnum.UPDATE);
 
@@ -68,7 +69,7 @@ namespace Fap.Core.Infrastructure.Interceptor
         /// <summary>
         /// 新增动态对象前
         /// </summary>
-        public override void BeforeDynamicObjectInsert(dynamic dynamicData)
+        public override void BeforeDynamicObjectInsert(FapDynamicObject dynamicData)
         {
             if (dynamicData.TableName == TableName)
             {
@@ -77,11 +78,11 @@ namespace Fap.Core.Infrastructure.Interceptor
                     string orginPassword = dynamicData.Get("UserPassword").ToString();
                     if (orginPassword.IsPresent())
                     {
-                        dynamicData.Add("UserPassword", passwordHasher.HashPassword(orginPassword));
+                        dynamicData.SetValue("UserPassword", passwordHasher.HashPassword(orginPassword));
                     }
                     else
                     {
-                        dynamicData.Add("UserPassword", passwordHasher.HashPassword("1"));
+                        dynamicData.SetValue("UserPassword", passwordHasher.HashPassword("1"));
                     }
                 }
                 else
@@ -94,7 +95,7 @@ namespace Fap.Core.Infrastructure.Interceptor
                     }
                     PasswordHasher pwdHasher = new PasswordHasher();
                     password = pwdHasher.HashPassword(password);
-                    dynamicData.Add("UserPassword", password);
+                    dynamicData.SetValue("UserPassword", password);
                 }
             }
         }
@@ -102,7 +103,7 @@ namespace Fap.Core.Infrastructure.Interceptor
         /// <summary>
         /// 新增动态对象后
         /// </summary>
-        public override void AfterDynamicObjectInsert(dynamic dynamicData)
+        public override void AfterDynamicObjectInsert(FapDynamicObject dynamicData)
         {
             this.DataSynchDynamicObject(dynamicData, DataChangeTypeEnum.ADD);
         }
@@ -110,7 +111,7 @@ namespace Fap.Core.Infrastructure.Interceptor
         /// <summary>
         /// 新增动态对象后
         /// </summary>
-        public override void AfterDynamicObjectDelete(dynamic dynamicData)
+        public override void AfterDynamicObjectDelete(FapDynamicObject dynamicData)
         {
             this.DataSynchDynamicObject(dynamicData, DataChangeTypeEnum.DELETE);
         }

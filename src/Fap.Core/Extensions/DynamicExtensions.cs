@@ -45,7 +45,7 @@ namespace Fap.Core.Extensions
         /// </summary>
         /// <param name="dataList"></param>
         /// <returns></returns>
-        public static IEnumerable<dynamic> ToFapDynamicObjectList(this IEnumerable<dynamic> dataList, string tableName)
+        public static IEnumerable<dynamic> ToFapDynamicObjectList(this IEnumerable<dynamic> dataList, IEnumerable<FapColumn> fapColumns)
         {
             //组装成动态对象集合
             List<FapDynamicObject> result = new List<FapDynamicObject>();
@@ -56,7 +56,7 @@ namespace Fap.Core.Extensions
                     var dr = item as IDictionary<string, object>;
                     if (dr != null)
                     {
-                        result.Add(dr.ToFapDynamicObject(tableName));
+                        result.Add(dr.ToFapDynamicObject(fapColumns));
                     }
                 }
             }
@@ -70,13 +70,13 @@ namespace Fap.Core.Extensions
         /// </summary>
         /// <param name="dapperRow">dapperRow转换的IDictionary</param>
         /// <returns></returns>
-        public static dynamic ToFapDynamicObject(this IDictionary<string, object> dynamicData, string tableName)
+        public static dynamic ToFapDynamicObject(this IDictionary<string, object> dynamicData, IEnumerable<FapColumn> fapColumns)
         {
-            dynamic obj = new FapDynamicObject(tableName);
+            FapDynamicObject obj = new FapDynamicObject(fapColumns);
             List<string> keyList = new List<string>(dynamicData.Keys);
             foreach (var key in keyList)
             {
-                obj.Add(key, dynamicData[key]);
+                obj.SetValue(key, dynamicData[key]);
             }
             return obj;
         }

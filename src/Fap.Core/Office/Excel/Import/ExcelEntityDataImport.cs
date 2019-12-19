@@ -185,7 +185,7 @@ namespace Fap.Core.Office.Excel.Import
 
             if (!isBlankRow)
             {
-                dynamic entityObj = new FapDynamicObject(tableName);
+                dynamic entityObj = new FapDynamicObject(_dataAccessor.Columns(tableName));
                 foreach (var row in rowData)
                 {
                     entityObj.Add(row.Key, row.Value);

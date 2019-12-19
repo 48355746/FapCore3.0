@@ -47,7 +47,7 @@ namespace Fap.AspNetCore.Controls.DataForm
         private Dictionary<string, FapTable> _childTableList = new Dictionary<string, FapTable>();
         //设置自定义默认值
         private Dictionary<string, string> _cutomDefault = new Dictionary<string, string>();
-        private dynamic FormData { get; set; }
+        private FapDynamicObject FormData { get; set; }
         private string _formTemplate = string.Empty;
         /// <summary>
         /// 表单Fid的值
@@ -117,7 +117,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             IEnumerable<FapColumn> fapColumns =_dbContext.Columns(qs.TableName).Where(c=>queryColList.Contains(c.ColName));
             if (frmData!=null)
             {
-                FormData =(frmData as IDictionary<string,object>).ToFapDynamicObject(qs.TableName);
+                FormData =(frmData as IDictionary<string,object>).ToFapDynamicObject(fapColumns);
                 if (_formStatus != FormStatus.View)
                 {
                     _formStatus = FormStatus.Edit;
@@ -128,7 +128,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 FormData = _dbContext.GetDefualtData(qs.TableName);              
                 _formStatus = FormStatus.Add;
             }
-            FidValue = FormData.Get("Fid");
+            FidValue = FormData.Get("Fid").ToString();
             if (fapColumns.Any())
             {
                 SetFapClumns(fapColumns.ToList());
@@ -903,7 +903,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 }
                 if (col.RemoteChkURL.IsPresent())
                 {
-                    string oriValue = FormData.Get(col.ColName);
+                    object oriValue = FormData.Get(col.ColName);
                     script.AppendLine("             " + col.ColName + ": {");
                     script.AppendLine("				remote: '" +_applicationContext.BaseUrl + "/" + col.RemoteChkURL + "&fid=" + FidValue + "&orivalue=" + oriValue + "&currcol=" + col.ColName + "',");
                     script.AppendLine("			},");

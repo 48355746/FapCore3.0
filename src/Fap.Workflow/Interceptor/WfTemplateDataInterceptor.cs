@@ -4,6 +4,7 @@ using Fap.Workflow.Service;
 using Fap.Core.DataAccess.Interceptor;
 using Fap.Core.DataAccess;
 using Fap.Core.Utility;
+using Fap.Core.Infrastructure.Metadata;
 
 namespace Fap.Workflow.Interceptor
 {
@@ -21,7 +22,7 @@ namespace Fap.Workflow.Interceptor
         /// 删除之前判断是否关联了业务
         /// </summary>
         /// <param name="dynamicData"></param>
-        public override void BeforeDynamicObjectDelete(dynamic fapDynamicData)
+        public override void BeforeDynamicObjectDelete(FapDynamicObject fapDynamicData)
         {
             dynamic dynamicData = fapDynamicData;
             bool allow = _wfService.AllowDeleteProcessTemplate(dynamicData.Fid);
@@ -35,7 +36,7 @@ namespace Fap.Workflow.Interceptor
                 throw new Exception($"流程[{wft.TemplateName}]已关联业务，不能删除");
             }
         }
-        public override void BeforeDynamicObjectInsert(dynamic fapDynamicData)
+        public override void BeforeDynamicObjectInsert(FapDynamicObject fapDynamicData)
         {
             dynamic dynamicData = fapDynamicData;
             if (!dynamicData.ContainsKey("CollectionId"))

@@ -48,7 +48,7 @@ namespace Fap.Core.Rbac
             }
             else if (operation == TreeNodeOper.CREATE_NODE)
             {
-                dynamic fdo = new FapDynamicObject("FapUserGroup");
+                dynamic fdo = new FapDynamicObject(_dbContext.Columns("FapUserGroup"));
                 fdo.Pid = id;
                 fdo.UserGroupName = text;
                 long rv = _dbContext.InsertDynamicData(fdo);
@@ -86,7 +86,7 @@ namespace Fap.Core.Rbac
             }
             else if (operation ==TreeNodeOper.CREATE_NODE)
             {
-                dynamic fdo = new FapDynamicObject("FapRoleGroup");
+                dynamic fdo = new FapDynamicObject(_dbContext.Columns("FapRoleGroup"));
                 fdo.Pid = id;
                 fdo.RoleGroupName = text;
                 long rv = _dbContext.InsertDynamicData(fdo);
@@ -117,7 +117,7 @@ namespace Fap.Core.Rbac
             }
             else if (operation ==TreeNodeOper.CREATE_NODE)
             {
-                dynamic fdo = new FapDynamicObject("FapBizRole");
+                dynamic fdo = new FapDynamicObject(_dbContext.Columns("FapBizRole"));
                 fdo.Pid = id;
                 fdo.BizRoleName = text;
                 long rv = _dbContext.InsertDynamicData(fdo);

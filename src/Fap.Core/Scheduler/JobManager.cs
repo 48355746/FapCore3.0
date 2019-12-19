@@ -44,7 +44,7 @@ namespace Fap.Core.Scheduler
             }
             else if (operation ==TreeNodeOper.CREATE_NODE)
             {
-                dynamic fdo = new FapDynamicObject("FapJobGroup");
+                dynamic fdo = new FapDynamicObject(_dbContext.Columns("FapJobGroup"));
                 fdo.Pid = id;
                 fdo.JobGroupName = text;
                 long rv = _dbContext.InsertDynamicData(fdo);

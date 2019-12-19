@@ -172,13 +172,13 @@ namespace Fap.AspNetCore.Controls.DataForm
             return sbCheckbox.ToString();
         }
 
-        public static string AsReference(this FapColumn fapColumn, string frmid, string editAble,  string fv, string fmc)
+        public static string AsReference(this FapColumn fapColumn,  string editAble,  string fv, string fmc)
         {
             string ngModel = "formData." + fapColumn.ColName;
             string ctrlName = fapColumn.ColName;
             StringBuilder sbReference = new StringBuilder();
             string ngModelMC = ngModel + "MC";
-            string ctrlNameMC = frmid + ctrlName + "MC";
+            string ctrlNameMC = ctrlName + "MC";
             sbReference.AppendLine("<span class=\"input-icon input-icon-right\">");
             sbReference.AppendFormat("    <input type=\"text\" id=\"{0}\" name=\"{0}\" ng-model=\"{1}\"  value=\"{2}\"  class=\"form-control hidden\" />", ctrlName, ngModel, fv).AppendLine();
             sbReference.AppendFormat("    <input type=\"text\" id=\"{0}\" name=\"{0}\" ng-model=\"{1}\" " + editAble + " value=\"{2}\"  class=\"form-control\" />", ctrlNameMC, ngModelMC, fmc).AppendLine();

@@ -48,8 +48,8 @@ namespace Fap.AspNetCore.Serivce
         }
         public JqGridData QueryPageDataResultView(JqGridPostData jqGridPostData, Action<Pageable> actionSimpleQueryOption)
         {
+            IEnumerable<FapColumn> fapColumns = _dbContext.Columns(jqGridPostData.QuerySet.TableName);
             Pageable queryOption = AnalysisPostData();
-
             //queryOption.Where = AnalysisWhere(queryOption.Where);
             PageDataResultView result = QueryPagedDynamicData(jqGridPostData.HasOperCol);
             return result.GetJqGridJsonData();
@@ -61,8 +61,7 @@ namespace Fap.AspNetCore.Serivce
                 {
                     jqGridPostData.Page = 1;
                 }
-                QuerySet qs = jqGridPostData.QuerySet;
-                IEnumerable<FapColumn> fapColumns = _dbContext.Columns(qs.TableName);
+                QuerySet qs = jqGridPostData.QuerySet;                
                 Pageable queryOption = new Pageable(_dbContext) { TableName = qs.TableName, QueryCols = qs.QueryCols, HistoryTimePoint = jqGridPostData.TimePoint };
                 //设置统计
                 if (qs.Statsetlist != null && qs.Statsetlist.Any())
@@ -202,7 +201,7 @@ namespace Fap.AspNetCore.Serivce
 
                     //组装成DataResultView对象
                     PageDataResultView dataResultView = new PageDataResultView();
-                    dataResultView.Data = pi.Items.ToFapDynamicObjectList(queryOption.TableName);
+                    dataResultView.Data = pi.Items.ToFapDynamicObjectList(fapColumns);
                     //当未获取数据的时候才获取默认值
                     //if (!dataObject.Data.Any())
                     //{
@@ -353,7 +352,7 @@ namespace Fap.AspNetCore.Serivce
                             List<FapDynamicObject> childDatas = new List<FapDynamicObject>();
                             foreach (JObject cd in childDataArray)
                             {
-                                dynamic cfdo = cd.ToFapDynamicObject(_dbContext.Columns(childTableName), exclude);
+                                var cfdo = cd.ToFapDynamicObject(_dbContext.Columns(childTableName), exclude);
                                 childDatas.Add(cfdo);
                             }
                             childDataDic.Add(childTableName, childDatas);
@@ -394,7 +393,7 @@ namespace Fap.AspNetCore.Serivce
                 return rvm;
             }
             return ResponseViewModelUtils.Sueecss();
-            void SaveChildData(dynamic mainData, Dictionary<string, IEnumerable<dynamic>> childDataList)
+            void SaveChildData(FapDynamicObject mainData, Dictionary<string, IEnumerable<dynamic>> childDataList)
             {
                 if (childDataList != null && childDataList.Any())
                 {

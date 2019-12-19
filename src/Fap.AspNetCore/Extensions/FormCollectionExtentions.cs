@@ -19,7 +19,7 @@ namespace Fap.AspNetCore.Extensions
         /// <returns></returns>
         public static dynamic ToDynamicObject(this IFormCollection fcs, IEnumerable<FapColumn> columnList, params string[] excludeKeys)
         {
-            dynamic dynamciObj = new FapDynamicObject(columnList.First().TableName);
+            FapDynamicObject dynamciObj = new FapDynamicObject(columnList);
             ICollection<string> formKeys = fcs.Keys;
             var sanitizer = new HtmlSanitizer();
             foreach (var frmKey in formKeys)
@@ -31,29 +31,29 @@ namespace Fap.AspNetCore.Extensions
                 {
                     if (column.IsIntType()) //整型
                     {
-                        dynamciObj.Add(frmKey, fcs[frmKey][0].ToInt());
+                        dynamciObj.SetValue(frmKey, fcs[frmKey][0].ToInt());
                     }
                     else if (column.IsLongType()) //长整型
                     {
-                        dynamciObj.Add(frmKey, fcs[frmKey][0].ToLong());
+                        dynamciObj.SetValue(frmKey, fcs[frmKey][0].ToLong());
                     }
                     else if (column.IsDoubleType()) //浮点型
                     {
-                        dynamciObj.Add(frmKey, fcs[frmKey][0].ToDecimal());
+                        dynamciObj.SetValue(frmKey, fcs[frmKey][0].ToDecimal());
                     }
                     else if (column.CtrlType == FapColumn.CTRL_TYPE_RICHTEXTBOX)
                     {
                         //富文本防止XSS
-                        dynamciObj.Add(frmKey, sanitizer.Sanitize(fcs[frmKey].ToString()));
+                        dynamciObj.SetValue(frmKey, sanitizer.Sanitize(fcs[frmKey].ToString()));
                     }
                     else //字符串
                     {
-                        dynamciObj.Add(frmKey, fcs[frmKey].ToString());
+                        dynamciObj.SetValue(frmKey, fcs[frmKey].ToString());
                     }
                 }
                 else
                 {
-                    dynamciObj.Add(frmKey, fcs[frmKey].ToString());
+                    dynamciObj.SetValue(frmKey, fcs[frmKey].ToString());
                 }
 
             }

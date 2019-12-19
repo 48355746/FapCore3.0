@@ -149,9 +149,9 @@ namespace Fap.Core.Extensions
         /// <param name="dynamciObj">FapDynamicObject对象</param>
         /// <param name="excludeKeys">指定字段，排除要赋值的字段</param>
         /// <returns></returns>
-        public static dynamic ToFapDynamicObject(this JObject jobj, IEnumerable<FapColumn> columnList, string tableName, params string[] excludeKeys)
+        public static FapDynamicObject ToFapDynamicObject(this JObject jobj, IEnumerable<FapColumn> columnList, params string[] excludeKeys)
         {
-            dynamic dynamciObj = new FapDynamicObject(tableName);
+            FapDynamicObject dynamciObj = new FapDynamicObject(columnList);
             IEnumerable<JProperty> ojp = jobj.Properties();
             foreach (var item in ojp)
             {
@@ -171,7 +171,7 @@ namespace Fap.Core.Extensions
                 {
                     if (!(string.IsNullOrEmpty(item.Value.ToString()) || "_empty".Equals(item.Value.ToString())))
                     {
-                        dynamciObj.Add("Id", item.Value.ToString());
+                        dynamciObj.SetValue("Id", item.Value.ToString());
                     }
                 }
                 else
@@ -181,24 +181,24 @@ namespace Fap.Core.Extensions
                     {
                         if (column.IsIntType()) //整型
                         {
-                            dynamciObj.Add(item.Name, item.Value.ToInt());
+                            dynamciObj.SetValue(item.Name, item.Value.ToInt());
                         }
                         else if (column.IsLongType()) //长整型
                         {
-                            dynamciObj.Add(item.Name, item.Value.ToLong());
+                            dynamciObj.SetValue(item.Name, item.Value.ToLong());
                         }
                         else if (column.IsDoubleType()) //浮点型
                         {
-                            dynamciObj.Add(item.Name, item.Value.ToDouble());
+                            dynamciObj.SetValue(item.Name, item.Value.ToDouble());
                         }
                         else //字符串
                         {
-                            dynamciObj.Add(item.Name, item.Value.ToString());
+                            dynamciObj.SetValue(item.Name, item.Value.ToString());
                         }
                     }
                     else
                     {
-                        dynamciObj.Add(item.Name, item.Value.ToString());
+                        dynamciObj.SetValue(item.Name, item.Value.ToString());
                     }
                 }
             }
@@ -215,7 +215,7 @@ namespace Fap.Core.Extensions
             {
                 columns = new List<FapColumn>();
             }
-            return JObjectExtension.ToFapDynamicObject(jobj, columns, tableName, excludeKeys);
+            return JObjectExtension.ToFapDynamicObject(jobj, columns,  excludeKeys);
         }
 
         /// <summary>

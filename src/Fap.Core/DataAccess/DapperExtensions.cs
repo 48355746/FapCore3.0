@@ -67,17 +67,19 @@ namespace Fap.Core.DataAccess
         /// <param name="transaction"></param>
         /// <param name="commandTimeout"></param>
         /// <returns></returns>
-        public static bool Update(this IDbConnection connection, string tableName, dynamic dynamicToUpdate, IDbTransaction transaction = null, int? commandTimeout = null)
+        public static bool Update(this IDbConnection connection, FapDynamicObject dynamicToUpdate, IDbTransaction transaction = null, int? commandTimeout = null)
         {
-            long id = dynamicToUpdate.Get(FapDbConstants.FAPCOLUMN_FIELD_Id);
-            long ts = dynamicToUpdate.Get(FapDbConstants.FAPCOLUMN_FIELD_Ts);
+            string tableName = dynamicToUpdate.TableName;
+            Guard.Against.NullOrEmpty(tableName, nameof(tableName));
+            long id = dynamicToUpdate.Get(FapDbConstants.FAPCOLUMN_FIELD_Id).ToLong();
+            long ts = dynamicToUpdate.Get(FapDbConstants.FAPCOLUMN_FIELD_Ts).ToLong();
             Guard.Against.Zero(id, nameof(id));
             Guard.Against.Zero(ts, nameof(ts));
             
             var adapter = GetFormatter(connection);
             StringBuilder sqlBuilder = new StringBuilder();
             sqlBuilder.Append(" UPDATE ").Append(tableName).Append(" SET ");
-            foreach (string fieldName in dynamicToUpdate.Keys())
+            foreach (string fieldName in dynamicToUpdate.Keys)
             {
                 if ("Id".EqualsWithIgnoreCase(fieldName))
                 {
@@ -97,7 +99,11 @@ namespace Fap.Core.DataAccess
             sqlBuilder.Append(" and ");
             adapter.AppendColumnName(sqlBuilder, "Ts");
             sqlBuilder.Append($" = {ts}");
-            DynamicParameters parameters = dynamicToUpdate.DynamicParameters();
+            DynamicParameters parameters = new DynamicParameters();
+            foreach (var entry in dynamicToUpdate as IDictionary<string,object>)
+            {
+                parameters.Add(entry.Key, entry.Value);
+            }
             parameters.Add("Ts", UUIDUtils.Ts);
             //Console.WriteLine(sqlBuilder.ToString());
             int updated = connection.Execute(sqlBuilder.ToString(), parameters, transaction, commandTimeout);

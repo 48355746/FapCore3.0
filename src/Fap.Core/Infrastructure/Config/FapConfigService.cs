@@ -45,11 +45,11 @@ namespace Fap.Core.Infrastructure.Config
             }
             else if (operation ==TreeNodeOper.CREATE_NODE)
             {
-                dynamic fdo = new FapDynamicObject("FapConfigGroup");
-                fdo.Pid = id;
-                fdo.CfName = text;
+                FapDynamicObject fdo = new FapDynamicObject(_dbContext.Columns("FapConfigGroup"));
+                fdo.SetValue("Pid",id);
+                fdo.SetValue("CfName", text);
                 long rv = _dbContext.InsertDynamicData(fdo);
-                result = fdo.Fid;
+                result = fdo.Get(FapDbConstants.FAPCOLUMN_FIELD_Fid).ToString();
             }
             else if (operation ==TreeNodeOper.RENAME_NODE)
             {

@@ -64,7 +64,7 @@ namespace Fap.AspNetCore.Controls.DataForm
         /// <summary>
         /// 表单数据
         /// </summary>
-        public dynamic FormData { get; set; }
+        public FapDynamicObject FormData { get; set; }
         /// <summary>
         /// 生成控件，切记获取值得控件要有 class='form-control'
         /// </summary>
@@ -211,7 +211,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             }
             else if (_fapColumn.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
             {
-                sbFormGroup.AppendLine(_fapColumn.AsReference(frmid, editAble, FieldValue.ToString(), FieldMCValue.ToString()));
+                sbFormGroup.AppendLine(_fapColumn.AsReference(editAble, FieldValue.ToString(), FieldMCValue.ToString()));
             }
             else if (_fapColumn.CtrlType == FapColumn.CTRL_TYPE_MEMO)
             {
@@ -273,7 +273,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     if (_multiLangService.CurrentLanguage != MultiLanguageEnum.ZhCn)
                     {
                         currCtrlName = ctrlName + _multiLangService.CurrentLanguageName;
-                        FieldValue = FormData.Get(_fapColumn.TableName + "_" + currCtrlName);
+                        FieldValue = FormData.Get(currCtrlName);
                         if (FieldValue == null)
                         {
                             FieldValue = "";
@@ -293,8 +293,8 @@ namespace Fap.AspNetCore.Controls.DataForm
                         {
                             cname = ctrlName + langField.Value;
                         }
-                        string value = FormData.Get(_fapColumn.TableName + "_" + cname);
-                        dicLangValue.Add(cname, value);
+                        var value = FormData.Get(cname);
+                        dicLangValue.Add(cname, value.ToString());
                     }
                     sbFormGroup.AppendLine(_fapColumn.AsMultiLanguageTextBox(editAble, currCtrlName, currentLangDesc, dicLangValue, FieldValue.ToString()));
 
@@ -753,7 +753,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                         {
                             cname = ctrlName + langField.Value;
                         }
-                        string value = FormData.Get(_fapColumn.TableName + "_" + cname);
+                        string value = FormData.Get(cname).ToString();
                         sbFormGroup.AppendFormat("<input type=\"text\" id=\"{0}\" placeholder=\"{1}\" class=\"form-control col-xs-12 col-sm-12\" value=\"{2}\" style=\"margin:1px\" {3}/>", cname, langField.Description, value, editAble);
                     }
                     sbFormGroup.Append("</div></div>");
