@@ -51,13 +51,12 @@ namespace Fap.Core.Extensions
             {
                 if (obj is int || obj is double || obj is float || obj is long)
                 {
-                    return (long)obj;
+                    return Convert.ToInt64(obj);
                 }
 
-                long i = defaultValue;
-                if (long.TryParse(obj.ToString(), out i))
+                if (long.TryParse(obj.ToString(), out defaultValue))
                 {
-                    return i;
+                    return defaultValue;
                 }
                 else
                 {

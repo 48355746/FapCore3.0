@@ -9,7 +9,7 @@ namespace Fap.AspNetCore.Model
         public int Total { get; set; }
         public int Page { get; set; }
         public int Records { get; set; }
-        public IEnumerable<IDictionary<string,object>> Rows { get; set; }
+        public IEnumerable<dynamic> Rows { get; set; }
         public dynamic Userdata { get; set; }
     }
 }

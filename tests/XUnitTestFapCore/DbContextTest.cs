@@ -230,7 +230,9 @@ namespace XUnitTestFapCore
             u.SetValue("UserCode", "123");
             u.SetValue("UserName", "wyf");
             u.SetValue("UserName", "wangyfb");
+            u.SetValue("UserPhone", null);
             u.Remove("UserCode", out _);
+            u.SetValue("UserCode", "222");
             string s= u.ToJson();
         }
        

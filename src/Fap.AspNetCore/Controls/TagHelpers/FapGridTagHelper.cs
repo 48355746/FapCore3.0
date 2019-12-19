@@ -197,10 +197,6 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// </summary>
         public bool OperSearch { get; set; }
         /// <summary>
-        /// 是否逻辑删除
-        /// </summary>
-        public bool LogicDelete { get; set; } = true;
-        /// <summary>
         /// subGrid设置展开内容
         /// function showChildGrid(parentRowID, parentRowKey) {
         /// $('#' + parentRowID).load($.randomUrl("@Url.Content("~/Workflow/Template/HistoryVersion/")"+parentRowKey));
@@ -256,11 +252,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             if (QueryOption != null)
             {
                 grid.SetQueryOption(QueryOption);
-            }
-            if (!LogicDelete)
-            {
-                grid.SetDeleteModel(LogicDelete);
-            }
+            }        
             grid.SetAutoWidth(AutoWidth);
             grid.SetDataType(SourceType);
             grid.SetViewRecords(ViewRecords);

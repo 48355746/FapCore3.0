@@ -43,9 +43,9 @@ namespace Fap.Core.Extensions
         /// <summary>
         /// 将Dapper查询的结果转换为动态对象
         /// </summary>
-        /// <param name="dataList"></param>
+        /// <param name="dataList">dapperRow</param>
         /// <returns></returns>
-        public static IEnumerable<dynamic> ToFapDynamicObjectList(this IEnumerable<dynamic> dataList, IEnumerable<FapColumn> fapColumns)
+        public static IEnumerable<FapDynamicObject> ToFapDynamicObjectList(this IEnumerable<dynamic> dataList, IEnumerable<FapColumn> fapColumns)
         {
             //组装成动态对象集合
             List<FapDynamicObject> result = new List<FapDynamicObject>();
@@ -70,7 +70,7 @@ namespace Fap.Core.Extensions
         /// </summary>
         /// <param name="dapperRow">dapperRow转换的IDictionary</param>
         /// <returns></returns>
-        public static dynamic ToFapDynamicObject(this IDictionary<string, object> dynamicData, IEnumerable<FapColumn> fapColumns)
+        public static FapDynamicObject ToFapDynamicObject(this IDictionary<string, object> dynamicData, IEnumerable<FapColumn> fapColumns)
         {
             FapDynamicObject obj = new FapDynamicObject(fapColumns);
             List<string> keyList = new List<string>(dynamicData.Keys);

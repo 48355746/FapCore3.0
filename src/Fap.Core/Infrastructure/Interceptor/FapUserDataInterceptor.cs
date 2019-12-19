@@ -116,8 +116,12 @@ namespace Fap.Core.Infrastructure.Interceptor
             this.DataSynchDynamicObject(dynamicData, DataChangeTypeEnum.DELETE);
         }
 
-        private void DataSynchDynamicObject(dynamic user, DataChangeTypeEnum oper)
+        private void DataSynchDynamicObject(FapDynamicObject user, DataChangeTypeEnum oper)
         {
+            if (user.ContainsKey("UserPassword"))
+            {
+                user.Remove("UserPassword", out _);
+            }
             EventDataTracker tracker = _provider.GetService<EventDataTracker>();
             if (tracker != null)
             {

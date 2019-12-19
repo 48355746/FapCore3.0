@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="fap_hcm_web_log.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="Views\Shared\Components\ConditionEditor\Default.cshtml" />
     <None Include="Views\Shared\Components\DataHistory\Default.cshtml" />
     <None Include="Views\Shared\Components\LoginInfo\Default.cshtml" />

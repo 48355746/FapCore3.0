@@ -70,7 +70,7 @@ namespace Fap.AspNetCore.Model
         /// <summary>
         /// 查询结果数据集合（符合jqGrid）
         /// </summary>
-        public IEnumerable<IDictionary<string,object>> DataListForJqGrid { get; set; }
+        public IEnumerable<dynamic> DataListForJqGrid { get; set; }
 
 
         /// <summary>

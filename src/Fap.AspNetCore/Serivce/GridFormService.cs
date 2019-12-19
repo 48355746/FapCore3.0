@@ -61,7 +61,7 @@ namespace Fap.AspNetCore.Serivce
                 {
                     jqGridPostData.Page = 1;
                 }
-                QuerySet qs = jqGridPostData.QuerySet;                
+                QuerySet qs = jqGridPostData.QuerySet;
                 Pageable queryOption = new Pageable(_dbContext) { TableName = qs.TableName, QueryCols = qs.QueryCols, HistoryTimePoint = jqGridPostData.TimePoint };
                 //设置统计
                 if (qs.Statsetlist != null && qs.Statsetlist.Any())
@@ -159,10 +159,7 @@ namespace Fap.AspNetCore.Serivce
                     }
                 }
                 //事件处理
-                if (actionSimpleQueryOption != null)
-                {
-                    actionSimpleQueryOption(queryOption);
-                }
+                actionSimpleQueryOption?.Invoke(queryOption);
                 queryOption.PageNumber = jqGridPostData.Page;
                 queryOption.PageSize = jqGridPostData.Rows;
                 //数据权限
@@ -212,7 +209,7 @@ namespace Fap.AspNetCore.Serivce
                     dataResultView.TotalNum = pi.TotalPages;
                     dataResultView.CurrentPageIndex = pi.PageNumber;
                     dataResultView.OrginData = pi.Items;
-                    dataResultView.DataListForJqGrid = pi.Items as IEnumerable<IDictionary<string, object>>;
+                    dataResultView.DataListForJqGrid = pi.Items;// as IEnumerable<IDictionary<string, object>>;
                     dataResultView.PageCount = pi.PageSize;
                     //统计字段
                     dataResultView.StatFieldData = pi.StatFieldData;
@@ -231,87 +228,53 @@ namespace Fap.AspNetCore.Serivce
         private static object lockSave = new object();
         public async Task<ResponseViewModel> PersistenceAsync(IFormCollection formCollection)
         {
-            //响应消息
-            string resMessage = string.Empty;
             //操作符 
-            OperEnum operEnum = OperEnum.none;
-            if (formCollection.TryGetValue(FapWebConstants.OPERATOR, out StringValues oper))
-            {
-                operEnum = (OperEnum)Enum.Parse(typeof(OperEnum), oper);
-            }
-            else
-            {
-                //没有oper的时候 可以根据id的值判断是新增还是编辑
-                string id = formCollection["Id"];
-                if (id.IsMissing() || id.ToInt() < 1)
-                {
-                    operEnum = OperEnum.add;
-                }
-                else
-                {
-                    operEnum = OperEnum.edit;
-                }
-            }
+            OperEnum operEnum = GetOperEnum();
             if (operEnum == OperEnum.none)
             {
                 return ResponseViewModelUtils.Failure("未知的持久化操作符");
             }
-            string tableName = string.Empty;
-            if (formCollection.TryGetValue(FapWebConstants.FORM_TABLENAME, out StringValues tn))
-            {
-                tableName = tn;
-            }
-            if (_applicationContext.Request.Query.TryGetValue(FapWebConstants.QUERY_TABLENAME, out StringValues value))
-            {
-                tableName = value;
-            }
+            string tableName = GetTableName();
             if (tableName.IsMissing())
             {
                 return ResponseViewModelUtils.Failure("未知的持久化实体");
             }
-
             #region 防止多次点击重复保存以及CSRF攻击
-            //令牌 form生成时赋值
-            string avoid_repeat_token = string.Empty;
-            if (formCollection.TryGetValue(FapWebConstants.AVOID_REPEAT_TOKEN, out StringValues vs))
+            if (operEnum != OperEnum.del)
             {
-                avoid_repeat_token = vs;
-            }
-            else
-            {
-                return ResponseViewModelUtils.Failure("不存在防重复提交令牌");
-            }
-            lock (lockSave)
-            {
-                string avoid_repeat_tokenKey = tableName.ToLower() + FapWebConstants.AVOID_REPEAT_TOKEN;
-                if (oper.Equals("del"))
+                //令牌 form生成时赋值
+                string avoid_repeat_token = string.Empty;
+                if (formCollection.TryGetValue(FapWebConstants.AVOID_REPEAT_TOKEN, out StringValues vs))
                 {
-                    avoid_repeat_tokenKey += "-del";
+                    avoid_repeat_token = vs;
                 }
-                if (_applicationContext.Session.GetString(avoid_repeat_tokenKey) != avoid_repeat_token)
+                else
                 {
-                    return ResponseViewModelUtils.Failure("请勿重复提交数据");
+                    return ResponseViewModelUtils.Failure("不存在防重复提交令牌");
                 }
-                //移除重复提交标记
-                _applicationContext.Session.Remove(avoid_repeat_tokenKey);
-            }
-            //CSRF 令牌验证
-            try
-            {
-                await _antiforgery.ValidateRequestAsync(_applicationContext.HttpContext);
-            }
-            catch (Exception)
-            {
-                return ResponseViewModelUtils.Failure("请求非法,校验CSRF异常");
+                lock (lockSave)
+                {
+                    string avoid_repeat_tokenKey = tableName.ToLower() + FapWebConstants.AVOID_REPEAT_TOKEN;
+                    if (_applicationContext.Session.GetString(avoid_repeat_tokenKey) != avoid_repeat_token)
+                    {
+                        return ResponseViewModelUtils.Failure("请勿重复提交数据");
+                    }
+                    //移除重复提交标记
+                    _applicationContext.Session.Remove(avoid_repeat_tokenKey);
+                }
+                //CSRF 令牌验证
+                try
+                {
+                    await _antiforgery.ValidateRequestAsync(_applicationContext.HttpContext);
+                }
+                catch (Exception)
+                {
+                    return ResponseViewModelUtils.Failure("请求非法,校验CSRF异常");
+                }
             }
             #endregion
 
             var (mainData, ChildsData) = BuilderData();
-            if (operEnum == OperEnum.del)
-            {
-                bool islogic = formCollection[FapWebConstants.LOGICDELETE][0].ToBool();
-                mainData.IsLogic = islogic;
-            }
             try
             {
                 return SaveChange(operEnum, mainData, ChildsData);
@@ -321,7 +284,41 @@ namespace Fap.AspNetCore.Serivce
                 _logger.LogError(ex.Message);
                 return ResponseViewModelUtils.Failure("发生错误，操作失败");
             }
+            string GetTableName()
+            {
+                if (formCollection.TryGetValue(FapWebConstants.FORM_TABLENAME, out StringValues tn))
+                {
+                    return tn;
+                }
+                if (_applicationContext.Request.Query.TryGetValue(FapWebConstants.QUERY_TABLENAME, out StringValues value))
+                {
+                    return value;
+                }
+                return string.Empty;
+            }
+            OperEnum GetOperEnum()
+            {
+                OperEnum operEnum;
+                if (formCollection.TryGetValue(FapWebConstants.OPERATOR, out StringValues oper))
+                {
+                    operEnum = (OperEnum)Enum.Parse(typeof(OperEnum), oper);
+                }
+                else
+                {
+                    //没有oper的时候 可以根据id的值判断是新增还是编辑
+                    string id = formCollection["Id"];
+                    if (id.IsMissing() || id.ToInt() < 1)
+                    {
+                        operEnum = OperEnum.add;
+                    }
+                    else
+                    {
+                        operEnum = OperEnum.edit;
+                    }
+                }
 
+                return operEnum;
+            }
             (dynamic mainData, Dictionary<string, IEnumerable<dynamic>> childsData) BuilderData()
             {
                 var columnList = _dbContext.Columns(tableName);
@@ -364,11 +361,12 @@ namespace Fap.AspNetCore.Serivce
 
         }
 
+
+
         [Transactional]
-        public ResponseViewModel SaveChange(OperEnum oper, FapDynamicObject mainDataKeyValues, Dictionary<string, IEnumerable<dynamic>> childDataList = null)
+        public ResponseViewModel SaveChange(OperEnum oper, FapDynamicObject mainData, Dictionary<string, IEnumerable<dynamic>> childDataList = null)
         {
             ResponseViewModel rvm = new ResponseViewModel();
-            dynamic mainData = mainDataKeyValues;
             if (oper == OperEnum.add)
             {
                 _dbContext.InsertDynamicData(mainData);
@@ -386,7 +384,7 @@ namespace Fap.AspNetCore.Serivce
             }
             else if (oper == OperEnum.del)
             {
-                bool rv= _dbContext.DeleteDynamicData(mainDataKeyValues);
+                bool rv = _dbContext.DeleteDynamicData(mainData);
                 DeleteChildData(mainData);
                 rvm.success = rv;
                 rvm.msg = rv ? "删除成功" : "删除失败，请重试";
@@ -413,19 +411,23 @@ namespace Fap.AspNetCore.Serivce
                     }
                 }
             }
-            void DeleteChildData(dynamic mainData)
+            void DeleteChildData(FapDynamicObject mainData)
             {
+                string tableName = mainData.TableName;
+                if (tableName.IsMissing())
+                {
+                    return;
+                }
                 //检查子表，删除子表数据
                 var childtableList = _dbContext.Tables(t => t.ExtTable == mainData.TableName);
-                if (childtableList != null && childtableList.Any())
+
+                foreach (var childTable in childtableList)
                 {
-                    foreach (var childTable in childtableList)
-                    {
-                        var childColumnList = _dbContext.Columns(childTable.TableName);
-                        string foreignKey = childColumnList.First(f => f.RefTable == mainData.TableName).ColName;
-                        _dbContext.DeleteExec(childTable.TableName, $"{foreignKey} = @Fid", new DynamicParameters(new { Fid = mainData.Fid }));
-                    }
+                    var childColumnList = _dbContext.Columns(childTable.TableName);
+                    string foreignKey = childColumnList.First(f => f.RefTable == mainData.TableName).ColName;
+                    _dbContext.DeleteExec(childTable.TableName, $"{foreignKey} = @Fid", new DynamicParameters(new { Fid = mainData.Get(FapDbConstants.FAPCOLUMN_FIELD_Fid)}));
                 }
+
             }
         }
 

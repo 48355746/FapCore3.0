@@ -17,6 +17,7 @@ using Fap.AspNetCore.Controls;
 using Fap.Core.Rbac.Model;
 using Fap.Core.Infrastructure.Query;
 using Dapper;
+using System.Web;
 
 namespace Fap.Hcm.Web.Controllers
 {
@@ -419,7 +420,7 @@ namespace Fap.Hcm.Web.Controllers
             {
                 if (qrycols != "")
                 {
-                    qs.QueryCols = qrycols;
+                    qs.QueryCols = HttpUtility.UrlDecode(qrycols);
                 }
             });
             fd.FormId = frm;
@@ -433,11 +434,14 @@ namespace Fap.Hcm.Web.Controllers
         /// 表单查看
         /// </summary>
         /// <returns></returns>
-        public IActionResult DataFormView(string fid, string tn = "", string frm = "")
+        public IActionResult DataFormView(string fid, string tn = "", string qrycols = "")
         {
             FormViewModel fvm = this.GetFormViewModel(tn, fid, qs =>
             {
-
+                if (qrycols != "")
+                {
+                    qs.QueryCols = HttpUtility.UrlDecode(qrycols);
+                }
             });
             ViewBag.Scroll = true;
             return View(fvm);

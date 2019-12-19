@@ -57,66 +57,69 @@ function refreshBaseJqGrid(grdid) {
 //title 标题;gid jqgrid的ID;icon 图标;tablename 表名（frm-tablename 表单名称）;
 //id业务数据主键值;fromInitCallback 表单初始化事件;saveCompletedCallback 保存完毕事件
 var loadFormMessageBox = function (title, gid, icon, tablename, fid,queryCols, fromInitCallback, saveCompletedCallback) {
+
+    var buttons = {
+        success: {
+            label: MultiLangHelper.getResName("global_oper_save", "保存"),
+            className: "btn-primary",
+            callback: function () {
+                var formid = 'frm-' + tablename;
+                //持久化
+                var res = Persistence(formid, '');
+                if (res === false) {
+                    return false;
+                }
+                if (res.success === true) {
+                    if ($.isFunction(saveCompletedCallback)) {
+                        saveCompletedCallback();
+                    }
+                    if ($('#' + gid).length && $('#' + gid).length > 0) {
+                        $('#' + gid).jqGrid('setGridParam', {
+                            //page: 1
+                        }).trigger("reloadGrid"); //重新载入
+                    }
+                } else {
+
+                    return false;
+                }
+            }
+        }
+    };
+    if (fid === 0) {
+        buttons.SaveAndAdd = {
+            label: "保存并新增",
+            className: "btn-primary",
+            callback: function () {
+                var formid = 'frm-' + tablename;
+                //持久化
+                var res = Persistence(formid, '');
+                if (res === false) {
+                    return false;
+                }
+                if (res.success === true) {
+                    if ($.isFunction(saveCompletedCallback)) {
+                        saveCompletedCallback();
+                    }
+                    if ($('#' + gid).length && $('#' + gid).length > 0) {
+                        $('#' + gid).jqGrid('setGridParam', {
+                            //page: 1
+                        }).trigger("reloadGrid"); //重新载入
+                    }
+                    initDialog();
+                    return false;
+                } else {
+
+                    return false;
+                }
+            }
+        };
+    }
     var dialog = bootbox.dialog({
         title: '<i class="ace-icon ' + icon + '"></i> ' + title,
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
         size: "large",
-        footer:false,
-        buttons: {
-            success: {
-                label: MultiLangHelper.getResName("global_oper_save", "保存"),
-                className: "btn-primary",
-                callback: function () {
-                    var formid = 'frm-' + tablename;
-                    //持久化
-                    var res = Persistence(formid, '');
-                    if (res === false) {
-                        return false;
-                    }
-                    if (res.success === true) {
-                        if ($.isFunction(saveCompletedCallback)) {
-                            saveCompletedCallback();
-                        }
-                        if ($('#' + gid).length && $('#' + gid).length > 0) {
-                            $('#' + gid).jqGrid('setGridParam', {
-                                //page: 1
-                            }).trigger("reloadGrid"); //重新载入
-                        }
-                    } else {
-
-                        return false;
-                    }
-                }
-            },
-            SaveAndAdd: {
-                label: "保存并新增",
-                className: "btn-primary",
-                callback: function () {
-                    var formid = 'frm-' + tablename;
-                    //持久化
-                    var res = Persistence(formid, '');
-                    if (res === false) {
-                        return false;
-                    }
-                    if (res.success === true) {
-                        if ($.isFunction(saveCompletedCallback)) {
-                            saveCompletedCallback();
-                        }
-                        if ($('#' + gid).length && $('#' + gid).length > 0) {
-                            $('#' + gid).jqGrid('setGridParam', {
-                                //page: 1
-                            }).trigger("reloadGrid"); //重新载入
-                        }
-                        initDialog();
-                        return false;
-                    } else {
-
-                        return false;
-                    }
-                }
-            }
-        }
-
+        footer: false,
+        buttons: buttons
     });
     dialog.init(function () {
         initDialog();
@@ -135,7 +138,7 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid,queryCols, f
 
 
 //查看数据
-var viewFormMessageBox = function (fid, tablename) {
+var viewFormMessageBox = function (fid, tablename, qrycols) {
     var dialog = bootbox.dialog({
         title: '查看',
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
@@ -143,13 +146,13 @@ var viewFormMessageBox = function (fid, tablename) {
         footer:false
     });
     dialog.init(function () {
-        dialog.find('.bootbox-body').load(basePath + "/Component/DataFormView/"+fid, { tn: tablename });
+        dialog.find('.bootbox-body').load(basePath + "/Component/DataFormView/" + fid, { tn: tablename, qrycols: qrycols });
 
     });
 };
 //删除数据
 //logicDelete 逻辑删除
-var deleteGridRow = function (gid, tableName, logicDelete,formtoken, onCompletedCallback) {
+var deleteGridRow = function (gid, tableName, onCompletedCallback) {
     var multiselect = $('#' + gid).jqGrid('getGridParam', 'multiselect');
     var dr;
     if (multiselect) {
@@ -173,7 +176,7 @@ var deleteGridRow = function (gid, tableName, logicDelete,formtoken, onCompleted
     if (dr) {
         bootbox.confirm('确定要删除选中的吗?', function (result) {
             if (result) {
-                $.post(basePath + "/Api/Core/Persistence/", { "oper": "del", "Table_Name": tableName, "formtoken": formtoken ,"logicdelete": logicDelete, "Fid": dr }, function (rv) {
+                $.post(basePath + "/Api/Core/Persistence/", { "oper": "del", "Table_Name": tableName,  "Fid": dr }, function (rv) {
                     if (rv.success) {
                         if ($.isFunction(onCompletedCallback)) {
                             onCompletedCallback();
@@ -185,7 +188,7 @@ var deleteGridRow = function (gid, tableName, logicDelete,formtoken, onCompleted
                         }
                     }
                     if (rv.msg) {
-                        bootbox.alert(rv.msg);
+                        $.msg(rv.msg);
                     }
                 });
             }
@@ -567,7 +570,7 @@ var unformatImage = function (cellValue, options, cellObject) {
     return $(cellObject.innerHTML).attr("originalValue");
 };
 var formatReference = function (cellValue, options, rowObject) {
-    if (cellValue === "undefined") {
+    if (cellValue === "undefined" || cellValue === null) {
         return "<label data-value=''></label>";
     }
     var colName = options.colModel.name + "MC";

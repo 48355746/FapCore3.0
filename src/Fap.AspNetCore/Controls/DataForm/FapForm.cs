@@ -581,7 +581,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     //    refUrl = "TreeGridReference";
                     //}
                     string dispalyName = _multiLangService.GetLangColumnComent(column);
-                    script.AppendLine("$(\"#frm-" + _id + " #" + _id + column.ColName + "\"+\"MC\").next().on(ace.click_event, function(){");
+                    script.AppendLine("$(\"#frm-" + _id + " #" + column.ColName + "\"+\"MC\").next().on(ace.click_event, function(){");
                     //script.AppendLine("//不可编辑字段不能弹出");
                     script.AppendLine(" if($(this).prev().attr(\"disabled\")==\"disabled\"){return;}");
                     //扩展参考值，参照参数用
@@ -611,7 +611,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     }
                     script.AppendLine("loadRefMessageBox('" + dispalyName + "','" + _id + "','" + column.Fid + "','" + column.ColName + "','" + refUrl + "',extra)");
                     script.AppendLine("});");
-                    script.AppendLine("$(\"#frm-" + _id + " #" + _id + column.ColName + "\"+\"MC\").on(ace.click_event,function(e){$(this).next().trigger(ace.click_event);e.preventDefault();})");
+                    script.AppendLine("$(\"#frm-" + _id + " #" + column.ColName + "\"+\"MC\").on(ace.click_event,function(e){$(this).next().trigger(ace.click_event);e.preventDefault();})");
                 }
                 #endregion
 

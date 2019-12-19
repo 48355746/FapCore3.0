@@ -104,7 +104,7 @@ var GetFapChildGridData = function (formid) {
     return null;
 };
 //持久化{success:true,data:obj}noPrompt--是否弹框
-var Persistence = function (formid, tn, callback, noPrompt) {   
+var Persistence = function (formid, tn, callback) {   
     if (!$("#" + formid).valid()) {
         $.msg('表单校验失败，请完善表单' + $(".error").html());
         return false;
@@ -171,9 +171,6 @@ var Persistence = function (formid, tn, callback, noPrompt) {
             success: function (result) {
                 rv = result;
                 if (result.success === true) {
-                    if (noPrompt !== '1') {
-                        $.msg("保存成功");
-                    }
                     //赋值给ID 为了防止重复增加
                     if (rv.data) {
                         var formData = rv.data;// JSON.parse(rv.data);
@@ -183,7 +180,7 @@ var Persistence = function (formid, tn, callback, noPrompt) {
                     }
                 }
                 if (result.msg) {
-                    bootbox.alert(result.msg);
+                    $.msg(result.msg);
                 }
             }
         });
@@ -231,7 +228,7 @@ $(function () {
             if (data.success) {
                 if (data.id === 'img') {
                     openNewWindow(basePath + "/UploadFiles/View/" + data.msg);
-                } else if (data.id == "0") {
+                } else if (data.id === "0"||data.id===0) {
                     $.msg("无法预览");
                 } else {
                     openNewWindow(basePath + "/Content/Pdf/web/viewer.html?file=/UploadFiles/View/" + data.msg);
@@ -255,10 +252,10 @@ var loadRefMessageBox = function (title, frmid, colfid, ctrlid, refurl, extra) {
                 callback: function () {
                     var res = GetRefResult();
                     if (res) {
-                        $("#frm-" + frmid + " #" + frmid + ctrlid + "MC").val(res.name).change();
+                        $("#frm-" + frmid + " #" + ctrlid + "MC").val(res.name).change();
                         $("#frm-" + frmid + " #" + ctrlid).val(res.code).change();
                         //扩展返回值
-                        if (res.frmcols != undefined && res.frmcols != '') {
+                        if (res.frmcols !== undefined && res.frmcols !== '') {
                             var fcs = res.frmcols.split(',');
                             var exts = res.ext.split("^-^");
                             for (var i = 0; i < fcs.length; i++) {
@@ -273,7 +270,7 @@ var loadRefMessageBox = function (title, frmid, colfid, ctrlid, refurl, extra) {
                 label: "清空!",
                 className: "btn-sm btn-danger",
                 callback: function () {
-                    $("#frm-" + frmid + " #" + frmid + ctrlid + "MC").val("").change();
+                    $("#frm-" + frmid + " #" + ctrlid + "MC").val("").change();
                     $("#frm-" + frmid + " #" + ctrlid).val("").change();
                 }
             },
@@ -290,7 +287,7 @@ var loadRefMessageBox = function (title, frmid, colfid, ctrlid, refurl, extra) {
     });
     dialog.init(function () {
         var url = basePath + '/Component/' + refurl + '/' + colfid + '?frmid=' + frmid + '&ctrlid=' + ctrlid;
-        if (extra != '') {
+        if (extra !== '') {
             var param = extra.join("&");
             url += "&" + param;
         }
@@ -400,7 +397,7 @@ var loadImageControl = function (ctrlid) {
                             text: MultiLangHelper.getResName("global_oper_select", "请选择") + 'jpg|gif|png image!',
                             class_name: 'gritter-error gritter-center'
                         });
-                    } else if (error_type == 2) {//file size rror
+                    } else if (error_type === 2) {//file size rror
                         last_gritter = $.gritter.add({
                             title: MultiLangHelper.getResName("global_file_filetoolarge", "文件太大") + '!',
                             text: MultiLangHelper.getResName("global_file_sizenotexceed", "文件大小不要超过") + '10M!',
@@ -527,7 +524,7 @@ var loadImageControl = function (ctrlid) {
                 return deferred.promise();
                 // ***END OF UPDATE AVATAR HERE*** //
 
-                return deferred.promise();
+                //return deferred.promise();
 
                 // ***END OF UPDATE AVATAR HERE*** //
             },
@@ -535,6 +532,6 @@ var loadImageControl = function (ctrlid) {
             success: function (response, newValue) {
                 //$(avatar).get(0).src = "@Url.Content("~/Home/UserPhoto")";
             }
-        })
-    } catch (e) { }
+        });
+    } catch (e) { throw e;}
 };

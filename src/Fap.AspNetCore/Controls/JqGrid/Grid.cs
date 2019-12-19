@@ -21,6 +21,7 @@ using System.Linq;
 using System.Text;
 using Yahoo.Yui.Compressor;
 using System.Text.Encodings.Web;
+using System.Web;
 
 namespace Fap.AspNetCore.Controls.JqGrid
 {
@@ -168,9 +169,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
         /// </summary>
         private DataFormType _dataFormType = DataFormType.Search;
         private string _postData;
-
-        //逻辑删除
-        private bool _logicDelete = true;
+       
         private IDbContext _dataAccessor;
         private ILoggerFactory _loggerFactory;
         private IFapApplicationContext _applicationContext;
@@ -206,17 +205,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
             column.SetColmenu(false);
             _columns.Add(column);
             return this;
-        }
-        /// <summary>
-        /// 设置删除模式
-        /// </summary>
-        /// <param name="isLogicDelete">逻辑删除 default 逻辑删除</param>
-        /// <returns></returns>
-        public Grid SetDeleteModel(bool isLogicDelete)
-        {
-            _logicDelete = isLogicDelete;
-            return this;
-        }
+        }   
         /// <summary>
         ///    添加多个grid列
         /// </summary>
@@ -2405,7 +2394,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                       var gsr = jQuery('#" + _id + @"').jqGrid('getGridParam', 'selrow');
                       if (gsr) {
                         var ret = jQuery('#" + _id + @"').jqGrid('getRowData', gsr);
-                        loadFormMessageBox('编辑','" + _id + "','fa fa-pencil-square-o','" + TableName + @"',ret.Fid,'"+UrlEncoder.Default.Encode(_querySet.QueryCols)+"',function(){");
+                        loadFormMessageBox('编辑','" + _id + "','fa fa-pencil-square-o','" + TableName + @"',ret.Fid,'"+ HttpUtility.UrlEncode(_querySet.QueryCols)+"',function(){");
             if (_onEditAfterInitDataForm.IsPresent())
             {
                 script.AppendLine(_onEditAfterInitDataForm);
@@ -2427,7 +2416,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                       position:'first',  
                       buttonicon:'ace-icon fa fa-plus-circle purple',
                       onClickButton : function() {
-                      loadFormMessageBox('新增','" + _id + "','fa fa-plus-circle','" + TableName + @"',0,'" + UrlEncoder.Default.Encode(_querySet.QueryCols) + "',function(){");
+                      loadFormMessageBox('新增','" + _id + "','fa fa-plus-circle','" + TableName + @"',0,'" +HttpUtility.UrlEncode(_querySet.QueryCols) + "',function(){");
             if (_onAddAfterInitDataForm.IsPresent())
             {
                 script.AppendLine(_onAddAfterInitDataForm);
@@ -2446,9 +2435,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
         }
         private void DeleteToolbar(StringBuilder script)
         {
-            string token = UUIDUtils.Fid;
             //保存的时候校验此值 (加上表名，避免连续打开连个表单，session就不同了)
-            _applicationContext.Session.SetString($"{TableName.ToLower()}{FapWebConstants.AVOID_REPEAT_TOKEN}-del", token);
             script.AppendLine(@" 
                     jQuery('#" + _id + @"').jqGrid('navButtonAdd', '#" + _pager + @"',{
                       caption:'',
@@ -2456,7 +2443,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                       position:'first',  
                       buttonicon:'ace-icon fa fa-trash-o red',
                       onClickButton : function() {
-                        deleteGridRow('" + _id + @"','" + TableName + @"'," + _logicDelete.ToString().ToLower() + @",'" + token + @"');
+                        deleteGridRow('" + _id + @"','" + TableName + @"');
                     }
                   });");
         }
@@ -2471,7 +2458,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                        var gsr = jQuery('#" + _id + @"').jqGrid('getGridParam', 'selrow');
                       if (gsr) {
                         var ret = jQuery('#" + _id + @"').jqGrid('getRowData', gsr);
-                        viewFormMessageBox(ret.Fid,'" + TableName + @"'" + @");
+                        viewFormMessageBox(ret.Fid,'" + TableName + "','" + HttpUtility.UrlEncode(_querySet.QueryCols) + "'" + @");
                         }else{
                             bootbox.alert('请选择一条数据查看')
                         }

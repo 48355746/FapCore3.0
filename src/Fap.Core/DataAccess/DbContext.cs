@@ -742,16 +742,14 @@ namespace Fap.Core.DataAccess
         /// </summary>
         /// <typeparam name="newData">DapperRow</typeparam>
         /// <param name="currDate"></param>
-        private void SetNewDynamicToDelete(dynamic newData, string currDate)
+        private void SetNewDynamicToDelete(FapDynamicObject newData, string currDate)
         {
-            var nd = newData as IDictionary<string, object>;
-            nd[FapDbConstants.FAPCOLUMN_FIELD_EnableDate] = currDate;
-            nd[FapDbConstants.FAPCOLUMN_FIELD_DisableDate] = DateTimeUtils.PermanentTimeStr;
-
-            nd[FapDbConstants.FAPCOLUMN_FIELD_Dr] = 1;
-            nd[FapDbConstants.FAPCOLUMN_FIELD_UpdateBy] = _applicationContext.EmpUid;
-            nd[FapDbConstants.FAPCOLUMN_FIELD_UpdateDate] = currDate;
-            nd[FapDbConstants.FAPCOLUMN_FIELD_UpdateName] = _applicationContext.EmpName;
+            newData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_EnableDate,currDate);
+            newData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_DisableDate, DateTimeUtils.PermanentTimeStr);
+            newData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Dr, 1);
+            newData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_UpdateBy, _applicationContext.EmpUid);
+            newData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_UpdateDate, currDate);
+            newData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_UpdateName, _applicationContext.EmpName);
 
         }
         /// <summary>
@@ -2041,14 +2039,18 @@ namespace Fap.Core.DataAccess
             }
         }
 
-        public bool DeleteDynamicData(FapDynamicObject dynamicData)
+        public bool DeleteDynamicData(FapDynamicObject delDynamicData)
         {
-            string tableName = dynamicData.TableName;
+            string tableName = delDynamicData.TableName;
 
             Guard.Against.NullOrEmpty(tableName, nameof(tableName));
-            long id = dynamicData.Get(FapDbConstants.FAPCOLUMN_FIELD_Id).ToLong();
+            string fids = delDynamicData.Get(FapDbConstants.FAPCOLUMN_FIELD_Fid).ToString();
+            Guard.Against.NullOrEmpty(fids, nameof(fids));
+            //获取要删除的数据
+            var fidList = fids.SplitComma();
+            var delList = Query($"select * from {tableName} where Fid in @Fids", new DynamicParameters(new { Fids = fidList }));
 
-            Guard.Against.Zero(id, nameof(id));
+            Guard.Against.Null(delList, nameof(delList));
 
             FapTable table = Table(tableName);
 
@@ -2056,63 +2058,54 @@ namespace Fap.Core.DataAccess
 
             bool TraceDynamicDelete()
             {
-                bool execRv = false;
                 try
                 {
                     BeginTransaction();
                     //删除前，通过数据拦截器处理数据
                     IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
-                    BeforeDynamicDelete(dynamicData, dataInterceptor);
-
                     bool isTrace = table.TraceAble.ToString().ToBool();
-                    if (isTrace) //逻辑删除(历史追溯)
+                    foreach (var dynamicData in delList.ToFapDynamicObjectList(Columns(tableName)))
                     {
-                        execRv = TraceDelete();
-                    }
-                    else //逻辑删除
-                    {
-                        FapDynamicObject dyData = new FapDynamicObject(Columns(tableName));
-                        dyData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Id, id);
-                        dyData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Ts, dynamicData.Get(FapDbConstants.FAPCOLUMN_FIELD_Ts));
-                        SetDynamicToLogicDelete(dyData);
-                        execRv = _dbSession.Update(dyData);
-
-                    }
-                    if (!execRv)
-                    {
-                        Rollback();
-                        _logger.LogInformation($"线程{Thread.CurrentThread.ManagedThreadId}回滚了");
-                    }
-                    else
-                    {
+                        BeforeDynamicDelete(dynamicData, dataInterceptor);
+                        if (isTrace) //逻辑删除(历史追溯)
+                        {
+                            TraceDelete(dynamicData);
+                        }
+                        else //逻辑删除
+                        {
+                            FapDynamicObject dyData = new FapDynamicObject(Columns(tableName));
+                            dyData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Id, dynamicData.Get(FapDbConstants.FAPCOLUMN_FIELD_Id));
+                            dyData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Ts, dynamicData.Get(FapDbConstants.FAPCOLUMN_FIELD_Ts));
+                            SetDynamicToLogicDelete(dyData);
+                            _dbSession.Update(dyData);
+                        }
                         AfterDynamicDelete(dynamicData, dataInterceptor);
-                        Commit();
-                        _logger.LogInformation($"线程{Thread.CurrentThread.ManagedThreadId}成功提交");
                     }
+                    Commit();
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex.Message);
                     Rollback();
                 }
-                return execRv;
+                return true;
 
-                bool TraceDelete()
+                bool TraceDelete(FapDynamicObject dynamicData)
                 {
+                    long id = dynamicData.Get(FapDbConstants.FAPCOLUMN_FIELD_Id).ToLong();
+                    long ts = dynamicData.Get(FapDbConstants.FAPCOLUMN_FIELD_Ts).ToLong();
                     var fieldList = Columns(tableName).Select(c => c.ColName);
                     var currDate = DateTimeUtils.CurrentDateTimeStr;
-                    //insert new data
-                    var deleteData = GetById(dynamicData.TableName, id);
-                    Guard.Against.FapRuntime(new Exception("要删除数据为空"));
-                    SetNewDynamicToDelete(deleteData, currDate);
+                    //insert new data                   
+                    SetNewDynamicToDelete(dynamicData, currDate);
                     string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
                     string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
-                    long newId = _dbSession.Insert(tableName, columnList, paramList, deleteData);
+                    long newId = _dbSession.Insert(tableName, columnList, paramList, dynamicData);
                     //_logger.LogInformation($"-----{newId}-----");
                     //update old data invalid
                     FapDynamicObject dyData = new FapDynamicObject(Columns(tableName));
                     dyData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Id, id);
-                    dyData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Ts, deleteData.Ts);
+                    dyData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Ts, ts);
                     SetOldDynamicInvalid(dyData, currDate);
                     return _dbSession.Update(dyData);
                 }
