@@ -169,7 +169,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
         /// </summary>
         private DataFormType _dataFormType = DataFormType.Search;
         private string _postData;
-       
+
         private IDbContext _dataAccessor;
         private ILoggerFactory _loggerFactory;
         private IFapApplicationContext _applicationContext;
@@ -205,7 +205,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
             column.SetColmenu(false);
             _columns.Add(column);
             return this;
-        }   
+        }
         /// <summary>
         ///    添加多个grid列
         /// </summary>
@@ -294,47 +294,13 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 {
                     disCols = queryset.DispalyCols.ToLower().SplitComma();
                 }
-                //权限
-                #region 权限 不再在次处理，改为FapController中处理
-                //if (queryset.UsePermissions)
-                //{
-                //    //当前角色
-                //    string roleUid = Fap.Core.Platform.FapAppDomain.AcSession.OnlineUser.CurrentRole.Fid;
-                //    IEnumerable<FapRoleColumn> roleColumn = null;
-                //    if (Fap.Core.Platform.FapAppDomain.AppDomain.RoleColumnSet.TryGetValueByRole(roleUid, out roleColumn))
-                //    {
-                //        var currRoleColumns = roleColumn.Where(t => t.TableUid == TableName);
-                //        if (currRoleColumns != null && currRoleColumns.Any())
-                //        {
-                //            foreach (var column in fapColumns)
-                //            {
-                //                //默认字段不处理，当不是默认字段，又不在权限中的时候 设置为隐藏字段
-                //                if (column.IsDefaultCol == 0 && currRoleColumns.Count(c => c.ColumnUid == column.Fid) < 1)
-                //                {
-                //                    if (queryset.HiddenCols.IsMissing())
-                //                    {
-                //                        queryset.HiddenCols = column.ColName;
-                //                    }
-                //                    else
-                //                    {
-                //                        queryset.HiddenCols += "," + column.ColName;
-                //                    }
-                //                }
-                //            }
-
-                //        }
-                //    }
-                //}
-                #endregion
                 if (queryset.HiddenCols.IsPresent())
                 {
-                    hideCols = queryset.HiddenCols.ToLower().SplitComma() ;
+                    hideCols = queryset.HiddenCols.ToLower().SplitComma();
                 }
                 List<Column> grdColumns = _fapColumns.OrderBy(c => c.ColOrder).ToColumns(_loggerFactory, _dataAccessor, _multiLang, disCols, hideCols).ToList();
 
                 _columns.AddRange(grdColumns);
-
-
             }
             return this;
         }
@@ -1554,82 +1520,48 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 script.AppendLine("jQuery(window).ready(function () {");
             else
                 script.AppendLine("jQuery(document).ready(function () {");
-
-
-
-
             #region 设置jqgrid宽度大小以及动态调整宽度大小
             //设置jqgrid的宽度
-            //最后会触发此方法$(window).triggerHandler('resize.jqGrid')
-            script.AppendLine("$(window).on('resize.jqGrid', function () {");
-            script.AppendLine("    var parent_width = $('#" + _id + "').closest('." + _insideElementClass + "').width();");
-            script.AppendLine("    $('#" + _id + "').jqGrid( 'setGridWidth', parent_width );");
-            script.AppendLine("})");
-
-
-            //侧边栏收缩展开的时候设置 collapse/expand
-            script.AppendLine("$(document).on('settings.ace.jqGrid' , function(ev, event_name, collapsed) {");
-            script.AppendLine("		if( event_name === 'sidebar_collapsed' || event_name === 'main_container_fixed' ) {");
-            script.AppendLine("    var parent_width = $('#" + _id + "').closest('." + _insideElementClass + "').width();");
-            script.AppendLine("			//setTimeout的是WebKit的仅仅一次的DOM变化，然后重绘!!!");
-            script.AppendLine("			setTimeout(function() {");
-            script.AppendLine("				$('#" + _id + "').jqGrid( 'setGridWidth', parent_width);");
-            script.AppendLine("			}, 0);");
-            script.AppendLine("		}");
-            script.AppendLine("    })");
+            script.AppendLine(@"
+                $(window).on('resize.jqGrid', function () {
+                    var parent_width = $('###gridid##').closest('.##wrapper##').width();
+                    $('###gridid##').jqGrid('setGridWidth', parent_width);
+                });
+                $(document).on('settings.ace.jqGrid', function (ev, event_name, collapsed) {
+                    if (event_name === 'sidebar_collapsed' || event_name === 'main_container_fixed') {
+                        var parent_width = $('###gridid##').closest('.##wrapper##').width();
+                        //setTimeout的是WebKit的仅仅一次的DOM变化，然后重绘!!!
+                        setTimeout(function () {
+                            $('###gridid##').jqGrid('setGridWidth', parent_width);
+                        }, 0);
+                    }
+                });
+                //最大化时设置
+                $('.widget-box').on('fullscreened.ace.widget', function (e) {
+                    e.preventDefault();
+                    var parent_width = $('###gridid##').closest('.##wrapper##').width();
+                    $('###gridid##').jqGrid('setGridWidth', parent_width);
+                    var offsetWidget = $('###gridid##').offset();
+                    availableHeight = $(window).height() - offsetWidget.top;
+                    $('###gridid##').setGridHeight(availableHeight - 55);
+                });").Replace("##wrapper##", _insideElementClass);
             //当为tabcontrol的时候的特殊处理
-            if (!_tabItemName.IsMissing())
+            if (_tabItemName.IsPresent())
             {
-                //tabitem可见的时候设置and also set width when tab pane becomes visible
-                script.AppendLine("$('#" + _tabControlName + " a[data-toggle=\"tab\"]').on('shown.bs.tab', function (e) {");
-                script.AppendLine("  if($(e.target).attr('href') == '#" + _tabItemName + "') {");
-                script.AppendLine("    var parent_width = $('#" + _id + "').closest('.tab-pane').width();");
-                script.AppendLine("    $('#" + _id + "').jqGrid( 'setGridWidth', parent_width );");
-                script.AppendLine("  }");
-                script.AppendLine("})");
-
-            }
-            //wigdet内的特殊处理，全屏时
-            if (_insideElementClass.EqualsWithIgnoreCase("widget-main"))
-            {
-                //最大化的时候调整宽度
-                script.AppendLine(@"$('.widget-box').on('fullscreened.ace.widget', function(e) {
-					e.preventDefault();
-					var parent_width = $('#" + _id + @"').closest('.widget-main').width();
-                    $('#" + _id + @"').jqGrid( 'setGridWidth', parent_width );
-                    var offsetWidget = $('#" + _id + @"').offset();
-                    availableHeight = $(window).height() - offsetWidget.top;    
-                    $('#" + _id + @"').setGridHeight(availableHeight-55);
-				});");
+                //tabitem可见的时候设置and also set width when tab pane becomes visible                
+                script.AppendLine(@"
+                    $('###tabcontrol## a[data-toggle=\""tab\""]').on('shown.bs.tab', function (e) {
+                        if ($(e.target).attr('href') === '###tabitem##') {
+                            var parent_width = $('###gridid##').closest('.tab-pane').width();
+                            $('###gridid##').jqGrid('setGridWidth', parent_width);
+                        }
+                    });");
+                script.Replace("##tabcontrol##", _tabControlName).Replace("##tabitem##", _tabItemName);
 
             }
             #endregion
-            // checkbox样式ACE
-            //            script.AppendLine(@"     
-            //                    //checkbox样式
-            //                     function aceSwitch(cellvalue, options, cell) {
-            //                         setTimeout(function () {
-            //                             $(cell).find('input[type=checkbox]')
-            //                            .addClass('ace ace-switch ace-switch-5')
-            //                            .after('<span class=" + "\"lbl\"></span>');" + @"
-            //                    }, 0);
-            //                }");
-            //datepicker
-            //            script.AppendLine(@"   //enable datepicker
-            //                function pickDate(cellvalue, options, cell) {
-            //                    setTimeout(function () {
-            //                        $(cell).find('input[type=text]')
-            //                                .datepicker({ format: 'yyyy-mm-dd', autoclose: true });
-            //                    }, 0);
-            //                }");
-            //            //初始化日期
-            //            script.AppendLine(@"
-            //            var initDateSearch = function (elem) {
-            //                    setTimeout(function () {
-            //                        $(elem).datepicker({ format: 'yyyy-mm-dd', autoclose: true });
-            //                    }, 0);
-            //                }");
-            script.AppendLine("jQuery('#" + _id + "').jqGrid({");
+
+            script.AppendLine("jQuery('###gridid##').jqGrid({");
 
             // Make sure there is at most one key
             if (_columns.Count(r => r.IsKey) > 1)
@@ -1642,7 +1574,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 script.AppendFormat("altRows:{0},", _altRows.ToString().ToLower()).AppendLine();
 
             // Altclass
-            if (!_altClass.IsMissing()) script.AppendFormat("altclass:'{0}',", _altClass).AppendLine();
+            if (_altClass.IsPresent()) script.AppendFormat("altclass:'{0}',", _altClass).AppendLine();
 
             // Autoencode
             if (_autoEncode.HasValue)
@@ -1653,7 +1585,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 script.AppendFormat("autowidth:{0},", _autoWidth.ToString().ToLower()).AppendLine();
 
             // Caption
-            if (!_caption.IsMissing()) script.AppendFormat("caption:'{0}',", _caption).AppendLine();
+            if (_caption.IsPresent()) script.AppendFormat("caption:'{0}',", _caption).AppendLine();
 
             // Datatype
             script.AppendLine(string.Format("datatype:'{0}',", _dataType.ToString().ToLower()));
@@ -1664,7 +1596,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
             }
 
             // Emptyrecords
-            if (!_emptyRecords.IsMissing())
+            if (_emptyRecords.IsPresent())
                 script.AppendFormat("emptyrecords:'{0}',", _emptyRecords).AppendLine();
 
             // FooterRow
@@ -1732,7 +1664,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
             if (_multiSelectWidth.HasValue)
                 script.AppendFormat("multiselectWidth:{0},", _multiSelectWidth).AppendLine();
             //PostData
-            if (!_postData.IsMissing())
+            if (_postData.IsPresent())
             {
                 script.AppendFormat("postData:{0},", _postData).AppendLine();
             }
@@ -1742,7 +1674,8 @@ namespace Fap.AspNetCore.Controls.JqGrid
             if (!_subGridRowExpanded.IsMissing())
             {
                 script.AppendFormat("subGridRowExpanded: {0},", _subGridRowExpanded).AppendLine();
-                script.AppendLine(@"  subGridOptions : {
+                script.AppendLine(@" 
+                subGridOptions : {
                     // configure the icons from theme rolloer
                     plusicon: 'fa fa-caret-down',
                     minusicon: 'fa fa-caret-up',
@@ -1755,7 +1688,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
             if (_page.HasValue) script.AppendFormat("page:{0},", _page).AppendLine();
 
             // Pager
-            if (!_pager.IsMissing()) script.AppendFormat("pager:'#{0}',", _pager).AppendLine();
+            if (_pager.IsPresent()) script.AppendFormat("pager:'#{0}',", _pager).AppendLine();
 
             // PagerPos
             if (_pagerPos.HasValue) script.AppendFormat("pagerpos:'{0}',", _pagerPos.ToString().ToLower()).AppendLine();
@@ -1769,13 +1702,13 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 script.AppendFormat("pginput:{0},", _pgInput.ToString().ToLower()).AppendLine();
 
             // PGText
-            if (!_pgText.IsMissing()) script.AppendFormat("pgtext:'{0}',", _pgText).AppendLine();
+            if (_pgText.IsPresent()) script.AppendFormat("pgtext:'{0}',", _pgText).AppendLine();
 
             // RecordPos
             if (_recordPos.HasValue) script.AppendFormat("recordpos:'{0}',", _recordPos.ToString().ToLower()).AppendLine();
 
             // RecordText
-            if (!_recordText.IsMissing())
+            if (_recordText.IsPresent())
                 script.AppendFormat("recordtext:'{0}',", _recordText).AppendLine();
 
             // Request Type
@@ -1793,7 +1726,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 script.AppendFormat("colMenu :{0},", _colMenu.ToString().ToLower()).AppendLine();
             }
             // ResizeClass
-            if (!_resizeClass.IsMissing())
+            if (_resizeClass.IsPresent())
                 script.AppendFormat("resizeclass:'{0}',", _resizeClass).AppendLine();
 
             // Rowlist
@@ -1834,7 +1767,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
             if (_scrollTimeout.HasValue) script.AppendFormat("scrollTimeout:{0},", _scrollTimeout).AppendLine();
 
             // Sortname
-            if (!_sortName.IsMissing()) script.AppendFormat("sortname:'{0}',", _sortName).AppendLine();
+            if (_sortName.IsPresent()) script.AppendFormat("sortname:'{0}',", _sortName).AppendLine();
 
             // Sorticons
             if (_showAllSortIcons.HasValue || _sortIconDirection.HasValue || _sortOnHeaderClick.HasValue)
@@ -1875,7 +1808,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
             }
             script.AppendFormat("tn:'{0}',", TableName).AppendLine();
             //EditUrl
-            if (!_editUrl.IsMissing())
+            if (_editUrl.IsPresent())
             {
                 script.AppendFormat("editurl:'{0}',", _editUrl).AppendLine();
             }
@@ -1890,7 +1823,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
             if (_ignoreCase.HasValue) script.AppendFormat("ignoreCase:{0},", _ignoreCase.ToString().ToLower()).AppendLine();
 
             // onAfterInsertRow
-            if (!_onAfterInsertRow.IsMissing())
+            if (_onAfterInsertRow.IsPresent())
                 script.AppendFormat("afterInsertRow: function(rowid, rowdata, rowelem) {{{0}}},", _onAfterInsertRow).
                     AppendLine();
 
@@ -1974,14 +1907,14 @@ namespace Fap.AspNetCore.Controls.JqGrid
             StringBuilder encryptJs = new StringBuilder();
             if (dataEncrypt != null && dataEncrypt.Any())
             {
-                encryptJs.AppendLine(@"var ids = jQuery('#" + _id + @"').jqGrid('getDataIDs');  
+                encryptJs.AppendLine(@"
+                var ids = jQuery('###gridid##').jqGrid('getDataIDs');  
                 for(var i=0;i < ids.length;i++){  
-                    var ret = jQuery('#" + _id + @"').jqGrid('getRowData',ids[i]);   
-                ");
+                    var ret = jQuery('###gridid##').jqGrid('getRowData',ids[i]); ");
                 foreach (var data in dataEncrypt)
                 {
                     encryptJs.AppendLine("if(ret.Fid=='" + data.FidValue + "'){ debugger");
-                    encryptJs.AppendLine("jQuery('#" + _id + @"').jqGrid('setRowData',ret.Id,{" + data.ColumnName + ":'******'}) ;  ");
+                    encryptJs.AppendLine("jQuery('###gridid##').jqGrid('setRowData',ret.Id,{" + data.ColumnName + ":'******'}) ;  ");
                     encryptJs.AppendLine("}");
                 }
                 encryptJs.AppendLine("}");
@@ -1989,9 +1922,10 @@ namespace Fap.AspNetCore.Controls.JqGrid
 
             #endregion
             // onLoadComplete，默认适应ACE
-            if (!_onLoadComplete.IsMissing())
+            if (_onLoadComplete.IsPresent())
             {
-                script.AppendFormat(@"loadComplete: function(xhr) {{
+                script.AppendFormat(@"
+                    loadComplete: function(xhr) {{
                         var table = this;" + encryptJs.ToString() + @";
 						setTimeout(function(){{
 							updatePagerIcons(table);
@@ -2102,7 +2036,8 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 script.AppendLine("treedatatype:'json',");
 
                 script.AppendFormat("treeGridModel : '{0}',", _treeGridModel.ToString().ToLower()).AppendLine();
-                script.AppendLine(@"treeReader:{
+                script.AppendLine(@"
+                treeReader:{
 					'parent_id_field':'Pid',
 					'level_field':'level',
 					'leaf_field':'isLeaf',
@@ -2154,7 +2089,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 }
 
                 script.AppendLine(@" 
-                jQuery('#" + _id + @"').jqGrid('navGrid', '#" + _pager + @"',
+                jQuery('###gridid##').jqGrid('navGrid', '###pager##',
                     { 	//navbar options
                         edit: false,
                         add: false,
@@ -2220,20 +2155,20 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 if (_searchToolbar == true && _searchClearButton.HasValue && !_pager.IsMissing() &&
                     _searchClearButton == true)
                 {
-                    script.AppendLine("jQuery('#" + _id + "').jqGrid('navButtonAdd',\"#" + _pager +
-                                     "\",{caption:\"清空搜索\",title:\"清空搜索\",buttonicon :'ace-icon fa fa-circle-o-notch green', onClickButton:function(){jQuery('#" + _id + "')[0].clearToolbar(); }}); ");
+                    script.AppendLine("jQuery('###gridid##').jqGrid('navButtonAdd',\"#" + _pager +
+                                     "\",{caption:\"清空搜索\",title:\"清空搜索\",buttonicon :'ace-icon fa fa-circle-o-notch green', onClickButton:function(){jQuery('###gridid##')[0].clearToolbar(); }}); ");
                 }
 
                 if (_searchToolbar == true && _searchToggleButton.HasValue && !_pager.IsMissing() && _searchToggleButton == true)
                 {
-                    script.AppendLine("jQuery('#" + _id + "').jqGrid('navButtonAdd',\"#" + _pager +
-                                  "\",{caption:\"搜索栏\",title:\"搜索栏\",buttonicon :'ace-icon fa fa-eye green', onClickButton:function(){jQuery('#" + _id + "')[0].toggleToolbar(); }}); ");
+                    script.AppendLine("jQuery('###gridid##').jqGrid('navButtonAdd',\"#" + _pager +
+                                  "\",{caption:\"搜索栏\",title:\"搜索栏\",buttonicon :'ace-icon fa fa-eye green', onClickButton:function(){jQuery('###gridid##')[0].toggleToolbar(); }}); ");
                 }
 
                 // Search toolbar
                 if (_searchToolbar == true)
                 {
-                    script.Append("jQuery('#" + _id + "').jqGrid('filterToolbar', {stringResult:" + _stringResult.ToString().ToLower());
+                    script.Append("jQuery('###gridid##').jqGrid('filterToolbar', {stringResult:" + _stringResult.ToString().ToLower());
                     if (_searchOnEnter.HasValue)
                         script.AppendFormat(", searchOnEnter:{0}", _searchOnEnter.ToString().ToLower());
                     script.AppendLine("});");
@@ -2257,8 +2192,8 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 }
                 initData.Append("}");
                 StringBuilder sb = new StringBuilder();
-                sb.AppendLine("   $('#" + _id + "').navGrid('#" + _pager + @"', {edit: false, add: false, del: false, refresh: false,search:false, view: false});");
-                sb.AppendLine("            $('#" + _id + "').inlineNav('#" + _pager + @"',");
+                sb.AppendLine("   $('###gridid##').navGrid('###pager##', {edit: false, add: false, del: false, refresh: false,search:false, view: false});");
+                sb.AppendLine("            $('###gridid##').inlineNav('###pager##',");
                 sb.AppendLine("                // the buttons to appear on the toolbar of the grid");
                 sb.AppendLine("                { ");
                 sb.AppendLine("                    edit: true, ");
@@ -2286,13 +2221,13 @@ namespace Fap.AspNetCore.Controls.JqGrid
                     sb.AppendLine("            var lastSelection_" + gid + ";");
                     sb.AppendLine("            function editRow(id) {");
                     sb.AppendLine("                if (id &&id !== lastSelection_" + gid + ") {");
-                    sb.AppendLine("                    var grid = $('#" + _id + "');");
+                    sb.AppendLine("                    var grid = $('###gridid##');");
                     sb.AppendLine("                     grid.jqGrid('editRow',id, {keys: true} );");
                     sb.AppendLine("                     lastSelection_" + gid + " = id;");
                     sb.AppendLine("                }");
                     sb.AppendLine("             window.setTimeout(function () {");
-                    sb.AppendLine("              $('#" + _id + "_ilsave').removeClass('ui-state-disabled');");
-                    sb.AppendLine("              $('#" + _id + "_ilcancel').removeClass('ui-state-disabled');");
+                    sb.AppendLine("              $('###gridid##_ilsave').removeClass('ui-state-disabled');");
+                    sb.AppendLine("              $('###gridid##_ilcancel').removeClass('ui-state-disabled');");
                     //sb.AppendLine("              $('#" + _id + "_iladd').addClass('ui-state-disabled');");
                     sb.AppendLine("               });  ");
                     sb.AppendLine("            }");
@@ -2305,9 +2240,10 @@ namespace Fap.AspNetCore.Controls.JqGrid
             }
 
             // 单界面ajax销毁使用
-            script.AppendLine(@"		$(document).one('ajaxloadstart.page', function(e) {
-            			//$('#" + _id + @"').jqGrid('gridUnload');
-                        $.jgrid.gridUnload( '" + _id + @"' ); 
+            script.AppendLine(@"
+                    $(document).one('ajaxloadstart.page', function(e) {
+            			//$('###gridid##').jqGrid('gridUnload');
+                        $.jgrid.gridUnload( '##gridid##' ); 
             			$('.ui-jqdialog').remove();
             		    });");
 
@@ -2315,7 +2251,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
             script.AppendLine("});");
 
             // Insert grid id where needed (in columns)
-            script.Replace("##gridid##", _id);
+            script.Replace("##gridid##", _id).Replace("##pager##", _pager);
 
             return script.ToString();
         }
@@ -2326,13 +2262,13 @@ namespace Fap.AspNetCore.Controls.JqGrid
         private void BatchUpdateToolbar(StringBuilder script)
         {
             script.AppendLine(@" 
-                    jQuery('#" + _id + @"').jqGrid('navButtonAdd', '#" + _pager + @"',{
+                    jQuery('###gridid##').jqGrid('navButtonAdd', '###pager##',{
                       caption:'',
                       title:'批量编辑',
                       position:'first',  
                       buttonicon:'ace-icon fa fa-pencil-square-o',
                       onClickButton : function() {                      
-                        loadBatchUpdateMessageBox('批量编辑','" + _id + "','fa fa-pencil-square-o','" + TableName + @"',0);
+                        loadBatchUpdateMessageBox('批量编辑','##gridid##','fa fa-pencil-square-o','" + TableName + @"',0);
                     }
                   });");
         }
@@ -2340,14 +2276,14 @@ namespace Fap.AspNetCore.Controls.JqGrid
         private void ExportToolbar(StringBuilder script)
         {
             script.AppendLine(@" 
-                    jQuery('#" + _id + @"').jqGrid('navButtonAdd', '#" + _pager + @"',{
+                    jQuery('###gridid##').jqGrid('navButtonAdd', '###pager##',{
                       caption:'',
                       title:'导出',
                       position:'first',  
                       buttonicon:'ace-icon fa fa-file-excel-o green',
                       onClickButton : function() {
                       
-                        loadExportMessageBox('导出','" + _id + "','fa fa-file-excel-o','" + TableName + @"',0);
+                        loadExportMessageBox('导出','##gridid##','fa fa-file-excel-o','" + TableName + @"',0);
                     }
                   });");
         }
@@ -2368,14 +2304,14 @@ namespace Fap.AspNetCore.Controls.JqGrid
             //        }
             //      });");
             script.AppendLine(@" 
-                    jQuery('#" + _id + @"').jqGrid('navButtonAdd', '#" + _pager + @"',{
+                    jQuery('###gridid##').jqGrid('navButtonAdd', '###pager##',{
                       caption:'',
                       title:'导入',
                       position:'last',  
                       buttonicon:'ace-icon fa fa-stack-overflow',
                       onClickButton : function() {
                       
-                        loadImportDataMessageBox('导入','" + _id + "','fa fa-cloud-upload','" + TableName + @"',0);
+                        loadImportDataMessageBox('导入','##gridid##','fa fa-cloud-upload','" + TableName + @"',0);
                     }
                   });");
 
@@ -2385,16 +2321,16 @@ namespace Fap.AspNetCore.Controls.JqGrid
         private void EditToolbar(StringBuilder script)
         {
             script.AppendLine(@" 
-                    jQuery('#" + _id + @"').jqGrid('navButtonAdd', '#" + _pager + @"',{
+                    jQuery('###gridid##').jqGrid('navButtonAdd', '###pager##',{
                       caption:'',
                       title:'编辑',
                       position:'first',
                       buttonicon:'ace-icon fa fa-pencil blue',
                       onClickButton : function() {
-                      var gsr = jQuery('#" + _id + @"').jqGrid('getGridParam', 'selrow');
+                      var gsr = jQuery('###gridid##').jqGrid('getGridParam', 'selrow');
                       if (gsr) {
-                        var ret = jQuery('#" + _id + @"').jqGrid('getRowData', gsr);
-                        loadFormMessageBox('编辑','" + _id + "','fa fa-pencil-square-o','" + TableName + @"',ret.Fid,'"+ HttpUtility.UrlEncode(_querySet.QueryCols)+"',function(){");
+                        var ret = jQuery('###gridid##').jqGrid('getRowData', gsr);
+                        loadFormMessageBox('编辑','##gridid##','fa fa-pencil-square-o','" + TableName + @"',ret.Fid,'" + HttpUtility.UrlEncode(_querySet.QueryCols) + "',function(){");
             if (_onEditAfterInitDataForm.IsPresent())
             {
                 script.AppendLine(_onEditAfterInitDataForm);
@@ -2410,13 +2346,13 @@ namespace Fap.AspNetCore.Controls.JqGrid
         private void AddToolbar(StringBuilder script)
         {
             script.AppendLine(@" 
-                    jQuery('#" + _id + @"').jqGrid('navButtonAdd', '#" + _pager + @"',{
+                    jQuery('###gridid##').jqGrid('navButtonAdd', '###pager##',{
                       caption:'',
                       title:'新增',
                       position:'first',  
                       buttonicon:'ace-icon fa fa-plus-circle purple',
                       onClickButton : function() {
-                      loadFormMessageBox('新增','" + _id + "','fa fa-plus-circle','" + TableName + @"',0,'" +HttpUtility.UrlEncode(_querySet.QueryCols) + "',function(){");
+                      loadFormMessageBox('新增','##gridid##','fa fa-plus-circle','" + TableName + @"',0,'" + HttpUtility.UrlEncode(_querySet.QueryCols) + "',function(){");
             if (_onAddAfterInitDataForm.IsPresent())
             {
                 script.AppendLine(_onAddAfterInitDataForm);
@@ -2437,27 +2373,27 @@ namespace Fap.AspNetCore.Controls.JqGrid
         {
             //保存的时候校验此值 (加上表名，避免连续打开连个表单，session就不同了)
             script.AppendLine(@" 
-                    jQuery('#" + _id + @"').jqGrid('navButtonAdd', '#" + _pager + @"',{
+                    jQuery('###gridid##').jqGrid('navButtonAdd', '###pager##',{
                       caption:'',
                       title:'删除',
                       position:'first',  
                       buttonicon:'ace-icon fa fa-trash-o red',
                       onClickButton : function() {
-                        deleteGridRow('" + _id + @"','" + TableName + @"');
+                        deleteGridRow('##gridid##','" + TableName + @"');
                     }
                   });");
         }
         private void ViewToolbar(StringBuilder script)
         {
             script.AppendLine(@" 
-                    jQuery('#" + _id + @"').jqGrid('navButtonAdd', '#" + _pager + @"',{
+                    jQuery('###gridid##').jqGrid('navButtonAdd', '###pager##',{
                       caption:'',
                       title:'查看选中数据', 
                       buttonicon:'ace-icon fa fa-search-plus grey',
                       onClickButton : function() {
-                       var gsr = jQuery('#" + _id + @"').jqGrid('getGridParam', 'selrow');
+                       var gsr = jQuery('###gridid##').jqGrid('getGridParam', 'selrow');
                       if (gsr) {
-                        var ret = jQuery('#" + _id + @"').jqGrid('getRowData', gsr);
+                        var ret = jQuery('###gridid##').jqGrid('getRowData', gsr);
                         viewFormMessageBox(ret.Fid,'" + TableName + "','" + HttpUtility.UrlEncode(_querySet.QueryCols) + "'" + @");
                         }else{
                             bootbox.alert('请选择一条数据查看')
@@ -2476,7 +2412,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
             {
                 string strGroupHeaders = string.Join(',', _groupHeaders.Select(h => $"{{\"numberOfColumns\": {h.NumberOfColumns}, \"titleText\": \"{h.TitleText}\", \"startColumnName\": \"{h.StartColumnName}\" }}"));
                 script.AppendLine(@" 
-            $('#" + _id + @"').setGroupHeaders(
+            $('###gridid##').setGroupHeaders(
                 {
                     useColSpanStyle: true,
                     groupHeaders: [
@@ -2544,9 +2480,6 @@ namespace Fap.AspNetCore.Controls.JqGrid
             compressor.Encoding = Encoding.UTF8;
             script.Append(compressor.Compress(RenderJavascript()));
             script.AppendLine("</script>");
-
-            // Insert grid id where needed (in columns)
-            script.Replace("##gridid##", _id);
 
             // Return script + required elements
             return script.ToString() + RenderHtmlElements();

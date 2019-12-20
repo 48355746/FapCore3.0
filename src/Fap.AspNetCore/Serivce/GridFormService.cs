@@ -79,7 +79,7 @@ namespace Fap.AspNetCore.Serivce
                 //优先级高
                 if (jqGridPostData.Sidx.IsPresent())
                 {
-                    string[] sidxs = jqGridPostData.Sidx.Split(',');
+                    var sidxs = jqGridPostData.Sidx.SplitComma();
                     foreach (var sidx in sidxs)
                     {
                         if (sidx.IsPresent())
@@ -89,12 +89,12 @@ namespace Fap.AspNetCore.Serivce
                             {
                                 var col = fapColumns.First(f => f.ColName == odx[0]);
                                 string colName = col.ColName;
+                                if (col.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
+                                {
+                                    colName += "MC";
+                                }
                                 if (odx.Length > 1)
                                 {
-                                    if (col.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
-                                    {
-                                        colName += "MC";
-                                    }
                                     queryOption.OrderBy.AddOrderByCondtion(colName, odx[1]);
                                 }
                                 else
@@ -361,8 +361,6 @@ namespace Fap.AspNetCore.Serivce
 
         }
 
-
-
         [Transactional]
         public ResponseViewModel SaveChange(OperEnum oper, FapDynamicObject mainData, Dictionary<string, IEnumerable<dynamic>> childDataList = null)
         {
@@ -425,7 +423,7 @@ namespace Fap.AspNetCore.Serivce
                 {
                     var childColumnList = _dbContext.Columns(childTable.TableName);
                     string foreignKey = childColumnList.First(f => f.RefTable == mainData.TableName).ColName;
-                    _dbContext.DeleteExec(childTable.TableName, $"{foreignKey} = @Fid", new DynamicParameters(new { Fid = mainData.Get(FapDbConstants.FAPCOLUMN_FIELD_Fid)}));
+                    _dbContext.DeleteExec(childTable.TableName, $"{foreignKey} = @Fid", new DynamicParameters(new { Fid = mainData.Get(FapDbConstants.FAPCOLUMN_FIELD_Fid) }));
                 }
 
             }
