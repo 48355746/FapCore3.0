@@ -9,6 +9,13 @@ using Fap.Core.Extensions;
 using Dapper;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
+using System.Web;
+using Fap.Core.Infrastructure.Metadata;
+using Fap.Core.Utility;
+using System.IO;
+using Fap.Core.Infrastructure.Domain;
+using Fap.Core.Infrastructure.Query;
+using Fap.Hcm.Web.Models;
 
 namespace Fap.Hcm.Web.Controllers
 {
@@ -24,12 +31,18 @@ namespace Fap.Hcm.Web.Controllers
         /// </summary>
         /// <param name="formObj"></param>
         /// <returns></returns>
-        [HttpPost]
-        [Route("Persistence/")]
+        [HttpPost("Persistence")]
         // POST: api/Common
-        public async Task<JsonResult> PostPersistence(IFormCollection keyValues)
+        public async Task<JsonResult> Persistence(IFormCollection keyValues)
         {
             var rv= await _gridFormService.PersistenceAsync(keyValues);
+            return Json(rv);
+        }
+        [HttpPost("BatchUpdate")]
+        // POST: api/Common
+        public JsonResult BatchUpdate(IFormCollection keyValues)
+        {
+            var rv= _gridFormService.BatchUpdate(keyValues);
             return Json(rv);
         }
         /// <summary>
@@ -37,12 +50,56 @@ namespace Fap.Hcm.Web.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        [HttpPost("datalist")]
-        public JsonResult PostDatalist(JqGridPostData postDataModel)
+        [HttpPost("DataList")]
+        public JsonResult Datalist(JqGridPostData postDataModel)
         {
             Guard.Against.Null(postDataModel, nameof(postDataModel));
-            var result = GetJqGridDataList(postDataModel);
+            var result = _gridFormService.QueryPageDataResultView(postDataModel);
             return Json(result);
+        }
+        /// <summary>
+        /// 导出表格数据(不用于导入)
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost("ExportExcelData")]
+        public IActionResult ExportExcelDatalist(JqGridPostData model)
+        {
+            string fileName = _gridFormService.ExportExcelData(model);
+            return Json(new ResponseViewModel { success= true, data=fileName });
+        }
+        /// <summary>
+        /// 导出表格数据（修改后导入）
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost("ExportExcelTmplData")]
+        public JsonResult ExportExcelTemplateAndData(JqGridPostData model)
+        {
+            string fileName = _gridFormService.ExportExcelData(model);
+            return Json(new ResponseViewModel {success = true, data = fileName });
+        }
+        //导出表格模板
+        [HttpPost("ExportExcelTmpl")]
+        // POST: api/Common
+        public JsonResult ExportExcelTemplate(QuerySet querySet)
+        {
+            Guard.Against.Null(querySet, nameof(querySet));
+            string fileName= _gridFormService.ExportExcelTemplate(querySet);
+            return Json(new ResponseViewModel { success = true, data = fileName });
+
+        }
+        /// <summary>
+        /// 导入数据到表格
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        [HttpPost("ImportExcelData/{tableName}")]
+        public bool ImportExcelData(string tableName)
+        {
+            Guard.Against.NullOrWhiteSpace(tableName, nameof(tableName));
+            _gridFormService.ImportExcelData(tableName);
+            return true;
         }
         /// <summary>
         /// 根据tableName 获取属性项
@@ -50,13 +107,19 @@ namespace Fap.Hcm.Web.Controllers
         /// <param name="tableName"></param>
         /// <returns></returns>
         [HttpGet]
-        [Route("fieldlist/{tableName}")]
-        public JsonResult GetFieldListByTbName(string tableName)
+        [Route("FieldList/{tableName}")]
+        public JsonResult GetFieldListByTbName(string tableName,string qryCols="*")
         {
             Guard.Against.NullOrWhiteSpace(tableName, nameof(tableName));           
             var colCacheList = _dbContext.Columns(tableName);
+            if (!qryCols.Equals("*"))
+            {
+                var queryColList =HttpUtility.UrlDecode(qryCols).ToLower().SplitComma();
+                colCacheList = colCacheList.Where(c => queryColList.Contains(c.ColName.ToLower()));
+            }
             return Json(colCacheList);
         }
+
         #region validateForm
         /// <summary>
         /// 校验唯一

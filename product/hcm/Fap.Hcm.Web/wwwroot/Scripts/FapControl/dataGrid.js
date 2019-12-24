@@ -241,7 +241,7 @@ var openRefrenceWindow = function (title, colfid,  refurl, selectcallback,clearc
 
 };
 //批量编辑
-var loadBatchUpdateMessageBox = function (title, gid, icon, tablename, id, callback) {
+var loadBatchUpdateMessageBox = function (title, gid, qryCols, tablename, id, callback) {
     var rowDatas = getSelectedRows(gid);
     if (rowDatas === null)
         return;
@@ -323,17 +323,21 @@ var loadBatchUpdateMessageBox = function (title, gid, icon, tablename, id, callb
             e.preventDefault();
             return false;
         }
-        var fids = $.map(rowDatas, function (d) {
-            return d.Fid;
+        //var fids = $.map(rowDatas, function (d) {
+        //    return d.Fid;
+        //});
+        var ids = $.map(rowDatas, function (d) {
+            return d.Id;
         });
         var formData = GetFapFormData("frm-batchupdate");
-        formData.Fids = fids;
+        formData.Ids = ids.join();
         $.post(basePath + "/Api/Core/BatchUpdate", formData, function (rv) {
             if (rv.success) {
                 $modal.modal("hide");
                 $modal.remove();
                 $.msg("批量更新成功！");
                 refreshBaseJqGrid(gid);
+
             } else {
                 bootbox.alert(rv.msg);
             }
@@ -348,7 +352,7 @@ var loadBatchUpdateMessageBox = function (title, gid, icon, tablename, id, callb
     $modal.find(".modal-body [data-step=1]").html("");
     $modal.find(".modal-body [data-step=1]").append($fieldList);
 
-    $.get(basePath + "/Api/Core/fieldlist/" + tablename, function (data) {
+    $.get(basePath + "/Api/Core/FieldList/" + tablename, { qryCols: qryCols }, function (data) {
         $fieldList.empty();
         $.each(data, function (i, d) {
             if (d.isDefaultCol === 1 || d.showAble === 0) {
@@ -369,12 +373,11 @@ var loadBatchUpdateMessageBox = function (title, gid, icon, tablename, id, callb
 //导出excel数据
 //title 标题
 //gid 表格id
-//icon 小图标
+//qryCols 导出列
 //tablename 表名
-//id 业务数据id，0新增
 //callback 扩展js方法
-var loadExportMessageBox = function (title, gid, icon, tablename, id, callback) {
-    var $fieldList = $("<select multiple='multiple' size='10' id='duallistbox_" + tablename + "' name='duallistbox_" + tablename + "'></select>");
+var loadExportMessageBox = function (title, gid, qryCols, tablename, callback) {
+    var $fieldList =$("<select multiple='multiple' size='10' id='duallistbox_" + tablename + "' name='duallistbox_" + tablename + "'></select>");
 
     var dialog = bootbox.dialog({
         title: title,
@@ -389,15 +392,11 @@ var loadExportMessageBox = function (title, gid, icon, tablename, id, callback) 
                         $.msg("请选择导出字段！");
                         return;
                     }
-
-                    //alert($fieldList.val());
                     var postData = $('#' + gid).jqGrid("getGridParam", "postData");
-                    postData.QuerySet.ExportCols = fields.join();
-                    //var sqlRv = JSON.stringify(postData);
-                    //alert(sqlRv);
-                    $.post(basePath + "/Api/Core/export", postData, function (data) {
-                        if (data.rv) {
-                            window.location.href = basePath + "/UploadFiles/" + data.fn;
+                    postData.QuerySet.ExportCols = fields.join();                   
+                    $.post(basePath + "/Api/Core/ExportExcelData", postData, function (data) {
+                        if (data.success) {
+                            window.location.href = basePath + "/Temporary/" + data.data;
                             //bootbox.alert("生成成功");
                         } else {
                             $.msg("生成文件异常！");
@@ -415,20 +414,23 @@ var loadExportMessageBox = function (title, gid, icon, tablename, id, callback) 
     dialog.init(function () {
         dialog.find('.bootbox-body').html('');
         dialog.find('.bootbox-body').append($fieldList);
-        $.get(basePath + "/Api/Core/fieldlist/" + tablename, function (data) {
+        $.get(basePath + "/Api/Core/FieldList/" + tablename, { qryCols: qryCols }, function (data) {          
             $fieldList.empty();
             $.each(data, function (i, d) {
-                if (d.isDefaultCol === 1 && d.colName !== 'Fid') {
+                if (d.colName === "Id" || d.colName === "Fid") {
+                    $fieldList.append("<option value='" + d.colName + "'>" + d.colComment + "</option>");
                     return true;
-                }
-                $fieldList.append("<option value='" + d.colName + "'>" + d.colComment + "</option>");
+                }              
+                $fieldList.append("<option value='" + d.colName + "' selected>" + d.colComment + "</option>");                    
+               
             });
             $fieldList.bootstrapDualListbox({
-                nonSelectedListLabel: '<span class="text-primary h5">所有项</span> ',
-                selectedListLabel: '<span class="text-primary h5">选中项</span> ',
+                nonSelectedListLabel: '<span class="text-primary h4">待选项</span> ',
+                selectedListLabel: '<span class="text-primary h4">导出项</span> ',
                 preserveSelectionOnMove: 'moved',
-                moveOnSelect: false
-
+                moveOnSelect: false,
+                showFilterInputs: false
+               
             });
         });
 
@@ -438,21 +440,23 @@ var loadExportMessageBox = function (title, gid, icon, tablename, id, callback) 
 //导出excel模板
 //title 标题
 //tablename 表名
-var loadExportTmplMessageBox = function (title, tablename) {
-    $.get(basePath + "/Api/Core/exporttmpl/" + tablename, function (data) {
-        if (data.rv) {
-            window.location.href = basePath + "/UploadFiles/" + data.fn;
+var loadExportExcelTmpl = function (qryCols, tableName) {
+    var postData = { TableName: tableName, QueryCols: qryCols };
+    $.post(basePath + "/Api/Core/ExportExcelTmpl", postData, function (data) {
+        if (data.success) {
+            window.location.href = basePath + "/Temporary/" + data.data;
             //bootbox.alert("生成成功");
         } else {
             $.msg("模板生成失败！");
         }
     });
 };
-var loadExportDataMessageBox = function (title, tableName) {
-    var postData = { TableName: tableName };
-    $.post(basePath + "/Api/Core/exportdata", postData, function (data) {
-        if (data.rv) {
-            window.location.href = basePath + "/UploadFiles/" + data.fn;
+var loadExportExcelTemplData = function (qryCols, gid) {
+    var postData = $('#' + gid).jqGrid("getGridParam", "postData");
+    postData.QuerySet.ExportCols = qryCols;
+    $.post(basePath + "/Api/Core/ExportExcelTmplData", postData, function (data) {
+        if (data.success) {
+            window.location.href = basePath + "/Temporary/" + data.data;
             //bootbox.alert("生成成功");
         } else {
             bootbox.alert("生成文件异常！");
@@ -460,7 +464,7 @@ var loadExportDataMessageBox = function (title, tableName) {
     });
 };
 //导入
-var loadImportDataMessageBox = function (title, gid, icon, tablename, id, callback) {
+var loadImportDataMessageBox = function (title, gid, qryCols, tablename, callback) {
     var dialog = bootbox.dialog({
         title: title,
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
@@ -481,23 +485,24 @@ var loadImportDataMessageBox = function (title, gid, icon, tablename, id, callba
 
     });
     dialog.init(function () {
-        var title1 = $("<h3 class=\" smaller lighter blue\">1.下载模板</h3>");
+        var title1 = $("<h3 class=\"header smaller lighter blue\">1、下载模板</h3>");
         //下载链接
-        var $linkDown = $("<button class=\"btn btn-success\"><i class=\"ace-icon fa fa-download\"></i>下载模板</button>");
-        var $linkDownData = $("<button class=\"btn btn-success\"><i class=\"ace-icon fa fa-download\"></i>下载数据</button>");
-        var title2 = "<h3 class=\" smaller lighter blue\">2.导入数据</h3>";
+        var $linkDown = $("<button class=\"btn btn-info btn-sm\"><i class=\"ace-icon fa fa-download\"></i>下载空模板</button>");
+        var $linkDownData = $("<button class=\"btn btn-success btn-sm\"><i class=\"ace-icon fa fa-download\"></i>下载带数据模板</button>");
+        var title2 = "<h3 class=\"header smaller lighter blue\">2、导入数据</h3>";
         var $file = $("<input id=\"file-import\" type=\"file\"  class=\"file-loading\">");
-        dialog.find('.bootbox-body').empty().append(title1).append($linkDown).append($linkDownData).append(title2).append($file);
+        var $p = $("<p>").append($linkDown).append($linkDownData);
+        dialog.find('.bootbox-body').empty().append(title1).append($p).append(title2).append($file);
         //下载模板
         $linkDown.on(ace.click_event, function () {
-            loadExportTmplMessageBox('', tablename);
+            loadExportExcelTmpl(qryCols, tablename);
         });
         $linkDownData.on(ace.click_event, function () {
-            loadExportDataMessageBox('', tablename);
+            loadExportExcelTemplData(qryCols, gid);
         });
         $file.fileinput({
             language: 'zh',
-            uploadUrl: basePath + '/Api/Core/impdata/' + tablename,
+            uploadUrl: basePath + '/Api/Core/ImportExcelData/' + tablename,
             showCaption: false,
             allowedFileExtensions: ["xls", "xlsx"],
             showClose: true

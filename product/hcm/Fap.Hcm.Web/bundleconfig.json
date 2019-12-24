@@ -118,6 +118,7 @@
       "wwwroot/Content/citypicker/jquery.citypicker.js", //城市
       "wwwroot/Content/js/jquery.colorbox.js",
       "wwwroot/Content/js/jquery.raty.js",
+      "wwwroot/Content/js/fuelux/fuelux.wizard.js",
       "wwwroot/Scripts/Fap/mainframe.js"
     ],
     // Optionally specify minification options

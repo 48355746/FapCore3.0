@@ -2,6 +2,7 @@
 using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Infrastructure.Metadata;
+using Fap.Core.Utility;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,7 +16,6 @@ namespace Fap.Core.Office.Excel.Export
         private string tableName;
         private string exportColumns;
         private string exportDataSql;
-        private string exportWhere;
         /// <summary>
         /// 
         /// </summary>
@@ -31,7 +31,6 @@ namespace Fap.Core.Office.Excel.Export
             this.tableName = exportModel.TableName;
             exportDataSql = exportModel.DataSql;
             exportColumns = exportModel.ExportCols;
-            exportWhere = exportModel.SqlWhere;
         }
 
         /// <summary>
@@ -40,12 +39,12 @@ namespace Fap.Core.Office.Excel.Export
         public override void CollectData()
         {
             //主表的信息
-            FapTable table = _platformDomain.TableSet.FirstOrDefault(t => t.TableName == tableName);
-            IEnumerable<FapColumn> columnList = _platformDomain.ColumnSet.Where(c => c.TableName == tableName);
+            FapTable table = _dataAccessor.Table(tableName);
+            IEnumerable<FapColumn> columnList = _dataAccessor.Columns(tableName);
             if (exportColumns.IsPresent() && exportColumns != "*")
             {
-                string[] cols = exportColumns.Split(',');
-                columnList = columnList.Where(f => cols.Contains(f.ColName)).ToList();
+                var cols = exportColumns.SplitComma();
+                columnList = columnList.Where(f => cols.Contains(f.ColName, new FapStringEqualityComparer()));
             }
 
             //字典表
@@ -59,7 +58,6 @@ namespace Fap.Core.Office.Excel.Export
                 {
                     this.GetReferenceDictionaryData(column, DictionaryToExport);
                 }
-
             }
 
             //主表元数据
@@ -70,29 +68,16 @@ namespace Fap.Core.Office.Excel.Export
                 {
                     code = "R_" + column.Id;
                 }
-                if (!ExcelUtils.DefaultFieldNameList.Contains(column.ColName))
+                if ((column.CtrlType == FapColumn.CTRL_TYPE_REFERENCE || column.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX) && this.DictionaryToExport.ContainsKey(code))
                 {
-                    if (column.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX && this.DictionaryToExport.ContainsKey(code))
-                    {
-                        //string code = Get30String("C_" + column.RefTable);
-                        string range = this.DictionaryToExport[code].DictionaryExcelRange;
-                        int startIndex = this.DictionaryToExport[code].DictionaryRowStartIndex;
-                        int endIndex = this.DictionaryToExport[code].DictionaryRowEndIndex;
-                        this.SheetMetadata.Columns.Add(new ColumnMd() { StartRowIndex = startIndex, EndRowIndex = endIndex, DictionarySheetRange = range, DictionarySheetName = code, Field = column.ColName, IsNeedDictionary = true, Title = column.ColComment });
-
-                    }
-                    else if (column.CtrlType == FapColumn.CTRL_TYPE_REFERENCE && this.DictionaryToExport.ContainsKey(code))
-                    {
-                        //string code = Get30String("R_" + column.RefTable + column.RefID + column.RefName);
-                        string range = this.DictionaryToExport[code].DictionaryExcelRange;
-                        int startIndex = this.DictionaryToExport[code].DictionaryRowStartIndex;
-                        int endIndex = this.DictionaryToExport[code].DictionaryRowEndIndex;
-                        this.SheetMetadata.Columns.Add(new ColumnMd() { StartRowIndex = startIndex, EndRowIndex = endIndex, DictionarySheetRange = range, DictionarySheetName = code, Field = column.ColName, IsNeedDictionary = true, Title = column.ColComment });
-                    }
-                    else
-                    {
-                        this.SheetMetadata.Columns.Add(new ColumnMd() { Field = column.ColName, IsNeedDictionary = false, Title = column.ColComment });
-                    }
+                    string range = this.DictionaryToExport[code].DictionaryExcelRange;
+                    int startIndex = this.DictionaryToExport[code].DictionaryRowStartIndex;
+                    int endIndex = this.DictionaryToExport[code].DictionaryRowEndIndex;
+                    this.SheetMetadata.Columns.Add(new ColumnMd() { StartRowIndex = startIndex, EndRowIndex = endIndex, DictionarySheetRange = range, DictionarySheetName = code, Field = column.ColName, IsNeedDictionary = true, Title = column.ColComment });
+                }
+                else
+                {
+                    this.SheetMetadata.Columns.Add(new ColumnMd() { Field = column.ColName, IsNeedDictionary = false, Title = column.ColComment });
                 }
             }
 
@@ -152,17 +137,18 @@ namespace Fap.Core.Office.Excel.Export
             columnTitle.IsHeader = true;
             foreach (var column in columnList)
             {
-                if (!ExcelUtils.DefaultFieldNameList.Contains(column.ColName))
-                {
-                    if (column.CtrlType == FapColumn.CTRL_TYPE_REFERENCE || column.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX)
-                    {
-                        columnTitle.Data.Add(new CellData() { Data = column.ColComment, Type = CellDataType.STRING });
-                    }
-                    else
-                    {
-                        columnTitle.Data.Add(new CellData() { Data = column.ColComment, Type = CellDataType.STRING });
-                    }
-                }
+                columnTitle.Data.Add(new CellData() { Data = column.ColComment, Type = CellDataType.STRING });
+                //if (!ExcelUtils.DefaultFieldNameList.Contains(column.ColName))
+                //{
+                //    if (column.CtrlType == FapColumn.CTRL_TYPE_REFERENCE || column.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX)
+                //    {
+                //        columnTitle.Data.Add(new CellData() { Data = column.ColComment, Type = CellDataType.STRING });
+                //    }
+                //    else
+                //    {
+                //        columnTitle.Data.Add(new CellData() { Data = column.ColComment, Type = CellDataType.STRING });
+                //    }
+                //}
             }
             return columnTitle;
         }
@@ -185,42 +171,19 @@ namespace Fap.Core.Office.Excel.Export
                 if (column.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
                 {
                     sheetName = "R_" + column.Id;
-                }
-                if (!ExcelUtils.DefaultFieldNameList.Contains(column.ColName))
+                }              
+                if ((column.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX|| column.CtrlType == FapColumn.CTRL_TYPE_REFERENCE) && this.DictionaryToExport.ContainsKey(sheetName))
                 {
-                    if (column.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX && this.DictionaryToExport.ContainsKey(sheetName))
-                    {
-                        //string refTable = column.RefTable;
-                        //string sheetName = Get30String("C_" + refTable);
-                        DictionarySheetData dictionarySheetData = this.DictionaryToExport[sheetName];
+                    DictionarySheetData dictionarySheetData = this.DictionaryToExport[sheetName];
+                    ColumnProperty cp = new ColumnProperty();
+                    cp.ColumnHeader = column.ColComment;
+                    cp.ColumnIndex = index;
+                    cp.ConstraintName = sheetName;// Get30String("C_" + refTable);
+                    cp.ConstraintReference = dictionarySheetData.DictionaryExcelRangeAddress; //!$A1:$A3
 
-                        ColumnProperty cp = new ColumnProperty();
-                        cp.ColumnHeader = column.ColComment;
-                        cp.ColumnIndex = index;
-                        cp.ConstraintName = sheetName;// Get30String("C_" + refTable);
-                        cp.ConstraintReference = dictionarySheetData.DictionaryExcelRangeAddress; //!$A1:$A3
-
-                        columnProperty.Add(cp);
-                    }
-                    else if (column.CtrlType == FapColumn.CTRL_TYPE_REFERENCE && this.DictionaryToExport.ContainsKey(sheetName))
-                    {
-                        string refTable = column.RefTable;
-                        string refID = column.RefID;
-                        string refName = column.RefName;
-                        //string sheetName = Get30String("R_" + refTable + refID + refName);
-                        DictionarySheetData dictionarySheetData = this.DictionaryToExport[sheetName];
-
-                        ColumnProperty cp = new ColumnProperty();
-                        cp.ColumnHeader = column.ColComment;
-                        cp.ColumnIndex = index;
-                        cp.ConstraintName = sheetName;// Get30String("R_" + refTable + refID + refName);
-                        cp.ConstraintReference = dictionarySheetData.DictionaryExcelRangeAddress; //!$A1:$A3
-
-                        columnProperty.Add(cp);
-                    }
-
-                    index++;
+                    columnProperty.Add(cp);
                 }
+                index++;                
             }
             return columnProperty;
         }
@@ -239,17 +202,18 @@ namespace Fap.Core.Office.Excel.Export
 
             foreach (var column in columnList)
             {
-                if (!ExcelUtils.DefaultFieldNameList.Contains(column.ColName))
-                {
-                    if (column.CtrlType == FapColumn.CTRL_TYPE_REFERENCE || column.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX)
-                    {
-                        columnName.Data.Add(new CellData() { Data = column.ColName, Type = CellDataType.STRING });
-                    }
-                    else
-                    {
-                        columnName.Data.Add(new CellData() { Data = column.ColName, Type = CellDataType.STRING });
-                    }
-                }
+                columnName.Data.Add(new CellData() { Data = column.ColName, Type = CellDataType.STRING });
+                //if (!ExcelUtils.DefaultFieldNameList.Contains(column.ColName))
+                //{
+                //    if (column.CtrlType == FapColumn.CTRL_TYPE_REFERENCE || column.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX)
+                //    {
+                //        columnName.Data.Add(new CellData() { Data = column.ColName, Type = CellDataType.STRING });
+                //    }
+                //    else
+                //    {
+                //        columnName.Data.Add(new CellData() { Data = column.ColName, Type = CellDataType.STRING });
+                //    }
+                //}
             }
             return columnName;
         }
@@ -267,10 +231,11 @@ namespace Fap.Core.Office.Excel.Export
             Dictionary<string, FapColumn> columnMap = new Dictionary<string, FapColumn>();
             foreach (var column in columnList)
             {
-                if (!ExcelUtils.DefaultFieldNameList.Contains(column.ColName))
-                {
-                    columnMap.Add(column.ColName, column);
-                }
+                columnMap.Add(column.ColName, column);
+                //if (!ExcelUtils.DefaultFieldNameList.Contains(column.ColName))
+                //{
+                //    columnMap.Add(column.ColName, column);
+                //}
             }
 
             //再根据列，组织数据
@@ -278,20 +243,11 @@ namespace Fap.Core.Office.Excel.Export
 
             IEnumerable<dynamic> dataList = null;
             //自定义sql
-            if (exportDataSql.IsPresent())
+            if (exportDataSql.IsMissing())
             {
-                //dataList = dataAccessor.Query(exportDataSql, null, true, true, true);
-                dataList = _dataAccessor.Query(exportDataSql);
+                exportDataSql = $"select * from {tableName}";
             }
-            else
-            {
-                string sql = "select * from " + tableName;
-                if (exportWhere.IsPresent())
-                {
-                    sql += " where " + exportWhere;
-                }
-                dataList = _dataAccessor.Query(sql, null, true);
-            }
+            dataList = _dataAccessor.Query(exportDataSql, null, true);
 
             if (dataList != null)
             {
@@ -312,24 +268,18 @@ namespace Fap.Core.Office.Excel.Export
                             cellData = new CellData();
 
                             string mc = row[item.Key + "MC"].ToStringOrEmpty();
-                            if (!string.IsNullOrWhiteSpace(mc))
+                            if (mc.IsPresent())
                             {
-                                if (exportDataSql.IsPresent())
+                                string refTable = column.RefTable;
+                                string refName = column.RefName;
+                                if (RefTableCache.TryGetValue(refTable, out IEnumerable<FapDict> refDatas))
                                 {
-                                    //自定义导出
-                                    cellData.Data = mc;
-                                }
-                                else
-                                {
-                                    string refTable = column.RefTable;
-                                    string refName = column.RefName;
-                                    var refDatas = _dataAccessor.QueryAll(refTable);
-                                    if (refDatas.Count(k => (k as IDictionary<string, object>)[refName].ToStringOrEmpty() == mc) > 1)
+                                    if (refDatas.Count(k => k.Name == mc) > 1)
                                     {
                                         string refID = column.RefID;
                                         string refCode = column.RefCode;
                                         var refData = refDatas.FirstOrDefault(d => d.Fid == row[item.Key].ToString());
-                                        cellData.Data = mc + $"({(refData as IDictionary<string, object>)[refCode]})";
+                                        cellData.Data = mc + $"({refData.Code})";
                                     }
                                     else
                                     {
@@ -349,16 +299,16 @@ namespace Fap.Core.Office.Excel.Export
                         else if (column.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX)
                         {
                             cellData = new CellData();
-                            if (exportDataSql.IsPresent())
-                            {
-                                //自定义sql的时候从缓存取字典名称
-                                _platformDomain.DictSet.TryGetValueByCodeAndCategory(row[item.Key].ToStringOrEmpty(), column.RefTable, out FapDict fapDict);
-                                cellData.Data = fapDict?.Name;
-                            }
-                            else
-                            {
-                                cellData.Data = row[item.Key + "MC"];
-                            }
+                            //if (exportDataSql.IsPresent())
+                            //{
+                            //    //自定义sql的时候从缓存取字典名称
+                            //    FapDict fapDict = _dataAccessor.Dictionary(column.RefTable, row[item.Key].ToStringOrEmpty());
+                            //    cellData.Data = fapDict?.Name;
+                            //}
+                            //else
+                            //{
+                            cellData.Data = row[item.Key + "MC"];
+                            //}
                             cellData.Type = CellDataType.STRING;
                             rowDataToExcel.Data.Add(cellData);
                         }

@@ -22,7 +22,7 @@ namespace Fap.Core.Office.Excel.Export
     public abstract class ExcelExportBase
     {
         protected IDbContext _dataAccessor;
-     
+
 
         private string fileName = null; //文件名
         private ExcelVersion excelVersion = ExcelVersion.XLSX; //EXCEL版本
@@ -92,8 +92,10 @@ namespace Fap.Core.Office.Excel.Export
                 sheetMetadata = value;
             }
         }
-
-        protected readonly IFapPlatformDomain _platformDomain;
+        /// <summary>
+        /// 存储参照表数据
+        /// </summary>
+        protected IDictionary<string, IEnumerable<FapDict>> RefTableCache { get; } = new Dictionary<string, IEnumerable<FapDict>>();
         public ExcelExportBase(IDbContext dataAccessor, string fileName)
         {
             _dataAccessor = dataAccessor;
@@ -104,7 +106,7 @@ namespace Fap.Core.Office.Excel.Export
         /// 获取数据的抽象方法
         /// </summary>
         public abstract void CollectData();
-        
+
         /// <summary>
         /// 导出Excel文件
         /// </summary>
@@ -173,7 +175,7 @@ namespace Fap.Core.Office.Excel.Export
 
                     //隐藏指定的Sheet
                     HideSheet(workbook);
-
+                    //workbook.GetSheetAt(0).ProtectSheet("fap");
                     //写入到excel文件中
                     workbook.Write(fs);
 
@@ -326,22 +328,32 @@ namespace Fap.Core.Office.Excel.Export
             IRow row = sheet.CreateRow(rowCount);
 
             ICellStyle cellStyle = null;
-            if (rowData.IsHeader) {
+            if (rowData.IsHeader)
+            {
                 cellStyle = this.GetColumnHeaderCellType(workbook);
             }
             else
             {
                 cellStyle = this.GetDefaultCellType(workbook);
             }
-            
+
             int count = rowData.Data.Count;
             for (int i = 0; i < count; ++i)
             {
                 CellData cellData = rowData.Data[i];
                 if (cellData == null) continue;
                 SetCellValue(row, cellStyle, i, cellData);
-            }
+                //隐藏系统默认列
+                if (rowCount == 1)
+                {
+                    //标题行
+                    if(ExcelUtils.DefaultFieldNameList.Contains(cellData.Data.ToString(),new FapStringEqualityComparer()))
+                    {
+                        sheet.SetColumnHidden(i,true);
+                    }
+                }
 
+            }
             rowCount++;
         }
 
@@ -454,7 +466,7 @@ namespace Fap.Core.Office.Excel.Export
         /// <param name="item"></param>
         private void SheetAddDataValidation(IWorkbook workbook, ISheet sheet, ColumnProperty item)
         {
-            if (item==null || string.IsNullOrWhiteSpace(item.ConstraintReference)) //如果没有引用区域， 则退出
+            if (item == null || string.IsNullOrWhiteSpace(item.ConstraintReference)) //如果没有引用区域， 则退出
             {
                 return;
             }
@@ -543,10 +555,13 @@ namespace Fap.Core.Office.Excel.Export
                 {
                     refCode = "Id";
                 }
-                string refWhere = refCondition.IsMissing()? "" : " where " + refCondition;
+                string refWhere = refCondition.IsMissing() ? "" : " where " + refCondition;
                 string sql = string.Format("SELECT {0} AS FID, {1} AS CODE,{2} AS NAME FROM {3} {4}", refID, refCode, refName, refTable, refWhere);
                 IEnumerable<FapDict> dicData = _dataAccessor.Query<FapDict>(sql);
-
+                if (!RefTableCache.ContainsKey(refTable))
+                {
+                    RefTableCache.Add(refTable, dicData);
+                }
                 if (dicData != null && dicData.Count() > 0)
                 {
                     DictionarySheetData dictionarySheetData = new DictionarySheetData();
@@ -587,15 +602,14 @@ namespace Fap.Core.Office.Excel.Export
         /// <param name="column"></param>
         /// <param name="dictionaryToExport"></param>
         /// <returns></returns>
-        protected void GetCodeDictionaryData(FapColumn column,Dictionary<string, DictionarySheetData> dictionaryToExport)
+        protected void GetCodeDictionaryData(FapColumn column, Dictionary<string, DictionarySheetData> dictionaryToExport)
         {
             string refTable = column.RefTable;
             //string code = Get30String("C_" + refTable);
             string code = "C_" + column.Id;
             if (!dictionaryToExport.ContainsKey(code))
             {
-                string sql = "SELECT Code AS CODE, Name AS NAME FROM FapDict WHERE Category = '" + refTable + "' ";
-                IEnumerable<dynamic> dicData = _dataAccessor.Query(sql);
+                IEnumerable<FapDict> dicData = _dataAccessor.Dictionarys(refTable);
                 if (dicData != null && dicData.Count() > 0)
                 {
                     DictionarySheetData dictionarySheetData = new DictionarySheetData();
@@ -605,8 +619,8 @@ namespace Fap.Core.Office.Excel.Export
                     foreach (var item in dicData)
                     {
                         DictionaryRowData dictionaryRowData = new DictionaryRowData();
-                        dictionaryRowData.KeyData = new CellData() { Data = item.CODE, Type = CellDataType.STRING };
-                        dictionaryRowData.ValueData = new CellData() { Data = item.NAME, Type = CellDataType.STRING };
+                        dictionaryRowData.KeyData = new CellData() { Data = item.Code, Type = CellDataType.STRING };
+                        dictionaryRowData.ValueData = new CellData() { Data = item.Name, Type = CellDataType.STRING };
                         dictionarySheetData.Data.Add(dictionaryRowData);
                     }
 
@@ -630,22 +644,27 @@ namespace Fap.Core.Office.Excel.Export
         {
             if (dataCellStyle == null)
             {
-                if (workbook is XSSFWorkbook)
-                {
-                    dataCellStyle = workbook.CreateCellStyle() as XSSFCellStyle;
-                    dataCellStyle.BorderBottom = NPOI.SS.UserModel.BorderStyle.Thin;
-                    //defaultStyle.BorderLeft = NPOI.SS.UserModel.BorderStyle.Thin;
-                    dataCellStyle.BorderRight = NPOI.SS.UserModel.BorderStyle.Thin;
-                    //defaultStyle.BorderTop = NPOI.SS.UserModel.BorderStyle.Thin;
-                }
-                else if (workbook is HSSFWorkbook)
-                {
-                    dataCellStyle = workbook.CreateCellStyle() as HSSFCellStyle;
-                    dataCellStyle.BorderBottom = NPOI.SS.UserModel.BorderStyle.Thin;
-                    //defaultStyle.BorderLeft = NPOI.SS.UserModel.BorderStyle.Thin;
-                    dataCellStyle.BorderRight = NPOI.SS.UserModel.BorderStyle.Thin;
-                    //defaultStyle.BorderTop = NPOI.SS.UserModel.BorderStyle.Thin;
-                }
+                dataCellStyle = workbook.CreateCellStyle();
+                dataCellStyle.BorderBottom = NPOI.SS.UserModel.BorderStyle.Thin;
+                //defaultStyle.BorderLeft = NPOI.SS.UserModel.BorderStyle.Thin;
+                dataCellStyle.BorderRight = NPOI.SS.UserModel.BorderStyle.Thin;
+                //defaultStyle.BorderTop = NPOI.SS.UserModel.BorderStyle.Thin;
+                //if (workbook is XSSFWorkbook)
+                //{
+                //    dataCellStyle = workbook.CreateCellStyle() as XSSFCellStyle;
+                //    dataCellStyle.BorderBottom = NPOI.SS.UserModel.BorderStyle.Thin;
+                //    //defaultStyle.BorderLeft = NPOI.SS.UserModel.BorderStyle.Thin;
+                //    dataCellStyle.BorderRight = NPOI.SS.UserModel.BorderStyle.Thin;
+                //    //defaultStyle.BorderTop = NPOI.SS.UserModel.BorderStyle.Thin;
+                //}
+                //else if (workbook is HSSFWorkbook)
+                //{
+                //    dataCellStyle = workbook.CreateCellStyle() as HSSFCellStyle;
+                //    dataCellStyle.BorderBottom = NPOI.SS.UserModel.BorderStyle.Thin;
+                //    //defaultStyle.BorderLeft = NPOI.SS.UserModel.BorderStyle.Thin;
+                //    dataCellStyle.BorderRight = NPOI.SS.UserModel.BorderStyle.Thin;
+                //    //defaultStyle.BorderTop = NPOI.SS.UserModel.BorderStyle.Thin;
+                //}
             }
 
             return dataCellStyle;
@@ -658,37 +677,53 @@ namespace Fap.Core.Office.Excel.Export
         {
             if (headerCellStyle == null)
             {
-                if (workbook is XSSFWorkbook)
-                {
-                    headerCellStyle = workbook.CreateCellStyle() as XSSFCellStyle;
-                    headerCellStyle.Alignment = NPOI.SS.UserModel.HorizontalAlignment.Center;
-                    //headStyle.FillPattern = FillPattern.SolidForeground;
-                    //headStyle.FillBackgroundColor = 1 ;
-                    headerCellStyle.BorderBottom = NPOI.SS.UserModel.BorderStyle.Thin;
-                    headerCellStyle.BorderLeft = NPOI.SS.UserModel.BorderStyle.Thin;
-                    headerCellStyle.BorderRight = NPOI.SS.UserModel.BorderStyle.Thin;
-                    headerCellStyle.BorderTop = NPOI.SS.UserModel.BorderStyle.Thin;
-                    XSSFFont font = workbook.CreateFont() as XSSFFont;
-                    font.FontHeightInPoints = 10;
-                    font.Boldweight = 1000;
-                    font.IsBold = true;
-                    headerCellStyle.SetFont(font);
-                }
-                else if (workbook is HSSFWorkbook)
-                {
-                    headerCellStyle = workbook.CreateCellStyle() as HSSFCellStyle;
-                    headerCellStyle.Alignment = NPOI.SS.UserModel.HorizontalAlignment.Center;
-                    //headStyle.FillPattern = FillPattern.SolidForeground;
-                    //headStyle.FillBackgroundColor = NPOI.HSSF.Util.HSSFColor.Grey25Percent.Index;
-                    headerCellStyle.BorderBottom = NPOI.SS.UserModel.BorderStyle.Thin;
-                    headerCellStyle.BorderLeft = NPOI.SS.UserModel.BorderStyle.Thin;
-                    headerCellStyle.BorderRight = NPOI.SS.UserModel.BorderStyle.Thin;
-                    headerCellStyle.BorderTop = NPOI.SS.UserModel.BorderStyle.Thin;
-                    HSSFFont font = workbook.CreateFont() as HSSFFont;
-                    font.FontHeightInPoints = 10;
-                    font.Boldweight = 1000;
-                    headerCellStyle.SetFont(font);
-                }
+                headerCellStyle = workbook.CreateCellStyle();// as XSSFCellStyle;
+                headerCellStyle.IsLocked = true;
+                headerCellStyle.Alignment = NPOI.SS.UserModel.HorizontalAlignment.Center;
+                //headStyle.FillPattern = FillPattern.SolidForeground;
+                //headStyle.FillBackgroundColor = 1 ;
+                headerCellStyle.BorderBottom = NPOI.SS.UserModel.BorderStyle.Thin;
+                headerCellStyle.BorderLeft = NPOI.SS.UserModel.BorderStyle.Thin;
+                headerCellStyle.BorderRight = NPOI.SS.UserModel.BorderStyle.Thin;
+                headerCellStyle.BorderTop = NPOI.SS.UserModel.BorderStyle.Thin;
+                IFont font = workbook.CreateFont() as XSSFFont;
+                font.FontHeightInPoints = 10;
+                font.Boldweight = 1000;
+                font.IsBold = true;
+                headerCellStyle.SetFont(font);
+                //if (workbook is XSSFWorkbook)
+                //{
+                //    headerCellStyle = workbook.CreateCellStyle();// as XSSFCellStyle;
+                //    headerCellStyle.IsLocked = true;
+                //    headerCellStyle.Alignment = NPOI.SS.UserModel.HorizontalAlignment.Center;
+                //    //headStyle.FillPattern = FillPattern.SolidForeground;
+                //    //headStyle.FillBackgroundColor = 1 ;
+                //    headerCellStyle.BorderBottom = NPOI.SS.UserModel.BorderStyle.Thin;
+                //    headerCellStyle.BorderLeft = NPOI.SS.UserModel.BorderStyle.Thin;
+                //    headerCellStyle.BorderRight = NPOI.SS.UserModel.BorderStyle.Thin;
+                //    headerCellStyle.BorderTop = NPOI.SS.UserModel.BorderStyle.Thin;
+                //    IFont font = workbook.CreateFont() as XSSFFont;
+                //    font.FontHeightInPoints = 10;
+                //    font.Boldweight = 1000;
+                //    font.IsBold = true;
+                //    headerCellStyle.SetFont(font);
+                //}
+                //else if (workbook is HSSFWorkbook)
+                //{
+                //    headerCellStyle = workbook.CreateCellStyle() as HSSFCellStyle;
+                //    headerCellStyle.IsLocked = true;
+                //    headerCellStyle.Alignment = NPOI.SS.UserModel.HorizontalAlignment.Center;
+                //    //headStyle.FillPattern = FillPattern.SolidForeground;
+                //    //headStyle.FillBackgroundColor = NPOI.HSSF.Util.HSSFColor.Grey25Percent.Index;
+                //    headerCellStyle.BorderBottom = NPOI.SS.UserModel.BorderStyle.Thin;
+                //    headerCellStyle.BorderLeft = NPOI.SS.UserModel.BorderStyle.Thin;
+                //    headerCellStyle.BorderRight = NPOI.SS.UserModel.BorderStyle.Thin;
+                //    headerCellStyle.BorderTop = NPOI.SS.UserModel.BorderStyle.Thin;
+                //    HSSFFont font = workbook.CreateFont() as HSSFFont;
+                //    font.FontHeightInPoints = 10;
+                //    font.Boldweight = 1000;
+                //    headerCellStyle.SetFont(font);
+                //}
             }
 
             return headerCellStyle;

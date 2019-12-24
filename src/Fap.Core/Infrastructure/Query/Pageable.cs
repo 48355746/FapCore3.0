@@ -209,7 +209,7 @@ namespace Fap.Core.Infrastructure.Query
         /// 记录总数量
         /// 说明：适用于分页查询
         /// </summary>
-   
+
         public int TotalSizes { get; set; }
 
         /// <summary>
@@ -261,7 +261,7 @@ namespace Fap.Core.Infrastructure.Query
         {
             get
             {
-                var _mainTable =_dbContext.Table(_queryOption.TableName);
+                var _mainTable = _dbContext.Table(_queryOption.TableName);
 
                 return _mainTable;
             }
@@ -271,7 +271,7 @@ namespace Fap.Core.Infrastructure.Query
         {
             get
             {
-                var _mainColumnList = _dbContext.Columns(_queryOption.TableName);              
+                var _mainColumnList = _dbContext.Columns(_queryOption.TableName);
 
                 return _mainColumnList;
             }
@@ -313,7 +313,39 @@ namespace Fap.Core.Infrastructure.Query
             }
         }
 
+        public string Sql()
+        {
+            //Orderby条件
+            string orderBy = MakeOrderBySql();
+            if (!string.IsNullOrEmpty(orderBy))
+            {
+                orderBy = $" ORDER BY {orderBy} ";
+            }
+            else
+            {
+                orderBy = " order by Id ";
+            }
+            //Join条件
+            string join = MakeJoinSql();
 
+            //Where条件
+            string where = MakeWhereSql();
+            if (where.IsPresent())
+            {
+                where = $" where {where}";
+            }
+            //过滤条件
+            string filter = MakeFilterSql();
+            if (filter.IsPresent())
+            {
+                where = where.IsPresent() ? $"({where}) and ({filter})" : $" where {filter}";
+            }
+            StringBuilder sql = new StringBuilder();
+
+            sql.Append($"select {MakeSelectSql()} from {MakeFromSql()} {join} {where} {orderBy} ");
+
+            return sql.ToString();
+        }
 
         /// <summary>
         /// 生成Select的SQL
@@ -455,7 +487,7 @@ namespace Fap.Core.Infrastructure.Query
                             }
                             else //MC字段
                             {
-                                FapColumn column = _dbContext.Columns(item.TableName).FirstOrDefault(c=> c.ColName == item.OrginalField);
+                                FapColumn column = _dbContext.Columns(item.TableName).FirstOrDefault(c => c.ColName == item.OrginalField);
                                 if (column != null)
                                 {
                                     if (column.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)

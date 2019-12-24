@@ -11,7 +11,11 @@ namespace Fap.AspNetCore.Serivce
     public interface IGridFormService
     {
         Task<ResponseViewModel> PersistenceAsync(IFormCollection formCollection);
-        JqGridData QueryPageDataResultView(JqGridPostData jqGridPostData, Action<Pageable> actionSimpleQueryOption);
+        ResponseViewModel BatchUpdate(IFormCollection frmCollection);
+        JqGridData QueryPageDataResultView(JqGridPostData jqGridPostData);
         ResponseViewModel SaveChange(OperEnum oper, FapDynamicObject mainDataKeyValues, System.Collections.Generic.Dictionary<string, System.Collections.Generic.IEnumerable<dynamic>> childDataList = null);
+        string ExportExcelData(JqGridPostData model);
+        string ExportExcelTemplate(QuerySet querySet);
+        bool ImportExcelData(string tableName);
     }
 }

@@ -6,7 +6,6 @@ namespace Fap.Core.Office.Excel
     /// <summary>
     /// Excel页的元数据描述
     /// </summary>
-    [Serializable]
     public class SheetMetadata
     {
         /// <summary>
@@ -52,7 +51,10 @@ namespace Fap.Core.Office.Excel
         public string DictionarySheetRange { get; set; }
         public int StartRowIndex { get; set; }
         public int EndRowIndex { get; set; }
-
+        /// <summary>
+        /// 是否隐藏此列
+        /// </summary>
+        public bool IsHidden { get; set; }
         //[System.Xml.Serialization.XmlIgnore]
         //[System.Web.Script.Serialization.ScriptIgnore]
         //public Tuple<int, int> DictionaryRowRangeIndex { get; set; }

@@ -17,7 +17,7 @@ namespace Fap.Core.Office.Excel
         {
             // 默认字段
             defaultFieldNameList.Add(FapDbConstants.FAPCOLUMN_FIELD_Id);
-            //defaultFieldNameList.Add(FapDbConstants.FAPCOLUMN_FIELD_Fid);
+            defaultFieldNameList.Add(FapDbConstants.FAPCOLUMN_FIELD_Fid);
             defaultFieldNameList.Add(FapDbConstants.FAPCOLUMN_FIELD_OrgUid);
             defaultFieldNameList.Add(FapDbConstants.FAPCOLUMN_FIELD_GroupUid);
             defaultFieldNameList.Add(FapDbConstants.FAPCOLUMN_FIELD_EnableDate);

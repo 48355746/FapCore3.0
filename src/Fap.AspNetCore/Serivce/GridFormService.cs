@@ -22,6 +22,10 @@ using Fap.AspNetCore.Extensions;
 using Newtonsoft.Json.Linq;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Fap.Core.Utility;
+using System.IO;
+using Fap.Core.Office.Excel.Export;
+using Fap.Core.Office;
 
 namespace Fap.AspNetCore.Serivce
 {
@@ -32,10 +36,12 @@ namespace Fap.AspNetCore.Serivce
         private readonly IDbContext _dbContext;
         private readonly IRbacService _rbacService;
         private IAntiforgery _antiforgery;
+        private readonly IOfficeService _officeService;
         private readonly ILogger<GridFormService> _logger;
         public GridFormService(
             IFapApplicationContext fapApplicationContext,
             ILogger<GridFormService> logger,
+            IOfficeService officeService,
             IDbContext dbContext,
             IRbacService rbacService,
             IAntiforgery antiforgery)
@@ -44,156 +50,21 @@ namespace Fap.AspNetCore.Serivce
             _applicationContext = fapApplicationContext;
             _rbacService = rbacService;
             _antiforgery = antiforgery;
+            _officeService = officeService;
             _logger = logger;
         }
-        public JqGridData QueryPageDataResultView(JqGridPostData jqGridPostData, Action<Pageable> actionSimpleQueryOption)
+        public JqGridData QueryPageDataResultView(JqGridPostData jqGridPostData)
         {
-            IEnumerable<FapColumn> fapColumns = _dbContext.Columns(jqGridPostData.QuerySet.TableName);
-            Pageable queryOption = AnalysisPostData();
+            Pageable queryOption = AnalysisPostData(jqGridPostData);
             //queryOption.Where = AnalysisWhere(queryOption.Where);
-            PageDataResultView result = QueryPagedDynamicData(jqGridPostData.HasOperCol);
+            PageDataResultView result = QueryPagedDynamicData();
             return result.GetJqGridJsonData();
-            Pageable AnalysisPostData()
-            {
-                jqGridPostData.Filters = jqGridPostData.Filters.IsPresent() ? jqGridPostData.Filters.Replace("query ", "select ") : "";
-                //矫正当前页为0的情况
-                if (jqGridPostData.Page < 0)
-                {
-                    jqGridPostData.Page = 1;
-                }
-                QuerySet qs = jqGridPostData.QuerySet;
-                Pageable queryOption = new Pageable(_dbContext) { TableName = qs.TableName, QueryCols = qs.QueryCols, HistoryTimePoint = jqGridPostData.TimePoint };
-                //设置统计
-                if (qs.Statsetlist != null && qs.Statsetlist.Any())
-                {
-                    queryOption.AddStatField(qs.Statsetlist);
-                }
-                if (qs.Parameters != null && qs.Parameters.Count > 0)
-                {
-                    foreach (var param in qs.Parameters)
-                    {
-                        queryOption.AddParameter(param.ParamKey, param.ParamValue);
-                    }
 
-                }
-                //优先级高
-                if (jqGridPostData.Sidx.IsPresent())
-                {
-                    var sidxs = jqGridPostData.Sidx.SplitComma();
-                    foreach (var sidx in sidxs)
-                    {
-                        if (sidx.IsPresent())
-                        {
-                            string[] odx = sidx.Trim().Split(' ');
-                            if (odx != null)
-                            {
-                                var col = fapColumns.First(f => f.ColName == odx[0]);
-                                string colName = col.ColName;
-                                if (col.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
-                                {
-                                    colName += "MC";
-                                }
-                                if (odx.Length > 1)
-                                {
-                                    queryOption.OrderBy.AddOrderByCondtion(colName, odx[1]);
-                                }
-                                else
-                                {
-                                    queryOption.OrderBy.AddOrderByCondtion(colName, jqGridPostData.Sord);
-                                }
-                            }
-                        }
-                    }
-                }
-                if (qs.OrderByList != null && qs.OrderByList.Count > 0)
-                {
-                    foreach (var orderby in qs.OrderByList)
-                    {
-                        queryOption.OrderBy.AddOrderByCondtion(orderby.Field, orderby.Direction);
-
-                    }
-                }
-
-                //构造初始化条件,如果没有过滤条件，又设置了初始化条件则设置初始化条件。或者设置了过滤条件且初始化条件为全局条件则同样设置where条件
-                if (qs.GlobalWhere.IsPresent())
-                {
-                    queryOption.Where = qs.GlobalWhere;
-                }
-                if (jqGridPostData.Filters.IsMissing() && qs.InitWhere.IsPresent())
-                {
-                    if (queryOption.Where.IsMissing())
-                    {
-                        queryOption.Where = qs.InitWhere;
-                    }
-                    else
-                    {
-                        queryOption.Where += " and " + qs.InitWhere;
-                    }
-                }
-
-                //页面级条件
-                if (jqGridPostData.PageCondition.IsPresent())
-                {
-                    JsonFilterToSql jfs = new JsonFilterToSql(_dbContext);
-                    if (qs.GlobalWhere.IsPresent())
-                    {
-                        queryOption.AddWhere(jfs.BuilderFilter(queryOption.TableName, jqGridPostData.PageCondition), QuerySymbolEnum.AND);
-                    }
-                    else
-                    {
-                        queryOption.Where = jfs.BuilderFilter(queryOption.TableName, jqGridPostData.PageCondition);
-                    }
-                }
-                //构造jqgrid过滤条件
-                if (jqGridPostData.Filters.IsPresent())
-                {
-                    //string strFilter = JqGridHelper.BuilderFilter(queryOption.TableName, model.Filters);
-                    //if (!string.IsNullOrWhiteSpace(strFilter))
-                    //{
-                    //    queryOption.Filter = strFilter;
-                    //}
-                    FilterCondition filterCondition = JsonFilterToSql.BuildFilterCondition(fapColumns, jqGridPostData.Filters);
-                    if (filterCondition != null)
-                    {
-                        queryOption.FilterCondition = filterCondition;
-                    }
-                }
-                //事件处理
-                actionSimpleQueryOption?.Invoke(queryOption);
-                queryOption.PageNumber = jqGridPostData.Page;
-                queryOption.PageSize = jqGridPostData.Rows;
-                //数据权限
-                string dataWhere = _rbacService.GetRoleDataWhere(qs.TableName);
-                if (dataWhere.IsPresent())
-                {
-                    if (queryOption.Where.IsPresent())
-                    {
-                        queryOption.Where += " and  " + dataWhere;
-                    }
-                    else
-                    {
-                        queryOption.Where = dataWhere;
-                    }
-                }
-                //解析条件
-                queryOption.Where = AnalysisWhere(queryOption.Where);
-                return queryOption;
-                string AnalysisWhere(string where)
-                {
-                    if (where.IsMissing())
-                    {
-                        return "";
-                    }
-                    //获得安全sql
-                    where = where.FilterDangerSql();
-                    //替换部门权限占位符
-                    return where.Replace(FapPlatformConstants.DepartmentAuthority, _rbacService.GetUserDeptAuthorityWhere()).ReplaceIgnoreCase("query", "select ");
-                }
-            }
-            PageDataResultView QueryPagedDynamicData(bool hasOperCol = false)
+            PageDataResultView QueryPagedDynamicData()
             {
                 try
                 {
+                    IEnumerable<FapColumn> fapColumns = _dbContext.Columns(jqGridPostData.QuerySet.TableName);
                     PageInfo<dynamic> pi = _dbContext.QueryPage(queryOption);
 
                     //组装成DataResultView对象
@@ -225,6 +96,146 @@ namespace Fap.AspNetCore.Serivce
 
             }
         }
+        #region private
+        private Pageable AnalysisPostData(JqGridPostData jqGridPostData)
+        {
+            IEnumerable<FapColumn> fapColumns = _dbContext.Columns(jqGridPostData.QuerySet.TableName);
+            jqGridPostData.Filters = jqGridPostData.Filters.IsPresent() ? jqGridPostData.Filters.Replace("query ", "select ") : "";
+            //矫正当前页为0的情况
+            if (jqGridPostData.Page < 0)
+            {
+                jqGridPostData.Page = 1;
+            }
+            QuerySet qs = jqGridPostData.QuerySet;
+            Pageable pageable = new Pageable(_dbContext) { TableName = qs.TableName, QueryCols = qs.QueryCols, HistoryTimePoint = jqGridPostData.TimePoint };
+            //设置统计
+            if (qs.Statsetlist != null && qs.Statsetlist.Any())
+            {
+                pageable.AddStatField(qs.Statsetlist);
+            }
+            if (qs.Parameters != null && qs.Parameters.Count > 0)
+            {
+                foreach (var param in qs.Parameters)
+                {
+                    pageable.AddParameter(param.ParamKey, param.ParamValue);
+                }
+
+            }
+            //优先级高
+            if (jqGridPostData.Sidx.IsPresent())
+            {
+                var sidxs = jqGridPostData.Sidx.SplitComma();
+                foreach (var sidx in sidxs)
+                {
+                    if (sidx.IsPresent())
+                    {
+                        string[] odx = sidx.Trim().Split(' ');
+                        if (odx != null)
+                        {
+                            var col = fapColumns.First(f => f.ColName == odx[0]);
+                            string colName = col.ColName;
+                            if (col.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
+                            {
+                                colName += "MC";
+                            }
+                            if (odx.Length > 1)
+                            {
+                                pageable.OrderBy.AddOrderByCondtion(colName, odx[1]);
+                            }
+                            else
+                            {
+                                pageable.OrderBy.AddOrderByCondtion(colName, jqGridPostData.Sord);
+                            }
+                        }
+                    }
+                }
+            }
+            if (qs.OrderByList != null && qs.OrderByList.Count > 0)
+            {
+                foreach (var orderby in qs.OrderByList)
+                {
+                    pageable.OrderBy.AddOrderByCondtion(orderby.Field, orderby.Direction);
+
+                }
+            }
+
+            //构造初始化条件,如果没有过滤条件，又设置了初始化条件则设置初始化条件。或者设置了过滤条件且初始化条件为全局条件则同样设置where条件
+            if (qs.GlobalWhere.IsPresent())
+            {
+                pageable.Where = qs.GlobalWhere;
+            }
+            if (jqGridPostData.Filters.IsMissing() && qs.InitWhere.IsPresent())
+            {
+                if (pageable.Where.IsMissing())
+                {
+                    pageable.Where = qs.InitWhere;
+                }
+                else
+                {
+                    pageable.Where += " and " + qs.InitWhere;
+                }
+            }
+
+            //页面级条件
+            if (jqGridPostData.PageCondition.IsPresent())
+            {
+                JsonFilterToSql jfs = new JsonFilterToSql(_dbContext);
+                if (qs.GlobalWhere.IsPresent())
+                {
+                    pageable.AddWhere(jfs.BuilderFilter(pageable.TableName, jqGridPostData.PageCondition), QuerySymbolEnum.AND);
+                }
+                else
+                {
+                    pageable.Where = jfs.BuilderFilter(pageable.TableName, jqGridPostData.PageCondition);
+                }
+            }
+            //构造jqgrid过滤条件
+            if (jqGridPostData.Filters.IsPresent())
+            {
+                //string strFilter = JqGridHelper.BuilderFilter(pageable.TableName, model.Filters);
+                //if (!string.IsNullOrWhiteSpace(strFilter))
+                //{
+                //    pageable.Filter = strFilter;
+                //}
+                FilterCondition filterCondition = JsonFilterToSql.BuildFilterCondition(fapColumns, jqGridPostData.Filters);
+                if (filterCondition != null)
+                {
+                    pageable.FilterCondition = filterCondition;
+                }
+            }
+            //事件处理
+            //actionSimplepageable?.Invoke(pageable);
+            pageable.PageNumber = jqGridPostData.Page;
+            pageable.PageSize = jqGridPostData.Rows;
+            //数据权限
+            string dataWhere = _rbacService.GetRoleDataWhere(qs.TableName);
+            if (dataWhere.IsPresent())
+            {
+                if (pageable.Where.IsPresent())
+                {
+                    pageable.Where += " and  " + dataWhere;
+                }
+                else
+                {
+                    pageable.Where = dataWhere;
+                }
+            }
+            //解析条件
+            pageable.Where = AnalysisWhere(pageable.Where);
+            return pageable;
+            string AnalysisWhere(string where)
+            {
+                if (where.IsMissing())
+                {
+                    return "";
+                }
+                //获得安全sql
+                where = where.FilterDangerSql();
+                //替换部门权限占位符
+                return where.Replace(FapPlatformConstants.DepartmentAuthority, _rbacService.GetUserDeptAuthorityWhere()).ReplaceIgnoreCase("query", "select ");
+            }
+        }
+        #endregion
         private static object lockSave = new object();
         public async Task<ResponseViewModel> PersistenceAsync(IFormCollection formCollection)
         {
@@ -274,7 +285,7 @@ namespace Fap.AspNetCore.Serivce
             }
             #endregion
 
-            var (mainData, ChildsData) = BuilderData();
+            var (mainData, ChildsData) = BuilderData(tableName,formCollection);
             try
             {
                 return SaveChange(operEnum, mainData, ChildsData);
@@ -319,12 +330,15 @@ namespace Fap.AspNetCore.Serivce
 
                 return operEnum;
             }
-            (dynamic mainData, Dictionary<string, IEnumerable<dynamic>> childsData) BuilderData()
+
+        }
+        private (dynamic mainData, Dictionary<string, IEnumerable<dynamic>> childsData) BuilderData(string tableName, IFormCollection formCollection)
+        {
+            var columnList = _dbContext.Columns(tableName);
+            //undefined 父文本编辑框控件要去掉,logicdelete逻辑删除,childsData子表格数据
+            string[] exclude = new string[]
             {
-                var columnList = _dbContext.Columns(tableName);
-                //undefined 父文本编辑框控件要去掉,logicdelete逻辑删除,childsData子表格数据
-                string[] exclude = new string[]
-                {
+                    FapWebConstants.IDS,
                     FapWebConstants.OPERATOR,
                     FapWebConstants.QUERY_TABLENAME ,
                     FapWebConstants.FORM_TABLENAME,
@@ -332,34 +346,52 @@ namespace Fap.AspNetCore.Serivce
                     FapWebConstants.UNDEFINED,
                     FapWebConstants.LOGICDELETE,
                     FapWebConstants.CHILDS_DATALIST
-                };
-                dynamic fdo = formCollection.ToDynamicObject(columnList, exclude);
-                Dictionary<string, IEnumerable<dynamic>> childDataDic = null;
-                if (formCollection.ContainsKey("childsData"))
+            };
+            dynamic fdo = formCollection.ToDynamicObject(columnList, exclude);
+            Dictionary<string, IEnumerable<dynamic>> childDataDic = null;
+            if (formCollection.ContainsKey("childsData"))
+            {
+                childDataDic = new Dictionary<string, IEnumerable<dynamic>>();
+                JArray arrayGrids = JArray.Parse(formCollection["childsData"]);
+                foreach (JObject item in arrayGrids)
                 {
-                    childDataDic = new Dictionary<string, IEnumerable<dynamic>>();
-                    JArray arrayGrids = JArray.Parse(formCollection["childsData"]);
-                    foreach (JObject item in arrayGrids)
-                    {
-                        string childTableName = item.GetValue(FapWebConstants.QUERY_TABLENAME).ToString();
+                    string childTableName = item.GetValue(FapWebConstants.QUERY_TABLENAME).ToString();
 
-                        JArray childDataArray = item.GetValue("data") as JArray;
-                        if (childDataArray.Any())
+                    JArray childDataArray = item.GetValue("data") as JArray;
+                    if (childDataArray.Any())
+                    {
+                        List<FapDynamicObject> childDatas = new List<FapDynamicObject>();
+                        foreach (JObject cd in childDataArray)
                         {
-                            List<FapDynamicObject> childDatas = new List<FapDynamicObject>();
-                            foreach (JObject cd in childDataArray)
-                            {
-                                var cfdo = cd.ToFapDynamicObject(_dbContext.Columns(childTableName), exclude);
-                                childDatas.Add(cfdo);
-                            }
-                            childDataDic.Add(childTableName, childDatas);
+                            var cfdo = cd.ToFapDynamicObject(_dbContext.Columns(childTableName), exclude);
+                            childDatas.Add(cfdo);
                         }
+                        childDataDic.Add(childTableName, childDatas);
                     }
                 }
-                return (fdo, childDataDic);
             }
-
+            return (fdo, childDataDic);
         }
+        [Transactional]
+        public ResponseViewModel BatchUpdate(IFormCollection frmCollection)
+        {
+            ResponseViewModel rvm = new ResponseViewModel();
+
+            frmCollection.TryGetValue("Ids", out StringValues Ids);
+            frmCollection.TryGetValue(FapWebConstants.FORM_TABLENAME, out StringValues tableName);
+            Guard.Against.NullOrWhiteSpace(Ids, nameof(Ids));
+            Guard.Against.NullOrWhiteSpace(tableName, nameof(tableName));
+            var (mainData, _) = BuilderData(tableName, frmCollection);
+            var ids= Ids.ToString().SplitComma();
+            foreach (var id in ids)
+            {
+                mainData.Id = id;
+                _dbContext.UpdateDynamicData(mainData);
+            }
+            rvm.success = true;
+            return rvm;
+        }
+
 
         [Transactional]
         public ResponseViewModel SaveChange(OperEnum oper, FapDynamicObject mainData, Dictionary<string, IEnumerable<dynamic>> childDataList = null)
@@ -428,9 +460,80 @@ namespace Fap.AspNetCore.Serivce
 
             }
         }
+        /// <summary>
+        /// 导出excel数据
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>filename</returns>
+        public string ExportExcelData(JqGridPostData model)
+        {
+            string tableName = model.QuerySet.TableName;
+            FapTable ftb = _dbContext.Table(tableName);
+            string fileName = $"{ftb.TableComment}_{UUIDUtils.Fid}.xlsx";
+            string filePath = Path.Combine(Environment.CurrentDirectory, FapPlatformConstants.TemporaryFolder, fileName);
+            Pageable pageable = AnalysisPostData(model);
+            pageable.QueryCols = model.QuerySet.ExportCols;
+            string sql = pageable.Wraper.Sql();
+            if (pageable.Parameters != null && pageable.Parameters.Count > 0)
+            {
+                foreach (var param in pageable.Parameters)
+                {
+                    sql = sql.Replace("@" + param.Key, "'" + param.Value + "'");
+                }
+            }
+            ExportModel em = new ExportModel() { DataSql = sql, FileName = filePath, TableName = tableName, ExportCols = pageable.QueryCols };
 
+            bool result = _officeService.ExportExcel(em);
+            return result ? fileName : "";
+        }
 
+        public string ExportExcelTemplate(QuerySet querySet)
+        {
+            querySet.InitWhere = "1=2";
+            FapTable ftb = _dbContext.Table(querySet.TableName);
+            string fileName = $"{ftb.TableComment}_{UUIDUtils.Fid}_模板.xlsx";
+            string filePath = Path.Combine(Environment.CurrentDirectory, FapPlatformConstants.TemporaryFolder, fileName);
 
+            ExportModel em = new ExportModel() { DataSql = querySet.ToString(), FileName = filePath, TableName = querySet.TableName, ExportCols = querySet.QueryCols };
+
+            bool result = _officeService.ExportExcel(em);
+            return result ? fileName : "";
+        }
+        public bool ImportExcelData(string tableName)
+        {
+            try
+            {
+                var files = _applicationContext.Request.Form.Files;
+                List<string> excelFiles = new List<string>();
+                if (files != null && files.Count > 0)
+                {
+                    foreach (var file in files)
+                    {
+                        string fileName = UUIDUtils.Fid + files[0].FileName;
+
+                        string fullPath = Path.Combine(Environment.CurrentDirectory, FapPlatformConstants.TemporaryFolder, fileName);
+
+                        using (FileStream fs = System.IO.File.Create(fullPath))
+                        {
+                            files[0].CopyTo(fs);
+                        }
+                        excelFiles.Add(fullPath);
+                    }
+                    foreach (var file in excelFiles)
+                    {
+                        _officeService.ImportExcel(file, tableName, Core.Office.Excel.Import.ImportMode.INCREMENT_NOLOGIC);
+
+                    }
+
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
 
     }
 

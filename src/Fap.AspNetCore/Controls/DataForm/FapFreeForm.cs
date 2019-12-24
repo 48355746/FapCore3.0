@@ -436,7 +436,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     continue;
                 }
                 #region 日期
-                else if (column.CtrlType == FapColumn.CTRL_TYPE_DATE)
+                if (column.CtrlType == FapColumn.CTRL_TYPE_DATE)
                 {
                     string model = "0";
                     string dateFormat = column.DisplayFormat;

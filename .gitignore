@@ -18,3 +18,4 @@
 /product/hcm/Fap.Hcm.Web/wwwroot/upload/image
 /src/Fap.Workflow/bin
 /src/Fap.Workflow/obj
+*.xlsx

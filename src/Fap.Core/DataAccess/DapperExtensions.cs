@@ -74,14 +74,13 @@ namespace Fap.Core.DataAccess
             long id = dynamicToUpdate.Get(FapDbConstants.FAPCOLUMN_FIELD_Id).ToLong();
             long ts = dynamicToUpdate.Get(FapDbConstants.FAPCOLUMN_FIELD_Ts).ToLong();
             Guard.Against.Zero(id, nameof(id));
-            Guard.Against.Zero(ts, nameof(ts));
             
             var adapter = GetFormatter(connection);
             StringBuilder sqlBuilder = new StringBuilder();
             sqlBuilder.Append(" UPDATE ").Append(tableName).Append(" SET ");
             foreach (string fieldName in dynamicToUpdate.Keys)
             {
-                if ("Id".EqualsWithIgnoreCase(fieldName))
+                if ("Id".EqualsWithIgnoreCase(fieldName)||"Fid".EqualsWithIgnoreCase(fieldName))
                 {
                     continue;
                 }
@@ -96,9 +95,12 @@ namespace Fap.Core.DataAccess
             sqlBuilder.Remove(sqlBuilder.Length - 1, 1);
             sqlBuilder.Append(" where ");
             adapter.AppendColumnNameEqualsValue(sqlBuilder, "Id");
-            sqlBuilder.Append(" and ");
-            adapter.AppendColumnName(sqlBuilder, "Ts");
-            sqlBuilder.Append($" = {ts}");
+            if (ts != 0)
+            {
+                sqlBuilder.Append(" and ");
+                adapter.AppendColumnName(sqlBuilder, "Ts");
+                sqlBuilder.Append($" = {ts}");
+            }
             DynamicParameters parameters = new DynamicParameters();
             foreach (var entry in dynamicToUpdate as IDictionary<string,object>)
             {

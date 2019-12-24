@@ -14,6 +14,10 @@ namespace Fap.AspNetCore.Infrastructure
         /// </summary>
         public const string OPERATOR = "oper";
         /// <summary>
+        /// 批量ids
+        /// </summary>
+        public const string IDS = "Ids";
+        /// <summary>
         /// form 提交的 表名参数
         /// </summary>
         public const string FORM_TABLENAME = "Table_Name";

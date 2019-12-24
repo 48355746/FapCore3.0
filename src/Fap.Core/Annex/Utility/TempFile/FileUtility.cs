@@ -10,8 +10,8 @@ namespace Fap.Core.Annex.Utility.TempFile
 
         public static string GetTemporaryDir()
         {
-            string dirPath = Path.Combine(Environment.CurrentDirectory,FapPlatformConstants.TemporaryFolder);
-           
+            string dirPath = Path.Combine(Environment.CurrentDirectory, FapPlatformConstants.TemporaryFolder);
+
             if (!Directory.Exists(dirPath))
             {
                 Directory.CreateDirectory(dirPath);
@@ -27,7 +27,7 @@ namespace Fap.Core.Annex.Utility.TempFile
         /// <returns></returns>
         public static string CreateTemporaryFolder(string folderName)
         {
-            string folderPath =Path.Combine(GetTemporaryDir(), folderName);
+            string folderPath = Path.Combine(GetTemporaryDir(), folderName);
             if (!Directory.Exists(folderPath))
             {
                 Directory.CreateDirectory(folderPath);
@@ -92,7 +92,7 @@ namespace Fap.Core.Annex.Utility.TempFile
                             Directory.Delete(d);
                         }
                     }
-                    catch (Exception ex)
+                    catch
                     {
                         continue;
                     }

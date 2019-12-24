@@ -21,21 +21,7 @@ namespace Fap.AspNetCore.Infrastructure
         public FapController(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
-        #region 获取JqGrid的数据集合（通用方法）
-        /// <summary>
-        /// 获取JqGrid的数据集合（通用方法）
-        /// </summary>
-        /// <param name="tableName"></param>
-        /// <param name="model"></param>
-        /// <param name="handler"></param>
-        /// <returns></returns>
-        protected JqGridData GetJqGridDataList(JqGridPostData model, Action<Pageable> handler = null)
-        {
-            var jqJson = _gridFormService.QueryPageDataResultView(model, handler);
-            return jqJson;
-        }
-
-        #endregion
+    
         protected FormViewModel GetFormViewModel(string tableName, string fid, Action<QuerySet> handler = null)
         {
             FormViewModel model = new FormViewModel();

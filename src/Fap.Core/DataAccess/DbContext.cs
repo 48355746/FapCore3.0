@@ -1944,7 +1944,7 @@ namespace Fap.Core.DataAccess
             long ts = fapDynData.Get(FapDbConstants.FAPCOLUMN_FIELD_Ts).ToLong();
 
             Guard.Against.Zero(id, nameof(id));
-            Guard.Against.Zero(ts, nameof(ts));
+            //Guard.Against.Zero(ts, nameof(ts));
 
             return UpdateDynamicData();
 
@@ -2134,7 +2134,7 @@ namespace Fap.Core.DataAccess
         {
             DynamicParameters dynamicParameters = new DynamicParameters();
             InitParamers(dynamicParameters);
-            string sql = PagingSQL(pageable, _dbSession.DatabaseDialect);
+            string sql = PagingSQL(pageable);
 
             //返回总数
             string[] sqls = sql.Split(';', StringSplitOptions.RemoveEmptyEntries);
@@ -2162,7 +2162,7 @@ namespace Fap.Core.DataAccess
             DynamicParameters dynamicParameters = new DynamicParameters();
             InitParamers(dynamicParameters);
             string sql = string.Empty;
-            sql = PagingSQL(pageable, _dbSession.DatabaseDialect);
+            sql = PagingSQL(pageable);
 
             //返回总数
             string[] sqls = sql.Split(';', StringSplitOptions.RemoveEmptyEntries);
@@ -2189,7 +2189,7 @@ namespace Fap.Core.DataAccess
             return page;
         }
         #region page sql
-        private string PagingSQL(Pageable pageable, DatabaseDialectEnum databaseDialect)
+        private string PagingSQL(Pageable pageable)
         {
             //Orderby条件
             string orderBy = pageable.Wraper.MakeOrderBySql();
@@ -2222,6 +2222,7 @@ namespace Fap.Core.DataAccess
                 where = where.IsPresent() ? $"({where}) and Id>{pageable.MaxId}" : $" where Id>{pageable.MaxId}";
             }
             StringBuilder sql = new StringBuilder();
+            var databaseDialect =_dbSession.DatabaseDialect;
             if (databaseDialect == DatabaseDialectEnum.MSSQL)
             {
                 sql.Append($"select {pageable.Wraper.MakeSelectSql()} from {pageable.Wraper.MakeFromSql()} {join} {where} {orderBy}  offset {pageable.Offset} rows fetch next {pageable.PageSize} rows only ;");

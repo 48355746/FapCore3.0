@@ -24,7 +24,7 @@ namespace XUnitTestFapCore
                 QuerySet = new Fap.Core.Infrastructure.Query.QuerySet { TableName = "Employee", QueryCols = "*",Statsetlist=new List<Fap.Core.Infrastructure.Query.StatSet> { new Fap.Core.Infrastructure.Query.StatSet {  Field="Age", StatSymbol= Fap.Core.Infrastructure.Query.StatSymbolEnum.MAX} } }
                 ,Rows=10, Page=2, Sidx="Id", Sord="asc" 
             };
-            var rv = _gridFormService.QueryPageDataResultView(jqGridPostData, null);
+            var rv = _gridFormService.QueryPageDataResultView(jqGridPostData);
 
             Assert.Equal(10, rv.Records);
 

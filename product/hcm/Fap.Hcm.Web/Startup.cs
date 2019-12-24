@@ -98,12 +98,13 @@ namespace Fap.Hcm.Web
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSession();
-            //app.UseStaticFiles(new StaticFileOptions()
-            //{
-            //    ServeUnknownFileTypes = true,
-            //    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), $"{FapPlatformConstants.TemporaryFolder}")),
-            //    RequestPath = new PathString($"/{FapPlatformConstants.TemporaryFolder}")
-            //});
+            //临时文件夹供下载使用
+            app.UseStaticFiles(new StaticFileOptions()
+            {
+                ServeUnknownFileTypes = true,
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), $"{FapPlatformConstants.TemporaryFolder}")),
+                RequestPath = new PathString($"/{FapPlatformConstants.TemporaryFolder}")
+            });
             app.UseRouting();
             //认证
             app.UseAuthentication();

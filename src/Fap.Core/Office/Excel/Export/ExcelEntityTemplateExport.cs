@@ -27,7 +27,7 @@ namespace Fap.Core.Office.Excel.Export
             //主表的信息
             //FapTable table = _dataAccessor.Table(tableName);
             //仅仅导出可见列
-            _platformDomain.ColumnSet.TryGetValueByTable(tableName, out var columns);
+            var columns = _dataAccessor.Columns(tableName);
             List<FapColumn> columnList = columns.Where(c => (c.ShowAble == 1||c.ColName=="Fid")).ToList();
             
             //字典表，参照数据

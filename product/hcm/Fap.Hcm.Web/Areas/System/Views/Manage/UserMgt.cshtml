@@ -3,7 +3,7 @@
 @{
     Layout = null;
 }
-<title><fap-multilang lang-key="user_mgt" default-content= "用户管理"></fap-multilang></title>
+<title><fap-multilang lang-key="user_mgt" default-content="用户管理"></fap-multilang></title>
 
 <div class="row">
     <div class="col-xs-12 col-sm-3">
@@ -41,7 +41,7 @@
             <div class="widget-header widget-header-flat">
                 <h4 class="widget-title"><fap-multilang lang-key="user" default-content="用户"></fap-multilang></h4>
 
-                <div class="widget-toolbar">               
+                <div class="widget-toolbar">
                     <a href="#" data-action="fullscreen" class="orange2">
                         <i class="ace-icon fa fa-expand"></i>
                     </a>
@@ -56,17 +56,17 @@
             </div>
             <div class="widget-body">
                 @*<div class="widget-toolbox">
-                    <div class="btn-toolbar">
-                        <div class="btn-group">
-                            <button id="btnResetPassword" class="btn btn-white">
-                                <i class="ace-icon fa fa-undo blue"></i>
-                                重置密码
-                            </button>
+                        <div class="btn-toolbar">
+                            <div class="btn-group">
+                                <button id="btnResetPassword" class="btn btn-white">
+                                    <i class="ace-icon fa fa-undo blue"></i>
+                                    重置密码
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                </div>*@
+                    </div>*@
                 <div class="widget-main">
-                    <fap-grid id="user"query-option="@Model.QueryOption" post-data="@Model.PostData" auto-width="true" on-form-init-add="afterInitFormCallback" on-form-init-edit="initEdit" multi-box-only="true" multi-select="true"  on-select-row="editRow" oper-cud="true"></fap-grid>
+                    <fap-grid id="user" query-option="@Model.QueryOption" post-data="@Model.PostData" auto-width="true" on-form-init-add="afterInitFormCallback" multi-box-only="true" multi-select="true"  oper-cud="true" oper-export="true" oper-batch-update="true"></fap-grid>
 
                 </div>
             </div>
@@ -77,21 +77,23 @@
 
 
 <script>
+    //on-select-row="editRow"
     //行选择可以编辑，回车保存
-    var lastSelection;
-    function editRow(id,s) {
-        if (id && id !== lastSelection) {
-            var grid = $("#grid-user");
-            grid.jqGrid('restoreRow', lastSelection);
-            grid.jqGrid('editRow', id, {
-                keys: true});
-            lastSelection = id;
-        }
-    }  
-    var initEdit = function () {
-        //密码为空 默认不修改，新增为空，则默认为1
-        $("#UserPassword").val("");
-    }
+    //var lastSelection;
+    //function editRow(id, s) {
+    //    if (id && id !== lastSelection) {
+    //        var grid = $("#grid-user");
+    //        grid.jqGrid('restoreRow', lastSelection);
+    //        grid.jqGrid('editRow', id, {
+    //            keys: true
+    //        });
+    //        lastSelection = id;
+    //    }
+    //}
+    //var initEdit = function () {
+    //    //密码为空 默认不修改，新增为空，则默认为1
+    //    $("#UserPassword").val("");
+    //}
     var afterInitFormCallback = function () {
         var tree = $('#tree-usergroup').jstree(true);
         var sel = tree.get_selected();
@@ -121,11 +123,11 @@
             $(document).off(ace.click_event, '[data-ctrl=widgetAction]').on(ace.click_event, '[data-ctrl=widgetAction]', function (ev) {
                 ev.preventDefault();
 
-                var $this = $(this);               
+                var $this = $(this);
 
                 var $action = $this.data('action');
                 var ref = $('#tree-usergroup').jstree(true),
-                                sel = ref.get_selected();
+                    sel = ref.get_selected();
                 if ($action == 'refresh') {
                     ref.refresh();
                     return;
@@ -159,11 +161,11 @@
                         return;
                     }
                     var userGrpName = data.node.text;
-                   
+
                     var filter = '{"groupOp":"AND","rules":[{"field":"UserGroupUid","op":"eq","data":"' + userGrpid + '"}]}';
                     $("#grid-user").jqGrid('setGridParam', {
                         datatype: 'json',
-                        postData: { filters: filter}, //发送数据
+                        postData: { filters: filter }, //发送数据
                         page: 1
                     }).trigger("reloadGrid"); //重新载入
                 }

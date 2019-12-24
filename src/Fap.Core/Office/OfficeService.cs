@@ -22,7 +22,7 @@ namespace Fap.Core.Office
         {
             try
             {
-                ExcelEntityDataExport excelExport = new ExcelEntityDataExport(_dbContext, exportModel);
+                ExcelExportBase excelExport = new ExcelEntityDataExport(_dbContext, exportModel);
                 excelExport.Export();
                 return true;
             }
@@ -37,7 +37,7 @@ namespace Fap.Core.Office
         {
             try
             {
-                ExcelEntityDataImport excelImport = new ExcelEntityDataImport(_dbContext,  fileName, tableName, importMode);
+                ExcelImportBase excelImport = new ExcelEntityDataImport(_dbContext,  fileName, tableName, importMode);
 
                 excelImport.Import();
                 return true;
