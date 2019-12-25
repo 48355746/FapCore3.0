@@ -4,7 +4,9 @@ using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Office.Excel.Export;
 using Fap.Core.Office.Excel.Import;
 using Microsoft.Extensions.Logging;
+using NPOI.SS.Converter;
 using System;
+using System.IO;
 
 namespace Fap.Core.Office
 {
@@ -13,7 +15,7 @@ namespace Fap.Core.Office
     {
         private readonly IDbContext _dbContext;
         private readonly ILogger<OfficeService> _logger;
-        public OfficeService(IDbContext dbContext,ILogger<OfficeService> logger)
+        public OfficeService(IDbContext dbContext, ILogger<OfficeService> logger)
         {
             _dbContext = dbContext;
             _logger = logger;
@@ -37,7 +39,7 @@ namespace Fap.Core.Office
         {
             try
             {
-                ExcelImportBase excelImport = new ExcelEntityDataImport(_dbContext,  fileName, tableName, importMode);
+                ExcelImportBase excelImport = new ExcelEntityDataImport(_dbContext, fileName, tableName, importMode);
 
                 excelImport.Import();
                 return true;
@@ -49,5 +51,27 @@ namespace Fap.Core.Office
             return false;
 
         }
+        private void ExcelToHtml(string fileName)
+        {
+            
+            var workbook= ExcelToHtmlUtils.LoadXls(fileName);
+            ExcelToHtmlConverter excelToHtmlConverter = new ExcelToHtmlConverter()
+            {
+                // Set output parameters
+                OutputColumnHeaders = false,
+                OutputHiddenColumns = true,
+                OutputHiddenRows = true,
+                OutputLeadingSpacesAsNonBreaking = false,
+                OutputRowNumbers = true,
+                UseDivsToSpan = true
+
+            };
+            // Process the Excel file
+            excelToHtmlConverter.ProcessWorkbook(workbook);
+
+            // Output the HTML file
+            excelToHtmlConverter.Document.Save(Path.ChangeExtension(fileName, "html"));
+        }
+       
     }
 }

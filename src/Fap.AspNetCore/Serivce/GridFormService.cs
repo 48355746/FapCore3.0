@@ -414,6 +414,7 @@ namespace Fap.AspNetCore.Serivce
             }
             else if (oper == OperEnum.del)
             {
+                //删除可能存在批量
                 bool rv = _dbContext.DeleteDynamicData(mainData);
                 DeleteChildData(mainData);
                 rvm.success = rv;

@@ -34,7 +34,12 @@ namespace Fap.AspNetCore.Controls.JqGrid.Enums
         /// <summary>
         /// 批量编辑
         /// </summary>
-        BatchUpdate = 128
+        BatchUpdate = 128,
+        /// <summary>
+        /// 查看
+        /// </summary>
+        View=256
+
     }
     
 }

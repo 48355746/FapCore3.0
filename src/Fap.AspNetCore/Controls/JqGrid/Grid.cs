@@ -2134,7 +2134,10 @@ namespace Fap.AspNetCore.Controls.JqGrid
 
                 //以下工具栏向前排
                 //查看工具
-                ViewToolbar(script);
+                if ((_dataFormType & DataFormType.View) > 0)
+                {
+                    ViewToolbar(script);
+                }
                 if ((_dataFormType & DataFormType.Delete) > 0)
                 {
                     DeleteToolbar(script);
@@ -2151,7 +2154,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 {
                     AddToolbar(script);
                 }
-                
+
                 //设置列头分组
                 GroupHeaders(script);
                 #endregion
@@ -2179,7 +2182,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                         script.AppendFormat(", searchOnEnter:{0}", _searchOnEnter.ToString().ToLower());
                     script.AppendLine("});");
                 }
-              
+
                 #endregion
             }
             else
@@ -2288,7 +2291,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                       buttonicon:'ace-icon fa fa-cloud-download green',
                       onClickButton : function() {
                       
-                        loadExportMessageBox('导出Excel','##gridid##','" + HttpUtility.UrlEncode(_querySet.QueryCols)+"','" + TableName + @"',0);
+                        loadExportMessageBox('导出Excel','##gridid##','" + HttpUtility.UrlEncode(_querySet.QueryCols) + "','" + TableName + @"',0);
                     }
                   });");
         }
@@ -2304,7 +2307,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                       buttonicon:'ace-icon fa fa-cloud-upload',
                       onClickButton : function() {
                       
-                        loadImportDataMessageBox('导入','##gridid##','"+ _querySet.QueryCols + "','" + TableName + @"',0);
+                        loadImportDataMessageBox('导入','##gridid##','" + _querySet.QueryCols + "','" + TableName + @"',0);
                     }
                   });");
 
@@ -2381,7 +2384,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
             script.AppendLine(@" 
                     jQuery('###gridid##').jqGrid('navButtonAdd', '###pager##',{
                       caption:'',
-                      title:'查看选中数据', 
+                      title:'查看', 
                       position:'first',  
                       buttonicon:'ace-icon fa fa-search-plus grey',
                       onClickButton : function() {
@@ -2390,7 +2393,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                         var ret = jQuery('###gridid##').jqGrid('getRowData', gsr);
                         viewFormMessageBox(ret.Fid,'" + TableName + "','" + HttpUtility.UrlEncode(_querySet.QueryCols) + "'" + @");
                         }else{
-                            bootbox.alert('请选择一条数据查看')
+                            $.msg('请选择一条数据查看')
                         }
                     }
                     

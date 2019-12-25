@@ -245,129 +245,114 @@ var loadBatchUpdateMessageBox = function (title, gid, qryCols, tablename, id, ca
     var rowDatas = getSelectedRows(gid);
     if (rowDatas === null)
         return;
-    var $modal = $("#modal-wizard-" + gid);
-    if ($modal.length === 0) {
-        var wizardModal = ["<div id=\"modal-wizard-" + gid + "\" class=\"modal\">",
-            "    <div class=\"modal-dialog\">",
-            "        <div class=\"modal-content\">",
-            "            <div id=\"modal-wizard-container\">",
-            "                <div class=\"modal-header\">",
-            "                    <ul class=\"steps\">",
-            "                        <li data-step=\"1\" class=\"active\">",
-            "                            <span class=\"step\">1</span>",
-            "                            <span class=\"title\">选择编辑属性</span>",
-            "                        </li>",
-            "                        <li data-step=\"2\">",
-            "                            <span class=\"step\">2</span>",
-            "                            <span class=\"title\">设置属性值</span>",
-            "                        </li>                       ",
-            "                    </ul>",
-            "                </div>",
-            "                <div class=\"modal-body step-content\">",
-            "                    <div class=\"step-pane active\" data-step=\"1\">",
-            "                        <div class=\"center\">",
-            // "                            <h4 class=\"blue\">Step 1</h4>",
-            "                        </div>",
-            "                    </div>",
-            "                    <div class=\"step-pane\" data-step=\"2\">",
-            "                        <div class=\"center\">",
-            //"                            <h4 class=\"blue\">Step 2</h4>",
-            "                        </div>",
-            "                    </div>                   ",
-            "                </div>",
-            "            </div>",
-            "            <div class=\"modal-footer wizard-actions\">",
-            "                <button class=\"btn btn-sm btn-prev\">",
-            "                    <i class=\"ace-icon fa fa-arrow-left\"></i>",
-            "                   上一步",
-            "                </button>",
-            "                <button class=\"btn btn-success btn-sm btn-next\" data-last=\"完成\">",
-            "                   下一步",
-            "                    <i class=\"ace-icon fa fa-arrow-right icon-on-right\"></i>",
-            "                </button>",
-            "                <button class=\"btn btn-danger btn-sm pull-left btnCancel\">",
-            "                    <i class=\"ace-icon fa fa-times\"></i>",
-            "                    取消",
-            "                </button>",
-            "            </div>",
-            "        </div>",
-            "    </div>",
-            "</div>"].join("");
-        $("body").append($(wizardModal));
-        $modal = $(wizardModal);
-    }
-    $modal.find(".modal-footer .btnCancel").on(ace.click_event, function () {
-        $modal.modal("hide");
-        $modal.remove();
-    });
-    var $fieldList = $("<select multiple='multiple' size='10' id='dualfieldlistbox_" + tablename + "' name='dualfieldlistbox_" + tablename + "'></select>");
-    $modal.find('#modal-wizard-container').ace_wizard().on('actionclicked.fu.wizard', function (e, info) {
-        if (info.step === 1) {
-            var fields = $fieldList.val();
-            if (fields === null) {
-                $.msg("请选择要批量更新的属性！");
-                e.preventDefault();
-                return;
+    var dialog = bootbox.dialog({
+        title: title,
+        message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+        buttons: {
+            cancel: {
+                label: MultiLangHelper.getResName("global_oper_cancel", "取消"), className: "btn-default"
             }
-            $modal.find(".step-content [data-step=2]").html('<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>');
-            var url = $.randomUrl(basePath + '/Component/Dataform/?tn=' + tablename + "&frm=batchupdate&qrycols=" + fields.join());
-            $.get(url, function (ev) {
-                $modal.find(".step-content [data-step=2]").html(ev);
+        }
+    });   
+    dialog.init(function () { 
+        dialog.find('.bootbox-body').html(`  <div id="modal-wizard-container"> 
+                                               <div> 
+                                                <ul class="steps"> 
+                                                 <li data-step="1" class="active"> <span class="step">1</span> <span class="title">选择编辑属性</span> </li> 
+                                                 <li data-step="2"> <span class="step">2</span> <span class="title">设置属性值</span> </li> 
+                                                </ul> 
+                                               </div> 
+                                                <hr/>
+                                               <div class="step-content"> 
+                                                <div class="step-pane active" data-step="1"> 
+                                                 <div class="center"> 
+                                                 </div> 
+                                                </div> 
+                                                <div class="step-pane" data-step="2"> 
+                                                 <div class="center"> 
+                                                 </div> 
+                                                </div> 
+                                               </div> 
+                                              </div>`);
+        //下面button采用a是因为bootbox默认处理button事件
+        dialog.find(".modal-footer").html(`<div class="wizard-actions">
+												<!-- #section:plugins/fuelux.wizard.buttons -->
+												<a class="btn btn-prev">
+													<i class="ace-icon fa fa-arrow-left"></i>
+													上一步
+												</a>
+
+												<a class="btn btn-success btn-next" data-last="完成">
+													下一步
+													<i class="ace-icon fa fa-arrow-right icon-on-right"></i>
+												</a>
+                                                <button class="btn btn-danger btn-sm pull-left">
+													<i class="ace-icon fa fa-times"></i>
+													取消
+												</button>
+												<!-- /section:plugins/fuelux.wizard.buttons -->
+											</div>`);
+        var $fieldList = $("<select multiple='multiple' size='10' id='dualfieldlistbox_" + tablename + "' name='dualfieldlistbox_" + tablename + "'></select>");
+        dialog.find(".modal-body .step-content [data-step=1]").append($fieldList);
+        $.get(basePath + "/Api/Core/FieldList/" + tablename, { qryCols: qryCols }, function (data) {
+            $fieldList.empty();
+            $.each(data, function (i, d) {
+                if (d.isDefaultCol === 1 || d.showAble === 0) {
+                    return true;
+                }
+                $fieldList.append("<option value='" + d.colName + "'>" + d.colComment + "</option>");
             });
-            //e.preventDefault();
-        } else if (info.step === 2) {
-            //alert(0);
-        }
-    }).on('finished.fu.wizard', function (e) {
-        if (!$("#frm-batchupdate").valid()) {
-            e.preventDefault();
-            return false;
-        }
-        //var fids = $.map(rowDatas, function (d) {
-        //    return d.Fid;
-        //});
-        var ids = $.map(rowDatas, function (d) {
-            return d.Id;
-        });
-        var formData = GetFapFormData("frm-batchupdate");
-        formData.Ids = ids.join();
-        $.post(basePath + "/Api/Core/BatchUpdate", formData, function (rv) {
-            if (rv.success) {
-                $modal.modal("hide");
-                $modal.remove();
-                $.msg("批量更新成功！");
-                refreshBaseJqGrid(gid);
+            $fieldList.bootstrapDualListbox({
+                preserveSelectionOnMove: 'moved',
+                moveOnSelect: false
 
-            } else {
-                bootbox.alert(rv.msg);
+            });
+        });        
+        dialog.find('#modal-wizard-container').ace_wizard({
+            //手动指定按钮
+            buttons: '.wizard-actions:eq(0)'
+        }).on('actionclicked.fu.wizard', function (e, info) {
+            if (info.step === 1) {
+                var fields = $fieldList.val();
+                if (fields === null) {
+                    $.msg("请选择要批量更新的属性！");
+                    e.preventDefault();
+                    return;
+                }
+                dialog.find(".modal-body .step-content [data-step=2]").html('<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>');
+                var url = $.randomUrl(basePath + '/Component/Dataform/?tn=' + tablename + "&frm=batchupdate&qrycols=" + fields.join());
+                $.get(url, function (ev) {
+                    dialog.find(".modal-body .step-content [data-step=2]").html(ev);
+                });
+                //e.preventDefault();
+            } else if (info.step === 2) {
+                //alert(0);
             }
-        });
-    }).on('stepclick.fu.wizard', function (e) {
-        //e.preventDefault();//this will prevent clicking and selecting steps
-        //alert(20);
-    });
-    //$('#modal-wizard .wizard-actions .btn[data-dismiss=modal]').removeAttr('disabled');
-
-    $modal.modal("show");
-    $modal.find(".modal-body [data-step=1]").html("");
-    $modal.find(".modal-body [data-step=1]").append($fieldList);
-
-    $.get(basePath + "/Api/Core/FieldList/" + tablename, { qryCols: qryCols }, function (data) {
-        $fieldList.empty();
-        $.each(data, function (i, d) {
-            if (d.isDefaultCol === 1 || d.showAble === 0) {
-                return true;
+        }).on('finished.fu.wizard', function (e) {
+            if (!$("#frm-batchupdate").valid()) {
+                e.preventDefault();
+                return false;
             }
-            $fieldList.append("<option value='" + d.colName + "'>" + d.colComment + "</option>");
-        });
-        $fieldList.bootstrapDualListbox({
-            //nonSelectedListLabel: '<span class="text-primary h5">所有项</span> ',
-            //selectedListLabel: '<span class="text-primary h5">选中项</span> ',
-            preserveSelectionOnMove: 'moved',
-            moveOnSelect: false
+            //var fids = $.map(rowDatas, function (d) {
+            //    return d.Fid;
+            //});
+            var ids = $.map(rowDatas, function (d) {
+                return d.Id;
+            });
+            var formData = GetFapFormData("frm-batchupdate");
+            formData.Ids = ids.join();
+            $.post(basePath + "/Api/Core/BatchUpdate", formData, function (rv) {
+                if (rv.success) {
+                    dialog.modal("hide");
+                    $.msg("批量更新成功！");
+                    refreshBaseJqGrid(gid);
 
+                } else {
+                    bootbox.alert(rv.msg);
+                }
+            });
         });
-    });
+    });   
 };
 
 //导出excel数据

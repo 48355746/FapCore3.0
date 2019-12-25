@@ -1941,10 +1941,8 @@ namespace Fap.Core.DataAccess
             Guard.Against.Null(table, nameof(table));
 
             long id = fapDynData.Get(FapDbConstants.FAPCOLUMN_FIELD_Id).ToLong();
-            long ts = fapDynData.Get(FapDbConstants.FAPCOLUMN_FIELD_Ts).ToLong();
 
             Guard.Against.Zero(id, nameof(id));
-            //Guard.Against.Zero(ts, nameof(ts));
 
             return UpdateDynamicData();
 
@@ -2038,18 +2036,33 @@ namespace Fap.Core.DataAccess
                 UpdateDynamicData(d);
             }
         }
-
+        /// <summary>
+        /// 删除，批量删除请设置Fid多个 用逗号隔开，或Id用逗号隔开
+        /// </summary>
+        /// <param name="delDynamicData"></param>
+        /// <returns></returns>
         public bool DeleteDynamicData(FapDynamicObject delDynamicData)
         {
             string tableName = delDynamicData.TableName;
-
             Guard.Against.NullOrEmpty(tableName, nameof(tableName));
-            string fids = delDynamicData.Get(FapDbConstants.FAPCOLUMN_FIELD_Fid).ToString();
-            Guard.Against.NullOrEmpty(fids, nameof(fids));
+            string fids = delDynamicData.Get(FapDbConstants.FAPCOLUMN_FIELD_Fid)?.ToString();
+            string ids = delDynamicData.Get(FapDbConstants.FAPCOLUMN_FIELD_Id)?.ToString();
+            if (fids.IsMissing() && ids.IsMissing())
+            {
+                throw new FapException("删除数据请设置Fid或Id");
+            }
+            IEnumerable<dynamic> delList;
             //获取要删除的数据
-            var fidList = fids.SplitComma();
-            var delList = Query($"select * from {tableName} where Fid in @Fids", new DynamicParameters(new { Fids = fidList }));
-
+            if (ids.IsPresent())
+            {
+                var idList = ids.SplitComma();
+                delList = Query($"select * from {tableName} where Id in @Ids", new DynamicParameters(new { Ids = idList }));
+            }
+            else
+            {
+                var fidList = fids.SplitComma();
+                delList = Query($"select * from {tableName} where Fid in @Fids", new DynamicParameters(new { Fids = fidList }));
+            }
             Guard.Against.Null(delList, nameof(delList));
 
             FapTable table = Table(tableName);

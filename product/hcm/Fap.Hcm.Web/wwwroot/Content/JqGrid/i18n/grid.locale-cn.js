@@ -108,7 +108,7 @@ $.jgrid.regional["cn"] = {
         searchtext: "",
         searchtitle: "查找",
         refreshtext: "",
-        refreshtitle: "刷新表格",
+        refreshtitle: "刷新",
         alertcap: "注意",
         alerttext: "请选择记录",
         viewtext: "",
