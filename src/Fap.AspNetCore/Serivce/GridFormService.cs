@@ -26,6 +26,7 @@ using Fap.Core.Utility;
 using System.IO;
 using Fap.Core.Office.Excel.Export;
 using Fap.Core.Office;
+using Fap.Core.Annex.Utility.Zip;
 
 namespace Fap.AspNetCore.Serivce
 {
@@ -285,7 +286,7 @@ namespace Fap.AspNetCore.Serivce
             }
             #endregion
 
-            var (mainData, ChildsData) = BuilderData(tableName,formCollection);
+            var (mainData, ChildsData) = BuilderData(tableName, formCollection);
             try
             {
                 return SaveChange(operEnum, mainData, ChildsData);
@@ -382,7 +383,7 @@ namespace Fap.AspNetCore.Serivce
             Guard.Against.NullOrWhiteSpace(Ids, nameof(Ids));
             Guard.Against.NullOrWhiteSpace(tableName, nameof(tableName));
             var (mainData, _) = BuilderData(tableName, frmCollection);
-            var ids= Ids.ToString().SplitComma();
+            var ids = Ids.ToString().SplitComma();
             foreach (var id in ids)
             {
                 mainData.Id = id;
@@ -534,6 +535,83 @@ namespace Fap.AspNetCore.Serivce
                 _logger.LogError(ex.Message);
                 return false;
             }
+        }
+        public bool ImportWordTemplate(string tableName)
+        {
+            try
+            {
+                var files = _applicationContext.Request.Form.Files;
+                List<string> excelFiles = new List<string>();
+                if (files != null && files.Count > 0)
+                {
+                    foreach (var file in files)
+                    {
+                        string fullPath = Path.Combine(Environment.CurrentDirectory, FapPlatformConstants.PrintTemplate, $"{tableName.ToLower()}.docx");
+
+                        using (FileStream fs = System.IO.File.Create(fullPath))
+                        {
+                            files[0].CopyTo(fs);
+                        }
+                        excelFiles.Add(fullPath);
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+        public string PrintWordTemplate(string tableName, IEnumerable<FapDynamicObject> keyValues)
+        {
+            var columns = _dbContext.Columns(tableName);
+            IList<Dictionary<string, string>> list = new List<Dictionary<string, string>>();
+
+            foreach (var item in keyValues)
+            {
+                var keys = item.Keys;
+                Dictionary<string, string> dic = new Dictionary<string, string>();
+                foreach (var key in keys)
+                {
+                    var column = columns.FirstOrDefault(c => c.ColName == key);
+                    if (column != null)
+                    {
+                        if (column.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
+                        {
+                            dic.Add(column.ColComment, item.Get(key + "MC").ToString());
+                        }
+                        else if (column.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX)
+                        {
+                            dic.Add(column.ColComment, _dbContext.Dictionary(column.RefTable, item.Get(key).ToString())?.Name);
+                        }
+                        else
+                        {
+                            dic.Add(column.ColComment, item.Get(key).ToString());
+                        }
+                    }
+                }
+                list.Add(dic);
+            }
+
+            string templateFile = Path.Combine(Environment.CurrentDirectory, FapPlatformConstants.PrintTemplate, tableName.ToLower() + ".docx");
+            IList<string> oriFile = new List<string>();
+            foreach (var dic in list)
+            {
+                string fileName = $"{_dbContext.Table(tableName).TableComment}_{UUIDUtils.Fid}.docx";
+                string outputFile = Path.Combine(Environment.CurrentDirectory, FapPlatformConstants.TemporaryFolder, fileName);
+                _officeService.PrintWordTemplate(templateFile, outputFile, dic);
+                oriFile.Add(outputFile);
+            }
+            if (oriFile.Count == 1)
+            {
+                return Path.GetFileName(oriFile.First());
+            }
+            string zipFileName = UUIDUtils.Fid;
+            //将这些文件打包成ZIP文件，返回zip流
+            ZipHelper zipHelper = new ZipHelper();
+            zipHelper.ZipMultiFiles(oriFile, Path.Combine(Environment.CurrentDirectory, FapPlatformConstants.TemporaryFolder, zipFileName));
+            return zipFileName;
         }
 
     }

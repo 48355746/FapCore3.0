@@ -361,7 +361,7 @@ var loadBatchUpdateMessageBox = function (title, gid, qryCols, tablename, id, ca
 //qryCols 导出列
 //tablename 表名
 //callback 扩展js方法
-var loadExportMessageBox = function (title, gid, qryCols, tablename, callback) {
+var loadExportExcelMessageBox = function (title, gid, qryCols, tablename, callback) {
     var $fieldList =$("<select multiple='multiple' size='10' id='duallistbox_" + tablename + "' name='duallistbox_" + tablename + "'></select>");
 
     var dialog = bootbox.dialog({
@@ -381,7 +381,7 @@ var loadExportMessageBox = function (title, gid, qryCols, tablename, callback) {
                     postData.QuerySet.ExportCols = fields.join();                   
                     $.post(basePath + "/Api/Core/ExportExcelData", postData, function (data) {
                         if (data.success) {
-                            window.location.href = basePath + "/Temporary/" + data.data;
+                            window.location.href = basePath + "/" + data.data;
                             //bootbox.alert("生成成功");
                         } else {
                             $.msg("生成文件异常！");
@@ -418,8 +418,48 @@ var loadExportMessageBox = function (title, gid, qryCols, tablename, callback) {
                
             });
         });
-
     });
+
+};
+var loadExportWordMessageBox = function (title, gid, qryCols, tablename, callback) {
+    var rowDatas = getSelectedRows(gid);
+    if (rowDatas === null)
+        return;
+    $.post(basePath + "/Api/Core/PrintWordTemplate", { rows: rowDatas, tablename: tablename }, function (rv) {
+        if (rv.success) {
+            window.location.href = basePath + "/" + rv.data;
+        } else {
+            var dialog = bootbox.dialog({
+                title: title,
+                message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                buttons: {                  
+                    cancel: {
+                        label: MultiLangHelper.getResName("global_oper_close", "关闭"), className: "btn-default"
+                    }
+                }
+
+            });
+
+            dialog.init(function () {
+                var title = `<h3>系统未发现Word模板，请先上传word模板!!!</h3>
+										<p>
+										word模板编辑说明：需要替换的内容请使用 "\${列名}"来进行占位。<br/>例如:占位"姓名"，请使用"\${姓名}"。                                            
+                                       <br/> 注意：系统仅支持<strong>.docx</strong>后缀word模板
+										</p>`;               
+
+                var $file = $("<input id=\"file-import\" type=\"file\"  class=\"file-loading\">");                
+                dialog.find('.bootbox-body').empty().append(title).append($file);                
+                $file.fileinput({
+                    language: 'zh',
+                    uploadUrl: basePath + '/Api/Core/ImportWordTemplate/' + tablename,
+                    showCaption: false,
+                    allowedFileExtensions: ["docx"],
+                    showClose: true
+                });
+            });
+        }
+    });
+    
 
 };
 //导出excel模板
@@ -429,7 +469,7 @@ var loadExportExcelTmpl = function (qryCols, tableName) {
     var postData = { TableName: tableName, QueryCols: qryCols };
     $.post(basePath + "/Api/Core/ExportExcelTmpl", postData, function (data) {
         if (data.success) {
-            window.location.href = basePath + "/Temporary/" + data.data;
+            window.location.href = basePath + "/" + data.data;
             //bootbox.alert("生成成功");
         } else {
             $.msg("模板生成失败！");
@@ -441,7 +481,7 @@ var loadExportExcelTemplData = function (qryCols, gid) {
     postData.QuerySet.ExportCols = qryCols;
     $.post(basePath + "/Api/Core/ExportExcelTmplData", postData, function (data) {
         if (data.success) {
-            window.location.href = basePath + "/Temporary/" + data.data;
+            window.location.href = basePath + "/" + data.data;
             //bootbox.alert("生成成功");
         } else {
             bootbox.alert("生成文件异常！");

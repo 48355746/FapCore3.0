@@ -3,9 +3,11 @@ using Fap.Core.DI;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Office.Excel.Export;
 using Fap.Core.Office.Excel.Import;
+using Fap.Core.Office.Word;
 using Microsoft.Extensions.Logging;
 using NPOI.SS.Converter;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Fap.Core.Office
@@ -72,6 +74,11 @@ namespace Fap.Core.Office
             // Output the HTML file
             excelToHtmlConverter.Document.Save(Path.ChangeExtension(fileName, "html"));
         }
-       
+
+        public void PrintWordTemplate(string templateFile,string outputFile,IDictionary<string,string> keyValues)
+        {
+            WordTemplate wordTemplate = new WordTemplate();
+            wordTemplate.ReplaceTemplate(templateFile, outputFile, keyValues);
+        }       
     }
 }

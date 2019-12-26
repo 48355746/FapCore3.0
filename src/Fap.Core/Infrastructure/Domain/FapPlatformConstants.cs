@@ -15,6 +15,10 @@ namespace Fap.Core.Infrastructure.Domain
         /// </summary>
         public const string TemporaryFolder = "Temporary";
         /// <summary>
+        /// 存放上传的打印模板
+        /// </summary>
+        public const string PrintTemplate = "PrintTemplate";
+        /// <summary>
         /// 变量替换正则表达式${Variable}
         /// </summary>
         public const string VariablePattern = @"\$\{\S+?\}";

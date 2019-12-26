@@ -19,3 +19,4 @@
 /src/Fap.Workflow/bin
 /src/Fap.Workflow/obj
 *.xlsx
+*.docx

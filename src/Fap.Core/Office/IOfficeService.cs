@@ -10,5 +10,6 @@ namespace Fap.Core.Office
     {
         bool ImportExcel(string fileName, string tableName, ImportMode importMode);
         bool ExportExcel(ExportModel exportModel);
+        void PrintWordTemplate(string templateFile, string outputFile, IDictionary<string, string> keyValues);
     }
 }

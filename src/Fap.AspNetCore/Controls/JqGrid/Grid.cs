@@ -2129,7 +2129,8 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 //都可以导出数据
                 if ((_dataFormType & DataFormType.Export) > 0)
                 {
-                    ExportToolbar(script);
+                    ExportExcelToolbar(script);
+                    ExportWordToolbar(script);
                 }
 
                 //以下工具栏向前排
@@ -2281,21 +2282,35 @@ namespace Fap.AspNetCore.Controls.JqGrid
                   });");
         }
 
-        private void ExportToolbar(StringBuilder script)
+        private void ExportExcelToolbar(StringBuilder script)
         {
             script.AppendLine(@" 
                     jQuery('###gridid##').jqGrid('navButtonAdd', '###pager##',{
                       caption:'',
                       title:'导出',
                       position:'last',  
-                      buttonicon:'ace-icon fa fa-cloud-download green',
+                      buttonicon:'ace-icon fa fa-file-excel-o green',
                       onClickButton : function() {
                       
-                        loadExportMessageBox('导出Excel','##gridid##','" + HttpUtility.UrlEncode(_querySet.QueryCols) + "','" + TableName + @"',0);
+                        loadExportExcelMessageBox('导出Excel','##gridid##','" + HttpUtility.UrlEncode(_querySet.QueryCols) + "','" + TableName + @"',0);
                     }
                   });");
         }
-
+        private void ExportWordToolbar(StringBuilder script)
+        {
+            script.AppendLine(@" 
+                    jQuery('###gridid##').jqGrid('navButtonAdd', '###pager##',{
+                      caption:'',
+                      title:'导出',
+                      position:'last',  
+                      buttonicon:'ace-icon fa fa-file-word-o',
+                      onClickButton : function() {
+                      
+                        loadExportWordMessageBox('导出Word','##gridid##','" + HttpUtility.UrlEncode(_querySet.QueryCols) + "','" + TableName + @"',0);
+                    }
+                  });");
+        }
+        
         private void ImportToolbar(StringBuilder script)
         {
             #region 导入
