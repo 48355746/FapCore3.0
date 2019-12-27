@@ -457,7 +457,8 @@ var loadExportWordMessageBox = function (title, gid, qryCols, tablename, callbac
             dialog.init(function () {
                 var title = `<h3>系统未发现Word模板，请先上传word模板!!!</h3>
 										<p>
-										word模板编辑说明：需要替换的内容请使用 "\${列名}"来进行占位。<br/>例如:占位"姓名"，请使用"\${姓名}"。                                            
+										word模板编辑说明：需要替换的内容请使用 "\${列名}"来进行占位。<br/>例如:占位"姓名"，请使用"\${姓名}"。
+                                        <strong>系统常量：\${当前日期}，\${登录人}</strong>    
                                        <br/> 注意：系统仅支持<strong>.docx</strong>后缀word模板
 										</p>`;               
 

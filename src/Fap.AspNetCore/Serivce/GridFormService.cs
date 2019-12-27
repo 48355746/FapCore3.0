@@ -303,7 +303,7 @@ namespace Fap.AspNetCore.Serivce
             }
 
         }
-     
+
 
         private ResponseViewModel SaveChange(FormModel formModel)
         {
@@ -336,10 +336,10 @@ namespace Fap.AspNetCore.Serivce
             }
             else if (formModel.Oper == OperEnum.batch_edit)
             {
-                var ids =formModel.Ids.SplitComma();
+                var ids = formModel.Ids.SplitComma();
                 foreach (var id in ids)
                 {
-                    mainData.SetValue("Id",id);
+                    mainData.SetValue("Id", id);
                     _dbContext.UpdateDynamicData(mainData);
                 }
                 rvm.success = true;
@@ -495,7 +495,11 @@ namespace Fap.AspNetCore.Serivce
             foreach (var row in gridModel.Rows)
             {
                 var keys = row.Keys;
-                Dictionary<string, string> dic = new Dictionary<string, string>();
+                Dictionary<string, string> dic = new Dictionary<string, string>()
+                {
+                    {"当前日期",DateTimeUtils.CurrentDateStr},
+                    { "登录人",_applicationContext.EmpName}
+                };
                 foreach (var key in keys)
                 {
                     var column = columns.FirstOrDefault(c => c.ColName == key);
