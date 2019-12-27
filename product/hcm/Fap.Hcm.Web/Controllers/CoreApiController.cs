@@ -17,6 +17,8 @@ using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Infrastructure.Query;
 using Fap.Hcm.Web.Models;
 using Microsoft.Extensions.Primitives;
+using Fap.AspNetCore.Binder;
+using Fap.AspNetCore.Serivce;
 
 namespace Fap.Hcm.Web.Controllers
 {
@@ -34,18 +36,12 @@ namespace Fap.Hcm.Web.Controllers
         /// <returns></returns>
         [HttpPost("Persistence")]
         // POST: api/Common
-        public async Task<JsonResult> Persistence(IFormCollection keyValues)
+        public async Task<JsonResult> Persistence(FormModel frmModel)
         {
-            var rv = await _gridFormService.PersistenceAsync(keyValues);
+            Guard.Against.Null(frmModel,nameof(frmModel));
+            var rv = await _gridFormService.PersistenceAsync(frmModel);
             return Json(rv);
-        }
-        [HttpPost("BatchUpdate")]
-        // POST: api/Common
-        public JsonResult BatchUpdate(IFormCollection keyValues)
-        {
-            var rv = _gridFormService.BatchUpdate(keyValues);
-            return Json(rv);
-        }
+        }     
         /// <summary>
         /// 获取表格数据
         /// </summary>
@@ -129,7 +125,7 @@ namespace Fap.Hcm.Web.Controllers
             {
                 return Json(ResponseViewModelUtils.Failure());
             }
-            fileName=_gridFormService.PrintWordTemplate(gridModel.TableName, gridModel.Rows);
+            fileName=_gridFormService.PrintWordTemplate(gridModel);
             return Json(new ResponseViewModel() {success=true,data= $"{FapPlatformConstants.TemporaryFolder}/{fileName}" });
 
         }

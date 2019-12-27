@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Fap.Core.Infrastructure.Cache
 {
-    [Service(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton)]
+    [Service(ServiceLifetime.Singleton)]
     public class CacheFactory : ICacheFactory
     {
         private readonly IMemoryCache memoryCache;

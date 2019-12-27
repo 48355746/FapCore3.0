@@ -27,6 +27,8 @@ using System.IO;
 using Fap.Core.Office.Excel.Export;
 using Fap.Core.Office;
 using Fap.Core.Annex.Utility.Zip;
+using Fap.AspNetCore.Binder;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Fap.AspNetCore.Serivce
 {
@@ -39,13 +41,15 @@ namespace Fap.AspNetCore.Serivce
         private IAntiforgery _antiforgery;
         private readonly IOfficeService _officeService;
         private readonly ILogger<GridFormService> _logger;
+        private readonly IMemoryCache _memoryCache;
         public GridFormService(
             IFapApplicationContext fapApplicationContext,
             ILogger<GridFormService> logger,
             IOfficeService officeService,
             IDbContext dbContext,
             IRbacService rbacService,
-            IAntiforgery antiforgery)
+            IAntiforgery antiforgery,
+            IMemoryCache memoryCache)
         {
             _dbContext = dbContext;
             _applicationContext = fapApplicationContext;
@@ -53,6 +57,7 @@ namespace Fap.AspNetCore.Serivce
             _antiforgery = antiforgery;
             _officeService = officeService;
             _logger = logger;
+            _memoryCache = memoryCache;
         }
         public JqGridData QueryPageDataResultView(JqGridPostData jqGridPostData)
         {
@@ -237,42 +242,43 @@ namespace Fap.AspNetCore.Serivce
             }
         }
         #endregion
-        private static object lockSave = new object();
-        public async Task<ResponseViewModel> PersistenceAsync(IFormCollection formCollection)
+        [Transactional]
+        public async Task<ResponseViewModel> PersistenceAsync(FormModel frmModel)
         {
             //操作符 
-            OperEnum operEnum = GetOperEnum();
-            if (operEnum == OperEnum.none)
+            if (frmModel.Oper == OperEnum.none)
             {
                 return ResponseViewModelUtils.Failure("未知的持久化操作符");
             }
-            string tableName = GetTableName();
-            if (tableName.IsMissing())
+            if (frmModel.TableName.IsMissing())
             {
                 return ResponseViewModelUtils.Failure("未知的持久化实体");
             }
             #region 防止多次点击重复保存以及CSRF攻击
-            if (operEnum != OperEnum.del)
+            if (frmModel.Oper != OperEnum.del)
             {
-                //令牌 form生成时赋值
-                string avoid_repeat_token = string.Empty;
-                if (formCollection.TryGetValue(FapWebConstants.AVOID_REPEAT_TOKEN, out StringValues vs))
-                {
-                    avoid_repeat_token = vs;
-                }
-                else
+                if (frmModel.AvoidDuplicateKey.IsMissing())
                 {
                     return ResponseViewModelUtils.Failure("不存在防重复提交令牌");
                 }
-                lock (lockSave)
+
+                //对比缓存中是否存在次key，不存在加入
+                string avoid_repeat_tokenKey = $"{frmModel.TableName}_{_applicationContext.UserUid}_{FapWebConstants.AVOID_REPEAT_TOKEN}";
+                if (_memoryCache.TryGetValue(avoid_repeat_tokenKey, out string cv))
                 {
-                    string avoid_repeat_tokenKey = tableName.ToLower() + FapWebConstants.AVOID_REPEAT_TOKEN;
-                    if (_applicationContext.Session.GetString(avoid_repeat_tokenKey) != avoid_repeat_token)
+                    if (cv == frmModel.AvoidDuplicateKey)
                     {
                         return ResponseViewModelUtils.Failure("请勿重复提交数据");
                     }
-                    //移除重复提交标记
-                    _applicationContext.Session.Remove(avoid_repeat_tokenKey);
+                    else
+                    {
+                        //_memoryCache.Remove(avoid_repeat_tokenKey);
+                        _memoryCache.Set(avoid_repeat_tokenKey, frmModel.AvoidDuplicateKey, DateTimeOffset.Now.AddMinutes(30));
+                    }
+                }
+                else
+                {
+                    _memoryCache.Set(avoid_repeat_tokenKey, frmModel.AvoidDuplicateKey, DateTimeOffset.Now.AddMinutes(30));
                 }
                 //CSRF 令牌验证
                 try
@@ -284,127 +290,33 @@ namespace Fap.AspNetCore.Serivce
                     return ResponseViewModelUtils.Failure("请求非法,校验CSRF异常");
                 }
             }
-            #endregion
 
-            var (mainData, ChildsData) = BuilderData(tableName, formCollection);
+            #endregion
             try
             {
-                return SaveChange(operEnum, mainData, ChildsData);
+                return SaveChange(frmModel);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
                 return ResponseViewModelUtils.Failure("发生错误，操作失败");
             }
-            string GetTableName()
-            {
-                if (formCollection.TryGetValue(FapWebConstants.FORM_TABLENAME, out StringValues tn))
-                {
-                    return tn;
-                }
-                if (_applicationContext.Request.Query.TryGetValue(FapWebConstants.QUERY_TABLENAME, out StringValues value))
-                {
-                    return value;
-                }
-                return string.Empty;
-            }
-            OperEnum GetOperEnum()
-            {
-                OperEnum operEnum;
-                if (formCollection.TryGetValue(FapWebConstants.OPERATOR, out StringValues oper))
-                {
-                    operEnum = (OperEnum)Enum.Parse(typeof(OperEnum), oper);
-                }
-                else
-                {
-                    //没有oper的时候 可以根据id的值判断是新增还是编辑
-                    string id = formCollection["Id"];
-                    if (id.IsMissing() || id.ToInt() < 1)
-                    {
-                        operEnum = OperEnum.add;
-                    }
-                    else
-                    {
-                        operEnum = OperEnum.edit;
-                    }
-                }
-
-                return operEnum;
-            }
 
         }
-        private (dynamic mainData, Dictionary<string, IEnumerable<dynamic>> childsData) BuilderData(string tableName, IFormCollection formCollection)
-        {
-            var columnList = _dbContext.Columns(tableName);
-            //undefined 父文本编辑框控件要去掉,logicdelete逻辑删除,childsData子表格数据
-            string[] exclude = new string[]
-            {
-                    FapWebConstants.IDS,
-                    FapWebConstants.OPERATOR,
-                    FapWebConstants.QUERY_TABLENAME ,
-                    FapWebConstants.FORM_TABLENAME,
-                    FapWebConstants.AVOID_REPEAT_TOKEN,
-                    FapWebConstants.UNDEFINED,
-                    FapWebConstants.LOGICDELETE,
-                    FapWebConstants.CHILDS_DATALIST
-            };
-            dynamic fdo = formCollection.ToDynamicObject(columnList, exclude);
-            Dictionary<string, IEnumerable<dynamic>> childDataDic = null;
-            if (formCollection.ContainsKey("childsData"))
-            {
-                childDataDic = new Dictionary<string, IEnumerable<dynamic>>();
-                JArray arrayGrids = JArray.Parse(formCollection["childsData"]);
-                foreach (JObject item in arrayGrids)
-                {
-                    string childTableName = item.GetValue(FapWebConstants.QUERY_TABLENAME).ToString();
+     
 
-                    JArray childDataArray = item.GetValue("data") as JArray;
-                    if (childDataArray.Any())
-                    {
-                        List<FapDynamicObject> childDatas = new List<FapDynamicObject>();
-                        foreach (JObject cd in childDataArray)
-                        {
-                            var cfdo = cd.ToFapDynamicObject(_dbContext.Columns(childTableName), exclude);
-                            childDatas.Add(cfdo);
-                        }
-                        childDataDic.Add(childTableName, childDatas);
-                    }
-                }
-            }
-            return (fdo, childDataDic);
-        }
-        [Transactional]
-        public ResponseViewModel BatchUpdate(IFormCollection frmCollection)
+        private ResponseViewModel SaveChange(FormModel formModel)
         {
             ResponseViewModel rvm = new ResponseViewModel();
-
-            frmCollection.TryGetValue("Ids", out StringValues Ids);
-            frmCollection.TryGetValue(FapWebConstants.FORM_TABLENAME, out StringValues tableName);
-            Guard.Against.NullOrWhiteSpace(Ids, nameof(Ids));
-            Guard.Against.NullOrWhiteSpace(tableName, nameof(tableName));
-            var (mainData, _) = BuilderData(tableName, frmCollection);
-            var ids = Ids.ToString().SplitComma();
-            foreach (var id in ids)
+            var mainData = formModel.MainData;
+            var childDataList = formModel.ChildDataList;
+            if (formModel.Oper == OperEnum.add)
             {
-                mainData.Id = id;
-                _dbContext.UpdateDynamicData(mainData);
-            }
-            rvm.success = true;
-            return rvm;
-        }
-
-
-        [Transactional]
-        public ResponseViewModel SaveChange(OperEnum oper, FapDynamicObject mainData, Dictionary<string, IEnumerable<dynamic>> childDataList = null)
-        {
-            ResponseViewModel rvm = new ResponseViewModel();
-            if (oper == OperEnum.add)
-            {
-                _dbContext.InsertDynamicData(mainData);
+                _dbContext.InsertDynamicData(formModel.MainData);
                 SaveChildData(mainData, childDataList);
                 return ResponseViewModelUtils.Sueecss(mainData, "创建成功");
             }
-            else if (oper == OperEnum.edit)
+            else if (formModel.Oper == OperEnum.edit)
             {
                 //返回原因
                 bool rv = _dbContext.UpdateDynamicData(mainData);
@@ -413,7 +325,7 @@ namespace Fap.AspNetCore.Serivce
                 rvm.msg = rv ? "更新成功" : "更新失败，请重试";
                 return rvm;
             }
-            else if (oper == OperEnum.del)
+            else if (formModel.Oper == OperEnum.del)
             {
                 //删除可能存在批量
                 bool rv = _dbContext.DeleteDynamicData(mainData);
@@ -422,10 +334,22 @@ namespace Fap.AspNetCore.Serivce
                 rvm.msg = rv ? "删除成功" : "删除失败，请重试";
                 return rvm;
             }
-            return ResponseViewModelUtils.Sueecss();
-            void SaveChildData(FapDynamicObject mainData, Dictionary<string, IEnumerable<dynamic>> childDataList)
+            else if (formModel.Oper == OperEnum.batch_edit)
             {
-                if (childDataList != null && childDataList.Any())
+                var ids =formModel.Ids.SplitComma();
+                foreach (var id in ids)
+                {
+                    mainData.SetValue("Id",id);
+                    _dbContext.UpdateDynamicData(mainData);
+                }
+                rvm.success = true;
+                rvm.msg = "批量更新成功！";
+                return rvm;
+            }
+            return ResponseViewModelUtils.Sueecss();
+            void SaveChildData(FapDynamicObject mainData, IDictionary<string, IEnumerable<FapDynamicObject>> childDataList)
+            {
+                if (childDataList.Any())
                 {
                     foreach (var item in childDataList)
                     {
@@ -437,7 +361,7 @@ namespace Fap.AspNetCore.Serivce
                         foreach (var data in item.Value)
                         {
                             //赋值外键
-                            data.Add(foreignKey, mainData.Get("Fid").ToString());
+                            data.SetValue(foreignKey, mainData.Get("Fid").ToString());
                             _dbContext.InsertDynamicData(data);
                         }
                     }
@@ -563,14 +487,14 @@ namespace Fap.AspNetCore.Serivce
                 return false;
             }
         }
-        public string PrintWordTemplate(string tableName, IEnumerable<FapDynamicObject> keyValues)
+        public string PrintWordTemplate(GridModel gridModel)
         {
+            string tableName = gridModel.TableName;
             var columns = _dbContext.Columns(tableName);
             IList<Dictionary<string, string>> list = new List<Dictionary<string, string>>();
-
-            foreach (var item in keyValues)
+            foreach (var row in gridModel.Rows)
             {
-                var keys = item.Keys;
+                var keys = row.Keys;
                 Dictionary<string, string> dic = new Dictionary<string, string>();
                 foreach (var key in keys)
                 {
@@ -579,15 +503,15 @@ namespace Fap.AspNetCore.Serivce
                     {
                         if (column.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
                         {
-                            dic.Add(column.ColComment, item.Get(key + "MC").ToString());
+                            dic.Add(column.ColComment, row.Get(key + "MC").ToString());
                         }
                         else if (column.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX)
                         {
-                            dic.Add(column.ColComment, _dbContext.Dictionary(column.RefTable, item.Get(key).ToString())?.Name);
+                            dic.Add(column.ColComment, _dbContext.Dictionary(column.RefTable, row.Get(key).ToString())?.Name);
                         }
                         else
                         {
-                            dic.Add(column.ColComment, item.Get(key).ToString());
+                            dic.Add(column.ColComment, row.Get(key).ToString());
                         }
                     }
                 }
@@ -618,7 +542,7 @@ namespace Fap.AspNetCore.Serivce
 
     public enum OperEnum
     {
-        add, edit, del, none
+        add, edit, batch_edit, del, none
     }
 }
 

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace Fap.Hcm.Web.Models
+namespace Fap.AspNetCore.Binder
 {
     [ModelBinder(BinderType = typeof(GridModelBinder))]
     public class GridModel

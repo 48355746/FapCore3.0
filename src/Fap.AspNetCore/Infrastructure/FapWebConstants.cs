@@ -20,7 +20,7 @@ namespace Fap.AspNetCore.Infrastructure
         /// <summary>
         /// form 提交的 表名参数
         /// </summary>
-        public const string FORM_TABLENAME = "Table_Name";
+        public const string FORM_TABLENAME = "TableName";
         /// <summary>
         /// query param传来的表名参数
         /// </summary>

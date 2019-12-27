@@ -211,7 +211,8 @@ namespace Fap.Core.Infrastructure.Metadata
             }
             else
             {
-                throw new ArgumentException("key 非法，不包含在元数据中", nameof(key));
+                return null;
+                //throw new ArgumentException("key 非法，不包含在元数据中", nameof(key));
             }
         }
 

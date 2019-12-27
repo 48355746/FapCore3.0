@@ -65,7 +65,7 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid,queryCols, f
             callback: function () {
                 var formid = 'frm-' + tablename;
                 //持久化
-                var res = Persistence(formid, '');
+                var res = Persistence(formid, tablename);
                 if (res === false) {
                     return false;
                 }
@@ -92,7 +92,7 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid,queryCols, f
             callback: function () {
                 var formid = 'frm-' + tablename;
                 //持久化
-                var res = Persistence(formid, '');
+                var res = Persistence(formid, tablename);
                 if (res === false) {
                     return false;
                 }
@@ -176,7 +176,8 @@ var deleteGridRow = function (gid, tableName, onCompletedCallback) {
     if (dr) {
         bootbox.confirm('确定要删除选中的吗?', function (result) {
             if (result) {
-                $.post(basePath + "/Api/Core/Persistence/", { "oper": "del", "Table_Name": tableName,  "Fid": dr }, function (rv) {
+                $.post(basePath + "/Api/Core/Persistence/",
+                    {"oper": "del", "tableName": tableName, maindata: { "Fid": dr } }, function (rv) {
                     if (rv.success) {
                         if ($.isFunction(onCompletedCallback)) {
                             onCompletedCallback();
@@ -196,7 +197,6 @@ var deleteGridRow = function (gid, tableName, onCompletedCallback) {
     } else {
         bootbox.alert('请选择一条数据');
     }
-
 };
 var openRefrenceWindow = function (title, colfid,  refurl, selectcallback,clearcallback) {
     var dialog = bootbox.dialog({
@@ -339,16 +339,30 @@ var loadBatchUpdateMessageBox = function (title, gid, qryCols, tablename, id, ca
             var ids = $.map(rowDatas, function (d) {
                 return d.Id;
             });
-            var formData = GetFapFormData("frm-batchupdate");
-            formData.Ids = ids.join();
-            $.post(basePath + "/Api/Core/BatchUpdate", formData, function (rv) {
-                if (rv.success) {
-                    dialog.modal("hide");
-                    $.msg("批量更新成功！");
-                    refreshBaseJqGrid(gid);
-
-                } else {
-                    bootbox.alert(rv.msg);
+            var entityData = {};
+            entityData.oper = "batch_edit";
+            entityData.mainData = GetFapFormData("frm-batchupdate");
+            entityData.tableName = tablename;
+            entityData.avoid_repeat_token = entityData.mainData["avoid_repeat_token"];
+            entityData.Ids = ids.join();
+            $.ajax({
+                type: "post",
+                url: basePath + '/Api/Core/Persistence?from=form',//这里不用带tn 因为 表单中有tn值
+                data: entityData,
+                async: false,
+                dataType: "json",
+                headers: {
+                    //CSRF攻击
+                    'RequestVerificationToken': $("input[name='__RequestVerificationToken']").val()
+                },
+                success: function (rv) {
+                    if (rv.success) {
+                        dialog.modal("hide");
+                        $.msg(rv.msg);
+                        refreshBaseJqGrid(gid);
+                    } else {
+                        bootbox.alert(rv.msg);
+                    }
                 }
             });
         });

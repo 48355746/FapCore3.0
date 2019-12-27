@@ -104,7 +104,7 @@ var GetFapChildGridData = function (formid) {
     return null;
 };
 //持久化{success:true,data:obj}noPrompt--是否弹框
-var Persistence = function (formid, tn, callback) {   
+var Persistence = function (formid, tableName, callback) {   
     if (!$("#" + formid).valid()) {
         $.msg('表单校验失败，请完善表单' + $(".error").html());
         return false;
@@ -136,8 +136,10 @@ var Persistence = function (formid, tn, callback) {
                 return false;
             }
         }
+        var entityData = {};        
         //主表单数据
-        var formData = GetFapFormData(formid);
+        entityData.mainData = GetFapFormData(formid);
+        entityData.tableName = tableName;
         //子表数据
         var childTableDatas = GetFapChildGridData(formid);
         if (childTableDatas === false) {
@@ -145,23 +147,24 @@ var Persistence = function (formid, tn, callback) {
             return false;
         }
         if (childTableDatas !== null) {
-            formData.childsData = JSON.stringify(childTableDatas);
+            entityData.childDataList = childTableDatas;
         }
         //干预赋值
         if (callback !== undefined && $.isFunction(callback)) {
-            callback(formData);
+            callback(entityData.mainData);
         }
         //判断Id的值
-        if (formData["Id"] !== "") {
-            formData['oper'] = "edit";
+        if (entityData.mainData["Id"] !== "") {
+            entityData.oper = "edit";
         } else {
-            formData['oper'] = "add";
+            entityData.oper = "add";
         }
+        entityData.avoid_repeat_token = entityData.mainData["avoid_repeat_token"];
         var rv = { success: false };
         $.ajax({
             type: "post",
             url: basePath + '/Api/Core/Persistence?from=form',//这里不用带tn 因为 表单中有tn值
-            data: formData,
+            data: entityData,
             async: false,
             dataType: "json",
             headers:{
@@ -173,10 +176,10 @@ var Persistence = function (formid, tn, callback) {
                 if (result.success === true) {
                     //赋值给ID 为了防止重复增加
                     if (rv.data) {
-                        var formData = rv.data;// JSON.parse(rv.data);
+                        var resultData = rv.data;// JSON.parse(rv.data);
                         
-                        $("#" + formid + " .form-control#Id").val(formData.Id);
-                        $("#" + formid + " .form-control#Ts").val(formData.Ts);
+                        $("#" + formid + " .form-control#Id").val(resultData.Id);
+                        $("#" + formid + " .form-control#Ts").val(resultData.Ts);
                     }
                 }
                 if (result.msg) {

@@ -397,12 +397,11 @@ namespace Fap.AspNetCore.Controls.DataForm
 
             }
             //Id,Fid,Table_Name这三列要隐藏，这里隐藏Table_Name，其他的在上面处理了
-            formHtml.AppendLine(CreateHiddenControl(FapWebConstants.FORM_TABLENAME, _tableName));
+            //formHtml.AppendLine(CreateHiddenControl(FapWebConstants.FORM_TABLENAME, _tableName));
             //formToken 用于防止重复提交
             string avoidRepeatToken = UUIDUtils.Fid;
             formHtml.AppendLine(CreateHiddenControl(FapWebConstants.AVOID_REPEAT_TOKEN, avoidRepeatToken));
-            //保存的时候校验此值 (加上表名，避免连续打开连个表单，session就不同了)
-            _applicationContext.Session.SetString($"{_tableName.ToLower()}{FapWebConstants.AVOID_REPEAT_TOKEN}", avoidRepeatToken);
+
             //XSRF/CSRF 防护
             IAntiforgery antiforgery = ActivatorUtilities.GetServiceOrCreateInstance<IAntiforgery>(_serviceProvider);
             var context = _serviceProvider.GetService<IHttpContextAccessor>();
