@@ -444,7 +444,7 @@ var loadExportWordMessageBox = function (title, gid, qryCols, tablename, callbac
             window.location.href = basePath + "/" + rv.data;
         } else {
             var dialog = bootbox.dialog({
-                title: title,
+                title: "上传打印模板",
                 message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
                 buttons: {                  
                     cancel: {
