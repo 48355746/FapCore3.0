@@ -1,4 +1,5 @@
-﻿//扩展jsgrid工具栏按钮
+﻿
+//扩展jsgrid工具栏按钮
 var extendToolBar = function (grdid, pagerid, name, icon, extendEvent) {
     jQuery('#' + grdid).jqGrid('navButtonAdd', '#' + pagerid, {
         caption: name,
@@ -56,7 +57,7 @@ function refreshBaseJqGrid(grdid) {
 //callback 扩展js方法
 //title 标题;gid jqgrid的ID;icon 图标;tablename 表名（frm-tablename 表单名称）;
 //id业务数据主键值;fromInitCallback 表单初始化事件;saveCompletedCallback 保存完毕事件
-var loadFormMessageBox = function (title, gid, icon, tablename, fid,queryCols, fromInitCallback, saveCompletedCallback) {
+var loadFormMessageBox = function (title, gid, icon, tablename, fid, queryCols, fromInitCallback, saveCompletedCallback) {
 
     var buttons = {
         success: {
@@ -108,7 +109,6 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid,queryCols, f
                     initDialog();
                     return false;
                 } else {
-
                     return false;
                 }
             }
@@ -143,7 +143,7 @@ var viewFormMessageBox = function (fid, tablename, qrycols) {
         title: '查看',
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
         size: "large",
-        footer:false
+        footer: false
     });
     dialog.init(function () {
         dialog.find('.bootbox-body').load(basePath + "/Component/DataFormView/" + fid, { tn: tablename, qrycols: qrycols });
@@ -177,28 +177,28 @@ var deleteGridRow = function (gid, tableName, onCompletedCallback) {
         bootbox.confirm('确定要删除选中的吗?', function (result) {
             if (result) {
                 $.post(basePath + "/Api/Core/Persistence/",
-                    {"oper": "del", "tableName": tableName, maindata: { "Fid": dr } }, function (rv) {
-                    if (rv.success) {
-                        if ($.isFunction(onCompletedCallback)) {
-                            onCompletedCallback();
+                    { "oper": "del", "tableName": tableName, maindata: { "Fid": dr } }, function (rv) {
+                        if (rv.success) {
+                            if ($.isFunction(onCompletedCallback)) {
+                                onCompletedCallback();
+                            }
+                            if ($('#' + gid).length && $('#' + gid).length > 0) {
+                                $('#' + gid).jqGrid('setGridParam', {
+                                    //page: 1
+                                }).trigger("reloadGrid"); //重新载入
+                            }
                         }
-                        if ($('#' + gid).length && $('#' + gid).length > 0) {
-                            $('#' + gid).jqGrid('setGridParam', {
-                                //page: 1
-                            }).trigger("reloadGrid"); //重新载入
+                        if (rv.msg) {
+                            $.msg(rv.msg);
                         }
-                    }
-                    if (rv.msg) {
-                        $.msg(rv.msg);
-                    }
-                });
+                    });
             }
         });
     } else {
         bootbox.alert('请选择一条数据');
     }
 };
-var openRefrenceWindow = function (title, colfid,  refurl, selectcallback,clearcallback) {
+var openRefrenceWindow = function (title, colfid, refurl, selectcallback, clearcallback) {
     var dialog = bootbox.dialog({
         title: title,
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
@@ -209,7 +209,7 @@ var openRefrenceWindow = function (title, colfid,  refurl, selectcallback,clearc
                 callback: function () {
                     var res = GetRefResult();
                     if (res) {
-                        selectcallback && selectcallback(res.code, res.name);                                          
+                        selectcallback && selectcallback(res.code, res.name);
                     } else { $.msg("请选择一条数据！"); return; }
                 }
             },
@@ -232,7 +232,7 @@ var openRefrenceWindow = function (title, colfid,  refurl, selectcallback,clearc
             $(window).triggerHandler('resize.jqGrid');//触发窗口调整,使Grid得到正确的大小
     });
     dialog.init(function () {
-        var url = basePath + '/Component/' + refurl + '/' + colfid ;        
+        var url = basePath + '/Component/' + refurl + '/' + colfid;
         $.get(url, function (ev) {
             dialog.find('.bootbox-body').html(ev);
 
@@ -253,8 +253,8 @@ var loadBatchUpdateMessageBox = function (title, gid, qryCols, tablename, id, ca
                 label: MultiLangHelper.getResName("global_oper_cancel", "取消"), className: "btn-default"
             }
         }
-    });   
-    dialog.init(function () { 
+    });
+    dialog.init(function () {
         dialog.find('.bootbox-body').html(`  <div id="modal-wizard-container"> 
                                                <div> 
                                                 <ul class="steps"> 
@@ -307,7 +307,7 @@ var loadBatchUpdateMessageBox = function (title, gid, qryCols, tablename, id, ca
                 moveOnSelect: false
 
             });
-        });        
+        });
         dialog.find('#modal-wizard-container').ace_wizard({
             //手动指定按钮
             buttons: '.wizard-actions:eq(0)'
@@ -366,7 +366,7 @@ var loadBatchUpdateMessageBox = function (title, gid, qryCols, tablename, id, ca
                 }
             });
         });
-    });   
+    });
 };
 
 //导出excel数据
@@ -376,7 +376,7 @@ var loadBatchUpdateMessageBox = function (title, gid, qryCols, tablename, id, ca
 //tablename 表名
 //callback 扩展js方法
 var loadExportExcelMessageBox = function (title, gid, qryCols, tablename, callback) {
-    var $fieldList =$("<select multiple='multiple' size='10' id='duallistbox_" + tablename + "' name='duallistbox_" + tablename + "'></select>");
+    var $fieldList = $("<select multiple='multiple' size='10' id='duallistbox_" + tablename + "' name='duallistbox_" + tablename + "'></select>");
 
     var dialog = bootbox.dialog({
         title: title,
@@ -392,7 +392,7 @@ var loadExportExcelMessageBox = function (title, gid, qryCols, tablename, callba
                         return;
                     }
                     var postData = $('#' + gid).jqGrid("getGridParam", "postData");
-                    postData.QuerySet.ExportCols = fields.join();                   
+                    postData.QuerySet.ExportCols = fields.join();
                     $.post(basePath + "/Api/Core/ExportExcelData", postData, function (data) {
                         if (data.success) {
                             window.location.href = basePath + "/" + data.data;
@@ -413,15 +413,15 @@ var loadExportExcelMessageBox = function (title, gid, qryCols, tablename, callba
     dialog.init(function () {
         dialog.find('.bootbox-body').html('');
         dialog.find('.bootbox-body').append($fieldList);
-        $.get(basePath + "/Api/Core/FieldList/" + tablename, { qryCols: qryCols }, function (data) {          
+        $.get(basePath + "/Api/Core/FieldList/" + tablename, { qryCols: qryCols }, function (data) {
             $fieldList.empty();
             $.each(data, function (i, d) {
                 if (d.colName === "Id" || d.colName === "Fid") {
                     $fieldList.append("<option value='" + d.colName + "'>" + d.colComment + "</option>");
                     return true;
-                }              
-                $fieldList.append("<option value='" + d.colName + "' selected>" + d.colComment + "</option>");                    
-               
+                }
+                $fieldList.append("<option value='" + d.colName + "' selected>" + d.colComment + "</option>");
+
             });
             $fieldList.bootstrapDualListbox({
                 nonSelectedListLabel: '<span class="text-primary h4">待选项</span> ',
@@ -429,7 +429,7 @@ var loadExportExcelMessageBox = function (title, gid, qryCols, tablename, callba
                 preserveSelectionOnMove: 'moved',
                 moveOnSelect: false,
                 showFilterInputs: false
-               
+
             });
         });
     });
@@ -446,7 +446,7 @@ var loadExportWordMessageBox = function (title, gid, qryCols, tablename, callbac
             var dialog = bootbox.dialog({
                 title: "上传打印模板",
                 message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
-                buttons: {                  
+                buttons: {
                     cancel: {
                         label: MultiLangHelper.getResName("global_oper_close", "关闭"), className: "btn-default"
                     }
@@ -460,10 +460,10 @@ var loadExportWordMessageBox = function (title, gid, qryCols, tablename, callbac
 										word模板编辑说明：需要替换的内容请使用 "\${列名}"来进行占位。<br/>例如:占位"姓名"，请使用"\${姓名}"。
                                         <strong>系统常量：\${当前日期}，\${登录人}</strong>    
                                        <br/> 注意：系统仅支持<strong>.docx</strong>后缀word模板
-										</p>`;               
+										</p>`;
 
-                var $file = $("<input id=\"file-import\" type=\"file\"  class=\"file-loading\">");                
-                dialog.find('.bootbox-body').empty().append(title).append($file);                
+                var $file = $("<input id=\"file-import\" type=\"file\"  class=\"file-loading\">");
+                dialog.find('.bootbox-body').empty().append(title).append($file);
                 $file.fileinput({
                     language: 'zh',
                     uploadUrl: basePath + '/Api/Core/ImportWordTemplate/' + tablename,
@@ -474,7 +474,7 @@ var loadExportWordMessageBox = function (title, gid, qryCols, tablename, callbac
             });
         }
     });
-    
+
 
 };
 //导出excel模板
@@ -621,10 +621,10 @@ var formatReference = function (cellValue, options, rowObject) {
     var colName = options.colModel.name + "MC";
     var v = rowObject[colName] === null ? "" : rowObject[colName];
 
-    return "<label data-value='" + cellValue +"'>" + v+ "</label>";
+    return "<label data-value='" + cellValue + "'>" + v + "</label>";
 };
 var unformatReference = function (cellValue, options, cellObject) {
-    
+
     return $(cellObject.innerHTML).data("value");
 };
 //replace icons with FontAwesome icons like above
@@ -643,9 +643,27 @@ function updatePagerIcons(table) {
         if ($class in replacement) icon.attr('class', 'ui-icon ' + replacement[$class]);
     });
 }
-function enableTooltips(table) {
+function enableTooltips(table, wrapper) {
     $('.navtable .ui-pg-button').tooltip({ container: 'body' });
     $(table).find('.ui-pg-div').tooltip({ container: 'body' });
+    var offsetWidget = $(table).offset();
+    var availableHeight = $(window).height() - (offsetWidget.top < 0 ? 140 : offsetWidget.top) - 65;
+    var height = table.clientHeight;
+    if (availableHeight < height) {
+        $(table).setGridHeight(availableHeight);
+        setTimeout(function () {
+            var parent_width = $(table).closest(wrapper).width();
+            $(table).jqGrid('setGridWidth', parent_width);
+
+        }, 0);
+    } else {
+        $(table).setGridHeight(height + 20);
+        setTimeout(function () {
+            var parent_width = $(table).closest(wrapper).width();
+            $(table).jqGrid('setGridWidth', parent_width);
+
+        }, 0);
+    }
 }
 
 //采用元数据生成表单，此js没用
@@ -668,7 +686,7 @@ function style_edit_form(form) {
     buttons.find('.ui-icon').hide();
     buttons.eq(0).append('<i class="ace-icon fa fa-chevron-left"></i>');
     buttons.eq(1).append('<i class="ace-icon fa fa-chevron-right"></i>');
-};
+}
 
 function style_delete_form(form) {
     var buttons = form.next().find('.EditButton .fm-button');
@@ -689,6 +707,75 @@ function style_search_form(form) {
     buttons.find('.EditButton a[id*="_reset"]').addClass('btn btn-sm btn-info').find('.ui-icon').attr('class', 'ace-icon fa fa-retweet');
     buttons.find('.EditButton a[id*="_query"]').addClass('btn btn-sm btn-inverse').find('.ui-icon').attr('class', 'ace-icon fa fa-comment-o');
     buttons.find('.EditButton a[id*="_search"]').addClass('btn btn-sm btn-purple').find('.ui-icon').attr('class', 'ace-icon fa fa-search');
+
+
+}
+function loadQueryProgram(form, gridid, tn) {
+    var dialog = form.closest('.ui-jqdialog');
+    var buttons = dialog.find('.EditTable');
+    var $selQryPrm = $(`<select id=fbox_"` + gridid + `_selectqry"><option value=''>--已有查询方案--</option></select>`);
+
+    if (buttons.find('.EditButton select[id*="_selectqry"]')[0] === undefined) {
+        $.get(basePath + "/Api/Core/QueryProgram/" + tn, function (rvm) {
+            if (rvm.success) {
+                $("#" + gridid).data("queryprogram", rvm.data);
+                $.each(rvm.data, function (i, d) {
+                    $selQryPrm.append(`<option value="` + d.fid + `">` + d.programName + `</option>`);
+                });
+            }
+        });
+        $selQryPrm.on('change', function () {
+            var fid = $(this).find('option:selected').val();
+            var qryData = $("#" + gridid).data("queryprogram");
+            var filter = $.grep(qryData, (d) => { return d.fid === fid; });
+            if (filter.length === 1) {
+                $("#fbox_" + gridid).jqFilter("addFilter", filter[0].queryCondition);
+            }
+        });
+        buttons.find('.EditButton a[id*="_search"]').before($selQryPrm.eq(0));
+    }
+}
+//重绘后执行
+function addQueryProgram(form, gridid, tn) {
+    var $qryProgram = $(`<a id="fbox_` + gridid + `_queryprogram" class="fm-button ui-state-default ui-corner-all fm-button-icon-left btn btn-sm btn-default btn-round pull-right"><span class="ace-icon fa fa-save"></span>另存为查询方案</a>`);
+    form.find('.add-rule').first().after($qryProgram.eq(0));
+    $qryProgram.on(ace.click_event, function () {
+        var dialog = form.closest('.ui-jqdialog');
+        var buttons = dialog.find('.EditTable');
+        buttons.find('.EditButton a[id*="_search"]').trigger('click');
+        var jqPostData = $('#' + gridid).jqGrid("getGridParam", "postData");
+        if (jqPostData.filters === undefined) {
+            $.msg("请先执行查询，然后再另存为查询方案！");
+            return;
+        }
+        //var sqlRv = JSON.stringify(jqPostData.filters );
+        bootbox.prompt("查询方案名称？", function (result) {
+            if (result === null) {
+                //alert(1);
+            } else {
+                if (result !== "") {
+                    $.post(basePath + "/Api/Core/QueryProgram", { ProgramName: result, TableName: tn, QueryCondition: jqPostData.filters }, function (rvm) {
+                        if (rvm.success) {
+                            $.msg("保存成功！");
+                            //添加新的查询方案
+                            var qryData = $("#" + gridid).data("queryprogram");
+                            let d = rvm.data;
+                            qryData.push(d);
+                            $("#" + gridid).data("queryprogram", qryData);
+                            buttons.find('.EditButton select[id*="_selectqry"]').append(`<option value="` + d.fid + `">` + d.programName + `</option>`);
+
+                        } else {
+                            bootbox.alert("保存失败！");
+                        }
+                    });
+                } else {
+                    bootbox.alert("查询方案名称不能为空！");
+                }
+
+            }
+        });
+    });
+
 }
 
 function beforeDeleteCallback(e) {
@@ -711,7 +798,7 @@ function beforeEditCallback(e) {
 function formatRating(cellValue, options, rowObject) {
     var color = (parseInt(cellValue) > 0) ? "green" : "red";
     var cellHtml = "<span style='color:" + color + "' originalValue='" +
-                         cellValue + "'>" + cellValue + "</span>";
+        cellValue + "'>" + cellValue + "</span>";
 
     return cellHtml;
 }
@@ -738,7 +825,7 @@ function formatCheckboxList(cellValue, options, cellObject) {
         }
     }
     var cellHtml = "<span  originalValue='" +
-                         cellUid.join() + "'>" + cellText.join() + "</span>";
+        cellUid.join() + "'>" + cellText.join() + "</span>";
     return cellHtml;
 }
 function unformatCheckboxList(cellValue, options, cellObject) {
@@ -752,7 +839,7 @@ function createReferenceEditElement(value, editOptions, rowObject) {
 function getReferenceElementValue(elem, oper, value) {
     if (oper === "set") {
         var input = $(elem).find("input:text");
-        input.val(value).data('value',value);
+        input.val(value).data('value', value);
     }
     if (oper === "get") {
         return $(elem).find("input:text").data("value") === undefined ? "" : $(elem).find("input:text").data("value");

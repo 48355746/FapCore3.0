@@ -2646,7 +2646,6 @@ ace.helper.hasClass =
 
 	$(document).off('click.ace.widget', '.widget-header a[data-action]').on('click.ace.widget', '.widget-header a[data-action]', function (ev) {
 		ev.preventDefault();
-        debugger
 		var $this = $(this);
 		var $box = $this.closest('.widget-box');
 		if( $box.length == 0 || $box.hasClass('ui-sortable-helper') ) return;

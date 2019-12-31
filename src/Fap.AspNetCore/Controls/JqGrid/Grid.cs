@@ -108,9 +108,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
         private bool? _searchClearButton;
         private bool? _searchOnEnter;
         private bool? _searchToolbar;
-        private bool? _colMenu = true;
-        //显示设置查询方案
-        private bool? _showQueryProgram;
+        private bool? _colMenu;
         private bool? _showAllSortIcons;
         private bool? _shrinkToFit;
         private Direction? _sortIconDirection;
@@ -1009,16 +1007,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
             _searchToggleButton = searchToggleButton;
             return this;
         }
-        /// <summary>
-        /// 显示保存查询方案按钮
-        /// </summary>
-        /// <param name="showQueryProgram"></param>
-        /// <returns></returns>
-        public Grid SetShowQueryProgram(bool showQueryProgram)
-        {
-            _showQueryProgram = showQueryProgram;
-            return this;
-        }
+
 
         /// <summary>
         ///     If enabled all sort icons are visible for all columns which are sortable (default: false)
@@ -1544,7 +1533,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                     var offsetWidget = $('###gridid##').offset();
                     availableHeight = $(window).height() - offsetWidget.top;
                     $('###gridid##').setGridHeight(availableHeight - 55);
-                });").Replace("##wrapper##", _insideElementClass);
+                });");
             //当为tabcontrol的时候的特殊处理
             if (_tabItemName.IsPresent())
             {
@@ -1929,7 +1918,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                         var table = this;" + encryptJs.ToString() + @";
 						setTimeout(function(){{
 							updatePagerIcons(table);
-							enableTooltips(table);
+							enableTooltips(table,'.##wrapper##');
 						}}, 0);
                         {0} }},", _onLoadComplete).AppendLine();
             }
@@ -1941,7 +1930,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                         " + encryptJs.ToString() + @";
 						setTimeout(function(){
 							updatePagerIcons(table);
-							enableTooltips(table);
+							enableTooltips(table,'.##wrapper##');
 						}, 0);
 					},");
             }
@@ -2074,20 +2063,22 @@ namespace Fap.AspNetCore.Controls.JqGrid
             if (_editRowModel == EditRowModel.Dialog)
             {
                 #region JqGrid操作
-                //显示查询方案保存
-                string queryProgram = string.Empty;
-                if (_showQueryProgram ?? false)
+
+                string hasSearch = "false";
+                string hasRefresh = "false";
+                if ((_dataFormType & DataFormType.Search) > 0)
                 {
-                    queryProgram = "showQueryProgram:true,";
+                    hasSearch = "true";
                 }
-                string hasSearch = "true";
-                string hasRefresh = "true";
+                if ((_dataFormType & DataFormType.Refresh) > 0)
+                {
+                    hasRefresh = "true";
+                }
                 if (_enabledTreeGrid)
                 {
                     hasSearch = "false";
                     //hasRefresh = "false";
                 }
-
                 script.AppendLine(@" 
                 jQuery('###gridid##').jqGrid('navGrid', '###pager##',
                     { 	//navbar options
@@ -2106,18 +2097,26 @@ namespace Fap.AspNetCore.Controls.JqGrid
                         afterShowSearch: function (e) {
                             var form = $(e[0]);
                             form.closest('.ui-jqdialog').find('.ui-jqdialog-title').wrap('<div class=" + "\"widget-header\"" + @"  />')
-                            style_search_form(form);
-                        },
+                            style_search_form(form); ");
+                //显示查询方案下拉框
+                if ((_dataFormType & DataFormType.QueryProgram) > 0)
+                {
+                    script.AppendLine(@"loadQueryProgram(form, '##gridid##', '" + TableName + @"'); ");
+                }
+                script.AppendLine(@"  },
                         afterRedraw: function () {
-                            style_search_filters($(this));
-                        }
+                            style_search_filters($(this)); ");
+                //显示查询方案保存按钮
+                if ((_dataFormType & DataFormType.QueryProgram) > 0)
+                {
+                    script.AppendLine(@"addQueryProgram($(this), '##gridid##', '" + TableName + @"'); ");                   
+                }
+                script.AppendLine(@" }
                         ,
-                        multipleSearch: true,
-                        " + queryProgram + @"    
-                        multipleGroup:true
-                        /***
-                        showQuery: true
-                        */
+                        multipleSearch: true,                            
+                        multipleGroup:true                        
+                        //showQuery: true
+                        
                     },{}
                 )
               ");
@@ -2127,12 +2126,15 @@ namespace Fap.AspNetCore.Controls.JqGrid
                     ImportToolbar(script);
                 }
                 //都可以导出数据
-                if ((_dataFormType & DataFormType.Export) > 0)
+                if ((_dataFormType & DataFormType.ExportExcel) > 0)
                 {
                     ExportExcelToolbar(script);
-                    ExportWordToolbar(script);
                 }
+                if ((_dataFormType & DataFormType.ExportWord) > 0)
+                {
+                    ExportWordToolbar(script);
 
+                }
                 //以下工具栏向前排
                 //查看工具
                 if ((_dataFormType & DataFormType.View) > 0)
@@ -2260,7 +2262,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
             script.AppendLine("});");
 
             // Insert grid id where needed (in columns)
-            script.Replace("##gridid##", _id).Replace("##pager##", _pager);
+            script.Replace("##gridid##", _id).Replace("##pager##", _pager).Replace("##wrapper##", _insideElementClass);
 
             return script.ToString();
         }
@@ -2310,7 +2312,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                     }
                   });");
         }
-        
+
         private void ImportToolbar(StringBuilder script)
         {
             #region 导入

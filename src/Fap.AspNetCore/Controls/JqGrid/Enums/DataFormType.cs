@@ -6,7 +6,7 @@ namespace Fap.AspNetCore.Controls.JqGrid.Enums
         /// <summary>
         /// 查找
         /// </summary>
-         Search=0,
+         Search=1,
         /// <summary>
         /// 刷新
         /// </summary>
@@ -24,9 +24,9 @@ namespace Fap.AspNetCore.Controls.JqGrid.Enums
         /// </summary>
          Delete=16,
         /// <summary>
-        /// 导出 
+        /// 导出 excel
         /// </summary>
-        Export=32,
+        ExportExcel=32,
         /// <summary>
         /// 导入
         /// </summary>
@@ -38,7 +38,20 @@ namespace Fap.AspNetCore.Controls.JqGrid.Enums
         /// <summary>
         /// 查看
         /// </summary>
-        View=256
+        View=256,
+        /// <summary>
+        /// 无
+        /// </summary>
+        None=512,
+        /// <summary>
+        /// 导出word
+        /// </summary>
+        ExportWord=1024,
+        /// <summary>
+        /// 查询方案
+        /// </summary>
+        QueryProgram=2048
+
 
     }
     

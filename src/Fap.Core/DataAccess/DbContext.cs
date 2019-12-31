@@ -2159,10 +2159,10 @@ namespace Fap.Core.DataAccess
             }
             PageInfo<T> page = new PageInfo<T>();
             page.PageSize = pageable.PageSize;
-            page.TotalSizes = ExecuteScalar<int>(sqls[1], dynamicParameters);
+            page.TotalCount = ExecuteScalar<int>(sqls[1], dynamicParameters);
             page.Items = Query<T>(sqls[0], dynamicParameters, true);
             page.MaxIdValue = page.Items.Max(a => a.Id);
-            page.PageNumber = pageable.PageNumber;
+            page.CurrentPage = pageable.CurrentPage;
             string statSql = StatisticsSql(pageable);
             if (statSql.IsPresent())
             {
@@ -2187,13 +2187,13 @@ namespace Fap.Core.DataAccess
             }
             PageInfo<dynamic> page = new PageInfo<dynamic>();
             page.PageSize = pageable.PageSize;
-            page.TotalSizes = ExecuteScalar<int>(sqls[1], dynamicParameters);
+            page.TotalCount = ExecuteScalar<int>(sqls[1], dynamicParameters);
             page.Items = Query(sqls[0], dynamicParameters, true);
             if (page.Items.Count() > 0)
             {
                 page.MaxIdValue = page.Items.Max(a => a.Id);
             }
-            page.PageNumber = pageable.PageNumber;
+            page.CurrentPage = pageable.CurrentPage;
             string statSql = StatisticsSql(pageable);
             if (statSql.IsPresent())
             {

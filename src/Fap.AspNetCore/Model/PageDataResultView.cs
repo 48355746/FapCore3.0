@@ -31,24 +31,24 @@ namespace Fap.AspNetCore.Model
         /// <summary>
         /// 当前页码，从1开始
         /// </summary>
-        public int CurrentPageIndex { get; set; }
+        public int CurrentPage { get; set; }
         /// <summary>
         /// 每页的个数
         /// </summary>
-        public int PageCount { get; set; }
+        public int PageSize { get; set; }
         /// <summary>
-        /// 记录总数量
+        /// 总记录数
         /// </summary>
-        public int TotalNum { get; set; }
+        public int TotalCount { get; set; }
 
         /// <summary>
         /// 总页数
         /// </summary>
-        public int TotalPage
+        public int PageCount
         {
             get
             {
-                return TotalNum > 0 ? ((TotalNum + PageCount - 1) / PageCount) : 1;
+                return TotalCount > 0 ? ((TotalCount + PageSize - 1) / PageSize) : 1;
             }
         }
 
@@ -85,9 +85,9 @@ namespace Fap.AspNetCore.Model
 
             var jsonObj = new JqGridData
             {
-                Total = this.TotalPage,
-                Page = this.CurrentPageIndex,
-                Records = this.TotalNum,
+                Total = this.PageCount,
+                Page = this.CurrentPage,
+                Records = this.TotalCount,
                 Rows = DataListForJqGrid,// DataListForJqGrid.ToArray(),
                 Userdata = StatFieldData
             };

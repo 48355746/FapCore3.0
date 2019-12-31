@@ -719,14 +719,13 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         /// </summary>
         /// <param name="rolefid"></param>
         /// <returns></returns>
-        [HttpGet]
-        [Route("Authority")]
-        public JsonResult GetAuthority(string rolefid)
+        [HttpGet("Authority/{roleUid}")]
+        public JsonResult GetAuthority(string roleUid)
         {
             DynamicParameters dparam = new DynamicParameters();
-            dparam.Add("RoleUid", rolefid);
+            dparam.Add("RoleUid", roleUid);
             //获取角色用户
-            IEnumerable<FapUser> users = _dbContext.QueryWhere<FapUser>("fid in(select useruid from FapRoleUser where RoleUid=@RoleUid)", dparam, true).OrderBy(c => c.UserCode);
+            IEnumerable<dynamic> users = _dbContext.Query("select Fid, UserCode,UserName,UserEmail,UserIdentity from FapUser where fid in(select useruid from FapRoleUser where RoleUid=@RoleUid) order by UserCode", dparam, true);
             //获取角色菜单
             IEnumerable<dynamic> menus = _dbContext.Query("select MenuUid from FapRoleMenu where RoleUid= @RoleUid", dparam);
             //获取角色部门
@@ -774,7 +773,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         /// <param name="auth"></param>
         /// <returns></returns>
         [HttpPost]
-        [Route("SaveAuthority")]
+        [Route("Authority")]
         public JsonResult SetAuthority(Authority auth)
         {
             bool success = false;
@@ -811,7 +810,6 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
                 }
 
                 success = _rbacService.AddRoleDept(auth.RoleUid, depts);
-
 
                 _platformDomain.RoleDeptSet.Refresh();
             }
@@ -890,8 +888,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
                 success = true;
                 _platformDomain.RoleRoleSet.Refresh();
             }
-            success = true;
-            return Json(new { success = success });
+            return Json(new ResponseViewModel() { success = success });
 
         }
 

@@ -83,11 +83,11 @@ namespace Fap.AspNetCore.Serivce
                     //dataResultView.DefaultData = queryOption.Wraper.GetDefaultData();
                     //}
                     dataResultView.DataJson = JsonConvert.SerializeObject(pi.Items);
-                    dataResultView.TotalNum = pi.TotalPages;
-                    dataResultView.CurrentPageIndex = pi.PageNumber;
+                    dataResultView.TotalCount = pi.TotalCount;
+                    dataResultView.CurrentPage = pi.CurrentPage;
                     dataResultView.OrginData = pi.Items;
                     dataResultView.DataListForJqGrid = pi.Items;// as IEnumerable<IDictionary<string, object>>;
-                    dataResultView.PageCount = pi.PageSize;
+                    dataResultView.PageSize = pi.PageSize;
                     //统计字段
                     dataResultView.StatFieldData = pi.StatFieldData;
                     dataResultView.StatFieldDataJson = JsonConvert.SerializeObject(pi.StatFieldData);
@@ -211,7 +211,7 @@ namespace Fap.AspNetCore.Serivce
             }
             //事件处理
             //actionSimplepageable?.Invoke(pageable);
-            pageable.PageNumber = jqGridPostData.Page;
+            pageable.CurrentPage = jqGridPostData.Page;
             pageable.PageSize = jqGridPostData.Rows;
             //数据权限
             string dataWhere = _rbacService.GetRoleDataWhere(qs.TableName);

@@ -55,18 +55,9 @@
                 </div>
             </div>
             <div class="widget-body">
-                @*<div class="widget-toolbox">
-                        <div class="btn-toolbar">
-                            <div class="btn-group">
-                                <button id="btnResetPassword" class="btn btn-white">
-                                    <i class="ace-icon fa fa-undo blue"></i>
-                                    重置密码
-                                </button>
-                            </div>
-                        </div>
-                    </div>*@
+         
                 <div class="widget-main">
-                    <fap-grid id="user" query-option="@Model.QueryOption" post-data="@Model.PostData" auto-width="true" on-form-init-add="afterInitFormCallback" multi-box-only="true" multi-select="true"  oper-cud="true" oper-export="true" oper-batch-update="true"></fap-grid>
+                    <fap-grid id="user" query-option="@Model.QueryOption" post-data="@Model.PostData" auto-width="true" on-form-init-add="afterInitFormCallback" multi-box-only="true" multi-select="true" oper-refresh="true"  oper-cud="true" oper-export="true" oper-queryprogram="true" oper-batch-update="true"></fap-grid>
 
                 </div>
             </div>

@@ -22,7 +22,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         private IFapApplicationContext _applicationContext;
         private IMultiLangService _multiLang;
         private readonly IMemoryCache _memoryCache;
-        public FapGridTagHelper(IDbContext dataAccessor,  ILoggerFactory logger,IFapApplicationContext applicationContext, IMultiLangService multiLang, IMemoryCache memoryCache)
+        public FapGridTagHelper(IDbContext dataAccessor, ILoggerFactory logger, IFapApplicationContext applicationContext, IMultiLangService multiLang, IMemoryCache memoryCache)
         {
             _dataAccessor = dataAccessor;
             //_fapOption = fapOption;
@@ -130,10 +130,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// </summary>
         public bool SearchToolbar { get; set; }
         public int Height { get; set; }
-        /// <summary>
-        /// 显示查询方案
-        /// </summary>
-        public bool ShowQueryprogram { get; set; }
+        
         /// <summary>
         /// 显示行数
         /// </summary>
@@ -141,7 +138,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// <summary>
         /// 是否显示列菜单
         /// </summary>
-        public bool ColMenu { get; set; }
+        public bool ColMenu { get; set; } = true;
         /// <summary>
         /// 是否为树表
         /// </summary>
@@ -177,13 +174,21 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// </summary>
         public bool OperBatchUpdate { get; set; }
         /// <summary>
-        /// 显示导出按钮
+        /// 导出（word，excel）
         /// </summary>
         public bool OperExport { get; set; }
         /// <summary>
+        /// 显示导出Excel按钮
+        /// </summary>
+        public bool OperExportExcel { get; set; }
+        /// <summary>
+        /// 导出word
+        /// </summary>
+        public bool OperExportWord { get; set; }
+        /// <summary>
         /// 显示导入按钮
         /// </summary>
-        public bool OperImport { get; set; } = true;
+        public bool OperImport { get; set; }
         /// <summary>
         /// 增删改组合
         /// </summary>
@@ -196,6 +201,14 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// 显示查询按钮
         /// </summary>
         public bool OperSearch { get; set; }
+        /// <summary>
+        /// 显示刷新按钮
+        /// </summary>
+        public bool OperRefresh { get; set; }
+        /// <summary>
+        /// 显示查询方案
+        /// </summary>
+        public bool OperQueryprogram { get; set; }
         /// <summary>
         /// subGrid设置展开内容
         /// function showChildGrid(parentRowID, parentRowKey) {
@@ -252,7 +265,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             if (QueryOption != null)
             {
                 grid.SetQueryOption(QueryOption);
-            }        
+            }
             grid.SetAutoWidth(AutoWidth);
             grid.SetDataType(SourceType);
             grid.SetViewRecords(ViewRecords);
@@ -261,10 +274,9 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             {
                 grid.SetPostData(PostData);
             }
-            if (ColMenu)
-            {
-                grid.SetColMenu(ColMenu);
-            }
+
+            grid.SetColMenu(ColMenu);
+
             if (Height > 0)
             {
                 grid.SetHeight(Height);
@@ -284,11 +296,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             else
             {
                 grid.SetInsideWidget();
-            }
-            if (ShowQueryprogram)
-            {
-                grid.SetShowQueryProgram(true);
-            }
+            }          
             if (MultiSelect)
             {
                 grid.SetMultiSelect(MultiSelect);
@@ -360,16 +368,16 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                     grid.OnSelectRow($"{OnSelectRow}(rowid, status);");
                 }
             }
-            DataFormType formType = DataFormType.Refresh;
+            DataFormType formType = DataFormType.None;
             if (OperCud)
             {
-                formType = formType | DataFormType.Add | DataFormType.Update | DataFormType.Delete;
+                formType = DataFormType.Add | DataFormType.Update | DataFormType.Delete;
             }
             else
             {
                 if (OperAdd)
                 {
-                    formType = formType | DataFormType.Add;
+                    formType = DataFormType.Add;
                 }
                 if (OperUpdate)
                 {
@@ -384,10 +392,20 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             {
                 formType |= DataFormType.BatchUpdate;
             }
-
             if (OperExport)
             {
-                formType |= DataFormType.Export;
+                formType |= DataFormType.ExportExcel | DataFormType.ExportWord;
+            }
+            else
+            {
+                if (OperExportExcel)
+                {
+                    formType |= DataFormType.ExportExcel;
+                }
+                if (OperExportWord)
+                {
+                    formType |= DataFormType.ExportWord;
+                }
             }
             if (OperImport)
             {
@@ -396,6 +414,18 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             if (OperSearch)
             {
                 formType |= DataFormType.Search;
+            }
+            if (OperRefresh)
+            {
+                formType |= DataFormType.Refresh;
+            }
+            if (OperQueryprogram)
+            {
+                formType |= DataFormType.QueryProgram;
+                if (!OperSearch)
+                {
+                    formType |= DataFormType.Search;
+                }
             }
 
             grid.SetFormType(formType);

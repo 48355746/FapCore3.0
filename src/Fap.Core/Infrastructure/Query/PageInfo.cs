@@ -17,13 +17,13 @@ namespace Fap.Core.Infrastructure.Query
         {
             get
             {
-                return TotalSizes == 0 ? 1 : (int)Math.Ceiling(TotalSizes / (double)PageSize);
+                return TotalCount == 0 ? 1 : (int)Math.Ceiling(TotalCount / (double)PageSize);
             }
         }
         /// <summary>
         /// 总记录数
         /// </summary>
-        public int TotalSizes { get; set; }
+        public int TotalCount { get; set; }
         public IEnumerable<T> Items { get; set; } = new List<T>();
         public System.Collections.Generic.IEnumerator<T> GetEnumerator()
         {
@@ -33,13 +33,13 @@ namespace Fap.Core.Infrastructure.Query
             }
         }
         /// <summary>
-        /// 页记录数
+        /// 每页记录数
         /// </summary>
         public int PageSize { get; set; }
         /// <summary>
-        /// 页码
+        /// 当前页
         /// </summary>
-        public int PageNumber { get; set; }
+        public int CurrentPage { get; set; }
         /// <summary>
         /// 最大Id的值
         /// </summary>

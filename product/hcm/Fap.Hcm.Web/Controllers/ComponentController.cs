@@ -279,12 +279,12 @@ namespace Fap.Hcm.Web.Controllers
                 if (refCols.Any())
                 {
                     sql = $"select {fc.RefID} as Id,{fc.RefName} as Text,Pid,{ string.Join(",", refCols)},";
+                    if (refMcSqls.Any())
+                    {
+                        sql += $"{ string.Join(",", refMcSqls)},";
+                    }
+                    sql += $"'{icon}' as Icon from { fc.RefTable}";
                 }
-                if (refMcSqls.Any())
-                {
-                    sql += $"{ string.Join(",", refMcSqls)},";
-                }
-                sql += $"'{icon}' as Icon from { fc.RefTable}";
                 if (!string.IsNullOrWhiteSpace(fc.RefCondition))
                 {
                     sql += " where " + refcondition;

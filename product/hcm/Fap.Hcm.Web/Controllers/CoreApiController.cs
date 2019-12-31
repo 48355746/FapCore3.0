@@ -19,6 +19,7 @@ using Fap.Hcm.Web.Models;
 using Microsoft.Extensions.Primitives;
 using Fap.AspNetCore.Binder;
 using Fap.AspNetCore.Serivce;
+using Fap.Core.Infrastructure.Model;
 
 namespace Fap.Hcm.Web.Controllers
 {
@@ -146,7 +147,28 @@ namespace Fap.Hcm.Web.Controllers
             }
             return Json(colCacheList);
         }
-
+        #region QueryProgram
+        [HttpPost("QueryProgram")]
+        public JsonResult QueryProgram(CfgQueryProgram model)
+        {
+            model.Owner = _applicationContext.EmpUid;
+            model.IsGlobal = 0;
+            model.UseEmployee = _applicationContext.EmpUid;
+            long id= _dbContext.Insert<CfgQueryProgram>(model);
+            bool success =id>0?true:false;
+            return Json(new ResponseViewModel() { success=success,data=model});
+        }
+        [HttpGet("QueryProgram/{tableName}")]
+        public JsonResult QueryProgram(string tableName)
+        {
+            string where = "TableName=@TableName and (UseEmployee=@EmpUid or IsGlobal=1)";
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("TableName", tableName);
+            parameters.Add("EmpUid", _applicationContext.EmpUid);
+            var qryList= _dbContext.QueryWhere<CfgQueryProgram>(where, parameters);
+            return Json(new ResponseViewModel() { success = true, data = qryList });
+        }
+        #endregion
         #region validateForm
         /// <summary>
         /// 校验唯一

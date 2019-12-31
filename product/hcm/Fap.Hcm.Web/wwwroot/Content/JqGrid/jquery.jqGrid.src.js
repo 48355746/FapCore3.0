@@ -12,10 +12,10 @@
 		define([ 
 			"jquery"
 		], factory );
- 	} else {
+} else {
 		// Browser globals
 		factory( jQuery );
- 	}
+}
 }(function( $ ) {
 "use strict";
 //module begin

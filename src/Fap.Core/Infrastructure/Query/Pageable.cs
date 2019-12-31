@@ -198,7 +198,7 @@ namespace Fap.Core.Infrastructure.Query
         /// 当前页码，从1开始
         /// 说明：适用于分页查询
         /// </summary>
-        public int PageNumber { get; set; }
+        public int CurrentPage { get; set; }
         /// <summary>
         /// 每页的记录个数
         /// 说明：适用于分页查询
@@ -210,7 +210,7 @@ namespace Fap.Core.Infrastructure.Query
         /// 说明：适用于分页查询
         /// </summary>
 
-        public int TotalSizes { get; set; }
+        public int TotalCount { get; set; }
 
         /// <summary>
         /// 总页数
@@ -219,7 +219,7 @@ namespace Fap.Core.Infrastructure.Query
         {
             get
             {
-                return (TotalSizes + PageSize - 1) / PageSize;
+                return (TotalCount + PageSize - 1) / PageSize;
             }
         }
 
@@ -236,7 +236,7 @@ namespace Fap.Core.Infrastructure.Query
                 }
                 else
                 {
-                    return (PageNumber - 1) * PageSize;
+                    return (CurrentPage - 1) * PageSize;
                 }
             }
         }

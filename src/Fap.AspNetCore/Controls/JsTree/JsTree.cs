@@ -388,7 +388,7 @@ namespace Fap.AspNetCore.Controls
         private string RenderHtmlElements()
         {
             StringBuilder jsTreeHtml = new StringBuilder();
-            jsTreeHtml.AppendFormat("<div id=\"{0}\"></div>", _id).AppendLine();
+            jsTreeHtml.AppendFormat("<div class='scrollable' id=\"{0}\"></div>", _id).AppendLine();
             return jsTreeHtml.ToString();
         }
 

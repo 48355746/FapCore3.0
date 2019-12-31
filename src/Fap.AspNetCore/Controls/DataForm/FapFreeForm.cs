@@ -892,7 +892,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 {
                     if (col.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
                     {
-                        script.AppendLine("                " + _id + col.ColName + "MC" + ": {");
+                        script.AppendLine("                "  + col.ColName + "MC" + ": {");
                     }
                     else
                     {
@@ -922,7 +922,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 {
                     if (col.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
                     {
-                        script.AppendLine("                " + _id + col.ColName + "MC" + ": {");
+                        script.AppendLine("                " + col.ColName + "MC" + ": {");
                     }
                     else
                     {
