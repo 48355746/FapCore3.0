@@ -22,6 +22,7 @@ using System.Text;
 using Yahoo.Yui.Compressor;
 using System.Text.Encodings.Web;
 using System.Web;
+using Fap.Core.Infrastructure.Enums;
 
 namespace Fap.AspNetCore.Controls.JqGrid
 {
@@ -165,7 +166,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
         /// <summary>
         /// 操作表单类型
         /// </summary>
-        private DataFormType _dataFormType = DataFormType.Search;
+        private OperEnum _dataFormType = OperEnum.Search;
         private string _postData;
 
         private IDbContext _dataAccessor;
@@ -1137,7 +1138,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
         /// </summary>
         /// <param name="formType"></param>
         /// <returns></returns>
-        public Grid SetFormType(DataFormType formType)
+        public Grid SetFormType(OperEnum formType)
         {
             _dataFormType = formType;
             return this;
@@ -1911,29 +1912,17 @@ namespace Fap.AspNetCore.Controls.JqGrid
 
             #endregion
             // onLoadComplete，默认适应ACE
-            if (_onLoadComplete.IsPresent())
-            {
-                script.AppendFormat(@"
+
+            script.AppendFormat(@"
                     loadComplete: function(xhr) {{
                         var table = this;" + encryptJs.ToString() + @";
-						setTimeout(function(){{
-							updatePagerIcons(table);
-							enableTooltips(table,'.##wrapper##');
+                        resetGridSize(table,'.##wrapper##'); 
+                        setTimeout(function(){{
+                           updatePagerIcons(table);
+                           enableTooltips(table);                            
 						}}, 0);
-                        {0} }},", _onLoadComplete).AppendLine();
-            }
-            else
-            {
+                        {0} }},", _onLoadComplete.IsPresent()?_onLoadComplete : "").AppendLine();
 
-                script.AppendLine(@"loadComplete : function() {
-						var table = this;
-                        " + encryptJs.ToString() + @";
-						setTimeout(function(){
-							updatePagerIcons(table);
-							enableTooltips(table,'.##wrapper##');
-						}, 0);
-					},");
-            }
             // onLoadError
             if (!_onLoadError.IsMissing())
                 script.AppendFormat("loadError: function(xhr, status, error) {{{0}}},", _onLoadError).AppendLine();
@@ -2066,11 +2055,11 @@ namespace Fap.AspNetCore.Controls.JqGrid
 
                 string hasSearch = "false";
                 string hasRefresh = "false";
-                if ((_dataFormType & DataFormType.Search) > 0)
+                if ((_dataFormType & OperEnum.Search) > 0)
                 {
                     hasSearch = "true";
                 }
-                if ((_dataFormType & DataFormType.Refresh) > 0)
+                if ((_dataFormType & OperEnum.Refresh) > 0)
                 {
                     hasRefresh = "true";
                 }
@@ -2099,7 +2088,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                             form.closest('.ui-jqdialog').find('.ui-jqdialog-title').wrap('<div class=" + "\"widget-header\"" + @"  />')
                             style_search_form(form); ");
                 //显示查询方案下拉框
-                if ((_dataFormType & DataFormType.QueryProgram) > 0)
+                if ((_dataFormType & OperEnum.QueryProgram) > 0)
                 {
                     script.AppendLine(@"loadQueryProgram(form, '##gridid##', '" + TableName + @"'); ");
                 }
@@ -2107,9 +2096,9 @@ namespace Fap.AspNetCore.Controls.JqGrid
                         afterRedraw: function () {
                             style_search_filters($(this)); ");
                 //显示查询方案保存按钮
-                if ((_dataFormType & DataFormType.QueryProgram) > 0)
+                if ((_dataFormType & OperEnum.QueryProgram) > 0)
                 {
-                    script.AppendLine(@"addQueryProgram($(this), '##gridid##', '" + TableName + @"'); ");                   
+                    script.AppendLine(@"addQueryProgram($(this), '##gridid##', '" + TableName + @"'); ");
                 }
                 script.AppendLine(@" }
                         ,
@@ -2121,39 +2110,39 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 )
               ");
                 //向后排列
-                if ((_dataFormType & DataFormType.Import) > 0)
+                if ((_dataFormType & OperEnum.Import) > 0)
                 {
                     ImportToolbar(script);
                 }
                 //都可以导出数据
-                if ((_dataFormType & DataFormType.ExportExcel) > 0)
+                if ((_dataFormType & OperEnum.ExportExcel) > 0)
                 {
                     ExportExcelToolbar(script);
                 }
-                if ((_dataFormType & DataFormType.ExportWord) > 0)
+                if ((_dataFormType & OperEnum.ExportWord) > 0)
                 {
                     ExportWordToolbar(script);
 
                 }
                 //以下工具栏向前排
                 //查看工具
-                if ((_dataFormType & DataFormType.View) > 0)
+                if ((_dataFormType & OperEnum.View) > 0)
                 {
                     ViewToolbar(script);
                 }
-                if ((_dataFormType & DataFormType.Delete) > 0)
+                if ((_dataFormType & OperEnum.Delete) > 0)
                 {
                     DeleteToolbar(script);
                 }
-                if ((_dataFormType & DataFormType.Update) > 0)
+                if ((_dataFormType & OperEnum.Update) > 0)
                 {
                     EditToolbar(script);
                 }
-                if ((_dataFormType & DataFormType.BatchUpdate) > 0)
+                if ((_dataFormType & OperEnum.BatchUpdate) > 0)
                 {
                     BatchUpdateToolbar(script);
                 }
-                if ((_dataFormType & DataFormType.Add) > 0)
+                if ((_dataFormType & OperEnum.Add) > 0)
                 {
                     AddToolbar(script);
                 }

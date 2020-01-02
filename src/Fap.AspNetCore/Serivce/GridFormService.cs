@@ -246,7 +246,7 @@ namespace Fap.AspNetCore.Serivce
         public async Task<ResponseViewModel> PersistenceAsync(FormModel frmModel)
         {
             //操作符 
-            if (frmModel.Oper == OperEnum.none)
+            if (frmModel.Oper == FormOperEnum.none)
             {
                 return ResponseViewModelUtils.Failure("未知的持久化操作符");
             }
@@ -255,7 +255,7 @@ namespace Fap.AspNetCore.Serivce
                 return ResponseViewModelUtils.Failure("未知的持久化实体");
             }
             #region 防止多次点击重复保存以及CSRF攻击
-            if (frmModel.Oper != OperEnum.del)
+            if (frmModel.Oper != FormOperEnum.del)
             {
                 if (frmModel.AvoidDuplicateKey.IsMissing())
                 {
@@ -310,13 +310,13 @@ namespace Fap.AspNetCore.Serivce
             ResponseViewModel rvm = new ResponseViewModel();
             var mainData = formModel.MainData;
             var childDataList = formModel.ChildDataList;
-            if (formModel.Oper == OperEnum.add)
+            if (formModel.Oper == FormOperEnum.add)
             {
                 _dbContext.InsertDynamicData(formModel.MainData);
                 SaveChildData(mainData, childDataList);
                 return ResponseViewModelUtils.Sueecss(mainData, "创建成功");
             }
-            else if (formModel.Oper == OperEnum.edit)
+            else if (formModel.Oper == FormOperEnum.edit)
             {
                 //返回原因
                 bool rv = _dbContext.UpdateDynamicData(mainData);
@@ -325,7 +325,7 @@ namespace Fap.AspNetCore.Serivce
                 rvm.msg = rv ? "更新成功" : "更新失败，请重试";
                 return rvm;
             }
-            else if (formModel.Oper == OperEnum.del)
+            else if (formModel.Oper == FormOperEnum.del)
             {
                 //删除可能存在批量
                 bool rv = _dbContext.DeleteDynamicData(mainData);
@@ -334,7 +334,7 @@ namespace Fap.AspNetCore.Serivce
                 rvm.msg = rv ? "删除成功" : "删除失败，请重试";
                 return rvm;
             }
-            else if (formModel.Oper == OperEnum.batch_edit)
+            else if (formModel.Oper == FormOperEnum.batch_edit)
             {
                 var ids = formModel.Ids.SplitComma();
                 foreach (var id in ids)
@@ -544,7 +544,7 @@ namespace Fap.AspNetCore.Serivce
 
     }
 
-    public enum OperEnum
+    public enum FormOperEnum
     {
         add, edit, batch_edit, del, none
     }

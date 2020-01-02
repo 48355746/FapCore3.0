@@ -29,11 +29,14 @@ namespace Fap.Core.Infrastructure.Domain
             get;
             internal set;
         }
-        //public  IButtonSet ButtonSet
-        //{
-        //    get;
-        //    protected set;
-        //}
+        /// <summary>
+        /// 菜单按钮
+        /// </summary>
+        public IMenuButtonSet MenuButtonSet
+        {
+            get;
+            protected set;
+        }
         /// <summary>
         /// 所有表元数据
         /// </summary>
@@ -216,7 +219,8 @@ namespace Fap.Core.Infrastructure.Domain
             this.TableSet = new TableSet( _dbSession);
             this.ColumnSet = new ColumnSet( _dbSession);
             _logger.LogInformation("初始化元数据结束");
-
+            this.MenuButtonSet = new MenuButtonSet(_dbSession);
+            _logger.LogInformation("初始化菜单按钮结束");
             this.MultiLangSet = new MultiLangSet( _dbSession);
             _logger.LogInformation("初始化多语结束");
             this.DictSet = new DictSet( _dbSession);

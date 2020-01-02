@@ -6,9 +6,9 @@ namespace Fap.Core.Rbac.AC
     /// <summary>
     /// 按钮集
     /// </summary>
-    public interface IButtonSet:IEnumerable<FapButton>
+    public interface IMenuButtonSet:IEnumerable<FapMenuButton>
     {
         void Refresh();
-        bool TryGetValue(string fid, out FapButton fapButton);
+        bool TryGetValue(string menuUid, out IEnumerable<FapMenuButton> fapButtonList);
     }
 }

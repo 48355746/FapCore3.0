@@ -56,7 +56,7 @@ namespace Fap.AspNetCore.Binder
                 return Task.CompletedTask;
             }
             formModel.TableName = tableName;
-            formModel.Oper = (OperEnum)Enum.Parse(typeof(OperEnum), operProviderResult.FirstValue);
+            formModel.Oper = operProviderResult.FirstValue.ParseEnum<FormOperEnum>();
             formModel.AvoidDuplicateKey = avoidDuplicateKey.FirstValue;
             formModel.Ids = bindingContext.ValueProvider.GetValue(FapWebConstants.IDS).FirstValue;
             IEnumerable<IValueProvider> valueProviders = bindingContext.ValueProvider as IEnumerable<IValueProvider>;

@@ -72,6 +72,10 @@ namespace Fap.Hcm.Web.Areas.System.Models
             set;
         }
         /// <summary>
+        /// 按钮
+        /// </summary>
+        public IList<string> BtnUids { get; set; }
+        /// <summary>
         /// 权限角色
         /// </summary>
         public IList<string> PRoleUids { get; set; }

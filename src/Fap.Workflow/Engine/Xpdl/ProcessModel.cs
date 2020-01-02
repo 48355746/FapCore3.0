@@ -695,17 +695,17 @@ namespace Fap.Workflow.Engine.Xpdl
             entity.ActivityType = (ActivityTypeEnum)Enum.Parse(typeof(ActivityTypeEnum), XMLHelper.GetXmlAttribute(typeNode, "type"));
             if (XMLHelper.GetXmlAttribute(typeNode, "complexType").IsPresent())
             {
-                entity.ComplexType = EnumHelper.ParseEnum<ComplexTypeEnum>(XMLHelper.GetXmlAttribute(typeNode, "complexType"));
+                entity.ComplexType = XMLHelper.GetXmlAttribute(typeNode, "complexType").ParseEnum<ComplexTypeEnum>();
             }
 
             if (XMLHelper.GetXmlAttribute(typeNode, "mergeType").IsPresent())
             {
-                entity.MergeType = EnumHelper.ParseEnum<MergeTypeEnum>(XMLHelper.GetXmlAttribute(typeNode, "mergeType"));
+                entity.MergeType = XMLHelper.GetXmlAttribute(typeNode, "mergeType").ParseEnum<MergeTypeEnum>();
             }
 
             if (XMLHelper.GetXmlAttribute(typeNode, "compareType").IsPresent())
             {
-                entity.CompareType = EnumHelper.ParseEnum<CompareTypeEnum>(XMLHelper.GetXmlAttribute(typeNode, "compareType"));
+                entity.CompareType = XMLHelper.GetXmlAttribute(typeNode, "compareType").ParseEnum<CompareTypeEnum>();
             }
 
             if (XMLHelper.GetXmlAttribute(typeNode, "completeOrder").IsPresent())

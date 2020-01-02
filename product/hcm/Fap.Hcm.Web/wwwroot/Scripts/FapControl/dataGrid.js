@@ -643,9 +643,12 @@ function updatePagerIcons(table) {
         if ($class in replacement) icon.attr('class', 'ui-icon ' + replacement[$class]);
     });
 }
-function enableTooltips(table, wrapper) {
+function enableTooltips(table) {
     $('.navtable .ui-pg-button').tooltip({ container: 'body' });
     $(table).find('.ui-pg-div').tooltip({ container: 'body' });
+    
+}
+function resetGridSize(table, wrapper) {
     var offsetWidget = $(table).offset();
     var availableHeight = $(window).height() - (offsetWidget.top < 0 ? 140 : offsetWidget.top) - 65;
     var height = table.clientHeight;
@@ -654,10 +657,11 @@ function enableTooltips(table, wrapper) {
         setTimeout(function () {
             var parent_width = $(table).closest(wrapper).width();
             $(table).jqGrid('setGridWidth', parent_width);
-
         }, 0);
     } else {
-        $(table).setGridHeight(height + 20);
+        if (!table.grid) { return; }
+        var bDiv = $(table.grid.bDiv);
+        bDiv.css({ height: "auto"});
         setTimeout(function () {
             var parent_width = $(table).closest(wrapper).width();
             $(table).jqGrid('setGridWidth', parent_width);
@@ -680,7 +684,7 @@ function style_edit_form(form) {
     var buttons = form.next().find('.EditButton .fm-button');
     buttons.addClass('btn btn-sm').find('[class*="-icon"]').hide();//ui-icon, s-icon
     buttons.eq(0).addClass('btn-primary').prepend('<i class="ace-icon fa fa-check"></i>');
-    buttons.eq(1).prepend('<i class="ace-icon fa fa-times"></i>')
+    buttons.eq(1).prepend('<i class="ace-icon fa fa-times"></i>');
 
     buttons = form.next().find('.navButton a');
     buttons.find('.ui-icon').hide();
@@ -713,7 +717,7 @@ function style_search_form(form) {
 function loadQueryProgram(form, gridid, tn) {
     var dialog = form.closest('.ui-jqdialog');
     var buttons = dialog.find('.EditTable');
-    var $selQryPrm = $(`<select id=fbox_"` + gridid + `_selectqry"><option value=''>--已有查询方案--</option></select>`);
+    var $selQryPrm = $(`<select id=fbox_"` + gridid + `_selectqry"><option value=''>---常用查询---</option></select>`);
 
     if (buttons.find('.EditButton select[id*="_selectqry"]')[0] === undefined) {
         $.get(basePath + "/Api/Core/QueryProgram/" + tn, function (rvm) {
@@ -730,6 +734,7 @@ function loadQueryProgram(form, gridid, tn) {
             var filter = $.grep(qryData, (d) => { return d.fid === fid; });
             if (filter.length === 1) {
                 $("#fbox_" + gridid).jqFilter("addFilter", filter[0].queryCondition);
+                buttons.find('.EditButton a[id*="_search"]').trigger('click');
             }
         });
         buttons.find('.EditButton a[id*="_search"]').before($selQryPrm.eq(0));
@@ -737,7 +742,7 @@ function loadQueryProgram(form, gridid, tn) {
 }
 //重绘后执行
 function addQueryProgram(form, gridid, tn) {
-    var $qryProgram = $(`<a id="fbox_` + gridid + `_queryprogram" class="fm-button ui-state-default ui-corner-all fm-button-icon-left btn btn-sm btn-default btn-round pull-right"><span class="ace-icon fa fa-save"></span>另存为查询方案</a>`);
+    var $qryProgram = $(`<a id="fbox_` + gridid + `_queryprogram" class="fm-button ui-state-default ui-corner-all fm-button-icon-left btn btn-sm btn-default pull-right"><span class="ace-icon fa fa-save"></span>保存为常用查询</a>`);
     form.find('.add-rule').first().after($qryProgram.eq(0));
     $qryProgram.on(ace.click_event, function () {
         var dialog = form.closest('.ui-jqdialog');
@@ -745,11 +750,11 @@ function addQueryProgram(form, gridid, tn) {
         buttons.find('.EditButton a[id*="_search"]').trigger('click');
         var jqPostData = $('#' + gridid).jqGrid("getGridParam", "postData");
         if (jqPostData.filters === undefined) {
-            $.msg("请先执行查询，然后再另存为查询方案！");
+            $.msg("请先设置查询方案，然后再保存为常用查询！");
             return;
         }
         //var sqlRv = JSON.stringify(jqPostData.filters );
-        bootbox.prompt("查询方案名称？", function (result) {
+        bootbox.prompt("常用查询名称？", function (result) {
             if (result === null) {
                 //alert(1);
             } else {
@@ -769,7 +774,7 @@ function addQueryProgram(form, gridid, tn) {
                         }
                     });
                 } else {
-                    bootbox.alert("查询方案名称不能为空！");
+                    bootbox.alert("常用查询名称不能为空！");
                 }
 
             }

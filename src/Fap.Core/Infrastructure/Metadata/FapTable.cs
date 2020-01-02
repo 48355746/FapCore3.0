@@ -149,5 +149,9 @@ namespace Fap.Core.Infrastructure.Metadata
         public const string TABLE_MODE_PRIMARY = "PRIMARY";
         public const string TABLE_MODE_CHILD = "CHILD";
         public const string TABLE_MODE_EXTENSION = "EXTENSION";
+
+        public const string TABLE_TYPE_BUSINESS = "BUSINESS";
+        public const string TABLE_TYPE_SYSTEM = "SYSTEM";
+        public const string TABLE_TYPE_WORKFLOW = "WORKFLOW";
     }
 }

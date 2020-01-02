@@ -7,13 +7,13 @@ using System.Linq;
 
 namespace Fap.Core.Rbac.AC
 {
-    public class ButtonSet : IButtonSet
+    public class MenuButtonSet : IMenuButtonSet
     {
-        private IEnumerable<FapButton> _allButtons = new List<FapButton>();
+        private IEnumerable<FapMenuButton> _allButtons;
         private static readonly object Locker = new object();
         private bool _initialized;
         private readonly IDbSession _dbSession;
-        internal ButtonSet(IDbSession dbSession)
+        internal MenuButtonSet(IDbSession dbSession)
         {
             _dbSession = dbSession;
             Init();
@@ -30,14 +30,12 @@ namespace Fap.Core.Rbac.AC
             if (_initialized) return;
             lock (Locker)
             {
-                //_allButtons.Clear();
-                
                 //获取所有按钮，未实现
-                //_allButtons = service.Query<FapButton>("");
+                _allButtons = _dbSession.Query<FapMenuButton>("select * from FapMenuButton");
                 _initialized = true;
             }
         }
-        public IEnumerator<Fap.Core.Rbac.Model.FapButton> GetEnumerator()
+        public IEnumerator<FapMenuButton> GetEnumerator()
         {
             if (!_initialized)
             {
@@ -53,22 +51,16 @@ namespace Fap.Core.Rbac.AC
                 Init();
             }
             return _allButtons.GetEnumerator();
-        }
+        }      
 
-        public bool TryGetValue(string fid, out Fap.Core.Rbac.Model.FapButton fapButton)
+        public bool TryGetValue(string menuUid, out IEnumerable<FapMenuButton> fapButtonList)
         {
             if (!_initialized)
             {
                 Init();
             }
-            var result = _allButtons.FirstOrDefault<FapButton>(f => f.Fid == fid);
-            if (result != null)
-            {
-                fapButton = result;
-                return true;
-            }
-            fapButton = null;
-            return false;
+            fapButtonList = _allButtons.Where(m => m.MenuUid == menuUid);
+            return true;
         }
     }
 }

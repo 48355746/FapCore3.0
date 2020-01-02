@@ -1,58 +1,68 @@
-﻿
-namespace Fap.AspNetCore.Controls.JqGrid.Enums
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Text;
+
+namespace Fap.Core.Infrastructure.Enums
 {
-    public enum DataFormType
+    public enum OperEnum
     {
         /// <summary>
         /// 查找
         /// </summary>
-         Search=1,
+        [Description("查询")]
+        Search = 1,
         /// <summary>
         /// 刷新
         /// </summary>
-        Refresh=2,
+        [Description("刷新")]
+        Refresh = 2,
         /// <summary>
         /// 增加
         /// </summary>
-        Add=4,
+        [Description("新增")]
+        Add = 4,
         /// <summary>
         /// 修改
         /// </summary>
-        Update=8,
+        [Description("修改")]
+        Update = 8,
         /// <summary>
         /// 删除
         /// </summary>
-         Delete=16,
+        [Description("删除")]
+        Delete = 16,
         /// <summary>
         /// 导出 excel
         /// </summary>
-        ExportExcel=32,
+        [Description("导出Excel")]
+        ExportExcel = 32,
         /// <summary>
         /// 导入
         /// </summary>
-        Import=64,
+        [Description("导入")]
+        Import = 64,
         /// <summary>
         /// 批量编辑
         /// </summary>
+        [Description("批量编辑")]
         BatchUpdate = 128,
         /// <summary>
         /// 查看
         /// </summary>
-        View=256,
-        /// <summary>
-        /// 无
-        /// </summary>
-        None=512,
+        [Description("查看")]
+        View = 256,   
         /// <summary>
         /// 导出word
         /// </summary>
-        ExportWord=1024,
+        [Description("导出word")]
+        ExportWord = 512,
         /// <summary>
         /// 查询方案
         /// </summary>
-        QueryProgram=2048
+        [Description("查询方案")]
+        QueryProgram = 1024
 
 
     }
-    
 }

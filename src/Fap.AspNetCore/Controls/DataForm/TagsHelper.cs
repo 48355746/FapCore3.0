@@ -227,7 +227,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             sbMultiLang.AppendLine("<span class=\"input-icon input-icon-right\">");
             sbMultiLang.AppendFormat("<input type=\"text\" " + editAble + " class=\"form-control\" id=\"{0}\" name=\"{0}\" ng-model=\"{1}\" value=\"{2}\"/>", ctrlName, ngModel,HtmlEncoder.Default.Encode(fieldValue.ToString())).AppendLine();
             sbMultiLang.AppendFormat("<i class=\"ace-icon fa fa-language green\" data-fid=\"{0}\"></i></span>", fapColumn.Fid);
-            var langList = EnumExtensions.GetDictionary(typeof(MultiLanguageEnum));
+            var langList = typeof(MultiLanguageEnum).EnumItems();
             //style="top: 26px; left: 155.656px; display: block;"
             sbMultiLang.AppendFormat("<div class=\"popover popovermultilang fade right in \" role=\"tooltip\" id=\"{0}\" ><div class=\"arrow\" style=\"top: 50%;\"></div><h3 class=\"popover-title\"><i class=\"ace-icon fa fa-language green\"></i><button type=\"button\" class=\"multilangpopoverclose close red\" ><i class=\"ace-icon fa fa-times\"></i></button> 多语言</h3><div class=\"popover-content\">", fapColumn.Fid);
             foreach (var langField in langList)

@@ -158,7 +158,11 @@
 .ui-jqdialog-content .FormGrid {margin: 0; overflow:auto;position:relative;}
 .ui-jqdialog-content .EditTable { width: 100%; margin-bottom:0;}
 .ui-jqdialog-content .DelTable { width: 100%; margin-bottom:0;}
-.EditTable td input, .EditTable td select, .EditTable td textarea {margin: 0;}
+.EditTable td input, .EditTable td select, .EditTable td textarea {
+	margin: 0;
+	vertical-align: middle;
+	height: 34px;
+}
 .EditTable td textarea { width:auto; height:auto;}
 .ui-jqdialog-content td.EditButton {text-align: right;border-top: 0 none;border-left: 0 none;border-right: 0 none; padding-bottom:5px; padding-top:5px;}
 .ui-jqdialog-content td.navButton {text-align: center; border-left: 0 none;border-top: 0 none;border-right: 0 none; padding-bottom:5px; padding-top:5px;}
@@ -262,7 +266,7 @@ a.g-menu-item, a.soptclass, a.clearsearchclass { cursor: pointer; }
 .ui-search-table select,
 .ui-search-table input 
 {
-	padding: 4px 3px;
+	padding: 4px 3px !important;
 }
 
 .ui-jqgrid .ui-pg-table .ui-pg-button.ui-state-disabled:hover > .ui-separator {

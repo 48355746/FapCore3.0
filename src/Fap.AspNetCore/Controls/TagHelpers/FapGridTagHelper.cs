@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
 using Fap.Core.Extensions;
+using Fap.Core.Infrastructure.Enums;
 
 namespace Fap.AspNetCore.Controls.TagHelpers
 {
@@ -368,63 +369,63 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                     grid.OnSelectRow($"{OnSelectRow}(rowid, status);");
                 }
             }
-            DataFormType formType = DataFormType.None;
+            OperEnum formType = OperEnum.View;
             if (OperCud)
             {
-                formType = DataFormType.Add | DataFormType.Update | DataFormType.Delete;
+                formType = OperEnum.Add | OperEnum.Update | OperEnum.Delete;
             }
             else
             {
                 if (OperAdd)
                 {
-                    formType = DataFormType.Add;
+                    formType = OperEnum.Add;
                 }
                 if (OperUpdate)
                 {
-                    formType |= DataFormType.Update;
+                    formType |= OperEnum.Update;
                 }
                 if (OperDelete)
                 {
-                    formType |= DataFormType.Delete;
+                    formType |= OperEnum.Delete;
                 }
             }
             if (OperBatchUpdate)
             {
-                formType |= DataFormType.BatchUpdate;
+                formType |= OperEnum.BatchUpdate;
             }
             if (OperExport)
             {
-                formType |= DataFormType.ExportExcel | DataFormType.ExportWord;
+                formType |= OperEnum.ExportExcel | OperEnum.ExportWord;
             }
             else
             {
                 if (OperExportExcel)
                 {
-                    formType |= DataFormType.ExportExcel;
+                    formType |= OperEnum.ExportExcel;
                 }
                 if (OperExportWord)
                 {
-                    formType |= DataFormType.ExportWord;
+                    formType |= OperEnum.ExportWord;
                 }
             }
             if (OperImport)
             {
-                formType |= DataFormType.Import;
+                formType |= OperEnum.Import;
             }
             if (OperSearch)
             {
-                formType |= DataFormType.Search;
+                formType |= OperEnum.Search;
             }
             if (OperRefresh)
             {
-                formType |= DataFormType.Refresh;
+                formType |= OperEnum.Refresh;
             }
             if (OperQueryprogram)
             {
-                formType |= DataFormType.QueryProgram;
+                formType |= OperEnum.QueryProgram;
                 if (!OperSearch)
                 {
-                    formType |= DataFormType.Search;
+                    formType |= OperEnum.Search;
                 }
             }
 

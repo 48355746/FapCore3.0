@@ -279,8 +279,8 @@ namespace Fap.AspNetCore.Controls.DataForm
                             FieldValue = "";
                         }
                     }
-                    string currentLangDesc = _multiLangService.CurrentLanguage.GetDescription();
-                    var langList = EnumExtensions.GetDictionary(typeof(MultiLanguageEnum));
+                    string currentLangDesc = _multiLangService.CurrentLanguage.Description();
+                    var langList = typeof(MultiLanguageEnum).EnumItems();
                     Dictionary<string, string> dicLangValue = new Dictionary<string, string>();
                     foreach (var langField in langList)
                     {
@@ -739,12 +739,12 @@ namespace Fap.AspNetCore.Controls.DataForm
                     sbFormGroup.AppendLine("<span class=\"input-icon input-icon-right\">");
                     sbFormGroup.AppendFormat("<input type=\"text\" " + editAble + " class=\"form-control\" id=\"{0}\" name=\"{0}\" ng-model=\"{1}\" value=\"{2}\"/>", currCtrlName, ngModel, HtmlEncoder.Default.Encode(FieldValue.ToString())).AppendLine();
                     sbFormGroup.AppendFormat("<i class=\"ace-icon fa fa-language green\" data-fid=\"{0}\"></i></span>", _fapColumn.Fid);
-                    var langList = EnumExtensions.GetDictionary(typeof(MultiLanguageEnum));
+                    var langList =typeof(MultiLanguageEnum).EnumItems();
                     //style="top: 26px; left: 155.656px; display: block;"
                     sbFormGroup.AppendFormat("<div class=\"popover popovermultilang fade right in \" role=\"tooltip\" id=\"{0}\" ><div class=\"arrow\" style=\"top: 50%;\"></div><h3 class=\"popover-title\"><i class=\"ace-icon fa fa-language green\"></i><button type=\"button\" class=\"multilangpopoverclose close red\" ><i class=\"ace-icon fa fa-times\"></i></button> 多语言</h3><div class=\"popover-content\">", _fapColumn.Fid);
                     foreach (var langField in langList)
                     {
-                        if (langField.Description == _multiLangService.CurrentLanguage.GetDescription())
+                        if (langField.Description == _multiLangService.CurrentLanguage.Description())
                         {
                             continue;
                         }

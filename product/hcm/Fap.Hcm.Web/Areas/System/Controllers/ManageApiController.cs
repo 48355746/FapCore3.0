@@ -1,6 +1,5 @@
 ﻿using Dapper;
 using Fap.Core.Extensions;
-using Fap.Core.Infrastructure.Interface;
 using Fap.Core.Scheduler;
 using Fap.Model.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
@@ -16,13 +15,13 @@ using Fap.Core.Rbac.Model;
 using Fap.Core.Infrastructure.Config;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Hcm.Web.Areas.System.Models;
-using Fap.AspNetCore.Extensions;
 using Fap.Core.Infrastructure.Model;
 using System.Net.Mime;
 using Fap.Hcm.Web.Models;
 using Fap.Core.Utility;
 using Fap.Core.Tracker;
 using System.Threading.Tasks;
+using Fap.Core.Infrastructure.Enums;
 
 namespace Fap.Hcm.Web.Areas.System.Controllers
 {
@@ -105,7 +104,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         #endregion
 
         #region 角色角色组
-        [Route("RoleGroup/")]
+        [Route("RoleGroup")]
         // POST: api/Common
         public JsonResult GetRoleGroup()
         {
@@ -145,7 +144,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
 
             return Json(tree);
         }
-        [Route("RoleAndGroup/")]
+        [Route("RoleAndGroup")]
         public JsonResult GetRoleAndGroup()
         {
             IEnumerable<FapRoleGroup> roleGroups = _dbContext.QueryAll<FapRoleGroup>();
@@ -298,7 +297,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
 
         #region 配置配置组
 
-        [Route("ConfigGroup/")]
+        [Route("ConfigGroup")]
         // POST: api/Common
         public JsonResult GetConfigGroup()
         {
@@ -335,7 +334,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         /// <param name="cfgrpUid">配置组</param>
         /// <returns></returns>
         [HttpGet]
-        [Route("Config/")]
+        [Route("Config")]
         // POST: api/Common
         public JsonResult PostFapConfigs(string cfgrpUid)
         {
@@ -378,7 +377,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         #endregion
 
         #region 模块菜单
-        [Route("Module/")]
+        [Route("Module")]
         // POST: api/Common
         public JsonResult GetModule()
         {
@@ -400,7 +399,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             return Json(tree);
         }
 
-        [Route("ModuleAndMenu/")]
+        [Route("ModuleAndMenu")]
         public JsonResult GetModuleAndMenu()
         {
             List<FapModule> modules = _platformDomain.ModuleSet.ToList();// _dbContext.QueryEntityByWhere<FapModule>();
@@ -518,19 +517,14 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         /// 权限这里只需要业务表
         /// </summary>
         /// <returns></returns>
-        [Route("FapTables/")]
+        [Route("FapTables")]
         public JsonResult GetFapTable()
         {
-            //业务实体
-            DynamicParameters dparam = new DynamicParameters();
-            dparam.Add("TableType", "BUSINESS");
-            IEnumerable<FapTable> tables = _dbContext.QueryWhere<FapTable>("TableType=@TableType", dparam);
+            IEnumerable<FapTable> tables = _platformDomain.TableSet;
             //实体分类
-            DynamicParameters categroyParam = new DynamicParameters();
-            categroyParam.Add("Category", "TableCategory");
-            IEnumerable<FapDict> tableCategory = _dbContext.QueryWhere<FapDict>("Category=@Category", categroyParam);
+            IEnumerable<FapDict> tableCategory = _dbContext.Dictionarys("TableCategory");
             //实体属性
-            IEnumerable<FapColumn> columns = _dbContext.QueryWhere<FapColumn>(" IsDefaultCol=0 and TableName in(select tablename from FapTable where TableType='BUSINESS')");
+            IEnumerable<FapColumn> columns = _platformDomain.ColumnSet.Where(c => c.IsDefaultCol == 0 && tables.ToList().Exists(t => t.TableName == c.TableName));
             //构造树
             List<TreeDataView> tree = new List<TreeDataView>();
 
@@ -576,8 +570,81 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         }
         #endregion
 
+        #region 按钮
+        /// <summary>
+        /// 权限这里只需要业务表
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("FapButtons")]
+        public JsonResult GetFapButtons()
+        {
+            IEnumerable<FapTable> tables = _platformDomain.TableSet;
+            //实体分类
+            IEnumerable<FapDict> tableCategory = _dbContext.Dictionarys("TableCategory");
+            //构造树
+            List<TreeDataView> tree = new List<TreeDataView>();
+            var opers= typeof(OperEnum).EnumItems();
+            var tableGroup = tables.GroupBy(g => g.TableCategory);
+            int i = 0;
+            foreach (var tg in tableGroup)
+            {
+                //表分类
+                TreeDataView ttc = new TreeDataView();
+                ttc.Id = "tablecategory" + i;
+                ttc.Data = new { IsBtn = false };
+                ttc.Pid = "~";
+                ttc.Text = tableCategory.First(c => c.Code == tg.Key).Name;
+                ttc.Icon = "blue fa fa-filter";
+                ttc.State = new NodeState() { Opened = false };
+                int j = 0;
+                foreach (var tb in tg)
+                {
+                    TreeDataView ttb = new TreeDataView();
+                    ttb.Id = "table" + i + j;
+                    ttb.Data = new { IsColumn = false };
+                    ttb.Pid = "tablecategory" + i;
+                    ttb.Text = tb.TableComment;
+                    ttb.Icon = "purple fa fa-list-alt";                    
+                    foreach (var oper in opers)
+                    {
+                        TreeDataView tcol = new TreeDataView();
+                        tcol.Id =tb.TableName+FapPlatformConstants.SplitSeparator+oper.Value;
+                        tcol.Data = new { IsBtn=true};
+                        tcol.Pid = "table" + i + j;
+                        tcol.Text = oper.Description;
+                        tcol.Icon =GetOperIcon(oper.Value.ParseEnum<OperEnum>());
+                        ttb.Children.Add(tcol);
+                    }
+                    ttc.Children.Add(ttb);
+                    j++;
+                }
+                tree.Add(ttc);
+                i++;
+            }
+            return Json(tree);
+        }
+        private string GetOperIcon(OperEnum operEnum)
+        {
+            return operEnum switch
+            {
+                OperEnum.Add => "fa fa-plus-circle purple",
+                OperEnum.BatchUpdate=> "fa fa-pencil-square-o",
+                OperEnum.Delete=> "fa fa-trash-o red",
+                OperEnum.ExportExcel=> "fa fa-file-excel-o green",
+                OperEnum.ExportWord=> "fa fa-file-word-o",
+                OperEnum.Import=> "fa fa-cloud-upload",
+                OperEnum.QueryProgram=> "fa fa-camera",
+                OperEnum.Refresh=> "fa fa-refresh green",
+                OperEnum.Search=> "fa fa-search orange",
+                OperEnum.Update=> "fa fa-pencil blue",
+                OperEnum.View=> "fa fa-search-plus grey",
+                _=> "fa fa-bolt"
+            };
+        }
+        #endregion
+
         #region 任务组任务
-        [Route("JobGroup/")]
+        [Route("JobGroup")]
         // POST: api/Common
         public JsonResult GetJobGroup()
         {
@@ -654,7 +721,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [Route("SimpleReport/")]
+        [Route("SimpleReport")]
         // POST: api/Common
         public JsonResult GetReportTemplate()
         {

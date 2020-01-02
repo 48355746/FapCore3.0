@@ -1,11 +1,8 @@
 ﻿using Fap.AspNetCore.Serivce;
 using Fap.Core.Infrastructure.Metadata;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Fap.AspNetCore.Binder
 {
@@ -15,7 +12,7 @@ namespace Fap.AspNetCore.Binder
         /// <summary>
         /// 操作状态
         /// </summary>
-        public OperEnum Oper { get; set; }
+        public FormOperEnum Oper { get; set; }
         /// <summary>
         /// 批量处理Ids
         /// </summary>

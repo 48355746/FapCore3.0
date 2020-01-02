@@ -9,7 +9,7 @@ namespace Fap.Core.Extensions
 {
     public static class EnumExtensions
     {
-        public static string GetDescription(this Enum value)
+        public static string Description(this Enum value)
         {
             FieldInfo field = value.GetType().GetField(value.ToString());
             DescriptionAttribute attribute = Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute)) as DescriptionAttribute;
@@ -17,17 +17,27 @@ namespace Fap.Core.Extensions
             return attribute == null ? value.ToString() : attribute.Description;
         }
 
-
-
-        public static IEnumerable<EnumItem> GetDictionary(Type tEnum)
+        public static T ParseEnum<T>(this string value)
         {
-            return Enum.GetValues(tEnum).OfType<Enum>()
-                .Select(x => new EnumItem
-                {
-                    Key = Convert.ToInt32(x),
-                    Value = x.ToString(),
-                    Description = x.GetDescription()
-                });
+            return (T)Enum.Parse(typeof(T), value, true);
+        }
+
+        public static IEnumerable<EnumItem> EnumItems(this Type tEnum)
+        {
+            if (tEnum.IsEnum)
+            {
+                return Enum.GetValues(tEnum).OfType<Enum>()
+                    .Select(x => new EnumItem
+                    {
+                        Key = Convert.ToInt32(x),
+                        Value = x.ToString(),
+                        Description = x.Description()
+                    });
+            }
+            else
+            {
+                return null;
+            }
         }
     }
     public class EnumItem
