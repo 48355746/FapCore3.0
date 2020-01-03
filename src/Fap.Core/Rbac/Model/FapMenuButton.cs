@@ -23,14 +23,10 @@ namespace Fap.Core.Rbac.Model
 		[Computed]
 		public string MenuUidMC { get; set; }
 		/// <summary>
-		/// 实体
+		/// 描述
 		/// </summary>
-		public string Entity { get; set; }
-		/// <summary>
-		/// 实体 的显性字段MC
-		/// </summary>
-		[Computed]
-		public string EntityMC { get; set; }
+		public string Description { get; set; }
+		
 		/// <summary>
 		/// 按钮类型
 		/// </summary>

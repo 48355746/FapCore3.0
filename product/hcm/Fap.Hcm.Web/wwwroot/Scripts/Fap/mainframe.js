@@ -1,11 +1,10 @@
 ﻿//解决bootbox多弹出框focus 死循环问题
 $.fn.modal.Constructor.prototype.enforceFocus = function () { };
 $(function () {
-    
     //获取注册码
     $("#btnGetRegistKey").on(ace.click_event, function () {
         $.ajax({
-            url: basePath+"/Api/Core/requestcode/",
+            url: basePath + "/Api/Core/requestcode/",
             type: 'GET', async: false, cache: false,
             success: function (data) {
                 //bootbox.alert(data);
@@ -39,13 +38,13 @@ $(function () {
                 });
             }
         });
-    })
+    });
 
     //setTimeout(function () {
     //    getHandling();
     //    getBadge();
     //}, 3000);
-})
+});
 //获取待处理个数
 var getHandling = function () {
     //获取待办数目

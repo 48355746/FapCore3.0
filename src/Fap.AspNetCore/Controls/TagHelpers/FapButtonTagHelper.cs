@@ -5,6 +5,8 @@ using System;
 using Fap.Core.Extensions;
 using System.Text;
 using System.Threading.Tasks;
+using Fap.Core.Rbac;
+using Fap.Core.Infrastructure.Enums;
 
 namespace Fap.AspNetCore.Controls.TagHelpers
 {
@@ -18,31 +20,37 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         public string ClassName { get; set; }
         public string IconBefore { get; set; }
         public string IconAfter { get; set; }
-        private readonly IFapPlatformDomain _platformDomain;
-        private readonly IDbContext _dbContext;
-        private readonly IFapApplicationContext _applicationContext;
-        public FapButtonTagHelper(IFapPlatformDomain platformDomain, IDbContext dbContext, IFapApplicationContext applicationContext)
+        private readonly IRbacService _rbacService;
+        public FapButtonTagHelper(IRbacService rbacService)
         {
-            _platformDomain = platformDomain;
-            _dbContext = dbContext;
-            _applicationContext = applicationContext;
+            _rbacService = rbacService;
         }
         public override Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
+            var button = new Core.Rbac.Model.FapMenuButton()
+            {
+                ButtonID = Id,
+                ButtonName = Content,                
+                Description = Content
+            };
+            
             StringBuilder builder = new StringBuilder();
             if (Tag == ButtonTag.link)
             {
+                button.ButtonType = FapMenuButtonType.Link;
+
                 output.TagName = "a";
                 output.Attributes.Add("class", ClassName);
                 output.Attributes.Add("id", Id);
                 output.Attributes.Add("href", LinkHref.IsMissing()? "javascript:void(0)" : LinkHref);
-                //builder.Append($"< a href = \"#\" id=\"{Id}\" class=\"{ClassName}\">");
+              
                 builder.Append($"  <i class=\"ace-icon {IconBefore}\"></i>");
                 builder.Append(Content);
-                //builder.Append("</a>");
+               
             }
             else
             {
+                button.ButtonType = FapMenuButtonType.Button;
                 output.TagName = "button";
                 output.Attributes.Add("class", ClassName);
                 //builder.Append($" <button {Attribute} class=\"btn {ClassName}\">");
@@ -52,7 +60,8 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                 //builder.Append("</button>");
             }
             output.Content.SetHtmlContent(builder.ToString());
-            
+            //注册按钮
+            _rbacService.RegisterMenuButton(button);
             return base.ProcessAsync(context, output);
         }
     }

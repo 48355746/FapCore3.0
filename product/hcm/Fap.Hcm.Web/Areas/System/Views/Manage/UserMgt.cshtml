@@ -10,28 +10,11 @@
         <div class="widget-box">
             <div class="widget-header widget-header-flat">
                 <h4 class="widget-title"><fap-multilang lang-key="user_group" default-content="用户组"></fap-multilang></h4>
-
-                <div class="widget-toolbar">
-                    <a href="#" data-ctrl="widgetAction" data-action="add" class="orange2">
-                        <i class="ace-icon fa fa-plus-circle purple"></i>
-                    </a>
-
-                    <a href="#" data-ctrl="widgetAction" data-action="edit">
-                        <i class="ace-icon fa fa-pencil blue"></i>
-                    </a>
-
-                    <a href="#" data-ctrl="widgetAction" data-action="delete">
-                        <i class="ace-icon fa fa-trash-o red"></i>
-                    </a>
-                    <a href="#" data-ctrl="widgetAction" data-action="refresh">
-                        <i class="ace-icon fa fa-refresh"></i>
-                    </a>
-                </div>
+                <fap-tree-button id="usergroup" description="用户组" tree-id="tree-usergroup"></fap-tree-button>
             </div>
-
             <div class="widget-body">
                 <div class="widget-main treescrollable">
-                    <fap-tree id="usergroup" is-async="true" data-toggle="d" get-url="/System/Api/Manage/UserGroup" edit-url="/System/Api/Manage/OperUserGroup"></fap-tree>
+                    <fap-tree id="usergroup" is-async="true" get-url="/System/Api/Manage/UserGroup" edit-url="/System/Api/Manage/OperUserGroup"></fap-tree>
                 </div>
             </div>
         </div>
@@ -47,14 +30,14 @@
                     </a>
 
                 </div>
-                <div class="widget-toolbar no-border">           
-                    <fap-button id="btnResetPassword" tag="link" content="重置密码" icon-before="fa fa-cog blue"  class-name="info"></fap-button>
+                <div class="widget-toolbar no-border">
+                    <fap-button id="btnResetPassword" tag="link" content="重置密码" icon-before="fa fa-cog blue" class-name="info"></fap-button>
                 </div>
             </div>
             <div class="widget-body">
-         
+
                 <div class="widget-main">
-                    <fap-grid id="user" query-option="@Model.QueryOption" post-data="@Model.PostData" auto-width="true" on-form-init-add="afterInitFormCallback" multi-box-only="true" multi-select="true" oper-refresh="true"  oper-cud="true" oper-export="true" oper-queryprogram="true" oper-batch-update="true" oper-import="true"></fap-grid>
+                    <fap-grid id="user" query-option="@Model.QueryOption" post-data="@Model.PostData" auto-width="true" on-form-init-add="afterInitFormCallback" multi-box-only="true" multi-select="true" oper-refresh="true" oper-cud="true" oper-export="true" oper-queryprogram="true" oper-batch-update="true" oper-import="true"></fap-grid>
 
                 </div>
             </div>
@@ -108,34 +91,7 @@
                     })
                 }
             })
-            $(document).off(ace.click_event, '[data-ctrl=widgetAction]').on(ace.click_event, '[data-ctrl=widgetAction]', function (ev) {
-                ev.preventDefault();
 
-                var $this = $(this);
-
-                var $action = $this.data('action');
-                var ref = $('#tree-usergroup').jstree(true),
-                    sel = ref.get_selected();
-                if ($action == 'refresh') {
-                    ref.refresh();
-                    return;
-                }
-                if (!sel.length) { return false; }
-                sel = sel[0];
-                if ($action == 'add') {
-                    sel = ref.create_node(sel);
-
-                } else if ($action == 'edit') {
-                    ref.edit(sel);
-                } else if ($action == 'delete') {
-                    bootbox.confirm("确认删除吗？", function (result) {
-                        if (result) {
-                            ref.delete_node(sel)
-                        }
-                    })
-                }
-
-            })
             $('#tree-usergroup').on("changed.jstree", function (e, data) {
                 if (data && data.selected && data.selected.length) {
                     var userGrpid = data.selected[0];

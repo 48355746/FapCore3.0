@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Enums;
+using Fap.Core.Rbac;
 
 namespace Fap.AspNetCore.Controls.TagHelpers
 {
@@ -22,8 +23,8 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         private ILoggerFactory _loggerFactory;
         private IFapApplicationContext _applicationContext;
         private IMultiLangService _multiLang;
-        private readonly IMemoryCache _memoryCache;
-        public FapGridTagHelper(IDbContext dataAccessor, ILoggerFactory logger, IFapApplicationContext applicationContext, IMultiLangService multiLang, IMemoryCache memoryCache)
+        private readonly IRbacService _rbacService;
+        public FapGridTagHelper(IDbContext dataAccessor, ILoggerFactory logger, IFapApplicationContext applicationContext, IMultiLangService multiLang, IRbacService rbacService)
         {
             _dataAccessor = dataAccessor;
             //_fapOption = fapOption;
@@ -31,7 +32,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             _logger = logger.CreateLogger<FapGridTagHelper>();
             _applicationContext = applicationContext;
             _multiLang = multiLang;
-            _memoryCache = memoryCache;
+            _rbacService = rbacService;
         }
         /// <summary>
         /// 控件ID
@@ -219,6 +220,16 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         public string SubgridRowexpanded { get; set; }
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
+            //注册按钮
+            _rbacService.RegisterMenuButton(new Core.Rbac.Model.FapMenuButton()
+            {
+                ButtonID = Id,
+                ButtonName = "表格按钮",
+                ButtonType = FapMenuButtonType.Grid,
+                Description =QueryOption.TableName
+            });
+
+
             output.TagName = "div";
             output.Content.Clear();
             string id = "jqgrid";

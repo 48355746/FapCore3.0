@@ -495,16 +495,22 @@ namespace Fap.Core.Rbac
             return list;
         }
 
-        public FapMenuButton RegisterMenuButton(string buttonId,string buttonName)
+        public FapMenuButton RegisterMenuButton(FapMenuButton button)
         {
             string path = $"~{_applicationContext.Request.Path}";
             var menu = _platformDomain.MenuSet.FirstOrDefault(m => m.MenuUrl.TrimEnd('/').Trim().EqualsWithIgnoreCase(path));
             if (menu != null)
             {
-                FapMenuButton button = new FapMenuButton();
-                button.ButtonID = buttonId;
-                button.ButtonName = buttonName;
-                button.MenuUid = menu.Fid;
+                if (_platformDomain.MenuButtonSet.TryGetValue(menu.Fid, out IEnumerable<FapMenuButton> list))
+                {
+                    if (!(list.Any() && list.ToList().Exists(m => m.ButtonID == button.ButtonID)))
+                    {
+                        button.MenuUid = menu.Fid;
+                        _dbContext.Insert(button);
+                        _platformDomain.MenuButtonSet.Refresh();
+                        return button;
+                    }
+                }
             }
             return null;
         }

@@ -31,6 +31,7 @@ namespace Fap.Core.Infrastructure.Domain
         IColumnSet ColumnSet { get; }
         IDictSet DictSet { get; }
         IMenuSet MenuSet { get; }
+        IMenuButtonSet MenuButtonSet { get; }
         IModuleSet ModuleSet { get; }
         IMultiLang MultiLangSet { get; }
         IOrgDeptSet OrgDeptSet { get; }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Fap.AspNetCore.Controls
@@ -42,17 +43,17 @@ namespace Fap.AspNetCore.Controls
     }
     public class TreeViewHelper
     {
-        public static List<TreeDataView> MakeTree(List<TreeDataView> resultList, List<TreeDataView> orginalList, string parentid = "", int depth = 0)
+        public static IEnumerable<TreeDataView> MakeTree(List<TreeDataView> resultList, IEnumerable<TreeDataView> orginalList, string parentid = "", int depth = 0)
         {
-            List<TreeDataView> list;
+            IEnumerable<TreeDataView> list;
             //获取所有分类
             if (parentid == "0" || string.IsNullOrWhiteSpace(parentid))
             {
-                list = orginalList.FindAll(c => c.Pid == parentid || c.Pid == "" || string.IsNullOrWhiteSpace(c.Pid) || c.Pid == "#" || c.Pid == "~");
+                list = orginalList.Where(c => c.Pid == parentid || c.Pid == "" || string.IsNullOrWhiteSpace(c.Pid) || c.Pid == "#" || c.Pid == "~");
             }
             else
             {
-                list = orginalList.FindAll(c => c.Pid == parentid);
+                list = orginalList.Where(c => c.Pid == parentid);
             }
             //循环读取取出的所有分类
             foreach (var node in list)

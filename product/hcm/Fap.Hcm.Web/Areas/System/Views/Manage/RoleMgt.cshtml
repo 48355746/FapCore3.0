@@ -9,23 +9,7 @@
         <div class="widget-box">
             <div class="widget-header widget-header-flat">
                 <h4 class="widget-title">角色组</h4>
-
-                <div class="widget-toolbar">
-                    <a href="#" data-ctrl="widgetAction" data-action="add" class="orange2">
-                        <i class="ace-icon fa fa-plus-circle purple"></i>
-                    </a>
-
-                    <a href="#" data-ctrl="widgetAction" data-action="edit">
-                        <i class="ace-icon fa fa-pencil blue"></i>
-                    </a>
-
-                    <a href="#" data-ctrl="widgetAction" data-action="delete">
-                        <i class="ace-icon fa fa-trash-o red"></i>
-                    </a>
-                    <a href="#" data-ctrl="widgetAction" data-action="refresh">
-                        <i class="ace-icon fa fa-refresh"></i>
-                    </a>
-                </div>
+                <fap-tree-button id="rolegroup" description="角色组" tree-id="tree-rolegroup"></fap-tree-button>
             </div>
 
             <div class="widget-body">
@@ -72,33 +56,7 @@
             $(document).one('ajaxloadstart.page', function (e) {
                 $('#tree-rolegroup').jstree("destroy");
             })
-            $(document).off(ace.click_event, '[data-ctrl=widgetAction]').on(ace.click_event, '[data-ctrl=widgetAction]', function (ev) {
-                ev.preventDefault();
-                debugger
-                var $this = $(this);
-               
-                var $action = $this.data('action');
-                var ref = $('#tree-rolegroup').jstree(true),
-                                sel = ref.get_selected();
-                if ($action == 'refresh') {
-                    ref.refresh();
-                    return;
-                }
-                if (!sel.length) { return false; }
-                sel = sel[0];
-                if ($action == 'add') {
-                    sel = ref.create_node(sel);
-
-                } else if ($action == 'edit') {
-                    ref.edit(sel);
-                } else if ($action == 'delete') {
-                    bootbox.confirm("确认删除？", function (result) {
-                        if (result) {
-                            ref.delete_node(sel)
-                        }
-                    })
-                }
-            })
+           
             $('#tree-rolegroup').on("changed.jstree", function (e, data) {
                 if (data && data.selected && data.selected.length) {
                     var roleGroupId = data.selected[0];

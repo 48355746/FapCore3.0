@@ -25,7 +25,7 @@ namespace Fap.Core.Rbac
         IEnumerable<FapRoleReport> GetUserReportList();
         IEnumerable<FapRole> GetUserRoleList();
 
-        FapMenuButton RegisterMenuButton(string buttonId, string buttonName);
+        FapMenuButton RegisterMenuButton(FapMenuButton button);
         bool CheckMenuButton(string roleUid, FapMenuButton menuButton);
     }
 }

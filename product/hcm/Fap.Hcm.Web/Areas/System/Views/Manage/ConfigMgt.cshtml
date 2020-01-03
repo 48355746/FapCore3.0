@@ -9,22 +9,7 @@
             <div class="widget-header widget-header-flat">
                 <h4 class="widget-title">配置组</h4>
 
-                <div class="widget-toolbar">
-                    <a href="#" data-ctrl="widgetAction" data-action="add" class="orange2">
-                        <i class="ace-icon fa fa-plus-circle purple"></i>
-                    </a>
-
-                    <a href="#" data-ctrl="widgetAction" data-action="edit">
-                        <i class="ace-icon fa fa-pencil blue"></i>
-                    </a>
-
-                    <a href="#" data-ctrl="widgetAction" data-action="delete">
-                        <i class="ace-icon fa fa-trash-o red"></i>
-                    </a>
-                    <a href="#" data-ctrl="widgetAction" data-action="refresh">
-                        <i class="ace-icon fa fa-refresh"></i>
-                    </a>
-                </div>
+               <fap-tree-button id="configgroup" description="配置组" tree-id="tree-configgroup"></fap-tree-button>
             </div>
 
             <div class="widget-body">
@@ -147,28 +132,7 @@
             $(document).one('ajaxloadstart.page', function (e) {
                 $('#tree-configgroup').jstree('destroy');
             })
-            $(document).off(ace.click_event, '[data-ctrl=widgetAction]').on(ace.click_event, '[data-ctrl=widgetAction]', function (ev) {
-                ev.preventDefault();
-                var $this = $(this);
-                var $action = $this.data('action');
-                var ref = $('#tree-configgroup').jstree(true),
-                                sel = ref.get_selected();
-                if ($action == 'refresh') {
-                    ref.refresh();
-                    return;
-                }
-                if (!sel.length) { return false; }
-                sel = sel[0];
-                if ($action == 'add') {
-                    sel = ref.create_node(sel);
-
-                } else if ($action == 'edit') {
-                    ref.edit(sel);
-                } else if ($action == 'delete') {
-                    ref.delete_node(sel)
-                }
-
-            })
+           
             $('#tree-configgroup').on("changed.jstree", function (e, data) {
                 debugger
                 if (data && data.selected && data.selected.length) {
@@ -184,7 +148,6 @@
                             $("#configTemplate").tmpl(data).appendTo("#frmConfigTemplate");
                         }
                     })
-
                 }
                 //console.log(data.selected);
             });
