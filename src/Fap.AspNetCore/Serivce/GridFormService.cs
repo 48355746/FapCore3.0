@@ -61,7 +61,7 @@ namespace Fap.AspNetCore.Serivce
         }
         public JqGridData QueryPageDataResultView(JqGridPostData jqGridPostData)
         {
-            Pageable queryOption = AnalysisPostData(jqGridPostData);
+            Pageable pageable = AnalysisPostData(jqGridPostData);
             //queryOption.Where = AnalysisWhere(queryOption.Where);
             PageDataResultView result = QueryPagedDynamicData();
             return result.GetJqGridJsonData();
@@ -71,7 +71,7 @@ namespace Fap.AspNetCore.Serivce
                 try
                 {
                     IEnumerable<FapColumn> fapColumns = _dbContext.Columns(jqGridPostData.QuerySet.TableName);
-                    PageInfo<dynamic> pi = _dbContext.QueryPage(queryOption);
+                    PageInfo<dynamic> pi = _dbContext.QueryPage(pageable);
 
                     //组装成DataResultView对象
                     PageDataResultView dataResultView = new PageDataResultView();
@@ -168,46 +168,26 @@ namespace Fap.AspNetCore.Serivce
             //构造初始化条件,如果没有过滤条件，又设置了初始化条件则设置初始化条件。或者设置了过滤条件且初始化条件为全局条件则同样设置where条件
             if (qs.GlobalWhere.IsPresent())
             {
-                pageable.Where = qs.GlobalWhere;
+                pageable.AddWhere(qs.GlobalWhere);
             }
             if (jqGridPostData.Filters.IsMissing() && qs.InitWhere.IsPresent())
             {
-                if (pageable.Where.IsMissing())
-                {
-                    pageable.Where = qs.InitWhere;
-                }
-                else
-                {
-                    pageable.Where += " and " + qs.InitWhere;
-                }
+                pageable.AddWhere(qs.InitWhere);
             }
 
             //页面级条件
+            JsonFilterToSql jfs = new JsonFilterToSql(_dbContext);
             if (jqGridPostData.PageCondition.IsPresent())
             {
-                JsonFilterToSql jfs = new JsonFilterToSql(_dbContext);
-                if (qs.GlobalWhere.IsPresent())
-                {
-                    pageable.AddWhere(jfs.BuilderFilter(pageable.TableName, jqGridPostData.PageCondition), QuerySymbolEnum.AND);
-                }
-                else
-                {
-                    pageable.Where = jfs.BuilderFilter(pageable.TableName, jqGridPostData.PageCondition);
-                }
+                pageable.AddWhere(jfs.BuilderFilter(pageable.TableName, jqGridPostData.PageCondition), QuerySymbolEnum.AND);
+               
             }
             //构造jqgrid过滤条件
             if (jqGridPostData.Filters.IsPresent())
             {
-                //string strFilter = JqGridHelper.BuilderFilter(pageable.TableName, model.Filters);
-                //if (!string.IsNullOrWhiteSpace(strFilter))
-                //{
-                //    pageable.Filter = strFilter;
-                //}
-                FilterCondition filterCondition = JsonFilterToSql.BuildFilterCondition(fapColumns, jqGridPostData.Filters);
-                if (filterCondition != null)
-                {
-                    pageable.FilterCondition = filterCondition;
-                }
+                pageable.AddWhere(jfs.BuilderFilter(pageable.TableName, jqGridPostData.Filters), QuerySymbolEnum.AND);
+                //string filterWhere = JsonFilterToSql.BuildFilterCondition(fapColumns, jqGridPostData.Filters);
+
             }
             //事件处理
             //actionSimplepageable?.Invoke(pageable);
@@ -217,14 +197,7 @@ namespace Fap.AspNetCore.Serivce
             string dataWhere = _rbacService.GetRoleDataWhere(qs.TableName);
             if (dataWhere.IsPresent())
             {
-                if (pageable.Where.IsPresent())
-                {
-                    pageable.Where += " and  " + dataWhere;
-                }
-                else
-                {
-                    pageable.Where = dataWhere;
-                }
+                pageable.AddWhere(dataWhere);
             }
             //解析条件
             pageable.Where = AnalysisWhere(pageable.Where);
@@ -399,7 +372,7 @@ namespace Fap.AspNetCore.Serivce
             string filePath = Path.Combine(Environment.CurrentDirectory, FapPlatformConstants.TemporaryFolder, fileName);
             Pageable pageable = AnalysisPostData(model);
             pageable.QueryCols = model.QuerySet.ExportCols;
-            string sql = pageable.Wraper.Sql();
+            string sql = pageable.Wraper.MakeExportSql();
             if (pageable.Parameters != null && pageable.Parameters.Count > 0)
             {
                 foreach (var param in pageable.Parameters)

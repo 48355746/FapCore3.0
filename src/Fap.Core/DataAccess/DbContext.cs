@@ -2203,7 +2203,7 @@ namespace Fap.Core.DataAccess
         }
         #region page sql
         private string PagingSQL(Pageable pageable)
-        {
+        { 
             //Orderby条件
             string orderBy = pageable.Wraper.MakeOrderBySql();
             if (!string.IsNullOrEmpty(orderBy))
@@ -2217,23 +2217,12 @@ namespace Fap.Core.DataAccess
 
             //Join条件
             string join = pageable.Wraper.MakeJoinSql();
-
-            //Where条件
-            string where = pageable.Wraper.MakeWhereSql();
-            if (where.IsPresent())
-            {
-                where = $" where {where}";
-            }
-            //过滤条件
-            string filter = pageable.Wraper.MakeFilterSql();
-            if (filter.IsPresent())
-            {
-                where = where.IsPresent() ? $"({where}) and ({filter})" : $" where {filter}";
-            }
+          
             if (pageable.MaxId != null)
             {
-                where = where.IsPresent() ? $"({where}) and Id>{pageable.MaxId}" : $" where Id>{pageable.MaxId}";
+                pageable.AddWhere($"Id>{pageable.MaxId}");
             }
+            string where = pageable.Wraper.MakeWhere();
             StringBuilder sql = new StringBuilder();
             var databaseDialect =_dbSession.DatabaseDialect;
             if (databaseDialect == DatabaseDialectEnum.MSSQL)
@@ -2291,20 +2280,7 @@ namespace Fap.Core.DataAccess
                 string join = pageable.Wraper.MakeJoinSql();
                 sqlBuilder.Append($" {join} ");
                 //Where条件
-                string where = pageable.Wraper.MakeWhereSql();
-                if (!string.IsNullOrEmpty(where))
-                {
-                    where = " where " + where;
-                }
-                //过滤条件
-                string filter = pageable.Wraper.MakeFilterSql();
-                if (!string.IsNullOrWhiteSpace(filter))
-                {
-                    where = where.IsPresent() ? $"({where}) and ({filter})" : where;
-                }
-
-                //Where条件
-                sqlBuilder.Append($" {where} ");
+                sqlBuilder.Append($" {pageable.Wraper.MakeWhere()} ");
                 return sqlBuilder.ToString();
             }
             return string.Empty;

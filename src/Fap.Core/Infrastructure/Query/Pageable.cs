@@ -89,16 +89,7 @@ namespace Fap.Core.Infrastructure.Query
             }
         }
 
-        #endregion
-
-        #region  过滤条件    
-
-        /// <summary>
-        /// 过滤条件对象
-        /// </summary>
-        public FilterCondition FilterCondition { get; set; }
-
-        #endregion     
+        #endregion    
         /// <summary>
         /// 排序条件
         /// 说明：可以由主表、扩展表的字段作为排序条件
@@ -124,12 +115,10 @@ namespace Fap.Core.Infrastructure.Query
             {
                 key = key.TrimStart('@');
             }
-
             if (Parameters.ContainsKey(key))
             {
                 return;
             }
-
             if (value == null)
             {
                 Parameters.Add(key, "");
@@ -247,11 +236,11 @@ namespace Fap.Core.Infrastructure.Query
     /// </summary>
     public sealed class SimpleQueryOptionBuilder
     {
-        private Pageable _queryOption;
+        private Pageable _pageAble;
         private IDbContext _dbContext;
-        public SimpleQueryOptionBuilder(Pageable queryOption, IDbContext dbContext)
+        public SimpleQueryOptionBuilder(Pageable pageAble, IDbContext dbContext)
         {
-            _queryOption = queryOption;
+            _pageAble = pageAble;
             _dbContext = dbContext;
         }
         /// <summary>
@@ -261,7 +250,7 @@ namespace Fap.Core.Infrastructure.Query
         {
             get
             {
-                var _mainTable = _dbContext.Table(_queryOption.TableName);
+                var _mainTable = _dbContext.Table(_pageAble.TableName);
 
                 return _mainTable;
             }
@@ -271,7 +260,7 @@ namespace Fap.Core.Infrastructure.Query
         {
             get
             {
-                var _mainColumnList = _dbContext.Columns(_queryOption.TableName);
+                var _mainColumnList = _dbContext.Columns(_pageAble.TableName);
 
                 return _mainColumnList;
             }
@@ -281,7 +270,7 @@ namespace Fap.Core.Infrastructure.Query
         {
             get
             {
-                if (!_queryOption.IsQueryExtTable)
+                if (!_pageAble.IsQueryExtTable)
                 {
                     return null;
                 }
@@ -298,7 +287,7 @@ namespace Fap.Core.Infrastructure.Query
         {
             get
             {
-                if (!_queryOption.IsQueryExtTable)
+                if (!_pageAble.IsQueryExtTable)
                 {
                     return null;
                 }
@@ -312,50 +301,15 @@ namespace Fap.Core.Infrastructure.Query
                 return null;
             }
         }
-
-        public string Sql()
-        {
-            //Orderby条件
-            string orderBy = MakeOrderBySql();
-            if (!string.IsNullOrEmpty(orderBy))
-            {
-                orderBy = $" ORDER BY {orderBy} ";
-            }
-            else
-            {
-                orderBy = " order by Id ";
-            }
-            //Join条件
-            string join = MakeJoinSql();
-
-            //Where条件
-            string where = MakeWhereSql();
-            if (where.IsPresent())
-            {
-                where = $" where {where}";
-            }
-            //过滤条件
-            string filter = MakeFilterSql();
-            if (filter.IsPresent())
-            {
-                where = where.IsPresent() ? $"({where}) and ({filter})" : $" where {filter}";
-            }
-            StringBuilder sql = new StringBuilder();
-
-            sql.Append($"select {MakeSelectSql()} from {MakeFromSql()} {join} {where} {orderBy} ");
-
-            return sql.ToString();
-        }
-
         /// <summary>
         /// 生成Select的SQL
         /// </summary>
         public string MakeSelectSql()
         {
             //处理要显示的字段
-            if (_queryOption.QueryCols.IsPresent())
+            if (_pageAble.QueryCols.IsPresent())
             {
-                return _queryOption.QueryCols;
+                return _pageAble.QueryCols;
             }
 
             return "*";
@@ -371,7 +325,32 @@ namespace Fap.Core.Infrastructure.Query
             return MainTable.TableName;
 
         }
+        public string MakeWhere()
+        {
+            if (_pageAble.Where.IsPresent())
+            {
+                return $" where {_pageAble.Where}";
+            }
+            return string.Empty;
+        }
+        public string MakeExportSql()
+        {
+            //Orderby条件
+            string orderBy = MakeOrderBySql();
+            if (!string.IsNullOrEmpty(orderBy))
+            {
+                orderBy = $" ORDER BY {orderBy} ";
+            }
+            else
+            {
+                orderBy = " order by Id ";
+            }
+            //Join条件
+            string join = MakeJoinSql();
+            string where = MakeWhere();
+            return $"select {MakeSelectSql()} from {MakeFromSql()} {join} {where} {orderBy} ";
 
+        }
         /// <summary>
         /// 组装成Join部分的SQL
         /// </summary>
@@ -380,169 +359,18 @@ namespace Fap.Core.Infrastructure.Query
         {
             StringBuilder sqlBuilder = new StringBuilder();
             //查询扩展表
-            if (_queryOption.IsQueryExtTable)
+            if (_pageAble.IsQueryExtTable)
             {
                 FapTable mainTable = MainTable;
                 if (mainTable.ExtTable.IsPresent())
                 {
                     sqlBuilder.Append(" LEFT JOIN ").Append(mainTable.ExtTable);
                     sqlBuilder.Append(" ON ");
-                    sqlBuilder.Append(mainTable.ExtTable + ".Fid=").Append(_queryOption.TableName + ".Fid");
+                    sqlBuilder.Append(mainTable.ExtTable + ".Fid=").Append(_pageAble.TableName + ".Fid");
                 }
             }
 
             return sqlBuilder.ToString();
-        }
-        /// <summary>
-        /// 组装成Where部分的SQL
-        /// </summary>
-        /// <returns></returns>
-        public string MakeWhereSql()
-        {
-            //过滤条件
-            string filter = MakeFilterSql();
-            //预处理：加上有效时间
-            if (_queryOption.Where.IsPresent())
-            {
-                if (filter.IsPresent())
-                {
-                    return $"({_queryOption.Where}) and ({filter})";
-                }
-                else
-                {
-                    return _queryOption.Where;
-                }
-            }
-            else
-            {
-                if (filter.IsPresent())
-                {
-                    filter = $" ({filter}) ";
-                }
-            }
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// 组装filter部分的SQL语句
-        /// </summary>
-        /// <returns></returns>
-        public string MakeFilterSql()
-        {
-            if (_queryOption.FilterCondition != null)
-            {
-                StringBuilder sqlBuilder = new StringBuilder();
-                List<FilterCondition> rootFilterConditions = new List<FilterCondition>();
-                rootFilterConditions.Add(_queryOption.FilterCondition);
-
-                this.BuilderSubFilterSql(_queryOption.FilterCondition.CombinationType, rootFilterConditions, sqlBuilder);
-                if (sqlBuilder.Length > 0)
-                {
-                    //去掉最后的AND、OR
-                    sqlBuilder.Length = sqlBuilder.Length - _queryOption.FilterCondition.CombinationType.Length;
-                }
-                else
-                {
-                    return "";
-                }
-                string result = sqlBuilder.ToString();
-                result = result.TrimEnd("AND".ToArray()).TrimEnd("OR".ToArray());
-                return result;
-            }
-
-            return "";
-        }
-
-        private void BuilderSubFilterSql(string operatorType, List<FilterCondition> filterConditions, StringBuilder sqlBuilder)
-        {
-            if (filterConditions == null) return;
-
-            foreach (var filterCondition in filterConditions)
-            {
-                if (filterCondition != null)
-                {
-                    if (filterCondition.FilterConditions.Count > 0)
-                    {
-                        sqlBuilder.Append(" (");
-                        //处理主条件
-                        foreach (var item in filterCondition.FilterConditions)
-                        {
-                            sqlBuilder.Append(" ");
-                            if (!item.HasMC) //正常字段
-                            {
-                                if (item.Operator.Trim().EqualsWithIgnoreCase("IS NULL"))
-                                {
-                                    sqlBuilder.Append("(").Append(item.TableName).Append(".").Append(item.Field).Append(" ").Append(item.Operator).Append(" OR ")
-                                        .Append(item.TableName).Append(".").Append(item.Field).Append("='')");
-                                }
-                                else if (item.Operator.Trim().EqualsWithIgnoreCase("IS NOT NULL"))
-                                {
-                                    sqlBuilder.Append("(").Append(item.TableName).Append(".").Append(item.Field).Append(" ").Append(item.Operator).Append(" AND ")
-                                        .Append(item.TableName).Append(".").Append(item.Field).Append("!='')");
-                                }
-                                else
-                                {
-                                    sqlBuilder.Append(item.TableName).Append(".").Append(item.Field).Append(" ").Append(item.Operator).Append(item.Data);
-                                }
-                            }
-                            else //MC字段
-                            {
-                                FapColumn column = _dbContext.Columns(item.TableName).FirstOrDefault(c => c.ColName == item.OrginalField);
-                                if (column != null)
-                                {
-                                    if (column.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
-                                    { //参照类型                                       
-
-                                        sqlBuilder.Append(item.TableName).Append(".").Append(item.OrginalField).Append(" IN (");
-
-                                        string refWhere = string.Empty;
-                                        if (item.Operator.Trim().EqualsWithIgnoreCase("IS NULL"))
-                                        {
-                                            refWhere = "(" + column.RefName + " IS NULL OR " + column.RefName + "='')";
-                                        }
-                                        else if (item.Operator.Trim().EqualsWithIgnoreCase("IS NOT NULL"))
-                                        {
-                                            refWhere = "(" + column.RefName + " IS NOT NULL AND " + column.RefName + "!='')";
-                                        }
-                                        else
-                                        {
-                                            refWhere = column.RefName + item.Operator + item.Data;
-                                        }
-                                        sqlBuilder.AppendFormat("select {0} as code from {1} where {2}", column.RefID, column.RefTable, refWhere);
-                                        //}
-                                        sqlBuilder.Append(")");
-                                    }
-                                    else if (column.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX) //下拉框类型
-                                    {
-                                        sqlBuilder.Append(item.TableName).Append(".").Append(item.Field).Append(" ").Append(item.Operator).Append(item.Data);
-                                    }
-                                }
-                            }
-
-                            //处理AND和OR
-                            sqlBuilder.Append(" ").Append(filterCondition.CombinationType);
-                        }
-
-                        sqlBuilder.Length = sqlBuilder.Length - filterCondition.CombinationType.Length;
-
-                        sqlBuilder.Append(") ");
-
-                        //处理AND和OR
-                        if (!string.IsNullOrWhiteSpace(operatorType))
-                        {
-                            sqlBuilder.Append(operatorType);
-                        }
-                    }
-
-
-                    //处理子条件
-                    if (filterCondition.GroupsFilterCondition != null && filterCondition.GroupsFilterCondition.Count > 0)
-                    {
-                        this.BuilderSubFilterSql(filterCondition.CombinationType, filterCondition.GroupsFilterCondition, sqlBuilder);
-                    }
-                }
-            }
-
         }
 
         /// <summary>
@@ -551,7 +379,7 @@ namespace Fap.Core.Infrastructure.Query
         /// <returns></returns>
         public string MakeOrderBySql()
         {
-            string orderBy = string.Join(',', _queryOption.OrderBy?.OrderByConditions.Select(o => $"{o.Field} {o.Order}"));
+            string orderBy = string.Join(',', _pageAble.OrderBy?.OrderByConditions.Select(o => $"{o.Field} {o.Order}"));
             if (orderBy.IsMissing())
             {
                 List<FapColumn> columnList = MainColumnList.Where(c => !string.IsNullOrWhiteSpace(c.SortDirection)).ToList();
@@ -625,76 +453,7 @@ namespace Fap.Core.Infrastructure.Query
         }
     }
 
-    /// <summary>
-    /// 过滤条件对象
-    /// </summary>
-    [Serializable]
-    public class FilterCondition
-    {
-        private string _combinationType = "AND";
-        /// <summary>
-        /// 过滤条件项之间的组合关系， "AND"、"OR"
-        /// </summary>
-        public string CombinationType
-        {
-            get
-            {
-                if (string.IsNullOrWhiteSpace(_combinationType))
-                {
-                    _combinationType = "AND";
-                }
-                return _combinationType.Trim();
-            }
-            set
-            {
-                _combinationType = value;
-            }
-        }
 
-
-        private List<FilterConditionItem> _filterConditions = new List<FilterConditionItem>();
-        /// <summary>
-        /// 过滤条件集合
-        /// </summary>
-        public List<FilterConditionItem> FilterConditions
-        {
-            get
-            {
-                return _filterConditions;
-            }
-        }
-        /// <summary>
-        /// 添加过滤条件
-        /// </summary>
-        /// <param name="tableName">字段所在的表名</param>
-        /// <param name="field">字段名</param>
-        /// <param name="op">操作符</param>
-        /// <param name="data">值</param>
-        public void AddFilterCondtion(string tableName, string field, string op, string data)
-        {
-            _filterConditions.Add(new FilterConditionItem() { TableName = tableName, Field = field, Operator = op, Data = data });
-        }
-
-
-        private List<FilterCondition> _subFilterCondition = new List<FilterCondition>();
-        /// <summary>
-        /// 分组滤条件， 对应的是groups
-        /// </summary>
-        public List<FilterCondition> GroupsFilterCondition
-        {
-            get
-            {
-                return _subFilterCondition;
-            }
-        }
-
-        public void AddGroupFilterCondition(FilterCondition groupsFilterCondition)
-        {
-            this._subFilterCondition.Add(groupsFilterCondition);
-        }
-
-
-    }
     #endregion
 
     #region 排序的相关类定义

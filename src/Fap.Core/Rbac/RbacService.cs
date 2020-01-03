@@ -506,6 +506,7 @@ namespace Fap.Core.Rbac
                 button.ButtonName = buttonName;
                 button.MenuUid = menu.Fid;
             }
+            return null;
         }
 
         public bool CheckMenuButton(string roleUid, FapMenuButton menuButton)

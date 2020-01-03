@@ -99,7 +99,7 @@ namespace Fap.AspNetCore.Model
                 return "";
             }
             StringBuilder sqlBuilder = new StringBuilder();
-            IEnumerable<FapColumn> cols =_dbContext.Columns(tableName);
+            IEnumerable<FapColumn> cols = _dbContext.Columns(tableName);
             if (filter.IsPresent())
             {
                 JObject jsono = JObject.Parse(filter);
@@ -220,115 +220,8 @@ namespace Fap.AspNetCore.Model
             }
         }
 
-        /// <summary>
-        /// 格式化过虑条件成过虑条件对象
-        /// </summary>
-        /// <param name="filter"></param>
-        /// <returns></returns>
-        public static FilterCondition BuildFilterCondition(IEnumerable<FapColumn> fapColumns, string filter)
-        {
-            FilterCondition filterCondition = null;
-            if (!string.IsNullOrEmpty(filter))
-            {
-                string tableName = fapColumns.First().TableName;
-                JObject jsono = JObject.Parse(filter);
-                if (jsono != null)
-                {
-                    filterCondition = new FilterCondition();
-                    //List<FilterCondition> filterConditions = new List<FilterCondition>();
-                    //filterConditions.Add(filterCondition);
+       
 
-                    string group = jsono.GetValue("groupOp").ToString();
-                    filterCondition.CombinationType = group;
-                    var rulestr = jsono.GetValue("rules");
-                    if (rulestr != null)
-                    {
-                        JEnumerable<JObject> rules = rulestr.Children<JObject>();
-                        foreach (JObject o in rules)
-                        {
-                            string field = o.GetValue("field").ToString();
-                            string op = o.GetValue("op").ToString();
-                            string data = o.GetValue("data").ToString();
-                            if (!string.IsNullOrEmpty(op))// && !string.IsNullOrEmpty(data))
-                            {
-                                data = ExecuteData(field, op, data);
-                                op = Q2Oper[op];
-                                if (op.ToLower().Contains("like"))
-                                {
-                                    if (fapColumns.First(f => f.ColName.EqualsWithIgnoreCase(field)).CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
-                                    {
-                                        field += "MC";
-                                    }
-                                }
-                                filterCondition.AddFilterCondtion(tableName, field, op, data);
-                            }
-                        }
-                    }
-                    if (jsono.GetValue("groups") != null)
-                    {
-                        JEnumerable<JObject> subs = jsono.GetValue("groups").Children<JObject>();
-                        //foreach (var sub in subs)
-                        //{
-                        //    RecurseFilterCondition(tableName, filterConditions, sub);
-                        //}
-
-                        RecurseFilterCondition(tableName, fapColumns, filterCondition, subs);
-                    }
-
-                }
-            }
-            return filterCondition;
-        }
-
-        /// <summary>
-        /// 递归获取过滤条件
-        /// </summary>
-        private static void RecurseFilterCondition(string tableName, IEnumerable<FapColumn> fapColumns, FilterCondition filterCondition, JEnumerable<JObject> jsonos)
-        {
-            foreach (var jsono in jsonos)
-            {
-                //foreach (var rootFilterCondition in rootFilterConditions)
-                //{
-                FilterCondition groupsCondition = new FilterCondition();
-
-                bool hasGroup = jsono.Property("groupOp") != null;
-                if (!hasGroup) return;
-                string group = jsono.GetValue("groupOp").ToString();
-                groupsCondition.CombinationType = group;
-
-                JEnumerable<JObject> rules = jsono.GetValue("rules").Children<JObject>();
-                foreach (JObject o in rules)
-                {
-                    string field = o.GetValue("field").ToString();
-                    string op = o.GetValue("op").ToString();
-                    string data = o.GetValue("data").ToString();
-
-                    if (!string.IsNullOrEmpty(op))// && !string.IsNullOrEmpty(data))
-                    {
-                        data = ExecuteData(field, op, data);
-                        op = Q2Oper[op];
-                        if (op.ToLower().Contains("like"))
-                        {
-                            if (fapColumns.First(f => f.ColName.EqualsWithIgnoreCase(field)).CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
-                            {
-                                field += "MC";
-                            }
-                        }
-                        groupsCondition.AddFilterCondtion(tableName, field, op, data);
-                    }
-                }
-                filterCondition.AddGroupFilterCondition(groupsCondition);
-
-                var groupsObj = jsono.GetValue("groups");
-                if (groupsObj != null)
-                {
-                    JEnumerable<JObject> groups = groupsObj.Children<JObject>();
-
-                    RecurseFilterCondition(tableName, fapColumns, groupsCondition, groups);
-                }
-                //}
-            }
-        }
         #region 构造条件描述
         /// <summary>
         /// 构造条件描述
@@ -345,7 +238,7 @@ namespace Fap.AspNetCore.Model
             //Dictionary<string, List<JqGridFilterDescViewModel>> dicList = new Dictionary<string, List<JqGridFilterDescViewModel>>();
             List<FilterDescModel> sqlBuilder = new List<FilterDescModel>();
 
-            IEnumerable<FapColumn> cols =_dbContext.Columns(tableName);
+            IEnumerable<FapColumn> cols = _dbContext.Columns(tableName);
             if (!string.IsNullOrEmpty(filter))
             {
                 JObject jsono = JObject.Parse(filter);
@@ -383,8 +276,8 @@ namespace Fap.AspNetCore.Model
                         FapColumn col = cols.FirstOrDefault(c => c.ColName == colName);
                         if (col.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX)
                         {
-                                data =_dbContext.Dictionary(col.RefTable,data)?.Name;
-                           
+                            data = _dbContext.Dictionary(col.RefTable, data)?.Name;
+
                         }
 
                         if (!string.IsNullOrEmpty(op))// && !string.IsNullOrEmpty(data))
@@ -417,6 +310,9 @@ namespace Fap.AspNetCore.Model
         }
 
         #endregion
+
+   
+
     }
     public class FilterDescModel
     {
@@ -438,4 +334,5 @@ namespace Fap.AspNetCore.Model
 
         public string FilterResult { get; set; }
     }
+   
 }
