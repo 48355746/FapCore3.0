@@ -33,7 +33,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
     {
         private ISchedulerService _schedule;
         private IEventDataHandler _dataHandler;
-        public ManageApiController(Sys.IServiceProvider serviceProvider, ISchedulerService schedulerService,IEventDataHandler dataHandler) : base(serviceProvider)
+        public ManageApiController(Sys.IServiceProvider serviceProvider, ISchedulerService schedulerService, IEventDataHandler dataHandler) : base(serviceProvider)
         {
             _schedule = schedulerService;
             _dataHandler = dataHandler;
@@ -581,7 +581,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         {
             var modules = _platformDomain.ModuleSet;
             IEnumerable<FapMenu> menus = _platformDomain.MenuSet;
-            var menuButtons= _platformDomain.MenuButtonSet; 
+            var menuButtons = _platformDomain.MenuButtonSet;
             if (!_applicationContext.IsAdministrator)
             {
                 var roleMenus = _rbacService.GetUserMenuList();
@@ -617,20 +617,21 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
                             var rl3 = threeLevels.Where(m => m.Pid == r2.Id);
                             if (rl3 != null && rl3.Any())
                             {
-                                AddOperNode(rl3.ToList());
-                                r2.Children.AddRange(rl3.ToList());
+                                var rl3List = AddOperNode(rl3);
+                                r2.Children.AddRange(rl3List);
                             }
                         }
                     }
-                    AddOperNode(rl.ToList());
-                    item.Children.AddRange(rl.ToList());
+                    var rlList = AddOperNode(rl);
+                    item.Children.AddRange(rlList);
                 }
             }
             return Json(tree);
-            void AddOperNode(IList<TreeDataView> menuNodes)
+            IEnumerable<TreeDataView> AddOperNode(IEnumerable<TreeDataView> menuNodes)
             {
+                var menuList = menuNodes.ToList();
                 var opers = typeof(OperEnum).EnumItems();
-                foreach (var node in menuNodes)
+                foreach (var node in menuList)
                 {
                     if (menuButtons.TryGetValue(node.Id, out IEnumerable<FapMenuButton> buttons))
                     {
@@ -649,7 +650,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
                                 foreach (var oper in opers)
                                 {
                                     TreeDataView tcol = new TreeDataView();
-                                    tcol.Id = button.Id + FapPlatformConstants.SplitSeparator + oper.Value;
+                                    tcol.Id = $"{node.Id}|{button.ButtonType}|{ button.ButtonID }|{oper.Key}";
                                     tcol.Data = new { IsBtn = true };
                                     tcol.Pid = toper.Id;
                                     tcol.Text = oper.Description;
@@ -659,7 +660,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
                             }
                             else if (button.ButtonType == FapMenuButtonType.Tree)
                             {
-                                toper.Icon = " fa fa-tree";
+                                toper.Icon = " fa fa-code-fork";
                                 foreach (var oper in opers)
                                 {
                                     if (oper.Key == (int)OperEnum.Add
@@ -668,7 +669,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
                                         || oper.Key == (int)OperEnum.Refresh)
                                     {
                                         TreeDataView tcol = new TreeDataView();
-                                        tcol.Id = button.Id + FapPlatformConstants.SplitSeparator + oper.Value;
+                                        tcol.Id = $"{node.Id}|{button.ButtonType}|{ button.ButtonID }|{oper.Key}";
                                         tcol.Data = new { IsBtn = true };
                                         tcol.Pid = toper.Id;
                                         tcol.Text = oper.Description;
@@ -679,6 +680,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
                             }
                             else if (button.ButtonType == FapMenuButtonType.Link || button.ButtonType == FapMenuButtonType.Button)
                             {
+                                toper.Id = $"{node.Id}|button|{ button.ButtonID }|1";
                                 toper.Icon = "fa  fa-bolt";
                                 toper.Data = new { IsBtn = true };
                             }
@@ -686,26 +688,27 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
                         }
                     }
                 }
+                return menuList;
 
             }
         }
-        
+
         private string GetOperIcon(OperEnum operEnum)
         {
             return operEnum switch
             {
                 OperEnum.Add => "fa fa-plus-circle purple",
-                OperEnum.BatchUpdate=> "fa fa-pencil-square-o",
-                OperEnum.Delete=> "fa fa-trash-o red",
-                OperEnum.ExportExcel=> "fa fa-file-excel-o green",
-                OperEnum.ExportWord=> "fa fa-file-word-o",
-                OperEnum.Import=> "fa fa-cloud-upload",
-                OperEnum.QueryProgram=> "fa fa-camera",
-                OperEnum.Refresh=> "fa fa-refresh green",
-                OperEnum.Search=> "fa fa-search orange",
-                OperEnum.Update=> "fa fa-pencil blue",
-                OperEnum.View=> "fa fa-search-plus grey",
-                _=> "fa fa-bolt"
+                OperEnum.BatchUpdate => "fa fa-pencil-square-o",
+                OperEnum.Delete => "fa fa-trash-o red",
+                OperEnum.ExportExcel => "fa fa-file-excel-o green",
+                OperEnum.ExportWord => "fa fa-file-word-o",
+                OperEnum.Import => "fa fa-cloud-upload",
+                OperEnum.QueryProgram => "fa fa-camera",
+                OperEnum.Refresh => "fa fa-refresh green",
+                OperEnum.Search => "fa fa-search orange",
+                OperEnum.Update => "fa fa-pencil blue",
+                OperEnum.View => "fa fa-search-plus grey",
+                _ => "fa fa-bolt"
             };
         }
         #endregion
@@ -859,7 +862,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             DynamicParameters dparam = new DynamicParameters();
             dparam.Add("RoleUid", roleUid);
             //获取角色用户
-            IEnumerable<dynamic> users = _dbContext.Query("select Fid, UserCode,UserName,UserEmail,UserIdentity from FapUser where fid in(select useruid from FapRoleUser where RoleUid=@RoleUid) order by UserCode", dparam, true);
+            IEnumerable<dynamic> userList = _dbContext.Query("select Fid, UserCode,UserName,UserEmail,UserIdentity from FapUser where fid in(select useruid from FapRoleUser where RoleUid=@RoleUid) order by UserCode", dparam, true);
             //获取角色菜单
             IEnumerable<dynamic> menus = _dbContext.Query("select MenuUid from FapRoleMenu where RoleUid= @RoleUid", dparam);
             //获取角色部门
@@ -867,26 +870,47 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             //获取角色报表
             IEnumerable<dynamic> rpts = _dbContext.Query("select RptUid from FapRoleReport where RoleUid=@RoleUid", dparam);
             //获取角色实体属性
-            IEnumerable<dynamic> columns = _dbContext.Query("select ColumnUid,EditAble,ViewAble from FapRoleColumn where RoleUid=@RoleUid", dparam);
+            IEnumerable<dynamic> columnList = _dbContext.Query("select ColumnUid,EditAble,ViewAble from FapRoleColumn where RoleUid=@RoleUid", dparam);
             //获取角色角色
             IEnumerable<dynamic> roles = _dbContext.Query("select PRoleUid from FapRoleRole where RoleUid=@RoleUid", dparam);
 
+            //获取角色按钮
+            IEnumerable<FapRoleButton> roleButtons = _dbContext.Query<FapRoleButton>("select * from FapRoleButton where RoleUid=@RoleUid", dparam);
+           
             //var userJson = users.Select(x => new { Id = x.Fid }).ToList();
             var menuJson = menus.Select(x => x.MenuUid).ToList();
             var deptJson = depts.Select(x => x.DeptUid).ToList();
             var rptJson = rpts.Select(x => x.RptUid).ToList();
             var roleJson = roles.Select(x => x.PRoleUid).ToList();
+            var buttonJson = GetRoleButtons();
             var json = new
             {
-                users = users,
+                users = userList,
                 menus = menuJson,
                 depts = deptJson,
                 rpts = rptJson,
-                columns = columns,
-                roles = roleJson
+                columns = columnList,
+                roles = roleJson,
+                buttons=buttonJson
             };
             return Json(json, false);
-
+            IEnumerable<string> GetRoleButtons()
+            {
+                foreach (var rbtn in roleButtons)
+                {
+                    if (rbtn.ButtonType == FapMenuButtonType.Grid || rbtn.ButtonType == FapMenuButtonType.Tree)
+                    {
+                        foreach (var v in rbtn.ButtonValue.SplitComma())
+                        {
+                            yield return $"{rbtn.MenuUid}|{rbtn.ButtonType}|{ rbtn.ButtonId }|{v}";
+                        }
+                    }
+                    else
+                    {
+                        yield return $"{rbtn.MenuUid}|{rbtn.ButtonType}|{ rbtn.ButtonId }|{rbtn.ButtonValue}";
+                    }
+                }
+            }
         }
         /// <summary>
         /// 删除用户
@@ -911,7 +935,6 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         public JsonResult SetAuthority(Authority auth)
         {
             bool success = false;
-            //DataAccessor accessor = new DataAccessor();
             //菜单
             if (auth.AType == 1)
             {
@@ -1022,8 +1045,45 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
                 success = true;
                 _platformDomain.RoleRoleSet.Refresh();
             }
-            return Json(new ResponseViewModel() { success = success });
+            else if (auth.AType == 8)
+            {
+                //按钮
+                var roleButtons = GetRoleButtons(auth.BtnUids);
+                _rbacService.AddRoleButton(auth.RoleUid, roleButtons);
+                success = true;
 
+                _platformDomain.RoleButtonSet.Refresh();
+            }
+            return Json(new ResponseViewModel() { success = success });
+            IEnumerable<FapRoleButton> GetRoleButtons(IList<string> btnUids)
+            {
+                if (auth.BtnUids != null)
+                {
+                    var btnList = btnUids.Select(b =>
+                    {
+                        string[] s = b.Split('|');
+                        return new { MenuUid = s[0], BtnType = s[1], BtnId = s[2], BtnValue = s[3] };
+                    });
+                    foreach (var btnGrp in btnList.GroupBy(b => b.MenuUid))
+                    {
+                        foreach (var btn in btnGrp.GroupBy(b => b.BtnType))
+                        {
+                            FapRoleButton roleButton = new FapRoleButton { RoleUid = auth.RoleUid, MenuUid = btnGrp.Key };
+                            roleButton.ButtonType = btn.Key;
+                            if (btn.Key == FapMenuButtonType.Grid || btn.Key == FapMenuButtonType.Tree)
+                            {
+                                roleButton.ButtonValue = string.Join(',', btn.ToList().Select(b => b.BtnValue));
+                            }
+                            else
+                            {
+                                roleButton.ButtonValue = btn.First().BtnValue;
+                            }
+                            roleButton.ButtonId = btn.First().BtnId;
+                            yield return roleButton;
+                        }
+                    }
+                }
+            }
         }
 
         #endregion
@@ -1179,7 +1239,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             {
                 foreach (var log in ls)
                 {
-                    SynchResult result =await _dataHandler.PostEventData(log.RemoteUrl,log.SynData);
+                    SynchResult result = await _dataHandler.PostEventData(log.RemoteUrl, log.SynData);
                     if (!result.Success)
                     {
                         log.SynState = 0;

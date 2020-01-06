@@ -30,24 +30,11 @@
                     </a>
                 </div>
                 <div class="widget-toolbar no-border">
-                    <div class="btn-group">
-                        <button id="btnClearCache" class="btn btn-white">
-                            <i class="ace-icon fa fa-refresh blue"></i>
-                            清除系统数据缓存
-                        </button>
-                        <button id="btnClearConfigCache" class="btn btn-white">
-                            <i class="ace-icon fa fa-refresh blue"></i>
-                            清除系统配置缓存
-                        </button>
-                        <button id="btnAddConfigItem" class="btn btn-white">
-                            <i class="ace-icon fa fa-plus green"></i>
-                            添加
-                        </button>
-                        <button id="btnSaveConfig" class="btn btn-white">
-                            <i class="ace-icon fa fa-floppy-o blue"></i>
-                            保存
-                        </button>
-                    </div>
+                    <fap-button id="btnClearCache" content="刷新系统数据缓存"  icon-before="fa fa-refresh blue"></fap-button>
+                    <fap-button id="btnClearConfigCache" content="刷新系统配置缓存" icon-before="fa fa-refresh blue"></fap-button>
+                    <fap-button id="btnAddConfigItem" content="添加" icon-before="fa fa-plus green"></fap-button>
+                    <fap-button id="btnSaveConfig" content="保存" icon-before="fa fa-floppy-o blue"></fap-button>
+                   
                 </div>
             </div>
             <div class="widget-body">
@@ -159,7 +146,7 @@
                     async: false,
                     success: function (data) {
                         if (data.success == 'success') {
-                            bootbox.alert("刷新系统数据缓存成功");
+                            $.msg("刷新系统数据缓存成功");
                         } else {
                             bootbox.alert("刷新系统数据缓存失败，请重新刷新");
                         }
@@ -176,7 +163,7 @@
                     async: false,
                     success: function (data) {
                         if (data.success == 'success') {
-                            bootbox.alert("刷新系统配置缓存成功");
+                            $.msg("刷新系统配置缓存成功");
                         } else {
                             bootbox.alert("刷新系统配置缓存失败，请重新刷新");
                         }
@@ -239,7 +226,7 @@
                 $.post("@Url.Content("~/System/Api/Manage/ConfigSet")", {configs: configData }, function (data) {
                     if(data.success==true)
                     {
-                        bootbox.alert("设置成功");
+                        $.msg("设置成功");
                     }
                     else {
                         bootbox.alert(data.msg);

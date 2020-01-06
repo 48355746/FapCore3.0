@@ -40,6 +40,7 @@ namespace Fap.Core.Infrastructure.Domain
         IRoleDeptSet RoleDeptSet { get; }
         IRoleMenuSet RoleMenuSet { get; }
         IRoleReportSet RoleReportSet { get; }
+        IRoleButtonSet RoleButtonSet { get; }
         IRoleRoleSet RoleRoleSet { get; }
         IRoleSet RoleSet { get; }
         ISysParamSet SysParamSet { get; }

@@ -12,7 +12,7 @@ using System.Text.RegularExpressions;
 
 namespace Fap.Core.Rbac
 {
-    [Service(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton)]
+    [Service]
     public class RbacService : IRbacService
     {
         /// <summary>
@@ -495,29 +495,56 @@ namespace Fap.Core.Rbac
             return list;
         }
 
-        public FapMenuButton RegisterMenuButton(FapMenuButton button)
+        public string GetButtonAuthorized(FapMenuButton button)
         {
+            bool isAdministrator = _applicationContext.IsAdministrator;
             string path = $"~{_applicationContext.Request.Path}";
             var menu = _platformDomain.MenuSet.FirstOrDefault(m => m.MenuUrl.TrimEnd('/').Trim().EqualsWithIgnoreCase(path));
             if (menu != null)
             {
                 if (_platformDomain.MenuButtonSet.TryGetValue(menu.Fid, out IEnumerable<FapMenuButton> list))
                 {
-                    if (!(list.Any() && list.ToList().Exists(m => m.ButtonID == button.ButtonID)))
+                    if (list.Any() && list.ToList().Exists(m => m.ButtonID == button.ButtonID))
                     {
+                        //检查授权
+                        if (!isAdministrator && _platformDomain.RoleButtonSet.TryGetValue(_applicationContext.CurrentRoleUid, out IEnumerable<FapRoleButton> roleButtons))
+                        {
+                            return roleButtons.FirstOrDefault(b => b.ButtonId == button.ButtonID)?.ButtonValue;
+                        }
+                    }
+                    else
+                    {
+                        //注册按钮
                         button.MenuUid = menu.Fid;
                         _dbContext.Insert(button);
                         _platformDomain.MenuButtonSet.Refresh();
-                        return button;
                     }
                 }
             }
-            return null;
+            if (isAdministrator)
+            {
+                if (button.ButtonType == FapMenuButtonType.Grid)
+                {
+                    return string.Join(',', typeof(OperEnum).EnumItems().Select(c => c.Key));
+                }
+                else if (button.ButtonType == FapMenuButtonType.Tree)
+                {
+                    return "2,4,8,16";//增删改刷
+                }
+                else
+                {
+                    return "1";
+                }
+            }
+            return string.Empty;
         }
 
-        public bool CheckMenuButton(string roleUid, FapMenuButton menuButton)
+
+        [Transactional]
+        public void AddRoleButton(string roleUid, IEnumerable<FapRoleButton> roleButtons)
         {
-            throw new System.NotImplementedException();
+            _dbContext.DeleteExec(nameof(FapRoleButton), "RoleUid=@RoleUid", new DynamicParameters(new { RoleUid = roleUid }));
+            _dbContext.InsertBatch(roleButtons);
         }
     }
 }

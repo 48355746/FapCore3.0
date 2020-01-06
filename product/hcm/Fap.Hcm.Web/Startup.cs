@@ -34,6 +34,9 @@ namespace Fap.Hcm.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddFapService().AddAutoInjection().AddDataTracker();
+            //添加schedule后台任务
+            services.AddHostedService<BackgroundSchedulerService>();
+
             //response 压缩giz
             services.AddResponseCompression();
             //添加内存缓存

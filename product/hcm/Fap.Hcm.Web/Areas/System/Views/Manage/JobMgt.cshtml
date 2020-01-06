@@ -14,23 +14,8 @@
         <div class="widget-box">
             <div class="widget-header widget-header-flat">
                 <h4 class="widget-title">任务组</h4>
+                <fap-tree-button id="treejobgroup" tree-id="tree-jobgroup" description="任务组"></fap-tree-button>
 
-                <div class="widget-toolbar">
-                    <a href="#" data-ctrl="widgetAction" data-action="add" class="orange2">
-                        <i class="ace-icon fa fa-plus-circle purple"></i>
-                    </a>
-
-                    <a href="#" data-ctrl="widgetAction" data-action="edit">
-                        <i class="ace-icon fa fa-pencil blue"></i>
-                    </a>
-
-                    <a href="#" data-ctrl="widgetAction" data-action="delete">
-                        <i class="ace-icon fa fa-trash-o red"></i>
-                    </a>
-                    <a href="#" data-ctrl="widgetAction" data-action="refresh">
-                        <i class="ace-icon fa fa-refresh"></i>
-                    </a>
-                </div>
             </div>
 
             <div class="widget-body">
@@ -51,17 +36,9 @@
                     </a>
                 </div>
                 <div class="widget-toolbar">
-                    <div class="btn-group ">
-                        <button id="btnDisabled" data-param="Disabled" class="btn btn-white  btnoper">
-                            <i class="ace-icon fa fa-ban red"></i>
-                            禁用
-                        </button>
-                        <button id="btnEnabled" data-param="Enabled" class="btn btn-white btnoper">
-                            <i class="ace-icon fa fa-circle light-green"></i>
-                            启用
-                        </button>
-
-                    </div>
+                    <fap-button btn-tag="link" id="btnDisabled" content="禁用" icon-before="fa fa-ban red"></fap-button>
+                    <fap-button btn-tag="link" id="btnEnabled" content="启用" icon-before="fa fa-circle light-green"></fap-button>
+              
                 </div>
             </div>
             <div class="widget-body">
@@ -104,7 +81,7 @@
     function operJob(fid, param) {
         $.post("@Url.Content("~/System/Api/Manage/OperJobState")", { fid: fid, state: param }, function (data) {
             if (data) {
-                bootbox.alert("操作成功");
+                $.msg("操作成功");
                 $("#grid-fapjob").jqGrid('setGridParam', {
                     datatype: 'json',
                     page: 1
@@ -125,34 +102,6 @@
         jQuery(function ($) {
             $(document).one('ajaxloadstart.page', function (e) {
                 $('#tree-jobgroup').jstree('destroy');
-            })
-            $(document).off(ace.click_event, '[data-ctrl=widgetAction]').on(ace.click_event, '[data-ctrl=widgetAction]', function (ev) {
-                ev.preventDefault();
-                var $this = $(this);
-                var $action = $this.data('action');
-                var ref = $('#tree-jobgroup').jstree(true),
-                                sel = ref.get_selected();
-                if ($action == 'refresh') {
-                    ref.refresh();
-                    return;
-                }
-                if (!sel.length) { return false; }
-                sel = sel[0];
-                if ($action == 'add') {
-                    sel = ref.create_node(sel);
-
-                } else if ($action == 'edit') {
-                    ref.edit(sel);
-                } else if ($action == 'delete') {
-                    bootbox.confirm('确定删除?', function (result) {
-                        if(result)
-                        {
-                            ref.delete_node(sel);
-
-                        }
-                    })
-                }
-
             })
             $('#tree-jobgroup').on("changed.jstree", function (e, data) {
                 if (data && data.selected && data.selected.length) {
@@ -178,14 +127,14 @@
                 //console.log(data.selected);
             });
 
-            $(".btnoper").off(ace.click_event).on(ace.click_event, function () {
+            var setState = function (param) {
                 var id = jQuery("#grid-fapjob").jqGrid('getGridParam', 'selrow');
                 var obj = $("#grid-fapjob").jqGrid('getRowData', id);
                 if (id == null) {
                     bootbox.alert("请选择要操作的调度");
                     return;
                 }
-                var param = $(this).data("param");
+
                 var jobState = obj.JobState;//任务状态
                 if (jobState === 'Disabled' && jobState === param) {
                     bootbox.alert('已经处于禁用状态，不需要禁用！');
@@ -198,14 +147,20 @@
                 }
                 $.post("@Url.Content("~/System/Api/Manage/OperJobState")", { fid: obj.Fid, state: param }, function (data) {
                     if (data) {
-                        bootbox.alert("操作成功");
+                        $.msg("操作成功");
                         $("#grid-fapjob").jqGrid('setGridParam', {
                             datatype: 'json',
                             page: 1
                         }).trigger("reloadGrid"); //重新载入
                     }
                 })
-            })
+            };
+            $("#btnDisabled").on(ace.click_event, function () {
+                setState('Disabled');
+            });
+            $("#btnEnabled").on(ace.click_event, function () {
+                setState('Enabled');
+            });
         })
     })
 </script>

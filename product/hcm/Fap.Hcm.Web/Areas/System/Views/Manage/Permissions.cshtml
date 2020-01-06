@@ -23,7 +23,7 @@
             </div>
         </div>
 
-        <div class="tools action-buttons">
+        <div class="tools">
             <a href="#" data-userfid="${Fid}" data-action="deluser" onclick="delUser('${Fid}')" class="red">
                 <i class="ace-icon fa fa-times bigger-125"></i>
             </a>
@@ -112,19 +112,8 @@
                         <div id="pmenu" class="tab-pane in active">
                             <div class="widget-box transparent">
                                 <div class="widget-header widget-header-small">
-                                    <div class="widget-toolbar action-buttons">
-                                        @*<a href="#" data-action="reload" data-rel="tooltip" class="tooltip-warning" title="刷新">
-                                                <i class="ace-icon fa fa-refresh blue"></i>
-                                            </a>*@
-                                        @*&nbsp;
-                                            <button class="btn btn-white btn-info btn-bold btn-sm">
-                                                <i class="ace-icon fa fa-floppy-o"></i>
-                                                授权
-                                            </button>*@
-
-                                        <a href="#" id="btnSaveMenus" class=" tooltip-info" data-rel="tooltip" title="授权">
-                                            <i class="ace-icon fa fa-floppy-o bigger-120 blue"></i>
-                                        </a>
+                                    <div class="widget-toolbar">                                     
+                                        <fap-button id="btnSaveMenus"  class-name="tooltip-info" content="菜单授权" icon-before="fa fa-bolt blue"></fap-button>
                                     </div>
                                 </div>
 
@@ -138,14 +127,9 @@
                         <div id="pdept" class="tab-pane">
                             <div class="widget-box transparent">
                                 <div class="widget-header widget-header-small">
-                                    <div class="widget-toolbar action-buttons">
-                                        @*<a href="#" data-action="reload" data-rel="tooltip" title="刷新">
-                                                <i class="ace-icon fa fa-refresh blue"></i>
-                                            </a>
-                                            &nbsp;*@
-                                        <a href="#" id="btnSaveOrgDepts" class="grey" data-rel="tooltip" title="授权">
-                                            <i class="ace-icon fa fa-floppy-o bigger-120 blue"></i>
-                                        </a>
+                                    <div class="widget-toolbar">
+                                        <fap-button id="btnSaveOrgDepts" class-name="tooltip-info" content="部门授权" icon-before="fa fa-bolt blue"></fap-button>
+                                    
                                     </div>
                                 </div>
 
@@ -160,15 +144,13 @@
                         <div id="pentity" class="tab-pane">
                             <div class="widget-box transparent">
                                 <div class="widget-header widget-header-small">
-                                    <div class="widget-toolbar action-buttons">
+                                    <div class="widget-toolbar">
+                                        <fap-button id="btnSaveColumnsEditAble" class-name="grey" content="授权可编辑" icon-before="glyphicon glyphicon-pencil blue"></fap-button>
 
-                                        <a href="#" id="btnSaveColumnsEditAble" class="grey" data-rel="tooltip" title="授权可编辑">
-                                            <i class="ace-icon fa fa-floppy-o bigger-120 blue"></i><i class="ace-icon glyphicon glyphicon-pencil bigger-110 blue"></i>
-                                        </a>
                                         &nbsp;
-                                        <a href="#" id="btnSaveColumnsViewAble" class="grey" data-rel="tooltip" title="授权可见">
-                                            <i class="ace-icon fa fa-floppy-o bigger-120 blue"></i><i class="ace-icon fa fa-eye bigger-110 orange"></i>
-                                        </a>
+                                      
+                                        <fap-button id="btnSaveColumnsViewAble" class-name="grey" content="授权可见" icon-before="fa fa-eye orange"></fap-button>
+
                                     </div>
                                 </div>
 
@@ -182,9 +164,9 @@
                         <div id="edata" class="tab-pane">
                             <div class="widget-box transparent">
                                 <div class="widget-header widget-header-small">
-                                    <div class="widget-toolbar action-buttons">
+                                    <div class="widget-toolbar">
 
-                                        <a href="#" id="btnHelperEData" class="popover-warning" data-rel="popover" title="帮助" data-content="条件中的常用变量表示：
+                                        <a href="javascript:void(0)" id="btnHelperEData" class="popover-warning" data-rel="popover" title="帮助" data-content="条件中的常用变量表示：
                                             <ul class='list-unstyled'>    <li>当前登录人 <span class='purple'>${EmpUid}</span> </li>    <li> 当前登录人部门UID <span class='purple'>${DeptUid}</span></li><li> 当前登录人部门编码 <span class='purple'>${DeptCode}</span></li></ul>例如:只能查看当前登录人所在部门的员工，选择实体：员工表，条件：    <span class='purple'>DeptUid='${DeptUid}'</span>">
                                             <i class="ace-icon fa fa-question bigger-120 warning"></i>
                                         </a>
@@ -202,16 +184,16 @@
                         <div id="ebutton" class="tab-pane">
                             <div class="widget-box transparent">
                                 <div class="widget-header widget-header-small">
-                                    <div class="widget-toolbar action-buttons">
-                                        <a href="#" id="btnSaveButtons" class=" tooltip-info" data-rel="tooltip" title="授权">
-                                            <i class="ace-icon fa fa-floppy-o bigger-120 blue"></i>
-                                        </a>
+                                    <div class="widget-toolbar">
+                                   
+                                        <fap-button id="btnSaveButtons"  content="授权菜单按钮" icon-before="fa fa-bolt blue"></fap-button>
+
                                     </div>
                                 </div>
 
                                 <div class="widget-body">
                                     <div class="widget-main padding-8">
-                                        <fap-tree id="databutton" is-async="true" get-url="/System/Api/Manage/FapButtons" plugin-checkbox="true"></fap-tree>
+                                        <fap-tree id="menuebutton" is-async="true" get-url="/System/Api/Manage/FapButtons" plugin-checkbox="true"></fap-tree>
                                     </div>
                                 </div>
                             </div>
@@ -219,10 +201,8 @@
                         <div id="preport" class="tab-pane">
                             <div class="widget-box transparent">
                                 <div class="widget-header widget-header-small">
-                                    <div class="widget-toolbar action-buttons">
-                                        <a href="#" id="btnSaveReport" class=" tooltip-info" data-rel="tooltip" title="授权">
-                                            <i class="ace-icon fa fa-floppy-o bigger-120 blue"></i>
-                                        </a>
+                                    <div class="widget-toolbar">                                      
+                                        <fap-button id="btnSaveReport" content="授权报表" icon-before="fa fa-bolt blue"></fap-button>
                                     </div>
                                 </div>
 
@@ -236,10 +216,8 @@
                         <div id="prole" class="tab-pane">
                             <div class="widget-box transparent">
                                 <div class="widget-header widget-header-small">
-                                    <div class="widget-toolbar action-buttons">
-                                        <a href="#" id="btnSavePRole" class=" tooltip-info" data-rel="tooltip" title="授权">
-                                            <i class="ace-icon fa fa-floppy-o bigger-120 blue"></i>
-                                        </a>
+                                    <div class="widget-toolbar">                                     
+                                        <fap-button id="btnSavePRole" content="授权角色" icon-before="fa fa-bolt blue"></fap-button>
                                     </div>
                                 </div>
 
@@ -260,13 +238,8 @@
         <div id="widget-box-user" class="widget-box">
             <div class="widget-header widget-header-flat">
                 <h4 class="widget-title">用户</h4>
-                <div class="widget-toolbar">
-                    <a href="#" data-ctrl="widgetAction" data-action="adduser" class="orange2" data-rel="tooltip" title="添加用户">
-                        <i class="ace-icon fa fa-plus-circle purple"></i>
-                    </a>
-                    <a href="#" data-action="fullscreen" class="orange2">
-                        <i class="ace-icon fa fa-expand"></i>
-                    </a>
+                <div class="widget-toolbar">                   
+                    <fap-button id="btnAddUser" content="添加用户" icon-before="fa fa-plus-circle purple"></fap-button>                   
                 </div>
             </div>
             <div class="widget-body">
@@ -380,11 +353,13 @@
                         var treeEntity = $("#tree-dataentity").jstree(true);
                         var treeRpt = $("#tree-reporttemplate").jstree(true);
                         var treePRole = $("#tree-powerroleandgroup").jstree(true);
+                        var treeButton = $('#tree-menuebutton').jstree(true);
                         treeMenu.uncheck_all();
                         treeDept.uncheck_all();
                         treeEntity.uncheck_all();
                         treeRpt.uncheck_all();
                         treePRole.uncheck_all();
+                        treeButton.uncheck_all();
                         treeEntity.element.find(".jstree-themeicon-custom.orange.fa.fa-eye").removeClass("jstree-themeicon-custom orange fa fa-eye").addClass("jstree-themeicon-custom green fa fa-tag");
                         treeEntity.element.find(".jstree-themeicon-custom.blue.fa.fa-pencil-square-o").removeClass("jstree-themeicon-custom blue fa fa-pencil-square-o").addClass("jstree-themeicon-custom green fa fa-tag");
                         //jstree-icon jstree-themeicon green fa fa-tag jstree-themeicon-custom
@@ -396,6 +371,10 @@
                         //部门
                         $.each(data.depts, function (i, v) {
                             treeDept.check_node(v);
+                        });
+                        //按钮
+                        $.each(data.buttons, function (i, v) {
+                            treeButton.check_node(v);
                         });
                         //数据
                         var filter = { "groupOp": "AND" };
@@ -538,7 +517,7 @@
                     return;
                 }
 
-                var treeButton = $('#tree-databutton').jstree(true),
+                var treeButton = $('#tree-menuebutton').jstree(true),
                     checks = treeButton.get_checked();
                 //筛选是按钮的节点
                 var sels = $.grep(checks, function (d, i) {
@@ -598,81 +577,75 @@
 
             $('#my-ui-list').sortable({ connectWith: '.otherlist' });
 
-            $(document).off(ace.click_event, '[data-ctrl=widgetAction]').on(ace.click_event, '[data-ctrl=widgetAction]', function (ev) {
-                ev.preventDefault();
-                var $this = $(this);
-                var $action = $this.data('action');
-                if ($action == 'adduser') {
-                    //添加使用人
-                    var dialog = bootbox.dialog({
-                        title: "添加用户",
-                        message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
-                        buttons: {
-                            success: {
-                                label: "确定", className: "btn-primary",
-                                callback: function () {
-                                    var emp = getSelectedRows("grid-fapuser");
-                                    if (emp == null) {
-                                        bootbox.alert("您没有选中人员");
-                                        return;
-                                    };
-                                    var tempUser = [];
-                                    if (window.users.length > 0) {
-                                        $.each(emp, function (n, v) {
-                                            var flag = false;
-                                            $.each(window.users, function (n, value) {
-                                                if (v.Fid == value.Fid) {
-                                                    flag = true;
-                                                }
-                                            })
-                                            if (!flag) {
-                                                window.users.push(v);
-                                                tempUser.push(v.Fid);
+            $("#btnAddUser").on(ace.click_event,function(){
+                //添加使用人
+                var dialog = bootbox.dialog({
+                    title: "添加用户",
+                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                    buttons: {
+                        success: {
+                            label: "确定", className: "btn-primary",
+                            callback: function () {
+                                var emp = getSelectedRows("grid-fapuser");
+                                if (emp == null) {
+                                    bootbox.alert("您没有选中人员");
+                                    return;
+                                };
+                                var tempUser = [];
+                                if (window.users.length > 0) {
+                                    $.each(emp, function (n, v) {
+                                        var flag = false;
+                                        $.each(window.users, function (n, value) {
+                                            if (v.Fid == value.Fid) {
+                                                flag = true;
                                             }
                                         })
-                                    } else {
-                                        window.users = emp;
-                                        $.each(emp, function (n, v) {
+                                        if (!flag) {
+                                            window.users.push(v);
                                             tempUser.push(v.Fid);
-                                        })
-                                    }
-                                    if (tempUser.length > 0) {
-                                        var treeRole = $('#tree-roleandgroup').jstree(true);
-                                        var selRole = treeRole.get_selected();
-                                        if (treeRole.get_icon(selRole[0]) == "icon-folder purple ace-icon fa fa-users") {
-                                            bootbox.alert("请选中角色进行设置");
-                                            return;
                                         }
-                                        if (!selRole.length) {
-                                            bootbox.alert("请选中角色");
-                                            return;
-                                        }
-                                        saveAuthority({ "RoleUid": selRole[0], "UserUids": tempUser, "AType": 5 }, function (rv) {
-                                            $("#profile-feed-user").html("");
-                                            $("#roleusers").tmpl(window.users).appendTo("#profile-feed-user");
-                                        });
-                                    }
+                                    })
+                                } else {
+                                    window.users = emp;
+                                    $.each(emp, function (n, v) {
+                                        tempUser.push(v.Fid);
+                                    })
                                 }
-                            },
-                            cancel: {
-                                label: "关闭", className: "btn-default"
+                                if (tempUser.length > 0) {
+                                    var treeRole = $('#tree-roleandgroup').jstree(true);
+                                    var selRole = treeRole.get_selected();
+                                    if (treeRole.get_icon(selRole[0]) == "icon-folder purple ace-icon fa fa-users") {
+                                        bootbox.alert("请选中角色进行设置");
+                                        return;
+                                    }
+                                    if (!selRole.length) {
+                                        bootbox.alert("请选中角色");
+                                        return;
+                                    }
+                                    saveAuthority({ "RoleUid": selRole[0], "UserUids": tempUser, "AType": 5 }, function (rv) {
+                                        $("#profile-feed-user").html("");
+                                        $("#roleusers").tmpl(window.users).appendTo("#profile-feed-user");
+                                    });
+                                }
                             }
+                        },
+                        cancel: {
+                            label: "关闭", className: "btn-default"
                         }
+                    }
 
-                    });
-                    dialog.on("shown.bs.modal", function () {
-                        $(window).triggerHandler('resize.jqGrid');//触发窗口调整,使Grid得到正确的大小
-                    });
-                    dialog.init(function () {
-                        var url = basePath + '/System/Manage/UserSelector';
-                        $.get(url, function (ev) {
-                            dialog.find('.bootbox-body').html(ev);
-                        })
-                    });
-                }
-
+                });
+                dialog.on("shown.bs.modal", function () {
+                    $(window).triggerHandler('resize.jqGrid');//触发窗口调整,使Grid得到正确的大小
+                });
+                dialog.init(function () {
+                    var url = basePath + '/System/Manage/UserSelector';
+                    $.get(url, function (ev) {
+                        dialog.find('.bootbox-body').html(ev);
+                    })
+                })
             });
 
-        });
+        })
     })
 </script>

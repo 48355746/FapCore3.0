@@ -2,15 +2,18 @@
 using Fap.Core.DataAccess;
 using Fap.Core.DataAccess.Interceptor;
 using Fap.Core.MultiLanguage;
+using Fap.Core.Scheduler;
 using Fap.Core.Tracker;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Extensions.Http;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Fap.Core.Infrastructure.Domain
@@ -120,24 +123,24 @@ namespace Fap.Core.Infrastructure.Domain
     /// <summary>
     /// 单独开启后台线程处理 Scheduler
     /// </summary>
-    //public class BackgroundSchedulerService : BackgroundService
-    //{
-    //    private readonly ISchedulerService _schedulerService;
-    //    public BackgroundSchedulerService(ISchedulerService schedulerService)
-    //    {
-    //        _schedulerService = schedulerService;
-    //    }
-    //    protected override Task ExecuteAsync(CancellationToken stoppingToken)
-    //    {
-    //        _schedulerService.Init();
-    //        return Task.CompletedTask;
-    //    }
-    //    public override Task StopAsync(CancellationToken cancellationToken)
-    //    {
-    //        _schedulerService.ShutdownJobs();
-    //        return base.StopAsync(cancellationToken);
-    //    }
-    //}
+    public class BackgroundSchedulerService : BackgroundService
+    {
+        private readonly ISchedulerService _schedulerService;
+        public BackgroundSchedulerService(ISchedulerService schedulerService)
+        {
+            _schedulerService = schedulerService;
+        }
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            _schedulerService.Run();
+            return Task.CompletedTask;
+        }
+        public override Task StopAsync(CancellationToken cancellationToken)
+        {
+            _schedulerService.Shutdown();
+            return base.StopAsync(cancellationToken);
+        }
+    }
     /// <summary>
     /// 启用后台三方同步
     /// </summary>

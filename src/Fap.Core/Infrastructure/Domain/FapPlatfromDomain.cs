@@ -133,6 +133,10 @@ namespace Fap.Core.Infrastructure.Domain
         /// </summary>
         public  IRoleDataSet RoleDataSet { get; protected set; }
         /// <summary>
+        /// 角色按钮
+        /// </summary>
+        public IRoleButtonSet RoleButtonSet { get; protected set; }
+        /// <summary>
         /// 角色角色
         /// </summary>
         public  IRoleRoleSet RoleRoleSet { get; protected set; }
@@ -247,6 +251,8 @@ namespace Fap.Core.Infrastructure.Domain
             _logger.LogInformation("初始化角色报表结束");
             this.RoleDataSet = new RoleDataSet( _dbSession);
             _logger.LogInformation("初始化角色数据结束");
+            this.RoleButtonSet = new RoleButtonSet(_dbSession);
+            _logger.LogInformation("初始化角色按钮结束");
             this.RoleRoleSet = new RoleRoleSet( _dbSession);
             _logger.LogInformation("初始化角色角色结束");
 

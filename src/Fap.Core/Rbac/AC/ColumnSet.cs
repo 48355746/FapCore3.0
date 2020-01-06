@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Fap.Core.Rbac.AC
 {
-    public class ColumnSet:IColumnSet
+    public class ColumnSet : IColumnSet
     {
         private IEnumerable<FapColumn> _allColumns = new List<FapColumn>();
         private static readonly object Locker = new object();
@@ -31,9 +31,9 @@ namespace Fap.Core.Rbac.AC
             if (_initialized) return;
             lock (Locker)
             {
-              
-                    _allColumns = _dbSession.Query<FapColumn>("select * from FapColumn");
-              
+
+                _allColumns = _dbSession.Query<FapColumn>("select * from FapColumn");
+
                 _initialized = true;
             }
         }
@@ -78,8 +78,8 @@ namespace Fap.Core.Rbac.AC
             {
                 Init();
             }
-            var result = _allColumns.Where<FapColumn>(c => c.TableName.Equals(tableName,StringComparison.CurrentCultureIgnoreCase));
-            if (result != null&&result.Any())
+            var result = _allColumns.Where<FapColumn>(c => c.TableName.Equals(tableName, StringComparison.CurrentCultureIgnoreCase));
+            if (result != null && result.Any())
             {
                 fapColumns = result;
                 return true;

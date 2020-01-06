@@ -15,6 +15,7 @@ namespace Fap.Core.Rbac
         bool AddRoleColumn(string roleUid, IEnumerable<FapRoleColumn> columns, int editType);
         void AddRoleUser(IEnumerable<FapRoleUser> users);
         void AddRoleReport(string roleUid, IEnumerable<FapRoleReport> rpts);
+        void AddRoleButton(string roleUid, IEnumerable<FapRoleButton> roleButtons);
         void AddRoleRole(string roleUid, IEnumerable<FapRoleRole> roleRoles);
         bool IsInRole(string roleFid);
         string GetRoleDataWhere(string tableName);
@@ -24,8 +25,11 @@ namespace Fap.Core.Rbac
         IEnumerable<FapRoleMenu> GetUserMenuList();
         IEnumerable<FapRoleReport> GetUserReportList();
         IEnumerable<FapRole> GetUserRoleList();
-
-        FapMenuButton RegisterMenuButton(FapMenuButton button);
-        bool CheckMenuButton(string roleUid, FapMenuButton menuButton);
+        /// <summary>
+        /// 获取按钮授权
+        /// </summary>
+        /// <param name="button"></param>
+        /// <returns></returns>
+        string GetButtonAuthorized(FapMenuButton button);
     }
 }

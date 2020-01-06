@@ -26,20 +26,7 @@ namespace Fap.AspNetCore.Controls
         public string Li_attr { get; set; }
         public string A_attr { get; set; }
         public dynamic Owner { get; set; }
-
-        private List<TreeDataView> _children = new List<TreeDataView>();
-        public List<TreeDataView> Children
-        {
-            get
-            {
-                return _children;
-            }
-            set
-            {
-                _children = value;
-            }
-        }
-
+        public List<TreeDataView> Children { get; set; } = new List<TreeDataView>();
     }
     public class TreeViewHelper
     {

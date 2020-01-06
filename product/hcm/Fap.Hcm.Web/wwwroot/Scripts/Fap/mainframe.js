@@ -25,7 +25,7 @@ $(function () {
                     url: basePath + "/Api/Core/activate/",
                     type: 'POST', data: { registerCode: result }, async: false, cache: false, dataType: 'json',
                     success: function (data) {
-                        if (data && data.success == '1') {
+                        if (data && data.success === '1') {
                             bootbox.alert("激活成功，请重启服务");
                         } else {
                             bootbox.alert(data.message);
@@ -83,7 +83,7 @@ var getHandling = function () {
 var getBadge = function () {
     $(".badge.badge-warning").each(function () {
         var plugin = $(this).data("plug");
-        if (plugin != '') {
+        if (plugin !== '') {
             var badge = $(this);
             $.post(basePath+'/Common/Home/GetBadge', { pluginclass: plugin }, function (data) {
                 if (data.count > 0) {

@@ -12,12 +12,14 @@ using System.Linq;
 using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Enums;
 using Fap.Core.Rbac;
+using System;
+using Fap.Core.Rbac.Model;
 
 namespace Fap.AspNetCore.Controls.TagHelpers
 {
     public class FapGridTagHelper : TagHelper
     {
-        private IDbContext _dataAccessor;
+        private IDbContext _dbContext;
         //private IOptions<FapOption> _fapOption;
         private ILogger<FapGridTagHelper> _logger;
         private ILoggerFactory _loggerFactory;
@@ -26,7 +28,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         private readonly IRbacService _rbacService;
         public FapGridTagHelper(IDbContext dataAccessor, ILoggerFactory logger, IFapApplicationContext applicationContext, IMultiLangService multiLang, IRbacService rbacService)
         {
-            _dataAccessor = dataAccessor;
+            _dbContext = dataAccessor;
             //_fapOption = fapOption;
             _loggerFactory = logger;
             _logger = logger.CreateLogger<FapGridTagHelper>();
@@ -212,6 +214,10 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// </summary>
         public bool OperQueryprogram { get; set; }
         /// <summary>
+        /// 是否注册表格按钮到菜单按钮表
+        /// </summary>
+        public bool RegisterButton { get; set; } = true;
+        /// <summary>
         /// subGrid设置展开内容
         /// function showChildGrid(parentRowID, parentRowKey) {
         /// $('#' + parentRowID).load($.randomUrl("@Url.Content("~/Workflow/Template/HistoryVersion/")"+parentRowKey));
@@ -219,17 +225,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// </summary>
         public string SubgridRowexpanded { get; set; }
         public override void Process(TagHelperContext context, TagHelperOutput output)
-        {
-            //注册按钮
-            _rbacService.RegisterMenuButton(new Core.Rbac.Model.FapMenuButton()
-            {
-                ButtonID = Id,
-                ButtonName = "表格按钮",
-                ButtonType = FapMenuButtonType.Grid,
-                Description =QueryOption.TableName
-            });
-
-
+        {          
             output.TagName = "div";
             output.Content.Clear();
             string id = "jqgrid";
@@ -238,7 +234,8 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                 id = Id;
             }
             string pager = $"pager-{id}";
-            Grid grid = new Grid(_dataAccessor, _loggerFactory, _applicationContext, _multiLang, $"grid-{id}");
+            Grid grid = new Grid(_dbContext, _loggerFactory, _applicationContext, _multiLang, $"grid-{id}");
+            
             if (Url.IsPresent())
             {
                 grid.SetUrl(Url);
@@ -380,67 +377,10 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                     grid.OnSelectRow($"{OnSelectRow}(rowid, status);");
                 }
             }
-            OperEnum formType = OperEnum.View;
-            if (OperCud)
-            {
-                formType = OperEnum.Add | OperEnum.Update | OperEnum.Delete;
-            }
-            else
-            {
-                if (OperAdd)
-                {
-                    formType = OperEnum.Add;
-                }
-                if (OperUpdate)
-                {
-                    formType |= OperEnum.Update;
-                }
-                if (OperDelete)
-                {
-                    formType |= OperEnum.Delete;
-                }
-            }
-            if (OperBatchUpdate)
-            {
-                formType |= OperEnum.BatchUpdate;
-            }
-            if (OperExport)
-            {
-                formType |= OperEnum.ExportExcel | OperEnum.ExportWord;
-            }
-            else
-            {
-                if (OperExportExcel)
-                {
-                    formType |= OperEnum.ExportExcel;
-                }
-                if (OperExportWord)
-                {
-                    formType |= OperEnum.ExportWord;
-                }
-            }
-            if (OperImport)
-            {
-                formType |= OperEnum.Import;
-            }
-            if (OperSearch)
-            {
-                formType |= OperEnum.Search;
-            }
-            if (OperRefresh)
-            {
-                formType |= OperEnum.Refresh;
-            }
-            if (OperQueryprogram)
-            {
-                formType |= OperEnum.QueryProgram;
-                if (!OperSearch)
-                {
-                    formType |= OperEnum.Search;
-                }
-            }
-
-            grid.SetFormType(formType);
+            //鉴权
+            string authorize= Authentication();
+            //设置操作
+            SetGirdOper(grid,authorize);
             if (SearchToolbar)
             {
                 grid.SetSearchToolbar(SearchToolbar);
@@ -457,6 +397,36 @@ namespace Fap.AspNetCore.Controls.TagHelpers
 
             output.Content.AppendHtml(grid.ToString());
 
+        }
+        private void SetGirdOper(Grid grid,string authorize)
+        {
+            if (authorize.IsMissing())
+            {
+                return;
+            }
+            var power= authorize.SplitComma().Select(v => v.ToInt());
+            int formType=0;
+            foreach (int p in power)
+            {
+                formType|=p;
+            }   
+            grid.SetFormType((OperEnum)formType);
+        }
+        private string Authentication()
+        {
+            if (RegisterButton)
+            {
+                FapMenuButton menuButton = new FapMenuButton()
+                {
+                    ButtonID = Id,
+                    ButtonName = "表格按钮",
+                    ButtonType = FapMenuButtonType.Grid,
+                    Description = _dbContext.Table(QueryOption.TableName).TableComment
+                };
+                //注册按钮
+                return _rbacService.GetButtonAuthorized(menuButton);
+            }
+            return string.Empty;
         }
     }
 }
