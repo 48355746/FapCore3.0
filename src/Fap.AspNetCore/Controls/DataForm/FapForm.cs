@@ -118,7 +118,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 #region 权限
                 //当前角色
                 //string roleUid = Fap.Core.Platform.FapAppDomain.AcSession.OnlineUser.CurrentRole.Fid;
-                IEnumerable<FapRoleColumn> roleColumn = _rbacService.GetUserColumnList();
+                IEnumerable<FapRoleColumn> roleColumn = _rbacService.GetRoleColumnList(_applicationContext.CurrentRoleUid);
                 //只读字段
                 List<string> viewList = new List<string>();
                 //可编辑字段

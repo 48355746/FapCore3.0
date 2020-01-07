@@ -13,7 +13,7 @@
 	var skin_class = $(this).find('option:selected').data('skin');
 
 	changeTheme(skin_class);
-	$.get(basePath + "/System/Api/Manage/SetUserTheme/" + skin_class, function (rv) {
+	$.get(basePath + "/System/Api/Manage/UserTheme/" + skin_class, function (rv) {
 
 	});
 

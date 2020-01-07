@@ -1,23 +1,21 @@
 ﻿using Fap.Core.DataAccess;
-using Fap.Core.Rbac.Model;
+using Fap.Core.Infrastructure.Config;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Fap.Core.Rbac.AC
 {
-    /// <summary>
-    /// 系统用户，用于开发使用
-    /// </summary>
     [Serializable]
-    public class SysUserSet : ISysUserSet
+    public class ParamSet : IParamSet
     {
-        private IEnumerable<FapUser> _allUsers = new List<FapUser>();
+        private IEnumerable<FapConfig> _allParams = new List<FapConfig>();
         private static readonly object Locker = new object();
         private bool _initialized;
         private IDbSession _dbSession;
-        internal SysUserSet(IDbSession dbSession)
+        internal ParamSet(IDbSession dbSession)
         {
+           
             _dbSession = dbSession;
             Init();
         }
@@ -33,18 +31,19 @@ namespace Fap.Core.Rbac.AC
             if (_initialized) return;
             lock (Locker)
             {
-               _allUsers = _dbSession.Query<FapUser>("select * from FapUser");
-              
+                #region 获取所有FapConfig
+                    _allParams = _dbSession.Query<FapConfig>("select * from FapConfig");
+                #endregion
                 _initialized = true;
             }
         }
-        public IEnumerator<FapUser> GetEnumerator()
+        public IEnumerator<FapConfig> GetEnumerator()
         {
             if (!_initialized)
             {
                 Init();
             }
-            return _allUsers.GetEnumerator();
+            return _allParams.GetEnumerator();
         }
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
@@ -53,39 +52,39 @@ namespace Fap.Core.Rbac.AC
             {
                 Init();
             }
-            return _allUsers.GetEnumerator();
+            return _allParams.GetEnumerator();
         }
 
-        public bool TryGetValue(string fid, out FapUser fapUser)
+        public bool TryGetValue(string fid, out FapConfig fapParam)
         {
             if (!_initialized)
             {
                 Init();
             }
-            var result = _allUsers.FirstOrDefault<FapUser>(f => f.Fid == fid);
+            var result = _allParams.FirstOrDefault<FapConfig>(f => f.Fid == fid);
             if (result != null)
             {
-                fapUser = result;
+                fapParam = result;
                 return true;
             }
-            fapUser = null;
+            fapParam = null;
             return false;
         }
 
 
-        public bool TryGetValueByUserName(string userName, out FapUser fapUser)
+        public bool TryGetValueByKey(string key, out FapConfig fapParam)
         {
             if (!_initialized)
             {
                 Init();
             }
-            var result = _allUsers.FirstOrDefault<FapUser>(f => f.UserName.Equals(userName,StringComparison.CurrentCultureIgnoreCase));
+            var result = _allParams.FirstOrDefault<FapConfig>(f => f.ParamKey == key);
             if (result != null)
             {
-                fapUser = result;
+                fapParam = result;
                 return true;
             }
-            fapUser = null;
+            fapParam = null;
             return false;
         }
     }

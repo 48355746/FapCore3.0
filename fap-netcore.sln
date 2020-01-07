@@ -25,6 +25,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fap.AspNetCore", "src\Fap.A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fap.Workflow", "src\Fap.Workflow\Fap.Workflow.csproj", "{C6C1789A-2BE8-4A2F-A6A3-81C008FA4143}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fap.Hcm.Service", "product\hcm\Fap.Hcm.Service\Fap.Hcm.Service.csproj", "{43994168-CF9F-4994-9694-C81408939B85}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,10 @@ Global
 		{C6C1789A-2BE8-4A2F-A6A3-81C008FA4143}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C6C1789A-2BE8-4A2F-A6A3-81C008FA4143}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C6C1789A-2BE8-4A2F-A6A3-81C008FA4143}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43994168-CF9F-4994-9694-C81408939B85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43994168-CF9F-4994-9694-C81408939B85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43994168-CF9F-4994-9694-C81408939B85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43994168-CF9F-4994-9694-C81408939B85}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -67,6 +73,7 @@ Global
 		{044E9C02-3FBF-40CA-8F98-C2F05923D814} = {CFA4CB9A-8CBF-4F54-914B-5F2B96CAC57C}
 		{E23CD73E-9AB0-44D4-B1AD-91C6F7715F8F} = {F090AD1C-246B-49B8-A787-0BC76378B0BC}
 		{C6C1789A-2BE8-4A2F-A6A3-81C008FA4143} = {F090AD1C-246B-49B8-A787-0BC76378B0BC}
+		{43994168-CF9F-4994-9694-C81408939B85} = {B10864B6-D325-4345-AB3F-BF37B1379878}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {44AE87F0-7178-43D6-81AB-3D9AB237BD1C}

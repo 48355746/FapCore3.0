@@ -1,4 +1,5 @@
 ﻿using Fap.Core.DataAccess;
+using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Rbac.Model;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,6 @@ namespace Fap.Core.Rbac.AC
     [Serializable]
     public class RoleSet : IRoleSet
     {
-        public const string CommonUserRoleFid = "00000000000000000000";
         private IEnumerable<FapRole> _allRoles = new List<FapRole>();
         private static readonly object Locker = new object();
         private bool _initialized;
@@ -34,14 +34,10 @@ namespace Fap.Core.Rbac.AC
             {
                 #region 获取所有FapRole
               
-                    _allRoles = _dbSession.Query<FapRole>("select * from FapRole");
-               
-                if(_allRoles==null)
-                {
-                    _allRoles = new List<FapRole>();
-                }
+               _allRoles = _dbSession.Query<FapRole>("select * from FapRole");            
+              
                 //添加普通用户
-                _allRoles.ToList().Insert(0, new FapRole { Id = -1, Fid = CommonUserRoleFid, RoleCode = "000", RoleName = "普通用户", RoleNote = "用户普通用户的授权" });
+                _allRoles.ToList().Insert(0, new FapRole { Id = -1, Fid = FapPlatformConstants.CommonUserRoleFid, RoleCode = "000", RoleName = "普通用户", RoleNote = "用户普通用户的授权" });
                 #endregion
                 _initialized = true;
             }

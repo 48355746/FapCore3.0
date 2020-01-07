@@ -6,7 +6,7 @@ namespace Fap.Core.Rbac.AC
     /// <summary>
     /// 用户集合
     /// </summary>
-    public interface ISysUserSet : IEnumerable<FapUser>
+    public interface IUserSet : IEnumerable<FapUser>
     {
         void Refresh();
         bool TryGetValue(string fid, out FapUser fapUser);

@@ -82,7 +82,7 @@ namespace Fap.Core.Infrastructure.Domain
         /// <summary>
         /// 所有系统参数
         /// </summary>
-        public  ISysParamSet SysParamSet
+        public  IParamSet ParamSet
         {
             get;
             protected set;
@@ -91,7 +91,7 @@ namespace Fap.Core.Infrastructure.Domain
         /// <summary>
         /// 所有系统用户
         /// </summary>
-        public  ISysUserSet SysUserSet
+        public  IUserSet UserSet
         {
             get;
             protected set;
@@ -140,6 +140,10 @@ namespace Fap.Core.Infrastructure.Domain
         /// 角色角色
         /// </summary>
         public  IRoleRoleSet RoleRoleSet { get; protected set; }
+        /// <summary>
+        /// 角色用户
+        /// </summary>
+        public IRoleUserSet RoleUserSet { get; protected set; }
         /// <summary>
         /// 单据编码配置规则集
         /// </summary>
@@ -237,9 +241,9 @@ namespace Fap.Core.Infrastructure.Domain
             _logger.LogInformation("初始化组织部门结束");
             this.RoleSet = new RoleSet( _dbSession);
             _logger.LogInformation("初始化角色结束");
-            this.SysParamSet = new SysParamSet( _dbSession);
+            this.ParamSet = new ParamSet( _dbSession);
             _logger.LogInformation("初始化系统设置结束");
-            this.SysUserSet = new SysUserSet( _dbSession);
+            this.UserSet = new UserSet( _dbSession);
             _logger.LogInformation("初始化用户结束");
             this.RoleColumnSet = new RoleColumnSet(_dbSession);
             _logger.LogInformation("初始化角色列结束");
@@ -255,6 +259,8 @@ namespace Fap.Core.Infrastructure.Domain
             _logger.LogInformation("初始化角色按钮结束");
             this.RoleRoleSet = new RoleRoleSet( _dbSession);
             _logger.LogInformation("初始化角色角色结束");
+            this.RoleUserSet = new RoleUserSet(_dbSession);
+            _logger.LogInformation("初始化角色用户结束");
 
             this.CfgBillCodeRuleSet = new CfgBillCodeRuleSet(_dbSession);
             _logger.LogInformation("初始化单据编码规则集结束");
@@ -273,14 +279,14 @@ namespace Fap.Core.Infrastructure.Domain
             this.ModuleSet.Refresh();
             this.OrgDeptSet.Refresh();
             this.RoleSet.Refresh();
-            this.SysUserSet.Refresh();
+            this.UserSet.Refresh();
             this.RoleColumnSet.Refresh();
             this.RoleDeptSet.Refresh();
             this.RoleMenuSet.Refresh();
             this.RoleReportSet.Refresh();
             this.RoleDataSet.Refresh();
             this.RoleRoleSet.Refresh();
-            this.SysParamSet.Refresh();
+            this.ParamSet.Refresh();
             this.CfgBillCodeRuleSet.Refresh();
         }
         public  void Configure()

@@ -110,7 +110,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 }
                 bool existRolePower = false;
                 //当前角色
-                IEnumerable<FapRoleColumn> roleColumn = _rbacService.GetUserColumnList();
+                IEnumerable<FapRoleColumn> roleColumn = _rbacService.GetRoleColumnList(_applicationContext.CurrentRoleUid);
                 if (roleColumn!=null&&roleColumn.Any())
                 {
                     //当前表的角色字段

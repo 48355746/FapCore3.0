@@ -6,7 +6,7 @@ namespace Fap.Core.Rbac.AC
     /// <summary>
     /// 系统参数集合
     /// </summary>
-    public interface ISysParamSet:IEnumerable<FapConfig>
+    public interface IParamSet:IEnumerable<FapConfig>
     {
         void Refresh();
         bool TryGetValue(string fid, out FapConfig fapParam);

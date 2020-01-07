@@ -323,7 +323,7 @@ namespace Fap.Hcm.Web.Controllers
             }
             else
             {
-                IEnumerable<OrgDept> powerDepts = _rbacService.GetUserDeptList();
+                IEnumerable<OrgDept> powerDepts = _rbacService.GetRoleDeptList(_applicationContext.CurrentRoleUid);
                 if (powerDepts != null && powerDepts.Any())
                 {
                     foreach (var data in powerDepts)
@@ -580,7 +580,7 @@ namespace Fap.Hcm.Web.Controllers
             }
             else
             {
-                IEnumerable<OrgDept> powerDepts = _rbacService.GetUserDeptList();
+                IEnumerable<OrgDept> powerDepts = _rbacService.GetRoleDeptList(_applicationContext.CurrentRoleUid);
                 if (powerDepts != null && powerDepts.Any())
                 {
                     foreach (var data in powerDepts)
@@ -664,7 +664,7 @@ namespace Fap.Hcm.Web.Controllers
             }
             else
             {
-                IEnumerable<OrgDept> powerDepts = _rbacService.GetUserDeptList();
+                IEnumerable<OrgDept> powerDepts = _rbacService.GetRoleDeptList(_applicationContext.CurrentRoleUid);
                 if (powerDepts != null && powerDepts.Any())
                 {
                     foreach (var data in powerDepts)

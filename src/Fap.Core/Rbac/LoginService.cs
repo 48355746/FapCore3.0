@@ -3,18 +3,21 @@ using Fap.Core.DataAccess;
 using Fap.Core.DI;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Rbac.Model;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Fap.Core.Rbac
 {
-    [Service(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton)]
+    [Service(ServiceLifetime.Singleton)]
     public class LoginService:ILoginService
     {
-        IDbContext _dbContext = null;
-        public LoginService(IDbContext dbContext)
+        private readonly IDbContext _dbContext;
+        private readonly IRbacService _rbacService;
+        public LoginService(IDbContext dbContext,IRbacService rbacService)
         {
             _dbContext = dbContext;
+            _rbacService = rbacService;
         }
         //[Transactional]
         public FapUser Login(string userName)
@@ -70,6 +73,7 @@ namespace Fap.Core.Rbac
         /// <returns></returns>
         public IEnumerable<FapRole> GetUserRoles(string userUid)
         {
+            
             string sql = "select * from FapRole where Fid in(select RoleUid  from FapRoleUser where UserUid=@UserUid)";
             DynamicParameters param = new DynamicParameters();
             param.Add("UserUid", userUid);
@@ -89,11 +93,7 @@ namespace Fap.Core.Rbac
         /// <returns></returns>
         public IEnumerable<FapRoleMenu> GetRoleMenus(string roleUid)
         {
-            //string sql = "select * from FapMenu where Fid in(select menuUid from FapRoleMenu where RoleUid=@RoleUid)";
-            DynamicParameters param = new DynamicParameters();
-            param.Add("RoleUid", roleUid);
-            var list = _dbContext.QueryWhere<FapRoleMenu>("RoleUid=@RoleUid", param);
-            return list;
+            return _rbacService.GetRoleMenuList(roleUid);
         }
     }
 }

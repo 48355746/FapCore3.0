@@ -57,7 +57,7 @@ namespace Fap.Hcm.Web.ViewComponents
             int mi = _dataAccessor.Count("OrgDept", "Director=@EmpUid or DeptManager=@EmpUid", param);
 
             //获取权限菜单
-            IEnumerable<FapRoleMenu> roleMenuUids =_rbacService.GetUserMenuList();
+            IEnumerable<FapRoleMenu> roleMenuUids =_rbacService.GetRoleMenuList(_applicationContext.CurrentRoleUid);
             if (roleMenuUids.Any())
             {
                 List<FapMenu> roleMenus = new List<FapMenu>();

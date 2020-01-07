@@ -42,9 +42,10 @@ namespace Fap.Core.Infrastructure.Domain
         IRoleReportSet RoleReportSet { get; }
         IRoleButtonSet RoleButtonSet { get; }
         IRoleRoleSet RoleRoleSet { get; }
+        IRoleUserSet RoleUserSet { get; }
         IRoleSet RoleSet { get; }
-        ISysParamSet SysParamSet { get; }
-        ISysUserSet SysUserSet { get; }
+        IParamSet ParamSet { get; }
+        IUserSet UserSet { get; }
         ITableSet TableSet { get; }
         ICfgBillCodeRuleSet CfgBillCodeRuleSet { get; }
         void Refresh();

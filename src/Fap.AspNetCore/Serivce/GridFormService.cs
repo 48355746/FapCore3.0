@@ -29,6 +29,8 @@ using Fap.Core.Office;
 using Fap.Core.Annex.Utility.Zip;
 using Fap.AspNetCore.Binder;
 using Microsoft.Extensions.Caching.Memory;
+using Fap.Core.Rbac.Model;
+using System.Text.RegularExpressions;
 
 namespace Fap.AspNetCore.Serivce
 {
@@ -180,7 +182,7 @@ namespace Fap.AspNetCore.Serivce
             if (jqGridPostData.PageCondition.IsPresent())
             {
                 pageable.AddWhere(jfs.BuilderFilter(pageable.TableName, jqGridPostData.PageCondition), QuerySymbolEnum.AND);
-               
+
             }
             //构造jqgrid过滤条件
             if (jqGridPostData.Filters.IsPresent())
@@ -194,7 +196,7 @@ namespace Fap.AspNetCore.Serivce
             pageable.CurrentPage = jqGridPostData.Page;
             pageable.PageSize = jqGridPostData.Rows;
             //数据权限
-            string dataWhere = _rbacService.GetRoleDataWhere(qs.TableName);
+            string dataWhere = DataWhere();
             if (dataWhere.IsPresent())
             {
                 pageable.AddWhere(dataWhere);
@@ -211,7 +213,61 @@ namespace Fap.AspNetCore.Serivce
                 //获得安全sql
                 where = where.FilterDangerSql();
                 //替换部门权限占位符
-                return where.Replace(FapPlatformConstants.DepartmentAuthority, _rbacService.GetUserDeptAuthorityWhere()).ReplaceIgnoreCase("query", "select ");
+                return where.Replace(FapPlatformConstants.DepartmentAuthority, DeptWhere()).ReplaceIgnoreCase("query", "select ");
+            }
+            string DeptWhere()
+            {
+                var depts = _rbacService.GetRoleDeptList(_applicationContext.CurrentRoleUid, pageable.HistoryTimePoint);
+                if (depts != null && depts.Any())
+                {
+                    return string.Join(",", depts.Select(d => "'" + d.Fid + "'"));
+                }
+                else
+                {
+                    return "'meiyou'";
+                }
+            }
+            //数据权限
+            string DataWhere()
+            {
+                string where = string.Empty;
+                var roleDatas = _rbacService.GetRoleDataList(_applicationContext.CurrentRoleUid);
+                if (roleDatas != null && roleDatas.Any())
+                {
+                    var rd = roleDatas.FirstOrDefault<FapRoleData>(r => r.TableUid ==qs.TableName);
+                    if (rd != null)
+                    {
+                        where = rd.SqlCondition;
+                        string pattern = FapPlatformConstants.VariablePattern;
+                        Regex reg = new Regex(pattern);
+                        MatchCollection matchs = reg.Matches(where);
+                        foreach (var mtch in matchs)
+                        {
+
+                            int length = mtch.ToString().Length - 3;
+                            string colName = mtch.ToString().Substring(2, length);
+                            if (colName.EqualsWithIgnoreCase("DeptUid"))
+                            {
+                                where = where.Replace(mtch.ToString(), _applicationContext.DeptUid);
+                            }
+                            else if (colName.EqualsWithIgnoreCase("EmpUid"))
+                            {
+                                where = where.Replace(mtch.ToString(), _applicationContext.EmpUid);
+                            }
+                            else if (colName.EqualsWithIgnoreCase("DeptCode"))
+                            {
+                                string deptCode = _applicationContext.DeptCode;
+                                if (deptCode.IsMissing())
+                                {
+                                    OrgDept dept = _dbContext.Get<OrgDept>(_applicationContext.DeptUid);
+                                    deptCode = dept.DeptCode;
+                                }
+                                where = where.Replace(mtch.ToString(), deptCode);
+                            }
+                        }
+                    }
+                }
+                return where;
             }
         }
         #endregion

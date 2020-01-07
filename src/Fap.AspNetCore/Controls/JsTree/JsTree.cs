@@ -79,7 +79,7 @@ namespace Fap.AspNetCore.Controls
             IEnumerable<OrgDept> powerDepts = null;
             if (power)
             {
-                powerDepts = _rbacService.GetUserDeptList();
+                powerDepts = _rbacService.GetRoleDeptList(_applicationContext.CurrentRoleUid);
             }
             else
             {
@@ -463,47 +463,37 @@ namespace Fap.AspNetCore.Controls
                 script.AppendFormat(@".bind('refresh.jstree', function(e,data){{{0}}})", _refreshEvent).AppendLine();
                 //script.AppendLine(@".bind('refresh.jstree', function(e,data){  treeRefreshCallback && treeRefreshCallback(e,data);})");
             }
-            if (!string.IsNullOrWhiteSpace(_editUrl))
+            if (_editUrl.IsPresent())
             {
                 script.AppendLine(@"
                 .on('delete_node.jstree', function (e, data) {
-					$.get('" + _editUrl + @"?operation=delete_node', { 'id' : data.node.id }).done(function (d) {
-							if(d.id==='0'){bootbox.alert('删除失败，可能被占用。');data.instance.refresh();}
-						})
-						.fail(function () {
-							data.instance.refresh();
-						});
-				})
-				.on('create_node.jstree', function (e, data) {
-					$.get('" + _editUrl + @"?operation=create_node', { 'id' : data.node.parent, 'position' : data.position, 'text' : data.node.text })
-						.done(function (d) {
-							data.instance.set_id(data.node, d.id);
-                             data.instance.edit(data.node,'自定义');
-						})
-						.fail(function () {
-							data.instance.refresh();
-						});
-				})
-				.on('rename_node.jstree', function (e, data) {
-					$.get('" + _editUrl + @"?operation=rename_node', { 'id' : data.node.id, 'text' : data.text })
-						.fail(function () {
-							data.instance.refresh();
-						});
-				})
-				.on('move_node.jstree', function (e, data) {
-					$.get('" + _editUrl + @"?operation=move_node', { 'id' : data.node.id, 'parent' : data.parent, 'position' : data.position })
-						.fail(function () {
-							data.instance.refresh();
-						});
-				})
-				.on('copy_node.jstree', function (e, data) {
-					$.get('" + _editUrl + @"?operation=copy_node', { 'id' : data.original.id, 'parent' : data.parent, 'position' : data.position })
-						.always(function () {
-							data.instance.refresh();
-						});
-				});	");
-
-
+	                $.post('##editurl##', { operation: 'delete_node', 'id': data.node.id }, function (rv) {
+		                if (!rv.success) {
+			                bootbox.alert('删除失败，可能被占用。');
+		                }
+		                data.instance.refresh();
+	                });
+                }).on('create_node.jstree', function (e, data) {
+	                $.post('##editurl##', { operation: 'create_node', 'id': data.node.parent, 'position': data.position, 'text': data.node.text }, function (rv) {
+		                if (rv.success) {
+			                data.instance.set_id(data.node, rv.data);
+			                data.instance.edit(data.node, '自定义');
+		                }
+		                //data.instance.refresh();
+	                });
+                }).on('rename_node.jstree', function (e, data) {
+	                $.post('##editurl##', { operation: 'rename_node', 'id': data.node.id, 'text': data.text }, function (rv) {
+		                data.instance.refresh();
+	                });
+                }).on('move_node.jstree', function (e, data) {
+	                $.post('##editurl##', { operation: 'move_node', 'id': data.node.id, 'parent': data.parent, 'position': data.position }, function (rv) {
+		                data.instance.refresh();
+	                });
+                }).on('copy_node.jstree', function (e, data) {
+	                $.post('##editurl##', { operation: 'copy_node', 'id': data.original.id, 'parent': data.parent, 'position': data.position }, function (rv) {
+		                data.instance.refresh();
+	                });
+                });	".Replace("##editurl##",_editUrl));
             }
             script.AppendLine(" });");
             return script.ToString();

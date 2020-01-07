@@ -5,11 +5,29 @@ namespace Fap.Core.Rbac
 {
     public interface IRbacService
     {
-        IEnumerable<FapUserGroup> GetUserGroups();
-        string UserGroupOperation(string operation, string id, string parent, string text);
+        #region UserGroup
+        IEnumerable<FapUserGroup> GetAllUserGroup();
+        long CreateUserGroup(FapUserGroup userGroup);
+        bool DeleteUserGroup(string fid);
+        bool EditUserGroup(FapUserGroup userGroup);
+        #endregion
+        #region RoleGroup
+        IEnumerable<FapRoleGroup> GetAllRoleGroup();
+        long CreateRoleGroup(FapRoleGroup roleGroup);
+        bool DeleteRoleGroup(string fid);
+        bool EditRoleGroup(FapRoleGroup roleGroup);
+        #endregion
+        #region BizRole
+        IEnumerable<FapBizRole> GetAllBizRole();
+        long CreateBizRole(FapBizRole bizRole);
+        bool DeleteBizRole(string fid);
+        bool EditBizRole(FapBizRole bizRole);
+        #endregion
+
         FapRole GetCurrentRole();
-        string RoleGroupOperation(string operation, string id, string parent, string text);
-        string BusinessRoleOperation(string operation, string id, string parent, string text);
+        IEnumerable<FapRole> GetAllRole();
+      
+       
         bool AddRoleMenu(string roleUid, IEnumerable<FapRoleMenu> menus);
         bool AddRoleDept(string roleUid, IEnumerable<FapRoleDept> depts);
         bool AddRoleColumn(string roleUid, IEnumerable<FapRoleColumn> columns, int editType);
@@ -17,14 +35,14 @@ namespace Fap.Core.Rbac
         void AddRoleReport(string roleUid, IEnumerable<FapRoleReport> rpts);
         void AddRoleButton(string roleUid, IEnumerable<FapRoleButton> roleButtons);
         void AddRoleRole(string roleUid, IEnumerable<FapRoleRole> roleRoles);
-        bool IsInRole(string roleFid);
-        string GetRoleDataWhere(string tableName);
-        IEnumerable<FapRoleColumn> GetUserColumnList();
-        string GetUserDeptAuthorityWhere(bool hasPartPower = false);
-        IEnumerable<OrgDept> GetUserDeptList(string historyDate = "");
-        IEnumerable<FapRoleMenu> GetUserMenuList();
-        IEnumerable<FapRoleReport> GetUserReportList();
-        IEnumerable<FapRole> GetUserRoleList();
+        
+        IEnumerable<FapRoleData> GetRoleDataList(string roleUid);
+        IEnumerable<FapRoleColumn> GetRoleColumnList(string roleUid);
+        IEnumerable<OrgDept> GetRoleDeptList(string roleUid,string historyDate = "");
+        IEnumerable<FapRoleMenu> GetRoleMenuList(string roleUid);
+        IEnumerable<FapRoleReport> GetRoleReportList(string roleUid);
+        IEnumerable<FapRole> GetUserRoleList(string userUid);
+        IEnumerable<FapRoleRole> GetRoleRoleList(string roleUid);
         /// <summary>
         /// 获取按钮授权
         /// </summary>

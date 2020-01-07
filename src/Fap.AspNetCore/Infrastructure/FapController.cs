@@ -77,7 +77,7 @@ namespace Fap.AspNetCore.Infrastructure
             //加权限
             if (qs.UsePermissions)
             {
-                IEnumerable<FapRoleColumn> rcs = _rbacService.GetUserColumnList().Where(f => f.TableUid == qs.TableName);
+                IEnumerable<FapRoleColumn> rcs = _rbacService.GetRoleColumnList(_applicationContext.CurrentRoleUid).Where(f => f.TableUid == qs.TableName);
                 if (rcs != null && rcs.Any())
                 {
                     //有权限的列

@@ -23,6 +23,7 @@ using Fap.Core.Tracker;
 using System.Threading.Tasks;
 using Fap.Core.Infrastructure.Enums;
 using Fap.Core.Rbac.AC;
+using Fap.Hcm.Service.System;
 
 namespace Fap.Hcm.Web.Areas.System.Controllers
 {
@@ -33,231 +34,82 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
     {
         private ISchedulerService _schedule;
         private IEventDataHandler _dataHandler;
-        public ManageApiController(Sys.IServiceProvider serviceProvider, ISchedulerService schedulerService, IEventDataHandler dataHandler) : base(serviceProvider)
+        private readonly IManageService _manageService;
+        public ManageApiController(Sys.IServiceProvider serviceProvider, IManageService manageService, ISchedulerService schedulerService, IEventDataHandler dataHandler) : base(serviceProvider)
         {
             _schedule = schedulerService;
             _dataHandler = dataHandler;
+            _manageService = manageService;
         }
-
-
         #region 用户用户组
 
-        [Route("UserGroup")]
-        // POST: api/Common
+        [HttpGet("UserGroup")]
         public JsonResult GetUserGroup()
         {
-            IEnumerable<FapUserGroup> userGroups = _rbacService.GetUserGroups();
-            List<TreeDataView> oriList = userGroups.Select(t => new TreeDataView { Id = t.Fid.ToString(), Pid = t.Pid.ToString(), Data = new { group = "1" }, Text = t.UserGroupName, Icon = "icon-folder orange ace-icon fa fa-users" }).ToList<TreeDataView>();
-
-            List<TreeDataView> tree = new List<TreeDataView>();
-            TreeDataView treeRoot = new TreeDataView()
-            {
-                Id = "0",
-                Text = "用户组",
-                Data = new { group = "0" },
-                State = new NodeState { Opened = true },
-                Icon = "icon-folder blue ace-icon fa fa-sitemap",
-            };
-            tree.Add(treeRoot);
-            TreeViewHelper.MakeTree(treeRoot.Children, oriList, treeRoot.Id);
-
+            var tree= _manageService.GetUserGroupTree();
             return Json(tree);
         }
 
-        [HttpGet]
-        [Route("OperUserGroup")]
-        public JsonResult GetOperUserGroupData(string operation, string id, string parent = "", string text = "", string position = "")
+        [HttpPost("UserGroup")]
+        public JsonResult OperUserGroup(TreePostData postData)
         {
-            string result = _rbacService.UserGroupOperation(operation, id, parent, text);
-            return Json(new { id = result });
+            var result = _manageService.OperUserGroup(postData);
+            return Json(result);
         }
 
-
-        [HttpGet]
-        [Route("SetUserTheme")]
-        // POST: api/Common
-        public bool PostFapUserUpdate(string theme)
+        [HttpGet("UserTheme")]
+        public void SetUserTheme(string theme)
         {
-            FapUser user = _dbContext.Get<FapUser>(_applicationContext.UserUid);
-            user.Theme = theme;
-            _dbContext.Update<FapUser>(user);
-            return true;
+            _manageService.SetTheme(theme,_applicationContext.UserUid);
         }
         /// <summary>
         /// 重置密码为系统设置的默认密码
         /// </summary>
         /// <param name="jobj"></param>
         /// <returns></returns>
-        [HttpPost]
-        [Route("ResetPassword")]
-        public bool PostResetPassword(FidsModel model)
-        {
-            string password = _configService.GetSysParamValue("employee.user.password");
-            if (password.IsMissing())
-            {
-                password = "1";
-            }
-            PasswordHasher pwdHasher = new PasswordHasher();
-            password = pwdHasher.HashPassword(password);
-            int r = _dbContext.Execute("update FapUser set UserPassword=@Pwd where Fid in @Fids", new DynamicParameters(new { Pwd = password, Fids = model.Fids }));
-            return r > 0;
+        [HttpPost("ResetPassword")]
+        public bool ResetPassword(FidsModel model)
+        {            
+            return _manageService.ResetPasswor(model.Fids);
         }
         #endregion
 
         #region 角色角色组
-        [Route("RoleGroup")]
-        // POST: api/Common
+        [HttpGet("RoleGroup")]
         public JsonResult GetRoleGroup()
         {
-            FapRole currRole = _rbacService.GetCurrentRole();
-            IEnumerable<FapRoleGroup> roleGroups = _dbContext.QueryAll<FapRoleGroup>();
-            if (!_applicationContext.IsAdministrator)
-            {
-                List<string> grps = new List<string>();
-
-                var groupUid = currRole.RoleGroupUid;
-                grps.Add(groupUid);
-                IEnumerable<FapRoleRole> rrs = null;
-                //授予的角色
-                if (_platformDomain.RoleRoleSet.TryGetValueByRole(currRole.Fid, out rrs))
-                {
-                    if (rrs != null && rrs.Any())
-                    {
-                        var roles = _platformDomain.RoleSet.ToList().Where(r => rrs.FirstOrDefault(rr => rr.PRoleUid == r.Fid) != null).ToList();
-                        grps.AddRange(roles.Select(r => r.RoleGroupUid));
-                    }
-                }
-                roleGroups = roleGroups.Where<FapRoleGroup>(grp => grps.Contains(grp.Fid)).ToList();
-            }
-
-            List<TreeDataView> oriList = roleGroups.Select(t => new TreeDataView { Id = t.Fid.ToString(), Pid = t.Pid.ToString(), Text = t.RoleGroupName, Icon = "icon-folder orange ace-icon fa fa-users" }).ToList<TreeDataView>();
-
-            List<TreeDataView> tree = new List<TreeDataView>();
-            TreeDataView treeRoot = new TreeDataView()
-            {
-                Id = "0",
-                Text = "角色组",
-                State = new NodeState { Opened = true },
-                Icon = "icon-folder blue ace-icon fa fa-sitemap",
-            };
-            tree.Add(treeRoot);
-            TreeViewHelper.MakeTree(treeRoot.Children, oriList, treeRoot.Id);
-
+            var tree=_manageService.GetRoleGroupTree();
             return Json(tree);
         }
-        [Route("RoleAndGroup")]
+        [HttpGet("RoleAndGroup")]
         public JsonResult GetRoleAndGroup()
         {
-            IEnumerable<FapRoleGroup> roleGroups = _dbContext.QueryAll<FapRoleGroup>();
-            List<FapRole> roles = new List<FapRole>();
-            if (_applicationContext.IsAdministrator)
-            {
-                roles = _platformDomain.RoleSet.ToList();// _dbContext.QueryEntityByWhere<FapRole>();                
-            }
-            else
-            {
-                IEnumerable<FapRoleRole> rrs = null;
-                //授予的角色
-                if (_platformDomain.RoleRoleSet.TryGetValueByRole(_applicationContext.CurrentRoleUid, out rrs))
-                {
-                    if (rrs != null && rrs.Any())
-                    {
-                        roles = _platformDomain.RoleSet.ToList().Where(r => rrs.FirstOrDefault(rr => rr.PRoleUid == r.Fid) != null).ToList();
-                    }
-                }
-                DynamicParameters param = new DynamicParameters();
-                param.Add("Employee", _applicationContext.EmpUid);
-                var selfRoles = _dbContext.QueryWhere<FapRole>("CreateBy=@Employee", param);
-                selfRoles.AsList().ForEach((r) =>
-                {
-                    if (!roles.Contains(r))
-                    {
-                        roles.Add(r);
-                    }
-                });
-            }
-            List<TreeDataView> oriList = roleGroups.Select(t => new TreeDataView { Id = t.Fid.ToString(), Data = new { IsRole = false }, Pid = t.Pid.ToString(), Text = t.RoleGroupName, State = new NodeState { Opened = true }, Icon = "icon-folder purple ace-icon fa fa-users" }).ToList<TreeDataView>();
-            List<TreeDataView> roleList = roles.Select(r => new TreeDataView { Id = r.Fid.ToString(), Data = new { IsRole = true }, Pid = r.RoleGroupUid, Text = r.RoleName, State = new NodeState { Opened = true }, Icon = "icon-folder orange ace-icon fa fa-users" }).ToList<TreeDataView>();
-            List<TreeDataView> tree = new List<TreeDataView>();
-            //超级管理员可以授权普通用户角色
-            if (_applicationContext.IsAdministrator)
-            {
-                //加普通用户角色
-                oriList.Insert(0, new TreeDataView { Id = FapPlatformConstants.CommonUserRoleFid, Data = new { IsRole = true }, Pid = "0", Text = "普通用户", Icon = "icon-folder orange ace-icon fa fa-users" });
-            }
-            List<TreeDataView> treeRoots = oriList.Where(g => g.Pid == "0").ToList();
-
-            foreach (var treeRoot in treeRoots)
-            {
-                TreeViewHelper.MakeTree(treeRoot.Children, oriList, treeRoot.Id);
-            }
-            tree.AddRange(treeRoots);
-            List<TreeDataView> tempGroup = new List<TreeDataView>();
-            foreach (var item in tree)
-            {
-                var rl = roleList.Where(r => r.Pid == item.Id);
-                if (rl.Any())
-                {
-                    item.Children.AddRange(rl);
-                }
-                else
-                {
-                    if (!item.Text.Equals("普通用户"))
-                    {
-                        tempGroup.Add(item);
-                    }
-                }
-            }
-            if (tempGroup.Any())
-            {
-                //移除没有角色的角色组
-                tempGroup.ForEach((d) => { tree.Remove(d); });
-            }
+            var tree = _manageService.GetRoleAndGroupTree();
             return Json(tree);
         }
 
-        [HttpGet]
-        [Route("OperRoleGroup")]
-        public JsonResult GetOperRoleGroupData(string operation, string id, string parent = "", string text = "", string position = "")
+        [HttpPost("RoleGroup")]
+        public JsonResult GetOperRoleGroupData(TreePostData postData)
         {
-            string result = _rbacService.RoleGroupOperation(operation, id, parent, text);
-            //刷新全局域角色集合
-            _platformDomain.RoleSet.Refresh();
-
-            return Json(new { id = result });
+            var  result = _manageService.OperRoleGroup(postData);
+            
+            return Json(result);
         }
-
-
 
         #endregion
 
         #region 业务角色员工
-        [Route("BusinessRole")]
+        [HttpGet("BusinessRole")]
         public JsonResult GetBusinessRole()
         {
-            IEnumerable<FapBizRole> bizRoles = _dbContext.QueryAll<FapBizRole>();
-            List<TreeDataView> oriList = bizRoles.Select(t => new TreeDataView { Id = t.Fid.ToString(), Pid = t.Pid.ToString(), Data = new { isRole = true }, Text = t.BizRoleName, Icon = "icon-folder orange ace-icon fa fa-users" }).ToList<TreeDataView>();
-
-            List<TreeDataView> tree = new List<TreeDataView>();
-            TreeDataView treeRoot = new TreeDataView()
-            {
-                Id = "0",
-                Text = "业务角色",
-                Data = new { isRole = false },
-                State = new NodeState { Opened = true },
-                Icon = "icon-folder blue ace-icon fa fa-sitemap",
-            };
-            tree.Add(treeRoot);
-            TreeViewHelper.MakeTree(treeRoot.Children, oriList, treeRoot.Id);
-
+            var tree = _manageService.GetBusinessRoleTree();
             return Json(tree);
         }
-        [HttpGet]
-        [Route("OperBusinessRole")]
-        public JsonResult GetOperBusinessRole(string operation, string id, string parent = "", string text = "", string position = "")
+        [HttpPost("BusinessRole")]
+        public JsonResult OperBusinessRole(TreePostData postData)
         {
-            string result = _rbacService.BusinessRoleOperation(operation, id, parent, text);
-            return Json(new { id = result });
+            var result = _manageService.OperBusinessRole(postData);
+            return Json(result);
         }
 
 
@@ -298,34 +150,19 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
 
         #region 配置配置组
 
-        [Route("ConfigGroup")]
-        // POST: api/Common
+        [HttpGet("ConfigGroup")]
         public JsonResult GetConfigGroup()
         {
-            IEnumerable<FapConfigGroup> configGroups = _dbContext.QueryAll<FapConfigGroup>();
-            List<TreeDataView> oriList = configGroups.Select(t => new TreeDataView { Id = t.Fid.ToString(), Pid = t.Pid.ToString(), Data = new { group = "1" }, Text = t.CfName, Icon = "icon-folder  ace-icon fa fa-cog" }).ToList<TreeDataView>();
-
-            List<TreeDataView> tree = new List<TreeDataView>();
-            TreeDataView treeRoot = new TreeDataView()
-            {
-                Id = "0",
-                Text = "配置组",
-                Data = new { group = "0" },
-                State = new NodeState { Opened = true },
-                Icon = "icon-folder blue ace-icon fa fa-cogs",
-            };
-            tree.Add(treeRoot);
-            TreeViewHelper.MakeTree(treeRoot.Children, oriList, treeRoot.Id);
+            var tree = _manageService.GetConfigGroup();
 
             return Json(tree);
         }
 
-        [HttpGet]
-        [Route("OperConfigGroup")]
-        public JsonResult GetOperConfigGroupData(string operation, string id, string parent = "", string text = "", string position = "")
+        [HttpPost("ConfigGroup")]
+        public JsonResult OperConfigGroup(TreePostData postData)
         {
-            string result = _configService.ConfigGroupOperation(operation, id, parent, text);
-            return Json(new { id = result });
+            var result = _manageService.OperConfigGroup(postData);
+            return Json(result);
         }
 
 
@@ -334,181 +171,33 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         /// </summary>
         /// <param name="cfgrpUid">配置组</param>
         /// <returns></returns>
-        [HttpGet]
-        [Route("Config")]
-        // POST: api/Common
-        public JsonResult PostFapConfigs(string cfgrpUid)
+        [HttpGet("Config")]
+        public JsonResult GetFapConfigs(string cfgrpUid)
         {
-            DynamicParameters param = new DynamicParameters();
-            param.Add("ConfigGroup", cfgrpUid);
-            IEnumerable<FapConfig> configs = _dbContext.QueryWhere<FapConfig>("ConfigGroup=@ConfigGroup", param);
-            var dictList = configs.Where(c => c.DictList.IsPresent());
-            if (dictList != null && dictList.Any())
-            {
-                foreach (var item in dictList)
-                {
-                    JObject jsonObj = JObject.Parse(item.DictList);
-                    Dictionary<string, string> dictObj = jsonObj.ToObject<Dictionary<string, string>>();
-                    List<SelectModel> source = new List<SelectModel>();
-                    foreach (var dic in dictObj)
-                    {
-                        SelectModel model = new SelectModel() { Code = dic.Key, Name = dic.Value };
-                        if (dic.Key == item.ParamValue)
-                        {
-                            model.Selected = true;
-                        }
-                        source.Add(model);
-                    }
-                    item.DictSource = source;
-                }
-            }
-            var grpConfigs = configs.OrderBy(f => f.SortBy).GroupBy(c => c.ParamGroup);
-            List<GrpConfig> list = new List<GrpConfig>();
-            foreach (var item in grpConfigs)
-            {
-                GrpConfig gc = new GrpConfig();
-                gc.Grp = item.Key;
-                gc.Configs = item.ToList();
-                list.Add(gc);
-            }
-
+            var list = _manageService.GetFapConfig(cfgrpUid);
             return Json(list);
         }
 
         #endregion
 
         #region 模块菜单
-        [Route("Module")]
-        // POST: api/Common
+        [HttpGet("Module")]
         public JsonResult GetModule()
         {
-            //DataAccessor _dbContext = new DataAccessor();
-            List<FapModule> module = _platformDomain.ModuleSet.ToList(); //_dbContext.QueryEntityByWhere<FapModule>();
-            List<TreeDataView> moList = module.Select(t => new TreeDataView { Id = t.Fid.ToString(), Pid = t.Pid, Text = t.ModuleName, Icon = (t.Icon.IsMissing() ? "icon-folder green ace-icon fa fa-leaf" : "icon-folder green ace-icon " + t.Icon) }).ToList<TreeDataView>();
-
-            List<TreeDataView> tree = new List<TreeDataView>();
-            TreeDataView treeRoot = new TreeDataView()
-            {
-                Id = "0",
-                Text = "系统模块",
-                State = new NodeState { Opened = true },
-                Icon = "icon-folder purple ace-icon fa fa-home bigger-160",
-            };
-            tree.Add(treeRoot);
-            TreeViewHelper.MakeTree(treeRoot.Children, moList, treeRoot.Id);
-
+            var tree = _manageService.GetModule();
             return Json(tree);
         }
 
-        [Route("ModuleAndMenu")]
+        [HttpGet("ModuleAndMenu")]
         public JsonResult GetModuleAndMenu()
         {
-            List<FapModule> modules = _platformDomain.ModuleSet.ToList();
-            List<FapMenu> menus = _platformDomain.MenuSet.ToList();
-            //List<string> a = new List<string>();
-            if (!_applicationContext.IsAdministrator)
-            {
-                var roleMenus = _rbacService.GetUserMenuList();
-                if (roleMenus.Any())
-                {
-                    var roleUids = roleMenus.Select(m => m.MenuUid);
-                    menus = menus.Where(m => roleUids.Contains(m.Fid)).ToList();
-                }
-            }
-
-            List<TreeDataView> moduleList = modules.Select(t => new TreeDataView { Id = t.Fid.ToString(), Data = new { IsMenu = false }, Pid = t.Pid.ToString(), Text = t.ModuleName, State = new NodeState { Opened = false }, Icon = (t.Icon.IsMissing() ? "icon-folder green ace-icon fa fa-leaf" : "icon-folder green ace-icon " + t.Icon) }).ToList<TreeDataView>();
-            //授权 仅仅授予到二级菜单
-            List<TreeDataView> menuList = menus.Where(m => m.MenuCode.Length == 5).Select(r => new TreeDataView { Id = r.Fid.ToString(), Data = new { IsMenu = true }, Pid = r.ModuleUid, Text = r.MenuName, State = new NodeState { Opened = false }, Icon = "icon-folder orange ace-icon fa fa-leaf" }).ToList<TreeDataView>();
-            List<TreeDataView> threeLevels = menus.Where(m => m.MenuCode.Length == 7).Select(r => new TreeDataView { Id = r.Fid.ToString(), Data = new { IsMenu = true }, Pid = r.Pid, Text = r.MenuName, State = new NodeState { Opened = false }, Icon = "icon-folder orange ace-icon fa fa-leaf" }).ToList<TreeDataView>();
-            List<TreeDataView> tree = new List<TreeDataView>();
-            List<TreeDataView> treeRoots = moduleList.Where(g => g.Pid == "0").ToList();
-
-            foreach (var treeRoot in treeRoots)
-            {
-                TreeViewHelper.MakeTree(treeRoot.Children, moduleList, treeRoot.Id);
-            }
-            tree.AddRange(treeRoots);
-            foreach (var item in tree)
-            {
-                var rl = menuList.Where<TreeDataView>(r => r.Pid == item.Id);
-                if (rl.Any())
-                {
-                    foreach (var r2 in rl)
-                    {
-
-                        //三级菜单
-                        if (threeLevels != null && threeLevels.Any())
-                        {
-                            var rl3 = threeLevels.Where(m => m.Pid == r2.Id);
-                            if (rl3 != null && rl3.Any())
-                            {
-                                r2.Children.AddRange(rl3);
-                                //foreach (var r3 in rl3)
-                                //{
-                                //    r2.Children.Add(r3)
-                                //}
-                            }
-                        }
-                    }
-                    item.Children.AddRange(rl);
-                }
-            }
+            var tree = _manageService.GetModuleAndMenu();
             return Json(tree);
         }
         [Route("AllDepts")]
         public JsonResult GetAllDepts()
         {
-            IEnumerable<OrgDept> powerDepts = null;
-            if (_applicationContext.IsAdministrator)
-            {
-                powerDepts = _platformDomain.OrgDeptSet.OrderBy(d => d.DeptOrder);
-            }
-            else
-            {
-                powerDepts = _rbacService.GetUserDeptList();
-            }
-
-
-            //将List<dynamic>转换成List<TreeDataView>
-            List<TreeDataView> treeList = new List<TreeDataView>();
-            foreach (var data in powerDepts)
-            {
-                treeList.Add(new TreeDataView() { Id = data.Fid, Text = data.DeptName, Pid = data.Pid, Data = new { Code = data.DeptCode, Ext1 = data.HasPartPower, Ext2 = "" }, Icon = "icon-folder  ace-icon fa fa-folder orange" });
-            }
-            string _rootText = string.Empty;
-            List<TreeDataView> tree = new List<TreeDataView>();
-            string parentID = "0";
-            var pt = powerDepts.FirstOrDefault<OrgDept>(t => t.Pid == "0" || t.Pid.IsMissing() || t.Pid == "#" || t.Pid == "~");
-            if (_rootText.IsMissing())
-            {
-                if (pt != null)
-                {
-                    _rootText = pt.DeptName;
-                    parentID = pt.Fid;
-                }
-                else
-                {
-                    _rootText = "无权限";
-                }
-            }
-            TreeDataView treeRoot = new TreeDataView()
-            {
-                Id = parentID,
-                Text = _rootText,
-                State = new NodeState { Opened = true },
-                Icon = "icon-folder purple ace-icon fa fa-sitemap",
-
-            };
-            if (parentID == "0")
-            {
-                treeRoot.Data = new { Code = "", Ext1 = false, Ext2 = "" };
-            }
-            else
-            {
-                treeRoot.Data = new { Code = pt.DeptCode, Ext1 = pt.HasPartPower, Ext2 = "" };
-            }
-            TreeViewHelper.MakeTree(treeRoot.Children, treeList, treeRoot.Id);
-            tree.Add(treeRoot);
+            var tree = _manageService.GetAllDept();
             return Json(tree);
         }
         #endregion
@@ -584,7 +273,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             var menuButtons = _platformDomain.MenuButtonSet;
             if (!_applicationContext.IsAdministrator)
             {
-                var roleMenus = _rbacService.GetUserMenuList();
+                var roleMenus = _rbacService.GetRoleMenuList(_applicationContext.CurrentRoleUid);
                 if (roleMenus.Any())
                 {
                     var roleUids = roleMenus.Select(m => m.MenuUid);
@@ -1189,7 +878,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         [Route("Setting/ClearConfigCache")]
         public JsonResult ClearConfigCache()
         {
-            _platformDomain.SysParamSet.Refresh();
+            _platformDomain.ParamSet.Refresh();
             return Json(new { success = "success" });
         }
 

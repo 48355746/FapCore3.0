@@ -31,42 +31,27 @@ namespace Fap.Core.Infrastructure.Config
             _logger = logger;
             _appDomain = appDomain;
         }
-        [Transactional]
-        public string ConfigGroupOperation(string operation, string id, string parent, string text)
+       
+        public IEnumerable<FapConfigGroup> GetAllFapConfigGroup()
         {
-            string result = "0";
-            if (operation ==TreeNodeOper.DELETE_NODE)
-            {
-                int c = _dbContext.Count("FapConfig", "ConfigGroup=@ConfigGroup", new DynamicParameters(new { ConfigGroup = id }));
-                if (c == 0)
-                {
-                    result = "" + _dbContext.Execute("delete from FapConfigGroup where Fid=@Id", new DynamicParameters(new { Id = id }));
-                }
-            }
-            else if (operation ==TreeNodeOper.CREATE_NODE)
-            {
-                FapDynamicObject fdo = new FapDynamicObject(_dbContext.Columns("FapConfigGroup"));
-                fdo.SetValue("Pid",id);
-                fdo.SetValue("CfName", text);
-                long rv = _dbContext.InsertDynamicData(fdo);
-                result = fdo.Get(FapDbConstants.FAPCOLUMN_FIELD_Fid).ToString();
-            }
-            else if (operation ==TreeNodeOper.RENAME_NODE)
-            {
-                result = "" + _dbContext.Execute("update FapConfigGroup set CfName=@CfName where Fid=@Id", new DynamicParameters(new { CfName = text, Id = id }));
-            }
-            else if (operation ==TreeNodeOper.MOVE_NODE)
-            {
-                result = "" + _dbContext.Execute("update FapConfigGroup set Pid=@Pid where Fid=@Id", new DynamicParameters(new { Pid = parent, Id = id }));
-            }
-            else if (operation ==TreeNodeOper.COPY_NODE)
-            {
-
-            }
-
-            return result;
+            return _dbContext.QueryAll<FapConfigGroup>();
         }
 
+        public long CreateFapConfigGroup(FapConfigGroup configGroup)
+        {
+            return _dbContext.Insert(configGroup);
+        }
+
+        public bool DeleteFapConfigGroup(string fid)
+        {
+           int c= _dbContext.DeleteExec(nameof(FapConfigGroup),"Fid=@Fid", new DynamicParameters(new { Fid = fid }));
+            return c > 0 ? true : false;
+        }
+
+        public bool EditFapConfigGroup(FapConfigGroup configGroup)
+        {
+            return _dbContext.Update(configGroup);
+        }
         /// <summary>
         /// 获取系统配置参数值
         /// </summary>
@@ -75,7 +60,7 @@ namespace Fap.Core.Infrastructure.Config
         public string GetSysParamValue(string paramKey)
         {
             FapConfig config;
-            if (_appDomain.SysParamSet.TryGetValueByKey(paramKey, out config))
+            if (_appDomain.ParamSet.TryGetValueByKey(paramKey, out config))
             {
                 return config.ParamValue;
             }
@@ -187,5 +172,7 @@ namespace Fap.Core.Infrastructure.Config
             }
             return dictCodes;
         }
+
+     
     }
 }

@@ -1,0 +1,15 @@
+E:\FapCore3.0\fap-netcore\product\hcm\Fap.Hcm.Service\bin\Debug\netcoreapp3.0\Fap.Hcm.Service.deps.json
+E:\FapCore3.0\fap-netcore\product\hcm\Fap.Hcm.Service\bin\Debug\netcoreapp3.0\Fap.Hcm.Service.dll
+E:\FapCore3.0\fap-netcore\product\hcm\Fap.Hcm.Service\bin\Debug\netcoreapp3.0\Fap.Hcm.Service.pdb
+E:\FapCore3.0\fap-netcore\product\hcm\Fap.Hcm.Service\bin\Debug\netcoreapp3.0\Fap.AspNetCore.dll
+E:\FapCore3.0\fap-netcore\product\hcm\Fap.Hcm.Service\bin\Debug\netcoreapp3.0\Fap.Core.dll
+E:\FapCore3.0\fap-netcore\product\hcm\Fap.Hcm.Service\bin\Debug\netcoreapp3.0\SQLGeneration.dll
+E:\FapCore3.0\fap-netcore\product\hcm\Fap.Hcm.Service\bin\Debug\netcoreapp3.0\Fap.AspNetCore.pdb
+E:\FapCore3.0\fap-netcore\product\hcm\Fap.Hcm.Service\bin\Debug\netcoreapp3.0\Fap.Core.pdb
+E:\FapCore3.0\fap-netcore\product\hcm\Fap.Hcm.Service\bin\Debug\netcoreapp3.0\SQLGeneration.pdb
+E:\FapCore3.0\fap-netcore\product\hcm\Fap.Hcm.Service\obj\Debug\netcoreapp3.0\Fap.Hcm.Service.csprojAssemblyReference.cache
+E:\FapCore3.0\fap-netcore\product\hcm\Fap.Hcm.Service\obj\Debug\netcoreapp3.0\Fap.Hcm.Service.AssemblyInfoInputs.cache
+E:\FapCore3.0\fap-netcore\product\hcm\Fap.Hcm.Service\obj\Debug\netcoreapp3.0\Fap.Hcm.Service.AssemblyInfo.cs
+E:\FapCore3.0\fap-netcore\product\hcm\Fap.Hcm.Service\obj\Debug\netcoreapp3.0\Fap.Hcm.Service.csproj.CopyComplete
+E:\FapCore3.0\fap-netcore\product\hcm\Fap.Hcm.Service\obj\Debug\netcoreapp3.0\Fap.Hcm.Service.dll
+E:\FapCore3.0\fap-netcore\product\hcm\Fap.Hcm.Service\obj\Debug\netcoreapp3.0\Fap.Hcm.Service.pdb
