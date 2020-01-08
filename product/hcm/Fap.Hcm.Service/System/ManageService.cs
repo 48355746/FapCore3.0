@@ -16,7 +16,6 @@ using Dapper;
 using Fap.Core.Infrastructure.Domain;
 using Newtonsoft.Json.Linq;
 using Fap.Model.Infrastructure;
-using Fap.Core.Infrastructure.Metadata;
 
 namespace Fap.Hcm.Service.System
 {
@@ -270,7 +269,7 @@ namespace Fap.Hcm.Service.System
             return vm;
         }
 
-        public IEnumerable<TreeDataView> GetConfigGroup()
+        public IEnumerable<TreeDataView> GetConfigGroupTree()
         {
             IEnumerable<FapConfigGroup> configGroups = _configService.GetAllFapConfigGroup();
             List<TreeDataView> oriList = configGroups.Select(t => new TreeDataView { Id = t.Fid.ToString(), Pid = t.Pid.ToString(), Data = new { group = "1" }, Text = t.CfName, Icon = "icon-folder  ace-icon fa fa-cog" }).ToList<TreeDataView>();
@@ -361,7 +360,7 @@ namespace Fap.Hcm.Service.System
 
         }
 
-        public IEnumerable<TreeDataView> GetModule()
+        public IEnumerable<TreeDataView> GetModuleTree()
         {
             List<TreeDataView> moList = _platformDomain.ModuleSet.Select(t => new TreeDataView { Id = t.Fid.ToString(), Pid = t.Pid, Text = t.ModuleName, Icon = (t.Icon.IsMissing() ? "icon-folder green ace-icon fa fa-leaf" : "icon-folder green ace-icon " + t.Icon) }).ToList<TreeDataView>();
 
@@ -378,7 +377,7 @@ namespace Fap.Hcm.Service.System
             return tree;
         }
 
-        public IEnumerable<TreeDataView> GetModuleAndMenu()
+        public IEnumerable<TreeDataView> GetModuleAndMenuTree()
         {
             var menus = _platformDomain.MenuSet.ToList();
             if (!_applicationContext.IsAdministrator)
@@ -391,7 +390,9 @@ namespace Fap.Hcm.Service.System
                 }
             }
 
-            List<TreeDataView> moduleList = _platformDomain.ModuleSet.Select(t => new TreeDataView { Id = t.Fid.ToString(), Data = new { IsMenu = false }, Pid = t.Pid.ToString(), Text = t.ModuleName, State = new NodeState { Opened = false }, Icon = (t.Icon.IsMissing() ? "icon-folder green ace-icon fa fa-leaf" : "icon-folder green ace-icon " + t.Icon) }).ToList<TreeDataView>();
+            List<TreeDataView> moduleList = _platformDomain.ModuleSet
+                .Where(m => menus.Select(m => m.ModuleUid).Distinct().Contains(m.Fid))
+                .Select(t => new TreeDataView { Id = t.Fid.ToString(), Data = new { IsMenu = false }, Pid = t.Pid.ToString(), Text = t.ModuleName, State = new NodeState { Opened = false }, Icon = (t.Icon.IsMissing() ? "icon-folder green ace-icon fa fa-leaf" : "icon-folder green ace-icon " + t.Icon) }).ToList<TreeDataView>();
             //授权 仅仅授予到二级菜单
             List<TreeDataView> menuList = menus.Where(m => m.MenuCode.Length == 5).Select(r => new TreeDataView { Id = r.Fid.ToString(), Data = new { IsMenu = true }, Pid = r.ModuleUid, Text = r.MenuName, State = new NodeState { Opened = false }, Icon = "icon-folder orange ace-icon fa fa-leaf" }).ToList<TreeDataView>();
             List<TreeDataView> threeLevels = menus.Where(m => m.MenuCode.Length == 7).Select(r => new TreeDataView { Id = r.Fid.ToString(), Data = new { IsMenu = true }, Pid = r.Pid, Text = r.MenuName, State = new NodeState { Opened = false }, Icon = "icon-folder orange ace-icon fa fa-leaf" }).ToList<TreeDataView>();
@@ -431,7 +432,7 @@ namespace Fap.Hcm.Service.System
             return tree;
         }
 
-        public IEnumerable<TreeDataView> GetAllDept()
+        public IEnumerable<TreeDataView> GetAllDeptTree()
         {
             IEnumerable<OrgDept> powerDepts = null;
             if (_applicationContext.IsAdministrator)
@@ -440,10 +441,36 @@ namespace Fap.Hcm.Service.System
             }
             else
             {
-                powerDepts = _rbacService.GetRoleDeptList(_applicationContext.CurrentRoleUid);
+                powerDepts = _rbacService.GetRoleDeptList(_applicationContext.CurrentRoleUid).ToList();
+                //如果没有授权根节点 需要加载上根节点
+                var allDepts = _platformDomain.OrgDeptSet;
+                OrgDept rootDept = allDepts.FirstOrDefault(d => d.Pid.IsMissing() || d.Pid == "#" || d.Pid == "~" || d.Pid == "");
+                if (!powerDepts.Contains(rootDept))
+                {
+                    int powerDeptRootCodeLength = powerDepts.Min(d => d.DeptCode.Length);
+                    var powerRootDepts = powerDepts.Where(d => d.DeptCode.Length == powerDeptRootCodeLength).ToList();
+                    //向上查找部门
+                    foreach (var powerRootDept in powerRootDepts)
+                    {
+                        FindParentDept(powerRootDept);
+                    }
+                }
+                void FindParentDept(OrgDept powerRootDept)
+                {
+                    var powerParentDept = allDepts.FirstOrDefault(d => d.Fid == powerRootDept.Pid);
+                    if (powerParentDept != null)
+                    {
+                        powerParentDept.HasPartPower = true;
+                        if (!powerDepts.AsList().Exists(d => d.Fid == powerParentDept.Fid))
+                        {
+                            powerDepts.AsList().Add(powerParentDept);
+                        }
+                        FindParentDept(powerParentDept);
+                    }
+                }
             }
 
-            IEnumerable<TreeDataView> treeList = powerDepts.Select(data => new TreeDataView() { Id = data.Fid, Text = data.DeptName, Pid = data.Pid, Data = new { Code = data.DeptCode, Ext1 = data.HasPartPower, Ext2 = "" }, Icon = "icon-folder  ace-icon fa fa-folder orange" });
+            IEnumerable<TreeDataView> treeList = powerDepts.Select(data => new TreeDataView() { Id = data.Fid, Text = data.DeptName, Pid = data.Pid, Data = new { Code = data.DeptCode, Ext1 = data.HasPartPower, Ext2 = "" }, Icon = data.HasPartPower ? "icon-folder  ace-icon fa fa-folder grey" : "icon-folder  ace-icon fa fa-folder orange" });
             string _rootText = string.Empty;
             List<TreeDataView> tree = new List<TreeDataView>();
             string parentID = "0";
@@ -479,5 +506,270 @@ namespace Fap.Hcm.Service.System
             tree.Add(treeRoot);
             return tree;
         }
+
+        public IEnumerable<TreeDataView> GetMenuButtonTree()
+        {
+            var menuButtons = _platformDomain.MenuButtonSet;
+
+            var tree = GetModuleAndMenuTree();
+            var mmtor = tree.GetEnumerator();
+            AddMenuButton(mmtor);
+            return tree;
+            void AddMenuButton(IEnumerator<TreeDataView> menuEmumertor)
+            {
+                while (menuEmumertor.MoveNext())
+                {
+                    TreeDataView curr = menuEmumertor.Current;
+                    if (curr.Children.Any())
+                    {
+                        AddMenuButton(curr.Children.GetEnumerator());
+                    }
+                    if (curr.Data.IsMenu)
+                    {
+                        var children = AddOperNode(curr);
+                        if (children.Any())
+                        {
+                            curr.Children = children.ToList();
+                        }
+                    }
+                }
+            }
+            IEnumerable<TreeDataView> AddOperNode(TreeDataView menuNode)
+            {
+                var opers = typeof(OperEnum).EnumItems();
+                string menuUid = menuNode.Id;
+                if (!_applicationContext.IsAdministrator)
+                {
+                    //权限中获取
+                    var roleButtons = _rbacService.GetRoleButtonList(_applicationContext.CurrentRoleUid);
+                    if (roleButtons.Any())
+                    {
+                        var rbtns = roleButtons.Where(r => r.MenuUid == menuUid);
+                        foreach (var btn in rbtns.Where(b => b.ButtonType == FapMenuButtonType.Grid || b.ButtonType == FapMenuButtonType.Tree))
+                        {
+                            var button = menuButtons.FirstOrDefault(b => b.MenuUid == btn.MenuUid && b.ButtonID == btn.ButtonId);
+                            if (button != null)
+                            {
+                                TreeDataView toper = new TreeDataView()
+                                {
+                                    Id = button.ButtonID,
+                                    Data = new { IsBtn = false, IsMenu = false },
+                                    Pid = menuNode.Id,
+                                    Text = button.Description,
+                                    Icon = btn.ButtonType == FapMenuButtonType.Grid ? "fa fa-table" : "fa fa-code-fork"
+                                };
+
+                                foreach (var oper in btn.ButtonValue.SplitComma())
+                                {
+                                    OperEnum operEnum = (OperEnum)oper.ToInt();
+                                    TreeDataView tcol = new TreeDataView();
+                                    tcol.Id = $"{menuNode.Id}|{button.ButtonType}|{ button.ButtonID }|{oper}";
+                                    tcol.Data = new { IsBtn = true, IsMenu = false };
+                                    tcol.Pid = toper.Id;
+                                    tcol.Text = operEnum.Description();
+                                    tcol.Icon = GetOperIcon(operEnum);
+                                    toper.Children.Add(tcol);
+                                }
+                                yield return toper;
+
+                            }
+                        }
+                        var buttons = rbtns.Where(b => b.ButtonType == FapMenuButtonType.Link || b.ButtonType == FapMenuButtonType.Button);
+                        foreach (var btn in buttons)
+                        {
+                            var button = menuButtons.FirstOrDefault(b => b.MenuUid == btn.MenuUid && b.ButtonID == btn.ButtonId);
+                            TreeDataView toper = new TreeDataView()
+                            {
+                                Id = $"{menuNode.Id}|button|{ button.ButtonID }|1",
+                                Icon = "fa  fa-bolt",
+                                Data = new { IsBtn = true, IsMenu = false },
+                                Pid = menuNode.Id,
+                                Text = button.Description,
+                            };
+                            yield return toper;
+                        }
+                    }
+                }
+                else
+                {
+                    if (menuButtons.TryGetValue(menuUid, out IEnumerable<FapMenuButton> buttons))
+                    {
+                        foreach (var button in buttons)
+                        {
+                            TreeDataView toper = new TreeDataView()
+                            {
+                                Id = button.ButtonID,
+                                Data = new { IsBtn = false, IsMenu = false },
+                                Pid = menuNode.Id,
+                                Text = button.Description,
+                            };
+                            if (button.ButtonType == FapMenuButtonType.Grid)
+                            {
+                                toper.Icon = " fa fa-table";
+                                foreach (var oper in opers)
+                                {
+                                    TreeDataView tcol = new TreeDataView();
+                                    tcol.Id = $"{menuNode.Id}|{button.ButtonType}|{ button.ButtonID }|{oper.Key}";
+                                    tcol.Data = new { IsBtn = true, IsMenu = false };
+                                    tcol.Pid = toper.Id;
+                                    tcol.Text = oper.Description;
+                                    tcol.Icon = GetOperIcon(oper.Value.ParseEnum<OperEnum>());
+                                    toper.Children.Add(tcol);
+                                }
+                            }
+                            else if (button.ButtonType == FapMenuButtonType.Tree)
+                            {
+                                toper.Icon = " fa fa-code-fork";
+                                foreach (var oper in opers)
+                                {
+                                    if (oper.Key == (int)OperEnum.Add
+                                        || oper.Key == (int)OperEnum.Update
+                                        || oper.Key == (int)OperEnum.Delete
+                                        || oper.Key == (int)OperEnum.Refresh)
+                                    {
+                                        TreeDataView tcol = new TreeDataView();
+                                        tcol.Id = $"{menuNode.Id}|{button.ButtonType}|{ button.ButtonID }|{oper.Key}";
+                                        tcol.Data = new { IsBtn = true, IsMenu = false };
+                                        tcol.Pid = toper.Id;
+                                        tcol.Text = oper.Description;
+                                        tcol.Icon = GetOperIcon(oper.Value.ParseEnum<OperEnum>());
+                                        toper.Children.Add(tcol);
+                                    }
+                                }
+                            }
+                            else if (button.ButtonType == FapMenuButtonType.Link || button.ButtonType == FapMenuButtonType.Button)
+                            {
+                                toper.Id = $"{menuNode.Id}|button|{ button.ButtonID }|1";
+                                toper.Icon = "fa  fa-bolt";
+                                toper.Data = new { IsBtn = true, IsMenu = false };
+                            }
+                            yield return toper;
+                        }
+                    }
+                }
+
+            }
+        }
+        private string GetOperIcon(OperEnum operEnum)
+        {
+            return operEnum switch
+            {
+                OperEnum.Add => "fa fa-plus-circle purple",
+                OperEnum.BatchUpdate => "fa fa-pencil-square-o",
+                OperEnum.Delete => "fa fa-trash-o red",
+                OperEnum.ExportExcel => "fa fa-file-excel-o green",
+                OperEnum.ExportWord => "fa fa-file-word-o",
+                OperEnum.Import => "fa fa-cloud-upload",
+                OperEnum.QueryProgram => "fa fa-camera",
+                OperEnum.Refresh => "fa fa-refresh green",
+                OperEnum.Search => "fa fa-search orange",
+                OperEnum.Update => "fa fa-pencil blue",
+                OperEnum.View => "fa fa-search-plus grey",
+                _ => "fa fa-bolt"
+            };
+        }
+        public IEnumerable<TreeDataView> GetMenuEntityTree()
+        {
+            var tree = GetModuleAndMenuTree();
+            var mmtor = tree.GetEnumerator();
+            AddMenuColumn(mmtor);
+            void AddMenuColumn(IEnumerator<TreeDataView> menuEmumertor)
+            {
+                while (menuEmumertor.MoveNext())
+                {
+                    TreeDataView curr = menuEmumertor.Current;
+                    if (curr.Children.Any())
+                    {
+                        AddMenuColumn(curr.Children.GetEnumerator());
+                    }
+                    if (curr.Data.IsMenu)
+                    {
+                        var children = AddColumnNode(curr);
+                        if (children.Any())
+                        {
+                            curr.Children = children.ToList();
+                        }
+                    }
+                }
+            }
+            IEnumerable<TreeDataView> AddColumnNode(TreeDataView currNode)
+            {
+                string menuUid = currNode.Id;
+                if (_applicationContext.IsAdministrator)
+                {
+
+                    var menuColumns = _platformDomain.MenuColumnSet.Where(r => r.MenuUid == menuUid);
+                    foreach (var menuColumn in menuColumns)
+                    {
+                        TreeDataView toper = new TreeDataView()
+                        {
+                            Id = menuColumn.GridId,
+                            Data = new { IsCol = false, IsMenu = false },
+                            Pid = menuUid,
+                            Text = menuColumn.Description,
+                            Icon ="fa fa-table" 
+                        };
+                        if (menuColumn.GridColumn.Trim().Equals("*"))
+                        {
+
+                        }
+
+                    }
+                }
+                else
+                {
+
+                }
+
+            }
+
+            IEnumerable<FapTable> tables = _platformDomain.TableSet;
+            //实体分类
+            IEnumerable<FapDict> tableCategory = _dbContext.Dictionarys("TableCategory");
+            //实体属性
+            IEnumerable<FapColumn> columns = _platformDomain.ColumnSet.Where(c => c.IsDefaultCol == 0 && tables.ToList().Exists(t => t.TableName == c.TableName));
+            //构造树
+            List<TreeDataView> tree = new List<TreeDataView>();
+
+            var tableGroup = tables.GroupBy(g => g.TableCategory);
+            int i = 0;
+            foreach (var tg in tableGroup)
+            {
+                //表分类
+                TreeDataView ttc = new TreeDataView();
+                ttc.Id = "tablecategory" + i;
+                ttc.Data = new { IsColumn = false };
+                ttc.Pid = "~";
+                ttc.Text = tableCategory.First(c => c.Code == tg.Key).Name;
+                ttc.Icon = "blue fa fa-filter";
+                ttc.State = new NodeState() { Opened = false };
+                int j = 0;
+                foreach (var tb in tg)
+                {
+                    TreeDataView ttb = new TreeDataView();
+                    ttb.Id = "table" + i + j;
+                    ttb.Data = new { IsColumn = false };
+                    ttb.Pid = "tablecategory" + i;
+                    ttb.Text = tb.TableComment;
+                    ttb.Icon = "purple fa fa-list-alt";
+                    var cols = columns.Where(c => c.TableName == tb.TableName).ToList();
+                    foreach (var col in cols)
+                    {
+                        TreeDataView tcol = new TreeDataView();
+                        tcol.Id = col.Fid;
+                        tcol.Data = new { IsColumn = true, TableName = col.TableName };
+                        tcol.Pid = "table" + i + j;
+                        tcol.Text = col.ColComment;
+                        tcol.Icon = "green fa fa-tag";
+                        ttb.Children.Add(tcol);
+                    }
+                    ttc.Children.Add(ttb);
+                    j++;
+                }
+                tree.Add(ttc);
+                i++;
+            }
+        }
+
     }
 }

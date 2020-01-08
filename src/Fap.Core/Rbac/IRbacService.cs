@@ -43,11 +43,13 @@ namespace Fap.Core.Rbac
         IEnumerable<FapRoleReport> GetRoleReportList(string roleUid);
         IEnumerable<FapRole> GetUserRoleList(string userUid);
         IEnumerable<FapRoleRole> GetRoleRoleList(string roleUid);
+        IEnumerable<FapRoleButton> GetRoleButtonList(string roleUid);
         /// <summary>
         /// 获取按钮授权
         /// </summary>
         /// <param name="button"></param>
         /// <returns></returns>
         string GetButtonAuthorized(FapMenuButton button);
+        string GetColumnAuthorized(FapMenuColumn column);
     }
 }

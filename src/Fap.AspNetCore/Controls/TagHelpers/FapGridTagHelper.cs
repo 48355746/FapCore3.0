@@ -134,7 +134,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// </summary>
         public bool SearchToolbar { get; set; }
         public int Height { get; set; }
-        
+
         /// <summary>
         /// 显示行数
         /// </summary>
@@ -214,9 +214,9 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// </summary>
         public bool OperQueryprogram { get; set; }
         /// <summary>
-        /// 是否注册表格按钮到菜单按钮表
+        /// 是否注册表格权限
         /// </summary>
-        public bool RegisterButton { get; set; } = true;
+        public bool RegisterAuthority { get; set; } = true;
         /// <summary>
         /// subGrid设置展开内容
         /// function showChildGrid(parentRowID, parentRowKey) {
@@ -225,7 +225,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// </summary>
         public string SubgridRowexpanded { get; set; }
         public override void Process(TagHelperContext context, TagHelperOutput output)
-        {          
+        {
             output.TagName = "div";
             output.Content.Clear();
             string id = "jqgrid";
@@ -235,7 +235,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             }
             string pager = $"pager-{id}";
             Grid grid = new Grid(_dbContext, _loggerFactory, _applicationContext, _multiLang, $"grid-{id}");
-            
+
             if (Url.IsPresent())
             {
                 grid.SetUrl(Url);
@@ -273,6 +273,8 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             }
             if (QueryOption != null)
             {
+                string cols= AuthenticationColumn();
+                QueryOption.QueryCols = cols;
                 grid.SetQueryOption(QueryOption);
             }
             grid.SetAutoWidth(AutoWidth);
@@ -305,7 +307,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             else
             {
                 grid.SetInsideWidget();
-            }          
+            }
             if (MultiSelect)
             {
                 grid.SetMultiSelect(MultiSelect);
@@ -378,9 +380,9 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                 }
             }
             //鉴权
-            string authorize= Authentication();
+            string authorize = AuthenticationButton();
             //设置操作
-            SetGirdOper(grid,authorize);
+            SetGirdOper(grid, authorize);
             if (SearchToolbar)
             {
                 grid.SetSearchToolbar(SearchToolbar);
@@ -398,23 +400,23 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             output.Content.AppendHtml(grid.ToString());
 
         }
-        private void SetGirdOper(Grid grid,string authorize)
+        private void SetGirdOper(Grid grid, string authorize)
         {
             if (authorize.IsMissing())
             {
                 return;
             }
-            var power= authorize.SplitComma().Select(v => v.ToInt());
-            int formType=0;
+            var power = authorize.SplitComma().Select(v => v.ToInt());
+            int formType = 0;
             foreach (int p in power)
             {
-                formType|=p;
-            }   
+                formType |= p;
+            }
             grid.SetFormType((OperEnum)formType);
         }
-        private string Authentication()
+        private string AuthenticationButton()
         {
-            if (RegisterButton)
+            if (RegisterAuthority)
             {
                 FapMenuButton menuButton = new FapMenuButton()
                 {
@@ -428,5 +430,23 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             }
             return string.Empty;
         }
+        private string AuthenticationColumn()
+        {
+            if (RegisterAuthority)
+            {
+                FapMenuColumn menuColumn = new FapMenuColumn()
+                {
+                    GridId = Id,
+                    GridColumn = QueryOption.QueryCols,
+                    Enabled = 1,
+                    Description = _dbContext.Table(QueryOption.TableName).TableComment
+                };
+
+                //注册按钮
+                return _rbacService.GetColumnAuthorized(menuColumn);
+            }
+            return string.Empty;
+        }
+
     }
 }

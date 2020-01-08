@@ -20,15 +20,18 @@ namespace Fap.Hcm.Service.System
 
         IEnumerable<TreeDataView> GetBusinessRoleTree();
         ResponseViewModel OperBusinessRole(TreePostData postData);
-        IEnumerable<TreeDataView> GetConfigGroup();
+        IEnumerable<TreeDataView> GetConfigGroupTree();
         ResponseViewModel OperConfigGroup(TreePostData postData);
 
         IEnumerable<GrpConfig> GetFapConfig(string configGroup);
 
-        IEnumerable<TreeDataView> GetModule();
-        IEnumerable<TreeDataView> GetModuleAndMenu();
+        IEnumerable<TreeDataView> GetModuleTree();
+        IEnumerable<TreeDataView> GetModuleAndMenuTree();
 
-        IEnumerable<TreeDataView> GetAllDept();
+        IEnumerable<TreeDataView> GetAllDeptTree();
+        IEnumerable<TreeDataView> GetMenuButtonTree();
+
+        IEnumerable<TreeDataView> GetMenuEntityTree();
 
     }
 }

@@ -77,30 +77,30 @@ namespace Fap.AspNetCore.Infrastructure
             //加权限
             if (qs.UsePermissions)
             {
-                IEnumerable<FapRoleColumn> rcs = _rbacService.GetRoleColumnList(_applicationContext.CurrentRoleUid).Where(f => f.TableUid == qs.TableName);
-                if (rcs != null && rcs.Any())
-                {
-                    //有权限的列
-                    var rCols = allCols.Where(tc => rcs.ToList().Exists(rc => rc.ColumnUid == tc.Fid) && tc.IsDefaultCol == 0 && tc.ShowAble == 1);
-                    if (qs.QueryCols == "*")
-                    {
-                        qs.QueryCols = "Id,Fid," + string.Join(",", rCols.Select(f => f.ColName).ToList());
-                    }
-                    else
-                    {
-                        char[] ch = { ',' };
-                        string[] qcols = qs.QueryCols.Replace(" ", "").Split(ch, StringSplitOptions.RemoveEmptyEntries);
-                        var notPowerCols = qcols.Where(f => !rCols.Select(r => r.ColName).ToList().Contains(f));
-                        if (notPowerCols != null && notPowerCols.Any())
-                        {
-                            //没在权限的列设置为隐藏
-                            qs.HiddenCols = string.Join(",", notPowerCols);
-                        }
-                        //var resultCols = rCols.Where(rc => qcols.Contains(rc.ColName, StringComparison.CurrentCultureIgnoreCase));
-                        //qs.QueryCols = "Id,Fid," + string.Join(",", resultCols.Select(f => f.ColName).ToList());
+                //IEnumerable<FapRoleColumn> rcs = _rbacService.GetRoleColumnList(_applicationContext.CurrentRoleUid).Where(f => f.TableUid == qs.TableName);
+                //if (rcs != null && rcs.Any())
+                //{
+                //    //有权限的列
+                //    var rCols = allCols.Where(tc => rcs.ToList().Exists(rc => rc.ColumnUid == tc.Fid) && tc.IsDefaultCol == 0 && tc.ShowAble == 1);
+                //    if (qs.QueryCols == "*")
+                //    {
+                //        qs.QueryCols = "Id,Fid," + string.Join(",", rCols.Select(f => f.ColName).ToList());
+                //    }
+                //    else
+                //    {
+                //        char[] ch = { ',' };
+                //        string[] qcols = qs.QueryCols.Replace(" ", "").Split(ch, StringSplitOptions.RemoveEmptyEntries);
+                //        var notPowerCols = qcols.Where(f => !rCols.Select(r => r.ColName).ToList().Contains(f));
+                //        if (notPowerCols != null && notPowerCols.Any())
+                //        {
+                //            //没在权限的列设置为隐藏
+                //            qs.HiddenCols = string.Join(",", notPowerCols);
+                //        }
+                //        //var resultCols = rCols.Where(rc => qcols.Contains(rc.ColName, StringComparison.CurrentCultureIgnoreCase));
+                //        //qs.QueryCols = "Id,Fid," + string.Join(",", resultCols.Select(f => f.ColName).ToList());
 
-                    }
-                }
+                //    }
+                //}
             }
             else
             {

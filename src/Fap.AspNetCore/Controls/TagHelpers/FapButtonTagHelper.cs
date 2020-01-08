@@ -31,7 +31,8 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             {
                 ButtonID = Id,
                 ButtonName = Content,
-                Description = Content
+                Description = Content,
+                Enabled=1
             };
 
             StringBuilder builder = new StringBuilder();

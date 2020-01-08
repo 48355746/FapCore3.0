@@ -113,12 +113,12 @@ namespace Fap.AspNetCore.Controls.DataForm
                 IEnumerable<FapRoleColumn> roleColumn = _rbacService.GetRoleColumnList(_applicationContext.CurrentRoleUid);
                 if (roleColumn!=null&&roleColumn.Any())
                 {
-                    //当前表的角色字段
-                    var currRoleColumns = roleColumn.Where(t => t.TableUid == TableName);
-                    if (currRoleColumns != null && currRoleColumns.Any())
-                    {
-                        existRolePower = true;
-                    }
+                    ////当前表的角色字段
+                    //var currRoleColumns = roleColumn.Where(t => t.TableUid == TableName);
+                    //if (currRoleColumns != null && currRoleColumns.Any())
+                    //{
+                    //    existRolePower = true;
+                    //}
                 }
                 foreach (var column in _fapColumns)
                 {

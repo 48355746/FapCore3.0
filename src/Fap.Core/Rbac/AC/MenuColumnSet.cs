@@ -1,19 +1,20 @@
 ﻿using Fap.Core.DataAccess;
-using Fap.Core.DI;
 using Fap.Core.Rbac.Model;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace Fap.Core.Rbac.AC
 {
-    public class MenuButtonSet : IMenuButtonSet
+    public class MenuColumnSet : IMenuColumnSet
     {
-        private IEnumerable<FapMenuButton> _allButtons;
+        private IEnumerable<FapMenuColumn> _allColumn;
         private static readonly object Locker = new object();
         private bool _initialized;
         private readonly IDbSession _dbSession;
-        internal MenuButtonSet(IDbSession dbSession)
+        internal MenuColumnSet(IDbSession dbSession)
         {
             _dbSession = dbSession;
             Init();
@@ -30,37 +31,38 @@ namespace Fap.Core.Rbac.AC
             if (_initialized) return;
             lock (Locker)
             {
-                //获取所有按钮
-                _allButtons = _dbSession.Query<FapMenuButton>("select * from FapMenuButton");
+                //获取所有菜单列
+                _allColumn = _dbSession.Query<FapMenuColumn>("select * from FapMenuColumn");
                 _initialized = true;
             }
         }
-        public IEnumerator<FapMenuButton> GetEnumerator()
+        public IEnumerator<FapMenuColumn> GetEnumerator()
         {
             if (!_initialized)
             {
                 Init();
             }
-            return _allButtons.GetEnumerator();
+            return _allColumn.GetEnumerator();
         }
 
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            if (!_initialized)
-            {
-                Init();
-            }
-            return _allButtons.GetEnumerator();
-        }      
 
-        public bool TryGetValue(string menuUid, out IEnumerable<FapMenuButton> fapButtonList)
+        public bool TryGetValue(string menuUid, out IEnumerable<FapMenuColumn> fapColumnList)
         {
             if (!_initialized)
             {
                 Init();
             }
-            fapButtonList = _allButtons.Where(m => m.MenuUid == menuUid);
+            fapColumnList = _allColumn.Where(m => m.MenuUid == menuUid);
             return true;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            if (!_initialized)
+            {
+                Init();
+            }
+            return _allColumn.GetEnumerator();
         }
     }
 }

@@ -125,39 +125,39 @@ namespace Fap.AspNetCore.Controls.DataForm
                 List<string> editList = new List<string>();
                 if (roleColumn != null && roleColumn.Any())
                 {
-                    //当前表的角色字段
-                    var currRoleColumns = roleColumn.Where(t => t.TableUid == TableName);
-                    if (currRoleColumns != null && currRoleColumns.Any())
-                    {
-                        foreach (var column in _fapColumns)
-                        {
-                            var powerCol = currRoleColumns.FirstOrDefault(c => c.ColumnUid == column.Fid);
-                            if (powerCol != null)
-                            {
-                                if (powerCol.ViewAble == 1)
-                                {
-                                    viewList.Add(column.Fid);
-                                }
-                                if (powerCol.EditAble == 1)
-                                {
-                                    editList.Add(column.Fid);
-                                }
-                            }
-                            //默认字段不处理，当不是默认字段，又不在权限中的时候 设置为隐藏字段
-                            if (column.IsDefaultCol == 0 && powerCol == null)
-                            {
-                                if (_hiddenCols.IsMissing())
-                                {
-                                    _hiddenCols = column.ColName;
-                                }
-                                else
-                                {
-                                    _hiddenCols += "," + column.ColName;
-                                }
-                            }
-                        }
+                    ////当前表的角色字段
+                    //var currRoleColumns = roleColumn.Where(t => t.TableUid == TableName);
+                    //if (currRoleColumns != null && currRoleColumns.Any())
+                    //{
+                    //    foreach (var column in _fapColumns)
+                    //    {
+                    //        var powerCol = currRoleColumns.FirstOrDefault(c => c.ColumnUid == column.Fid);
+                    //        if (powerCol != null)
+                    //        {
+                    //            if (powerCol.ViewAble == 1)
+                    //            {
+                    //                viewList.Add(column.Fid);
+                    //            }
+                    //            if (powerCol.EditAble == 1)
+                    //            {
+                    //                editList.Add(column.Fid);
+                    //            }
+                    //        }
+                    //        //默认字段不处理，当不是默认字段，又不在权限中的时候 设置为隐藏字段
+                    //        if (column.IsDefaultCol == 0 && powerCol == null)
+                    //        {
+                    //            if (_hiddenCols.IsMissing())
+                    //            {
+                    //                _hiddenCols = column.ColName;
+                    //            }
+                    //            else
+                    //            {
+                    //                _hiddenCols += "," + column.ColName;
+                    //            }
+                    //        }
+                    //    }
 
-                    }
+                    //}
                 }
                 #endregion
                 if (_hiddenCols.IsPresent())

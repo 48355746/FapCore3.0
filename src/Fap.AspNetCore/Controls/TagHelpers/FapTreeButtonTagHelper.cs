@@ -79,7 +79,8 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                     ButtonID = Id,
                     ButtonName = "树按钮",
                     ButtonType = FapMenuButtonType.Tree,
-                    Description = Description
+                    Description = Description,
+                    Enabled=1
                 };
                 //注册按钮
                 return _rbacService.GetButtonAuthorized(menuButton);

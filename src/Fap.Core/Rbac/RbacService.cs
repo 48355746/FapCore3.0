@@ -203,32 +203,8 @@ namespace Fap.Core.Rbac
                     });
                 }
             }
-            var powerDepts = allDepts.Where(d => deptUids.Contains(d.Fid)).ToList();
-            OrgDept rootDept = allDepts.FirstOrDefault(d => d.Pid.IsMissing() || d.Pid == "#" || d.Pid == "~" || d.Pid == "");
-            if (!powerDepts.Contains(rootDept))
-            {
-                int powerDeptRootCodeLength = powerDepts.Min(d => d.DeptCode.Length);
-                var powerRootDepts = powerDepts.Where(d => d.DeptCode.Length == powerDeptRootCodeLength);
-                //向上查找部门
-                foreach (var powerRootDept in powerRootDepts)
-                {
-                    FindParentDept(powerRootDept);
-                }
-            }
-            return powerDepts;
-            void FindParentDept(OrgDept powerRootDept)
-            {
-                var powerParentDept = allDepts.FirstOrDefault(d => d.Fid == powerRootDept.Pid && d.Fid != rootDept.Fid);
-                if (powerParentDept != null)
-                {
-                    powerParentDept.HasPartPower = true;
-                    if (!powerDepts.Exists(d => d.Fid == powerParentDept.Fid))
-                    {
-                        powerDepts.Add(powerParentDept);
-                    }
-                    FindParentDept(powerParentDept);
-                }
-            }
+           return allDepts.Where(d => deptUids.Contains(d.Fid));
+           
         }
 
 
@@ -298,6 +274,14 @@ namespace Fap.Core.Rbac
             }
             return Enumerable.Empty<FapRoleRole>();
         }
+        public IEnumerable<FapRoleButton> GetRoleButtonList(string roleUid)
+        {
+            if(_platformDomain.RoleButtonSet.TryGetValue(roleUid,out IEnumerable<FapRoleButton> roleButtons))
+            {
+                return roleButtons;
+            }
+            return Enumerable.Empty<FapRoleButton>();
+        }
         public string GetButtonAuthorized(FapMenuButton button)
         {
             bool isAdministrator = _applicationContext.IsAdministrator;
@@ -350,6 +334,38 @@ namespace Fap.Core.Rbac
             _dbContext.InsertBatch(roleButtons);
         }
 
-
+        public string GetColumnAuthorized(FapMenuColumn column)
+        {
+            bool isAdministrator = _applicationContext.IsAdministrator;
+            string path = $"~{_applicationContext.Request.Path}";
+            var menu = _platformDomain.MenuSet.FirstOrDefault(m => m.MenuUrl.TrimEnd('/').Trim().EqualsWithIgnoreCase(path));
+            if (menu != null)
+            {
+                if (_platformDomain.MenuColumnSet.TryGetValue(menu.Fid, out IEnumerable<FapMenuColumn> list))
+                {
+                    if (list.Any() && list.ToList().Exists(m => m.GridId == column.GridId))
+                    {
+                        //检查授权
+                        if (!isAdministrator && _platformDomain.RoleColumnSet.TryGetValueByRole(_applicationContext.CurrentRoleUid, out IEnumerable<FapRoleColumn> roleColumns))
+                        {
+                            var cols= _platformDomain.ColumnSet.Where(c=> roleColumns.Select(r=>r.ColumnUid).Contains(c.Fid)).Select(c=>c.ColName);
+                            return string.Join(',', cols);
+                        }
+                    }
+                    else
+                    {
+                        //注册按钮
+                        column.MenuUid = menu.Fid;
+                        _dbContext.Insert(column);
+                        _platformDomain.MenuColumnSet.Refresh();
+                    }
+                }
+                if (isAdministrator)
+                {
+                    return column.GridColumn;
+                }
+            }
+            return string.Empty;
+        }
     }
 }

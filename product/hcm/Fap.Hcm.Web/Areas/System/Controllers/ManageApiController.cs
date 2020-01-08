@@ -46,7 +46,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         [HttpGet("UserGroup")]
         public JsonResult GetUserGroup()
         {
-            var tree= _manageService.GetUserGroupTree();
+            var tree = _manageService.GetUserGroupTree();
             return Json(tree);
         }
 
@@ -60,7 +60,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         [HttpGet("UserTheme")]
         public void SetUserTheme(string theme)
         {
-            _manageService.SetTheme(theme,_applicationContext.UserUid);
+            _manageService.SetTheme(theme, _applicationContext.UserUid);
         }
         /// <summary>
         /// 重置密码为系统设置的默认密码
@@ -69,7 +69,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         /// <returns></returns>
         [HttpPost("ResetPassword")]
         public bool ResetPassword(FidsModel model)
-        {            
+        {
             return _manageService.ResetPasswor(model.Fids);
         }
         #endregion
@@ -78,7 +78,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         [HttpGet("RoleGroup")]
         public JsonResult GetRoleGroup()
         {
-            var tree=_manageService.GetRoleGroupTree();
+            var tree = _manageService.GetRoleGroupTree();
             return Json(tree);
         }
         [HttpGet("RoleAndGroup")]
@@ -91,8 +91,8 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         [HttpPost("RoleGroup")]
         public JsonResult GetOperRoleGroupData(TreePostData postData)
         {
-            var  result = _manageService.OperRoleGroup(postData);
-            
+            var result = _manageService.OperRoleGroup(postData);
+
             return Json(result);
         }
 
@@ -153,7 +153,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         [HttpGet("ConfigGroup")]
         public JsonResult GetConfigGroup()
         {
-            var tree = _manageService.GetConfigGroup();
+            var tree = _manageService.GetConfigGroupTree();
 
             return Json(tree);
         }
@@ -184,20 +184,20 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         [HttpGet("Module")]
         public JsonResult GetModule()
         {
-            var tree = _manageService.GetModule();
+            var tree = _manageService.GetModuleTree();
             return Json(tree);
         }
 
         [HttpGet("ModuleAndMenu")]
         public JsonResult GetModuleAndMenu()
         {
-            var tree = _manageService.GetModuleAndMenu();
+            var tree = _manageService.GetModuleAndMenuTree();
             return Json(tree);
         }
         [Route("AllDepts")]
         public JsonResult GetAllDepts()
         {
-            var tree = _manageService.GetAllDept();
+            var tree = _manageService.GetAllDeptTree();
             return Json(tree);
         }
         #endregion
@@ -210,52 +210,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         [Route("FapTables")]
         public JsonResult GetFapTable()
         {
-            IEnumerable<FapTable> tables = _platformDomain.TableSet;
-            //实体分类
-            IEnumerable<FapDict> tableCategory = _dbContext.Dictionarys("TableCategory");
-            //实体属性
-            IEnumerable<FapColumn> columns = _platformDomain.ColumnSet.Where(c => c.IsDefaultCol == 0 && tables.ToList().Exists(t => t.TableName == c.TableName));
-            //构造树
-            List<TreeDataView> tree = new List<TreeDataView>();
-
-            var tableGroup = tables.GroupBy(g => g.TableCategory);
-            int i = 0;
-            foreach (var tg in tableGroup)
-            {
-                //表分类
-                TreeDataView ttc = new TreeDataView();
-                ttc.Id = "tablecategory" + i;
-                ttc.Data = new { IsColumn = false };
-                ttc.Pid = "~";
-                ttc.Text = tableCategory.First(c => c.Code == tg.Key).Name;
-                ttc.Icon = "blue fa fa-filter";
-                ttc.State = new NodeState() { Opened = false };
-                int j = 0;
-                foreach (var tb in tg)
-                {
-                    TreeDataView ttb = new TreeDataView();
-                    ttb.Id = "table" + i + j;
-                    ttb.Data = new { IsColumn = false };
-                    ttb.Pid = "tablecategory" + i;
-                    ttb.Text = tb.TableComment;
-                    ttb.Icon = "purple fa fa-list-alt";
-                    var cols = columns.Where(c => c.TableName == tb.TableName).ToList();
-                    foreach (var col in cols)
-                    {
-                        TreeDataView tcol = new TreeDataView();
-                        tcol.Id = col.Fid;
-                        tcol.Data = new { IsColumn = true, TableName = col.TableName };
-                        tcol.Pid = "table" + i + j;
-                        tcol.Text = col.ColComment;
-                        tcol.Icon = "green fa fa-tag";
-                        ttb.Children.Add(tcol);
-                    }
-                    ttc.Children.Add(ttb);
-                    j++;
-                }
-                tree.Add(ttc);
-                i++;
-            }
+            var tree = _manageService.GetMenuEntityTree();
             return Json(tree);
         }
         #endregion
@@ -268,138 +223,11 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         [HttpGet("FapButtons")]
         public JsonResult GetFapButtons()
         {
-            var modules = _platformDomain.ModuleSet;
-            IEnumerable<FapMenu> menus = _platformDomain.MenuSet;
-            var menuButtons = _platformDomain.MenuButtonSet;
-            if (!_applicationContext.IsAdministrator)
-            {
-                var roleMenus = _rbacService.GetRoleMenuList(_applicationContext.CurrentRoleUid);
-                if (roleMenus.Any())
-                {
-                    var roleUids = roleMenus.Select(m => m.MenuUid);
-                    menus = menus.Where(m => roleUids.Contains(m.Fid));
-                }
-            }
-
-            IEnumerable<TreeDataView> moduleList = modules.Select(t => new TreeDataView { Id = t.Fid.ToString(), Data = new { IsMenu = false }, Pid = t.Pid.ToString(), Text = t.ModuleName, State = new NodeState { Opened = false }, Icon = (t.Icon.IsMissing() ? "icon-folder green ace-icon fa fa-leaf" : "icon-folder green ace-icon " + t.Icon) });
-            //授权 仅仅授予到二级菜单
-            IEnumerable<TreeDataView> menuList = menus.Where(m => m.MenuCode.Length == 5).Select(r => new TreeDataView { Id = r.Fid.ToString(), Data = new { IsMenu = true }, Pid = r.ModuleUid, Text = r.MenuName, State = new NodeState { Opened = false }, Icon = "icon-folder orange ace-icon fa fa-leaf" });
-            IEnumerable<TreeDataView> threeLevels = menus.Where(m => m.MenuCode.Length == 7).Select(r => new TreeDataView { Id = r.Fid.ToString(), Data = new { IsMenu = true }, Pid = r.Pid, Text = r.MenuName, State = new NodeState { Opened = false }, Icon = "icon-folder orange ace-icon fa fa-leaf" });
-            List<TreeDataView> tree = new List<TreeDataView>();
-            IEnumerable<TreeDataView> treeRoots = moduleList.Where(g => g.Pid == "0");
-
-            foreach (var treeRoot in treeRoots)
-            {
-                TreeViewHelper.MakeTree(treeRoot.Children, moduleList, treeRoot.Id);
-            }
-            tree.AddRange(treeRoots);
-            foreach (var item in tree)
-            {
-                var rl = menuList.Where<TreeDataView>(r => r.Pid == item.Id);
-                if (rl.Any())
-                {
-                    foreach (var r2 in rl)
-                    {
-                        //三级菜单
-                        if (threeLevels != null && threeLevels.Any())
-                        {
-                            var rl3 = threeLevels.Where(m => m.Pid == r2.Id);
-                            if (rl3 != null && rl3.Any())
-                            {
-                                var rl3List = AddOperNode(rl3);
-                                r2.Children.AddRange(rl3List);
-                            }
-                        }
-                    }
-                    var rlList = AddOperNode(rl);
-                    item.Children.AddRange(rlList);
-                }
-            }
+            var tree = _manageService.GetMenuButtonTree();
             return Json(tree);
-            IEnumerable<TreeDataView> AddOperNode(IEnumerable<TreeDataView> menuNodes)
-            {
-                var menuList = menuNodes.ToList();
-                var opers = typeof(OperEnum).EnumItems();
-                foreach (var node in menuList)
-                {
-                    if (menuButtons.TryGetValue(node.Id, out IEnumerable<FapMenuButton> buttons))
-                    {
-                        foreach (var button in buttons)
-                        {
-                            TreeDataView toper = new TreeDataView()
-                            {
-                                Id = button.ButtonID,
-                                Data = new { IsBtn = false },
-                                Pid = node.Id,
-                                Text = button.Description,
-                            };
-                            if (button.ButtonType == FapMenuButtonType.Grid)
-                            {
-                                toper.Icon = " fa fa-table";
-                                foreach (var oper in opers)
-                                {
-                                    TreeDataView tcol = new TreeDataView();
-                                    tcol.Id = $"{node.Id}|{button.ButtonType}|{ button.ButtonID }|{oper.Key}";
-                                    tcol.Data = new { IsBtn = true };
-                                    tcol.Pid = toper.Id;
-                                    tcol.Text = oper.Description;
-                                    tcol.Icon = GetOperIcon(oper.Value.ParseEnum<OperEnum>());
-                                    toper.Children.Add(tcol);
-                                }
-                            }
-                            else if (button.ButtonType == FapMenuButtonType.Tree)
-                            {
-                                toper.Icon = " fa fa-code-fork";
-                                foreach (var oper in opers)
-                                {
-                                    if (oper.Key == (int)OperEnum.Add
-                                        || oper.Key == (int)OperEnum.Update
-                                        || oper.Key == (int)OperEnum.Delete
-                                        || oper.Key == (int)OperEnum.Refresh)
-                                    {
-                                        TreeDataView tcol = new TreeDataView();
-                                        tcol.Id = $"{node.Id}|{button.ButtonType}|{ button.ButtonID }|{oper.Key}";
-                                        tcol.Data = new { IsBtn = true };
-                                        tcol.Pid = toper.Id;
-                                        tcol.Text = oper.Description;
-                                        tcol.Icon = GetOperIcon(oper.Value.ParseEnum<OperEnum>());
-                                        toper.Children.Add(tcol);
-                                    }
-                                }
-                            }
-                            else if (button.ButtonType == FapMenuButtonType.Link || button.ButtonType == FapMenuButtonType.Button)
-                            {
-                                toper.Id = $"{node.Id}|button|{ button.ButtonID }|1";
-                                toper.Icon = "fa  fa-bolt";
-                                toper.Data = new { IsBtn = true };
-                            }
-                            node.Children.Add(toper);
-                        }
-                    }
-                }
-                return menuList;
-
-            }
         }
 
-        private string GetOperIcon(OperEnum operEnum)
-        {
-            return operEnum switch
-            {
-                OperEnum.Add => "fa fa-plus-circle purple",
-                OperEnum.BatchUpdate => "fa fa-pencil-square-o",
-                OperEnum.Delete => "fa fa-trash-o red",
-                OperEnum.ExportExcel => "fa fa-file-excel-o green",
-                OperEnum.ExportWord => "fa fa-file-word-o",
-                OperEnum.Import => "fa fa-cloud-upload",
-                OperEnum.QueryProgram => "fa fa-camera",
-                OperEnum.Refresh => "fa fa-refresh green",
-                OperEnum.Search => "fa fa-search orange",
-                OperEnum.Update => "fa fa-pencil blue",
-                OperEnum.View => "fa fa-search-plus grey",
-                _ => "fa fa-bolt"
-            };
-        }
+       
         #endregion
 
         #region 任务组任务
@@ -565,7 +393,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
 
             //获取角色按钮
             IEnumerable<FapRoleButton> roleButtons = _dbContext.Query<FapRoleButton>("select * from FapRoleButton where RoleUid=@RoleUid", dparam);
-           
+
             //var userJson = users.Select(x => new { Id = x.Fid }).ToList();
             var menuJson = menus.Select(x => x.MenuUid).ToList();
             var deptJson = depts.Select(x => x.DeptUid).ToList();
@@ -580,7 +408,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
                 rpts = rptJson,
                 columns = columnList,
                 roles = roleJson,
-                buttons=buttonJson
+                buttons = buttonJson
             };
             return Json(json, false);
             IEnumerable<string> GetRoleButtons()
@@ -663,20 +491,20 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             {
                 //实体列
                 List<FapRoleColumn> columns = new List<FapRoleColumn>();
-                if (auth.ColumnUids != null && auth.ColumnUids.Any())
-                {
-                    foreach (var item in auth.ColumnUids)
-                    {
-                        if (auth.AType == 3)
-                        {
-                            columns.Add(new FapRoleColumn { RoleUid = auth.RoleUid, ColumnUid = item.ColUid, TableUid = item.TableName, EditAble = 1, ViewAble = 0 });
-                        }
-                        else
-                        {
-                            columns.Add(new FapRoleColumn { RoleUid = auth.RoleUid, ColumnUid = item.ColUid, TableUid = item.TableName, EditAble = 0, ViewAble = 1 });
-                        }
-                    }
-                }
+                //if (auth.ColumnUids != null && auth.ColumnUids.Any())
+                //{
+                //    foreach (var item in auth.ColumnUids)
+                //    {
+                //        if (auth.AType == 3)
+                //        {
+                //            columns.Add(new FapRoleColumn { RoleUid = auth.RoleUid, ColumnUid = item.ColUid, TableUid = item.TableName, EditAble = 1, ViewAble = 0 });
+                //        }
+                //        else
+                //        {
+                //            columns.Add(new FapRoleColumn { RoleUid = auth.RoleUid, ColumnUid = item.ColUid, TableUid = item.TableName, EditAble = 0, ViewAble = 1 });
+                //        }
+                //    }
+                //}
                 success = _rbacService.AddRoleColumn(auth.RoleUid, columns, auth.AType);
                 //刷新应用程序全局域角色列
                 _platformDomain.RoleColumnSet.Refresh();
@@ -755,20 +583,27 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
                     });
                     foreach (var btnGrp in btnList.GroupBy(b => b.MenuUid))
                     {
-                        foreach (var btn in btnGrp.GroupBy(b => b.BtnType))
+                        foreach (var buttons in btnGrp.GroupBy(b => b.BtnType))
                         {
-                            FapRoleButton roleButton = new FapRoleButton { RoleUid = auth.RoleUid, MenuUid = btnGrp.Key };
-                            roleButton.ButtonType = btn.Key;
-                            if (btn.Key == FapMenuButtonType.Grid || btn.Key == FapMenuButtonType.Tree)
+                            if (buttons.Key == FapMenuButtonType.Grid || buttons.Key == FapMenuButtonType.Tree)
                             {
-                                roleButton.ButtonValue = string.Join(',', btn.ToList().Select(b => b.BtnValue));
+                                FapRoleButton roleButton = new FapRoleButton { RoleUid = auth.RoleUid, MenuUid = btnGrp.Key };
+                                roleButton.ButtonType = buttons.Key;
+                                roleButton.ButtonValue = string.Join(',', buttons.ToList().Select(b => b.BtnValue));
+                                roleButton.ButtonId = buttons.First().BtnId;
+                                yield return roleButton;
                             }
                             else
                             {
-                                roleButton.ButtonValue = btn.First().BtnValue;
+                                foreach (var button in buttons)
+                                {
+                                    FapRoleButton roleButton = new FapRoleButton { RoleUid = auth.RoleUid, MenuUid = btnGrp.Key };
+                                    roleButton.ButtonType = buttons.Key;
+                                    roleButton.ButtonValue = button.BtnValue;
+                                    roleButton.ButtonId = button.BtnId;
+                                    yield return roleButton;
+                                }
                             }
-                            roleButton.ButtonId = btn.First().BtnId;
-                            yield return roleButton;
                         }
                     }
                 }

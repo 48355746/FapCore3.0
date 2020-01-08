@@ -461,7 +461,11 @@
                     return;
                 }
                 var treeDept = $('#tree-orgdept').jstree(true),
-                    sels = treeDept.get_checked();
+                    checks = treeDept.get_checked();
+                //筛选是菜单的节点
+                var sels = $.grep(checks, function (d, i) {
+                    return treeDept.get_node(d).data.ext1 == false;
+                });
                 saveAuthority({ "RoleUid": roleUid, "OrgDeptUids": sels, "AType": 2 });
 
             });
