@@ -83,7 +83,7 @@ namespace Fap.Core.Rbac
 
         public long CreateBizRole(FapBizRole bizRole)
         {
-           return _dbContext.Insert(bizRole);
+            return _dbContext.Insert(bizRole);
         }
 
         public bool DeleteBizRole(string fid)
@@ -96,7 +96,7 @@ namespace Fap.Core.Rbac
         {
             return _dbContext.Update(bizRole);
         }
-      
+
         [Transactional]
         public bool AddRoleMenu(string roleUid, IEnumerable<FapRoleMenu> menus)
         {
@@ -174,7 +174,7 @@ namespace Fap.Core.Rbac
         {
             if (!_platformDomain.RoleDeptSet.TryGetValueByRole(roleUid, out IEnumerable<FapRoleDept> roleDepts))
             {
-                return Enumerable.Empty<OrgDept>();
+                roleDepts = new List<FapRoleDept>();// Enumerable.Empty<OrgDept>();
             }
             var deptUids = roleDepts.Select(r => r.DeptUid).ToList();
             IEnumerable<OrgDept> allDepts;
@@ -203,27 +203,35 @@ namespace Fap.Core.Rbac
                     });
                 }
             }
-            return allDepts.Where(d => deptUids.Contains(d.Fid));
-        }
-        private void AddParentOrgDept(List<FapRoleDept> rds, IEnumerable<OrgDept> allDepts, List<OrgDept> powerDepts, OrgDept tempDept)
-        {
-            if (tempDept != null && !(string.IsNullOrWhiteSpace(tempDept.Pid) || tempDept.Pid == "#" || tempDept.Pid == "~" || tempDept.Pid == ""))
+            var powerDepts = allDepts.Where(d => deptUids.Contains(d.Fid)).ToList();
+            OrgDept rootDept = allDepts.FirstOrDefault(d => d.Pid.IsMissing() || d.Pid == "#" || d.Pid == "~" || d.Pid == "");
+            if (!powerDepts.Contains(rootDept))
             {
-                var tempDeptParent = allDepts.FirstOrDefault<OrgDept>(d => d.Fid == tempDept.Pid);
-                //存在父部门
-                if (tempDeptParent != null)
+                int powerDeptRootCodeLength = powerDepts.Min(d => d.DeptCode.Length);
+                var powerRootDepts = powerDepts.Where(d => d.DeptCode.Length == powerDeptRootCodeLength);
+                //向上查找部门
+                foreach (var powerRootDept in powerRootDepts)
                 {
-                    //父部门没在权限中,且还没包含进去
-                    if (!rds.Exists(r => r.DeptUid == tempDeptParent.Fid) && !powerDepts.Contains(tempDeptParent))
+                    FindParentDept(powerRootDept);
+                }
+            }
+            return powerDepts;
+            void FindParentDept(OrgDept powerRootDept)
+            {
+                var powerParentDept = allDepts.FirstOrDefault(d => d.Fid == powerRootDept.Pid && d.Fid != rootDept.Fid);
+                if (powerParentDept != null)
+                {
+                    powerParentDept.HasPartPower = true;
+                    if (!powerDepts.Exists(d => d.Fid == powerParentDept.Fid))
                     {
-                        tempDeptParent.HasPartPower = true;
-                        powerDepts.Add(tempDeptParent);
+                        powerDepts.Add(powerParentDept);
                     }
-
-                    AddParentOrgDept(rds, allDepts, powerDepts, tempDeptParent);
+                    FindParentDept(powerParentDept);
                 }
             }
         }
+
+
         public IEnumerable<FapRoleData> GetRoleDataList(string roleUid)
         {
             if (_platformDomain.RoleDataSet.TryGetValueByRole(roleUid, out IEnumerable<FapRoleData> roleDatas))
@@ -342,6 +350,6 @@ namespace Fap.Core.Rbac
             _dbContext.InsertBatch(roleButtons);
         }
 
-     
+
     }
 }

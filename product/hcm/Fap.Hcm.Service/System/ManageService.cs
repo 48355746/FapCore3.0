@@ -329,8 +329,8 @@ namespace Fap.Hcm.Service.System
 
         public IEnumerable<GrpConfig> GetFapConfig(string configGroup)
         {
-            var configs= _platformDomain.ParamSet.Where(p => p.ConfigGroup == configGroup);
-            var dictList = configs.Where(p =>p.DictList.IsPresent());
+            var configs = _platformDomain.ParamSet.Where(p => p.ConfigGroup == configGroup);
+            var dictList = configs.Where(p => p.DictList.IsPresent());
 
             foreach (var item in dictList)
             {
@@ -350,7 +350,7 @@ namespace Fap.Hcm.Service.System
             }
 
             var grpConfigs = configs.OrderBy(f => f.SortBy).GroupBy(c => c.ParamGroup);
-            
+
             foreach (var item in grpConfigs)
             {
                 GrpConfig gc = new GrpConfig();
@@ -442,28 +442,23 @@ namespace Fap.Hcm.Service.System
             {
                 powerDepts = _rbacService.GetRoleDeptList(_applicationContext.CurrentRoleUid);
             }
-            //将List<dynamic>转换成List<TreeDataView>
-            List<TreeDataView> treeList = new List<TreeDataView>();
-            foreach (var data in powerDepts)
-            {
-                treeList.Add(new TreeDataView() { Id = data.Fid, Text = data.DeptName, Pid = data.Pid, Data = new { Code = data.DeptCode, Ext1 = data.HasPartPower, Ext2 = "" }, Icon = "icon-folder  ace-icon fa fa-folder orange" });
-            }
+
+            IEnumerable<TreeDataView> treeList = powerDepts.Select(data => new TreeDataView() { Id = data.Fid, Text = data.DeptName, Pid = data.Pid, Data = new { Code = data.DeptCode, Ext1 = data.HasPartPower, Ext2 = "" }, Icon = "icon-folder  ace-icon fa fa-folder orange" });
             string _rootText = string.Empty;
             List<TreeDataView> tree = new List<TreeDataView>();
             string parentID = "0";
             var pt = powerDepts.FirstOrDefault<OrgDept>(t => t.Pid == "0" || t.Pid.IsMissing() || t.Pid == "#" || t.Pid == "~");
-            if (_rootText.IsMissing())
+
+            if (pt != null)
             {
-                if (pt != null)
-                {
-                    _rootText = pt.DeptName;
-                    parentID = pt.Fid;
-                }
-                else
-                {
-                    _rootText = "无权限";
-                }
+                _rootText = pt.DeptName;
+                parentID = pt.Fid;
             }
+            else
+            {
+                _rootText = "无权限";
+            }
+
             TreeDataView treeRoot = new TreeDataView()
             {
                 Id = parentID,
