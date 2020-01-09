@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Fap.Core.Rbac.Model;
+using Fap.Model.Infrastructure;
 
 namespace Fap.Core.Rbac
 {
@@ -24,6 +25,7 @@ namespace Fap.Core.Rbac
         bool EditBizRole(FapBizRole bizRole);
         #endregion
 
+        FapMenu GetCurrentMenu();
         FapRole GetCurrentRole();
         IEnumerable<FapRole> GetAllRole();
       

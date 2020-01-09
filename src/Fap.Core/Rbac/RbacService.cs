@@ -6,6 +6,7 @@ using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Infrastructure.Enums;
 using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.Rbac.Model;
+using Fap.Model.Infrastructure;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -285,8 +286,7 @@ namespace Fap.Core.Rbac
         public string GetButtonAuthorized(FapMenuButton button)
         {
             bool isAdministrator = _applicationContext.IsAdministrator;
-            string path = $"~{_applicationContext.Request.Path}";
-            var menu = _platformDomain.MenuSet.FirstOrDefault(m => m.MenuUrl.TrimEnd('/').Trim().EqualsWithIgnoreCase(path));
+            var menu = GetCurrentMenu();
             if (menu != null)
             {
                 if (_platformDomain.MenuButtonSet.TryGetValue(menu.Fid, out IEnumerable<FapMenuButton> list))
@@ -337,8 +337,7 @@ namespace Fap.Core.Rbac
         public string GetColumnAuthorized(FapMenuColumn column)
         {
             bool isAdministrator = _applicationContext.IsAdministrator;
-            string path = $"~{_applicationContext.Request.Path}";
-            var menu = _platformDomain.MenuSet.FirstOrDefault(m => m.MenuUrl.TrimEnd('/').Trim().EqualsWithIgnoreCase(path));
+            var menu = GetCurrentMenu();
             if (menu != null)
             {
                 if (_platformDomain.MenuColumnSet.TryGetValue(menu.Fid, out IEnumerable<FapMenuColumn> list))
@@ -376,6 +375,12 @@ namespace Fap.Core.Rbac
                 yield return FapDbConstants.FAPCOLUMN_FIELD_Fid;
                 yield return FapDbConstants.FAPCOLUMN_FIELD_Ts;
             }
+        }
+
+        public FapMenu GetCurrentMenu()
+        {
+            string path = $"~{_applicationContext.Request.Path}";
+            return _platformDomain.MenuSet.FirstOrDefault(m => m.MenuUrl.TrimEnd('/').Trim().EqualsWithIgnoreCase(path));
         }
     }
 }
