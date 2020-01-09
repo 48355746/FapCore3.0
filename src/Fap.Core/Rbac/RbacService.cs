@@ -16,7 +16,7 @@ namespace Fap.Core.Rbac
     public class RbacService : IRbacService
     {
         /// <summary>
-        /// 这样写，RbacServcie就不暴露Commonservice的方法。RbacServcie只实现自己的内部方法
+        ///权限服务
         /// </summary>
         private readonly IDbContext _dbContext;
         private readonly IFapPlatformDomain _platformDomain;
