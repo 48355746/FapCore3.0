@@ -57,14 +57,13 @@ function refreshBaseJqGrid(grdid) {
 //callback 扩展js方法
 //title 标题;gid jqgrid的ID;icon 图标;tablename 表名（frm-tablename 表单名称）;
 //id业务数据主键值;fromInitCallback 表单初始化事件;saveCompletedCallback 保存完毕事件
-var loadFormMessageBox = function (title, gid, icon, tablename, fid, queryCols, fromInitCallback, saveCompletedCallback) {
-
+var loadFormMessageBox = function (title, gid, icon, tablename, fid, menuid, fromInitCallback, saveCompletedCallback) {
     var buttons = {
         success: {
             label: MultiLangHelper.getResName("global_oper_save", "保存"),
             className: "btn-primary",
             callback: function () {
-                var formid = 'frm-' + tablename;
+                var formid = 'frm-' + gid;
                 //持久化
                 var res = Persistence(formid, tablename);
                 if (res === false) {
@@ -91,7 +90,7 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid, queryCols, 
             label: "保存并新增",
             className: "btn-primary",
             callback: function () {
-                var formid = 'frm-' + tablename;
+                var formid = 'frm-' + gid;
                 //持久化
                 var res = Persistence(formid, tablename);
                 if (res === false) {
@@ -125,7 +124,7 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid, queryCols, 
         initDialog();
     });
     function initDialog() {
-        var url = $.randomUrl(basePath + '/Component/Dataform/' + fid + '?tn=' + tablename + '&qrycols=' + queryCols);
+        var url = $.randomUrl(basePath + '/Component/Dataform/' + fid + '?gid=' + gid + '&menuid=' + menuid);
         $.get(url, function (ev) {
             dialog.find('.bootbox-body').html(ev);
             if ($.isFunction(fromInitCallback)) {
@@ -138,7 +137,7 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid, queryCols, 
 
 
 //查看数据
-var viewFormMessageBox = function (fid, tablename, qrycols) {
+var viewFormMessageBox = function (fid, gid, menuid) {
     var dialog = bootbox.dialog({
         title: '查看',
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
@@ -146,7 +145,7 @@ var viewFormMessageBox = function (fid, tablename, qrycols) {
         footer: false
     });
     dialog.init(function () {
-        dialog.find('.bootbox-body').load(basePath + "/Component/DataFormView/" + fid, { tn: tablename, qrycols: qrycols });
+        dialog.find('.bootbox-body').load(basePath + "/Component/DataFormView/" + fid, { gid: gid, menuid: menuid });
 
     });
 };

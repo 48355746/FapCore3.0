@@ -22,10 +22,10 @@ namespace Fap.AspNetCore.Infrastructure
         {
         }
 
-        protected FormViewModel GetFormViewModel(string tableName, string fid, Action<QuerySet> handler = null)
+        protected FormViewModel GetFormViewModel(string tableName,string formId, string fid, Action<QuerySet> handler = null)
         {
             FormViewModel model = new FormViewModel();
-            model.FormId = $"frm-{tableName}";
+            model.FormId = formId;
 
             QuerySet qs = new QuerySet();
             qs.TableName = tableName;

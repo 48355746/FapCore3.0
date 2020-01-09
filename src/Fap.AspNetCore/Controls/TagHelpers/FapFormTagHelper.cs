@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Fap.Core.MultiLanguage;
 using Fap.Core.Infrastructure.Domain;
+using Ardalis.GuardClauses;
 
 namespace Fap.AspNetCore.Controls.TagHelpers
 {
@@ -42,13 +43,8 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         {
             output.TagName = "div";
             output.Content.Clear();
-            string id = "jqgriddataform";
-            if (Id.IsPresent())
-            {
-                id = Id;
-            }
-
-            FapForm form = new FapForm(serviceProvider:_serviceProvider, id);
+            Guard.Against.NullOrWhiteSpace(Id, nameof(Id));
+            FapForm form = new FapForm(serviceProvider:_serviceProvider, Id);
             if (this.FormStatus != FormStatus.Add)
             {
                 form.SetFormStatus(this.FormStatus);

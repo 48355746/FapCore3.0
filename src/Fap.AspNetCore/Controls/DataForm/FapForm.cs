@@ -243,12 +243,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             FidValue = FormData.Get("Fid").ToString();
             if (_fapColumns.Any())
             {
-                SetFapClumns();
-                //如果id为jqgriddataform的时候 formid改为frm-表名
-                if (_id.Equals("jqgriddataform", System.StringComparison.CurrentCultureIgnoreCase))
-                {
-                    _id = _fapColumns.First().TableName;
-                }
+                SetFapClumns();             
             }
             return this;
 
@@ -309,12 +304,12 @@ namespace Fap.AspNetCore.Controls.DataForm
             var existFile = _fapColumns.Any(f => f.CtrlType == FapColumn.CTRL_TYPE_FILE || f.CtrlType == FapColumn.CTRL_TYPE_IMAGE);
             if (existFile)
             {
-                formHtml.AppendFormat("<form class=\"form-horizontal\" enctype=\"multipart/form-data\" method=\"post\" id=\"frm-{0}\" role=\"form\">", _id).AppendLine();
+                formHtml.AppendLine("<form class=\"form-horizontal\" enctype=\"multipart/form-data\" method=\"post\" id=\"##formid##\" role=\"form\">");
 
             }
             else
             {
-                formHtml.AppendFormat("<form class=\"form-horizontal\" method=\"post\" id=\"frm-{0}\" role=\"form\">", _id).AppendLine();
+                formHtml.AppendLine("<form class=\"form-horizontal\" method=\"post\" id=\"##formid##\" role=\"form\">");
             }
             var grpFields = _fapFields.GroupBy(f => f.FieldGroup);
             //隐藏字段
@@ -328,8 +323,8 @@ namespace Fap.AspNetCore.Controls.DataForm
                 int i = 0;
                 foreach (var column in item.ToList())
                 {
-                    //Id,Fid,TableName,Ts这三列要隐藏,这里隐藏Id,Fid,TableName,Ts在后面
-                    if (column.CurrentColumn.ColName == "Id" || column.CurrentColumn.ColName == "Fid" || column.CurrentColumn.ColName == "Ts")
+                    //Id,Fid,Ts这三列要隐藏
+                    if (column.CurrentColumn.ColName == FapDbConstants.FAPCOLUMN_FIELD_Id || column.CurrentColumn.ColName == FapDbConstants.FAPCOLUMN_FIELD_Fid || column.CurrentColumn.ColName == FapDbConstants.FAPCOLUMN_FIELD_Ts)
                     {
                         formHtml.AppendLine(CreateHiddenControl(column.CurrentColumn.ColName, column.FieldValue.ToString()));
                         continue;
@@ -396,8 +391,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 }
 
             }
-            //Id,Fid,Table_Name这三列要隐藏，这里隐藏Table_Name，其他的在上面处理了
-            //formHtml.AppendLine(CreateHiddenControl(FapWebConstants.FORM_TABLENAME, _tableName));
+
             //formToken 用于防止重复提交
             string avoidRepeatToken = UUIDUtils.Fid;
             formHtml.AppendLine(CreateHiddenControl(FapWebConstants.AVOID_REPEAT_TOKEN, avoidRepeatToken));
@@ -415,13 +409,11 @@ namespace Fap.AspNetCore.Controls.DataForm
             formHtml.AppendLine("<div class=\"row\">");
             formHtml.AppendLine("<div class=\"col-xs-12 col-sm-6\" id=\"frm-result\"></div>");
             formHtml.AppendLine("</div>");
-            //当单独设置dataform的时候 生成这个层，如果是jqgrid弹出的form就不用，应为jqgrid中已经生成
-            if (!_id.Equals("jqgriddataform", System.StringComparison.CurrentCultureIgnoreCase))
-            {
-                formHtml.AppendLine(" <div class=\"row\"> <div id=\"fapFormContent-" + _id + "\" class=\"col-lg-12\">");
-                //formDialogDiv.AppendLine("    <iframe width=\"100%\" height=\"100%\" frameborder=\"0\" style=\"border:none 0;\" allowtransparency=\"true\" id=\"_DialogFrame_Dataform\" ></iframe>");
-                formHtml.AppendLine(" </div>  </div>");
-            }
+            //子表显示层
+            formHtml.AppendLine(" <div class=\"row\"> <div id=\"fapFormContent-" + _id + "\" class=\"col-lg-12\">");
+            //formDialogDiv.AppendLine("    <iframe width=\"100%\" height=\"100%\" frameborder=\"0\" style=\"border:none 0;\" allowtransparency=\"true\" id=\"_DialogFrame_Dataform\" ></iframe>");
+            formHtml.AppendLine(" </div>  </div>");
+
             return formHtml.ToString();
         }
         /// <summary>

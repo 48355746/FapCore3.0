@@ -13,9 +13,8 @@ namespace Fap.AspNetCore.Controls.JqGrid.Extensions
     public static class FapColumnExtensions
     {
         public static string[] systemDefaultFields = { "EnableDate", "DisableDate", "CreateBy", "CreateName", "CreateDate", "UpdateBy", "UpdateName", "UpdateDate", "GroupUid", "OrgUid", "Dr", "Ts" };
-        public static IEnumerable<Column> ToColumns(this IEnumerable<FapColumn> fapColumns, ILoggerFactory loggerFactory,IDbContext dbContext, IMultiLangService multiLang,  List<string> disCols, List<string> hideCols)
+        public static IEnumerable<Column> ToColumns(this IEnumerable<FapColumn> fapColumns, IDbContext dbContext, IMultiLangService multiLang,  List<string> disCols, List<string> hideCols)
         {
-            ILogger logger = loggerFactory.CreateLogger("性能");
             if (fapColumns.Any())
             {
                 if (fapColumns.Any())

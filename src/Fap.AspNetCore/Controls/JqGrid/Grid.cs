@@ -23,6 +23,7 @@ using Yahoo.Yui.Compressor;
 using System.Text.Encodings.Web;
 using System.Web;
 using Fap.Core.Infrastructure.Enums;
+using Fap.Core.Rbac;
 
 namespace Fap.AspNetCore.Controls.JqGrid
 {
@@ -170,7 +171,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
         private string _postData;
 
         private IDbContext _dataAccessor;
-        private ILoggerFactory _loggerFactory;
+        private IRbacService _rbacService;
         private IFapApplicationContext _applicationContext;
         private IMultiLangService _multiLang;
         //分布式缓存
@@ -179,7 +180,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
         ///     Constructor
         /// </summary>
         /// <param name = "id">Id of grid</param>
-        public Grid(IDbContext dataAccessor, ILoggerFactory logger, IFapApplicationContext applicationContext, IMultiLangService multiLang, string id) : base("")
+        public Grid(IDbContext dataAccessor, IRbacService rbacService, IFapApplicationContext applicationContext, IMultiLangService multiLang, string id) : base("")
         {
             if (id.IsMissing())
             {
@@ -187,7 +188,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
             }
             _id = id;
             _dataAccessor = dataAccessor;
-            _loggerFactory = logger;
+            _rbacService = rbacService;
             _applicationContext = applicationContext;
             _multiLang = multiLang;
         }
@@ -297,7 +298,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 {
                     hideCols = queryset.HiddenCols.ToLower().SplitComma();
                 }
-                List<Column> grdColumns = _fapColumns.OrderBy(c => c.ColOrder).ToColumns(_loggerFactory, _dataAccessor, _multiLang, disCols, hideCols).ToList();
+                List<Column> grdColumns = _fapColumns.OrderBy(c => c.ColOrder).ToColumns( _dataAccessor, _multiLang, disCols, hideCols).ToList();
 
                 _columns.AddRange(grdColumns);
             }
@@ -2332,7 +2333,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                       var gsr = jQuery('###gridid##').jqGrid('getGridParam', 'selrow');
                       if (gsr) {
                         var ret = jQuery('###gridid##').jqGrid('getRowData', gsr);
-                        loadFormMessageBox('编辑','##gridid##','fa fa-pencil-square-o','" + TableName + @"',ret.Fid,'" + HttpUtility.UrlEncode(_querySet.QueryCols) + "',function(){");
+                        loadFormMessageBox('编辑','##gridid##','fa fa-pencil-square-o','" + TableName + @"',ret.Fid,'" + GetCurrentMenuUid() + "',function(){");
             if (_onEditAfterInitDataForm.IsPresent())
             {
                 script.AppendLine(_onEditAfterInitDataForm);
@@ -2344,7 +2345,10 @@ namespace Fap.AspNetCore.Controls.JqGrid
                     }
                   });");
         }
-
+        private string GetCurrentMenuUid()
+        {
+            return _rbacService.GetCurrentMenu()?.Fid;
+        }
         private void AddToolbar(StringBuilder script)
         {
             script.AppendLine(@" 
@@ -2354,7 +2358,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                       position:'first',  
                       buttonicon:'ace-icon fa fa-plus-circle purple',
                       onClickButton : function() {
-                      loadFormMessageBox('新增','##gridid##','fa fa-plus-circle','" + TableName + @"',0,'" + HttpUtility.UrlEncode(_querySet.QueryCols) + "',function(){");
+                      loadFormMessageBox('新增','##gridid##','fa fa-plus-circle','" + TableName + @"',0,'" +GetCurrentMenuUid() + "',function(){");
             if (_onAddAfterInitDataForm.IsPresent())
             {
                 script.AppendLine(_onAddAfterInitDataForm);
@@ -2397,7 +2401,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                        var gsr = jQuery('###gridid##').jqGrid('getGridParam', 'selrow');
                       if (gsr) {
                         var ret = jQuery('###gridid##').jqGrid('getRowData', gsr);
-                        viewFormMessageBox(ret.Fid,'" + TableName + "','" + HttpUtility.UrlEncode(_querySet.QueryCols) + "'" + @");
+                        viewFormMessageBox(ret.Fid,'##gridid##','" + GetCurrentMenuUid()+ "'" + @");
                         }else{
                             $.msg('请选择一条数据查看')
                         }

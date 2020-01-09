@@ -162,7 +162,7 @@ namespace Fap.Hcm.Web.Controllers
             {
                 q.GlobalWhere = refcondition.Replace(FapDbConstants.EmployeeNoPower, "");
                 q.QueryCols = string.Join(",", colList.Distinct());
-                
+
             });
             model.JqgridId = $"ref{model.JqgridId}";
             if (refRefCols.Any())
@@ -392,54 +392,42 @@ namespace Fap.Hcm.Web.Controllers
         /// <summary>
         ///  表单
         /// </summary>
-        /// <param name="id">数据ID</param>
         /// <param name="fid">数据Fid</param>
-        /// <param name="tn">表名</param>
-        /// <param name="frm">表单ID</param>
-        /// <param name="qrycols">查询列</param>
+        /// <param name="gid">jqgridId</param>
+        /// <param name="menuid">菜单uid</param>
         /// <returns></returns>
-        public IActionResult DataForm(string fid, string tn = "", string frm = "", string qrycols = "")
+        public IActionResult DataForm(string fid, string gid, string menuid)
         {
-            if (frm == "")
+            if (_platformDomain.MenuColumnSet.TryGetValue(menuid, out IEnumerable<FapMenuColumn> menuColumns))
             {
-                //jqgrid弹出窗口，统一设置为这个值，frmname即为frm-tablename
-                frm = "jqgriddataform";
+                var menuColumn = menuColumns.Where(r => r.GridId == gid).FirstOrDefault();
+                FormViewModel fd = this.GetFormViewModel(menuColumn.TableName, menuColumn.GridId, fid, qs =>
+                 {
+                     qs.QueryCols = menuColumn.GridColumn;
+                 });
+
+                return View(fd);
             }
-            bool hasScroll = true;
-            if (Request.Query.ContainsKey("noscroll"))
-            {
-                hasScroll = false;
-            }
-            //var tn = Request.Query["tn"];
-            FormViewModel fd = this.GetFormViewModel(tn, fid, qs =>
-            {
-                if (qrycols != "")
-                {
-                    qs.QueryCols = HttpUtility.UrlDecode(qrycols);
-                }
-            });
-            fd.FormId = frm;
-
-            ViewBag.Scroll = hasScroll;
-            return View(fd);
-
-
+            return NotFound();
         }
         /// <summary>
         /// 表单查看
         /// </summary>
         /// <returns></returns>
-        public IActionResult DataFormView(string fid, string tn = "", string qrycols = "")
+        public IActionResult DataFormView(string fid, string gid, string menuid)
         {
-            FormViewModel fvm = this.GetFormViewModel(tn, fid, qs =>
+            if (_platformDomain.MenuColumnSet.TryGetValue(menuid, out IEnumerable<FapMenuColumn> menuColumns))
             {
-                if (qrycols != "")
+                var menuColumn = menuColumns.Where(r => r.GridId == gid).FirstOrDefault();
+                FormViewModel fd = this.GetFormViewModel(menuColumn.TableName, menuColumn.GridId, fid, qs =>
                 {
-                    qs.QueryCols = HttpUtility.UrlDecode(qrycols);
-                }
-            });
-            ViewBag.Scroll = true;
-            return View(fvm);
+                    qs.QueryCols = menuColumn.GridColumn;
+                });
+
+                return View(fd);
+            }
+          
+            return NotFound();
         }
         /// <summary>
         /// 自由表单
@@ -620,7 +608,7 @@ namespace Fap.Hcm.Web.Controllers
             model.GridTitle = fc.GridTitle;
             #region 表
             QuerySet qs = new QuerySet();
-            qs.TableName =  fc.GridTableName;
+            qs.TableName = fc.GridTableName;
             qs.QueryCols = fc.GridDisplayFields;
             qs.InitWhere = fc.TableCondition;
 
@@ -629,7 +617,7 @@ namespace Fap.Hcm.Web.Controllers
                 QuerySet = qs
             };
             model.TempData.Add("returnfields", fc.ReturnFields);
-           
+
             #endregion
 
             #region 树

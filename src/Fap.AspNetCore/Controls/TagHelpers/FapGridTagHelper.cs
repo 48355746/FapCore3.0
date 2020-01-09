@@ -234,7 +234,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             }
             id = $"grid-{id}";
             string pager = $"pager-{id}";
-            Grid grid = new Grid(_dbContext, _loggerFactory, _applicationContext, _multiLang, id);
+            Grid grid = new Grid(_dbContext, _rbacService, _applicationContext, _multiLang, id);
 
             if (Url.IsPresent())
             {
