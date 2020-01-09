@@ -77,7 +77,7 @@
                         </li>
 
                         <li>
-                            <a data-toggle="tab" href="#pentity">实体</a>
+                            <a data-toggle="tab" href="#pentity">属性</a>
                         </li>
 
                         <li>
@@ -142,24 +142,39 @@
                         </div>
 
                         <div id="pentity" class="tab-pane">
-                            <div class="widget-box transparent">
-                                <div class="widget-header widget-header-small">
-                                    <div class="widget-toolbar">
-                                        <fap-button id="btnSaveColumnsEditAble" class-name="grey" content="授权可编辑" icon-before="glyphicon glyphicon-pencil blue"></fap-button>
+                            <div class="row">
+                                <div class="col-xs-6">
+                                    <div class="widget-box transparent">
+                                        <div class="widget-header widget-header-small">
+                                            <div class="widget-toolbar">
+                                                <fap-button id="btnSaveColumnsEditAble" class-name="grey" content="授权可编辑" icon-before="glyphicon glyphicon-pencil blue"></fap-button>
+                                            </div>
+                                        </div>
 
-                                        &nbsp;
-                                      
-                                        <fap-button id="btnSaveColumnsViewAble" class-name="grey" content="授权可见" icon-before="fa fa-eye orange"></fap-button>
-
+                                        <div class="widget-body">
+                                            <div class="widget-main padding-8">
+                                                <fap-tree id="dataColEdit" is-async="true" get-url="/System/Api/Manage/FapTables" plugin-checkbox="true"></fap-tree>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
+                                <div class="col-xs-6">
+                                    <div class="widget-box transparent">
+                                        <div class="widget-header widget-header-small">
+                                            <div class="widget-toolbar">
+                                                <fap-button id="btnSaveColumnsViewAble" class-name="grey" content="授权可见" icon-before="fa fa-eye orange"></fap-button>
+                                            </div>
+                                        </div>
 
-                                <div class="widget-body">
-                                    <div class="widget-main padding-8">
-                                        <fap-tree id="dataentity" is-async="true" get-url="/System/Api/Manage/FapTables" plugin-checkbox="true"></fap-tree>
+                                        <div class="widget-body">
+                                            <div class="widget-main padding-8">
+                                                <fap-tree id="dataColView" is-async="true" get-url="/System/Api/Manage/FapTables" plugin-checkbox="true"></fap-tree>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                          
                         </div>
                         <div id="edata" class="tab-pane">
                             <div class="widget-box transparent">
@@ -175,7 +190,7 @@
 
                                 <div class="widget-body">
                                     <div class="widget-main padding-0">
-                                        <fap-grid id="roledata" query-option="@Model.QueryOption" wrapper="myTab,edata" post-data="@Model.PostData" col-menu="false" view-records="true" oper-cud="true" on-form-init-add="initFormRoleDataAdd" on-form-init-edit="initFormRoleDataEdit"></fap-grid>
+                                        <fap-grid id="roledata"  wrapper="myTab,edata" grid-model="Model" col-menu="false" view-records="true" oper-cud="true" on-form-init-add="initFormRoleDataAdd" on-form-init-edit="initFormRoleDataEdit"></fap-grid>
 
                                     </div>
                                 </div>
@@ -350,18 +365,20 @@
                         //权限树
                         var treeMenu = $("#tree-moduleandmenu").jstree(true);
                         var treeDept = $("#tree-orgdept").jstree(true);
-                        var treeEntity = $("#tree-dataentity").jstree(true);
+                        var treeDataColEdit = $("#tree-dataColEdit").jstree(true);
+                        var treeDataColView=$("#tree-dataColView").jstree(true);
                         var treeRpt = $("#tree-reporttemplate").jstree(true);
                         var treePRole = $("#tree-powerroleandgroup").jstree(true);
                         var treeButton = $('#tree-menuebutton').jstree(true);
                         treeMenu.uncheck_all();
                         treeDept.uncheck_all();
-                        treeEntity.uncheck_all();
+                        treeDataColEdit.uncheck_all();
+                        treeDataColView.uncheck_all();
                         treeRpt.uncheck_all();
                         treePRole.uncheck_all();
                         treeButton.uncheck_all();
-                        treeEntity.element.find(".jstree-themeicon-custom.orange.fa.fa-eye").removeClass("jstree-themeicon-custom orange fa fa-eye").addClass("jstree-themeicon-custom green fa fa-tag");
-                        treeEntity.element.find(".jstree-themeicon-custom.blue.fa.fa-pencil-square-o").removeClass("jstree-themeicon-custom blue fa fa-pencil-square-o").addClass("jstree-themeicon-custom green fa fa-tag");
+                        treeDataColView.element.find(".jstree-themeicon-custom.orange.fa.fa-eye").removeClass("jstree-themeicon-custom orange fa fa-eye").addClass("jstree-themeicon-custom green fa fa-tag");
+                        treeDataColEdit.element.find(".jstree-themeicon-custom.blue.fa.fa-pencil-square-o").removeClass("jstree-themeicon-custom blue fa fa-pencil-square-o").addClass("jstree-themeicon-custom green fa fa-tag");
                         //jstree-icon jstree-themeicon green fa fa-tag jstree-themeicon-custom
                         //jstree-icon jstree-themeicon green fa fa-tag jstree-themeicon-custom
                         //菜单
@@ -396,27 +413,28 @@
                         });
                         //实体
                         $.each(data.columns, function (i, v) {
-                            treeEntity.check_node(v.ColumnUid);
-                            var dom = treeEntity.get_node(treeEntity.get_node(v.ColumnUid), true).children(".jstree-anchor").children(".jstree-themeicon");
+                            let sid = v.MenuUid + '|' + v.GridId + '|' + v.ColumnUid;
                             if (v.EditAble == "1") {
                                 //可编辑
+                                treeDataColEdit.check_node(sid);
+                                var dom = treeDataColEdit.get_node(treeDataColEdit.get_node(sid), true).children(".jstree-anchor").children(".jstree-themeicon");
                                 if (dom.length < 1) {
-                                    treeEntity.get_node(v.ColumnUid).icon = 'blue fa fa-pencil-square-o';
+                                    treeDataColEdit.get_node(sid).icon = 'blue fa fa-pencil-square-o';
                                 } else {
                                     $(dom).attr("class", "jstree-icon jstree-themeicon blue fa fa-pencil-square-o jstree-themeicon-custom");
                                 }
-                                //treeEntity.set_icon(v.ColumnUid, "blue fa fa-pencil-square-o");
-                            } else
-                                if (v.ViewAble == "1") {
-                                    //可见
-                                    if (dom.length < 1) {
-                                        treeEntity.get_node(v.ColumnUid).icon = 'orange fa fa-eye';
-                                    } else {
+                            } else if (v.ViewAble == "1") {
+                                //可见
+                                treeDataColView.check_node(sid);
+                                var dom = treeDataColView.get_node(treeDataColView.get_node(sid), true).children(".jstree-anchor").children(".jstree-themeicon");
+                                if (dom.length < 1) {
+                                    treeDataColView.get_node(sid).icon = 'orange fa fa-eye';
+                                } else {
 
-                                        $(dom).attr("class", "jstree-icon jstree-themeicon orange fa fa-eye jstree-themeicon-custom");
-                                    }
-                                    //treeEntity.set_icon(v.ColumnUid, "orange fa fa-eye");
+                                    $(dom).attr("class", "jstree-icon jstree-themeicon orange fa fa-eye jstree-themeicon-custom");
                                 }
+                            }
+                               
                         });
 
                     });
@@ -476,7 +494,7 @@
                 if (roleUid === 0) {
                     return;
                 }
-                var treeColumn = $('#tree-dataentity').jstree(true),
+                var treeColumn = $('#tree-dataColEdit').jstree(true),
                     checks = treeColumn.get_checked();
                 //过滤列，其他的移除
                 var sels = $.grep(checks, function (d, i) {
@@ -486,7 +504,8 @@
                 //if (!sels.length) { return false; }
                 var cols = [];
                 $.each(sels, function (i, c) {
-                    cols.push({ "tablename": treeColumn.get_node(c).data.tableName, "coluid": c });
+                    let nodeData = treeColumn.get_node(c).data;
+                    cols.push({ "MenuUid": nodeData.menuUid, "GridId": nodeData.gridId, "ColUid":  nodeData.columnUid });
                 })
                 saveAuthority({ "RoleUid": roleUid, "ColumnUids": cols, "AType": 3 });
 
@@ -498,16 +517,16 @@
                 if (roleUid === 0) {
                     return;
                 }
-                var treeColumn = $('#tree-dataentity').jstree(true),
+                var treeColumn = $('#tree-dataColView').jstree(true),
                     checks = treeColumn.get_checked();
                 var sels = $.grep(checks, function (d, i) {
                     return treeColumn.get_node(d).data.isColumn == true;
                 })
-                //if (!sels.length) { return false; }
-
+              
                 var cols = [];
                 $.each(sels, function (i, c) {
-                    cols.push({ "tableName": treeColumn.get_node(c).data.tableName, "colUid": c });
+                    let nodeData = treeColumn.get_node(c).data;
+                    cols.push({ "MenuUid": nodeData.menuUid, "GridId": nodeData.gridId, "ColUid": nodeData.columnUid });
                 })
                 saveAuthority({ "RoleUid": roleUid, "ColumnUids": cols, "AType": 4 });
 
@@ -520,7 +539,6 @@
                 if (roleUid === 0) {
                     return;
                 }
-
                 var treeButton = $('#tree-menuebutton').jstree(true),
                     checks = treeButton.get_checked();
                 //筛选是按钮的节点

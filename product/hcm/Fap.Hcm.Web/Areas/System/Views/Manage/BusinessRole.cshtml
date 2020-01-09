@@ -87,8 +87,8 @@
                                 </div>
                                 <div class="widget-body">
                                     <div class="widget-main">
-                                        <fap-grid id="bizRole" query-option="@bizRole.QueryOption" auto-width="true" multi-box-only="true" multi-select="true" on-grid-complete="GridComplete"
-                                                  post-data="@bizRole.PostData" shrink-fit="false" view-records="true"></fap-grid>
+                                        <fap-grid id="bizRole" grid-model="bizRole" auto-width="true" multi-box-only="true" multi-select="true" on-grid-complete="GridComplete"
+                                                   shrink-fit="false" view-records="true"></fap-grid>
 
                                     </div>
                                 </div>
@@ -113,7 +113,7 @@
                         </div>
                     </div>
                     <div class="space-6"></div>
-                    <fap-grid id="dynRole" query-option="@dynRole.QueryOption" auto-width="true" wrapper="myTab,dynRole" post-data="@dynRole.PostData" oper-delete="true"
+                    <fap-grid id="dynRole" grid-model="dynRole" auto-width="true" wrapper="myTab,dynRole"  oper-delete="true"
                               view-records="true"></fap-grid>
 
 

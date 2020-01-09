@@ -21,7 +21,7 @@ namespace Fap.AspNetCore.Infrastructure
         public FapController(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
-    
+
         protected FormViewModel GetFormViewModel(string tableName, string fid, Action<QuerySet> handler = null)
         {
             FormViewModel model = new FormViewModel();
@@ -29,15 +29,11 @@ namespace Fap.AspNetCore.Infrastructure
 
             QuerySet qs = new QuerySet();
             qs.TableName = tableName;
-            qs.InitWhere = "";
             qs.GlobalWhere = "";
             qs.QueryCols = "*";
             qs.OrderByList = new List<OrderBy>();
             //事件处理
-            if (handler != null)
-            {
-                handler(qs);
-            }
+            handler?.Invoke(qs);
             if (fid.IsMissing())
             {
                 fid = UUIDUtils.Fid;
@@ -60,82 +56,34 @@ namespace Fap.AspNetCore.Infrastructure
         /// <returns></returns>
         protected JqGridViewModel GetJqGridModel(string tableName, Action<QuerySet> handler = null, bool hasOperCol = false)
         {
-            JqGridViewModel model = new JqGridViewModel();
-            model.JqgridId = tableName;
-            QuerySet qs = new QuerySet();
-            qs.TableName = tableName;
-            qs.InitWhere = "";
-            qs.GlobalWhere = "";
-            qs.QueryCols = "*";
-            qs.OrderByList = new List<OrderBy>();
+            JqGridViewModel model = new JqGridViewModel()
+            {
+                JqgridId = tableName
+            };
+            QuerySet qs = new QuerySet()
+            {
+                TableName = tableName,
+                InitWhere = "",
+                GlobalWhere = "",
+                QueryCols = "*"
+            };
             //事件处理
-            if (handler != null)
-            {
-                handler(qs);
-            }
+            handler?.Invoke(qs);
             var allCols = _dbContext.Columns(tableName);
-            //加权限
-            if (qs.UsePermissions)
-            {
-                //IEnumerable<FapRoleColumn> rcs = _rbacService.GetRoleColumnList(_applicationContext.CurrentRoleUid).Where(f => f.TableUid == qs.TableName);
-                //if (rcs != null && rcs.Any())
-                //{
-                //    //有权限的列
-                //    var rCols = allCols.Where(tc => rcs.ToList().Exists(rc => rc.ColumnUid == tc.Fid) && tc.IsDefaultCol == 0 && tc.ShowAble == 1);
-                //    if (qs.QueryCols == "*")
-                //    {
-                //        qs.QueryCols = "Id,Fid," + string.Join(",", rCols.Select(f => f.ColName).ToList());
-                //    }
-                //    else
-                //    {
-                //        char[] ch = { ',' };
-                //        string[] qcols = qs.QueryCols.Replace(" ", "").Split(ch, StringSplitOptions.RemoveEmptyEntries);
-                //        var notPowerCols = qcols.Where(f => !rCols.Select(r => r.ColName).ToList().Contains(f));
-                //        if (notPowerCols != null && notPowerCols.Any())
-                //        {
-                //            //没在权限的列设置为隐藏
-                //            qs.HiddenCols = string.Join(",", notPowerCols);
-                //        }
-                //        //var resultCols = rCols.Where(rc => qcols.Contains(rc.ColName, StringComparison.CurrentCultureIgnoreCase));
-                //        //qs.QueryCols = "Id,Fid," + string.Join(",", resultCols.Select(f => f.ColName).ToList());
-
-                //    }
-                //}
-            }
-            else
-            {
-                //无权限设置
-                if (qs.QueryCols == "*")
-                {
-                    qs.QueryCols = "Id,Fid," + string.Join(",", allCols.Where(f => f.IsDefaultCol == 0 && f.ShowAble == 1).Select(f => f.ColName).ToList());
-                }
-                //else
-                //{
-                //    char[] ch = { ',' };
-                //    string[] qcols = qs.QueryCols.Replace(" ", "").Split(ch, StringSplitOptions.RemoveEmptyEntries);
-                //    var resultCols = allCols.Where(f => qcols.Contains(f.ColName, StringComparison.CurrentCultureIgnoreCase) && f.IsDefaultCol == 0 && f.ShowAble == 1);
-                //    qs.QueryCols = "Id,Fid," + string.Join(",", resultCols.Select(f => f.ColName).ToList());
-                //}
-            }
             //默认排序
-            var sort = allCols.Where(c => c.SortDirection.IsPresent());
-            if (sort != null && sort.Any())
+            var sorts = allCols.Where(c => c.SortDirection.IsPresent());
+            foreach (var sort in sorts)
             {
-                sort.ToList().ForEach((c) =>
-                {
-                    qs.AddOrderBy(c.ColName, c.SortDirection);
-                });
+                qs.AddOrderBy(sort.ColName, sort.SortDirection);
             }
             //当排序没有设置的时候，设置创建时间倒序排列
-            if (qs.OrderByList.Count < 1)
+            if (!qs.OrderByList.Any())
             {
                 qs.AddOrderBy("CreateDate", "desc");
             }
             qs.InitWhere = qs.InitWhere.IsPresent() ? ReplaceSafeSql(qs.InitWhere) : "";
             qs.GlobalWhere = qs.GlobalWhere.IsPresent() ? ReplaceSafeSql(qs.GlobalWhere) : "";
-            model.QueryOption = qs;
-            model.PostData = new PostData { QuerySet = qs, HasOperCol = hasOperCol };
-
+            model.QuerySet = qs;            
             return model;
         }
         /// <summary>

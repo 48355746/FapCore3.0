@@ -42,28 +42,9 @@ namespace Fap.AspNetCore.ViewModel
         /// 树过滤条件
         /// </summary>
         public string TreeFilterCondition { get; set; }
-        /// <summary>
-        /// 向后台传输的数据，加密的json
-        /// </summary>
-        public PostData PostData { get; set; }
-        /// <summary>
-        /// 更新数据的时候使用
-        /// </summary>
-        public string TableName { get; set; }
-        /// <summary>
-        /// 简单查询设置
-        /// </summary>
-        private QuerySet _simpleQueryOption;
-
-        public QuerySet SimpleQueryOption
-        {
-            get { return _simpleQueryOption; }
-            set
-            {
-                _simpleQueryOption = value;
-                //TableName = value.TableName;
-            }
-        }
+        
+        
+        public JqGridViewModel GridModel { get; set; }
         /// <summary>
         /// 关联查询设置
         /// </summary>

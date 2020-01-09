@@ -348,7 +348,11 @@ namespace Fap.Core.Rbac
                         //检查授权
                         if (!isAdministrator && _platformDomain.RoleColumnSet.TryGetValueByRole(_applicationContext.CurrentRoleUid, out IEnumerable<FapRoleColumn> roleColumns))
                         {
-                            var cols= _platformDomain.ColumnSet.Where(c=> roleColumns.Select(r=>r.ColumnUid).Contains(c.Fid)).Select(c=>c.ColName);
+                            var cols= _platformDomain.ColumnSet.Where(c=> roleColumns.Where(r=>r.GridId==column.GridId).Select(r=>r.ColumnUid).Contains(c.Fid)).Select(c=>c.ColName);
+                            if (cols.Any())
+                            {
+                                cols = cols.Union(BaseColumns());
+                            }
                             return string.Join(',', cols);
                         }
                     }
@@ -366,6 +370,12 @@ namespace Fap.Core.Rbac
                 }
             }
             return string.Empty;
+            IEnumerable<string> BaseColumns()
+            {
+                yield return FapDbConstants.FAPCOLUMN_FIELD_Id;
+                yield return FapDbConstants.FAPCOLUMN_FIELD_Fid;
+                yield return FapDbConstants.FAPCOLUMN_FIELD_Ts;
+            }
         }
     }
 }

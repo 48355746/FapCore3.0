@@ -14,6 +14,7 @@ using Fap.Core.Infrastructure.Enums;
 using Fap.Core.Rbac;
 using System;
 using Fap.Core.Rbac.Model;
+using Fap.AspNetCore.ViewModel;
 
 namespace Fap.AspNetCore.Controls.TagHelpers
 {
@@ -49,9 +50,9 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// </summary>
         public Column AttachColumn { get; set; }
         /// <summary>
-        /// 查询设置
+        /// 配置jqgrid模型
         /// </summary>
-        public QuerySet QueryOption { get; set; }
+        public JqGridViewModel GridModel { get; set; }
         /// <summary>
         /// 自动宽度
         /// </summary>
@@ -68,10 +69,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// 数据源类型(因为前端不能以 data-开头，所以改名)
         /// </summary>
         public DataType SourceType { get; set; } = DataType.Json;
-        /// <summary>
-        /// 提交到后台的JSON数据
-        /// </summary>
-        public object PostData { get; set; }
+
         /// <summary>
         /// 包裹容器class(不带.),
         /// 例外tab:"TabControlId,TabItemId"
@@ -217,6 +215,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// 是否注册表格权限
         /// </summary>
         public bool RegisterAuthority { get; set; } = true;
+
         /// <summary>
         /// subGrid设置展开内容
         /// function showChildGrid(parentRowID, parentRowKey) {
@@ -233,8 +232,9 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             {
                 id = Id;
             }
+            id = $"grid-{id}";
             string pager = $"pager-{id}";
-            Grid grid = new Grid(_dbContext, _loggerFactory, _applicationContext, _multiLang, $"grid-{id}");
+            Grid grid = new Grid(_dbContext, _loggerFactory, _applicationContext, _multiLang, id);
 
             if (Url.IsPresent())
             {
@@ -252,7 +252,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                 }
                 else
                 {
-                    grid.SetEditUrl($"{_applicationContext.BaseUrl}/Api/Core/Persistence?tn={QueryOption.TableName}&from=grid");
+                    grid.SetEditUrl($"{_applicationContext.BaseUrl}/Api/Core/Persistence?from=grid");
                 }
             }
             if (Caption.IsPresent())
@@ -271,21 +271,26 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             {
                 grid.AddColumns(AttachColumns);
             }
-            if (QueryOption != null)
+
+            QuerySet querySet = GridModel.QuerySet;
+            //鉴权列
+            string cols = AuthenticationColumn(querySet);
+            if (cols.IsPresent())
             {
-                string cols= AuthenticationColumn();
-                QueryOption.QueryCols = cols;
-                grid.SetQueryOption(QueryOption);
+                querySet.QueryCols = cols;
             }
+            grid.SetQueryOption(querySet);
+            //获取数据时ajax post数据
+            grid.SetPostData(new { QuerySet = querySet });
+            //鉴权操作
+            string authorize = AuthenticationButton(querySet);
+            //设置操作
+            SetGirdOper(grid, authorize);
+
             grid.SetAutoWidth(AutoWidth);
             grid.SetDataType(SourceType);
             grid.SetViewRecords(ViewRecords);
             grid.SetShrinkToFit(ShrinkFit);
-            if (PostData != null)
-            {
-                grid.SetPostData(PostData);
-            }
-
             grid.SetColMenu(ColMenu);
 
             if (Height > 0)
@@ -379,10 +384,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                     grid.OnSelectRow($"{OnSelectRow}(rowid, status);");
                 }
             }
-            //鉴权
-            string authorize = AuthenticationButton();
-            //设置操作
-            SetGirdOper(grid, authorize);
+          
             if (SearchToolbar)
             {
                 grid.SetSearchToolbar(SearchToolbar);
@@ -414,7 +416,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             }
             grid.SetFormType((OperEnum)formType);
         }
-        private string AuthenticationButton()
+        private string AuthenticationButton(QuerySet querySet)
         {
             if (RegisterAuthority)
             {
@@ -423,23 +425,24 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                     ButtonID = Id,
                     ButtonName = "表格按钮",
                     ButtonType = FapMenuButtonType.Grid,
-                    Description = _dbContext.Table(QueryOption.TableName).TableComment
+                    Description = _dbContext.Table(querySet.TableName).TableComment
                 };
                 //注册按钮
                 return _rbacService.GetButtonAuthorized(menuButton);
             }
             return string.Empty;
         }
-        private string AuthenticationColumn()
+        private string AuthenticationColumn(QuerySet querySet)
         {
             if (RegisterAuthority)
             {
                 FapMenuColumn menuColumn = new FapMenuColumn()
                 {
                     GridId = Id,
-                    GridColumn = QueryOption.QueryCols,
+                    TableName = querySet.TableName,
+                    GridColumn = querySet.QueryCols,
                     Enabled = 1,
-                    Description = _dbContext.Table(QueryOption.TableName).TableComment
+                    Description = _dbContext.Table(querySet.TableName).TableComment
                 };
 
                 //注册按钮

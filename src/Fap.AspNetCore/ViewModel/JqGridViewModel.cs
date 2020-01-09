@@ -9,16 +9,11 @@ namespace Fap.AspNetCore.ViewModel
         /// <summary>
         /// 控件名称
         /// </summary>
-        public string CtrlName { get; set; }
-        private Dictionary<string, string> _tempData = new Dictionary<string, string>();
+        //public string CtrlName { get; set; }
         /// <summary>
         /// 临时数据存放
         /// </summary>
-        public Dictionary<string, string> TempData
-        {
-            get { return _tempData; }
-            set { _tempData = value; }
-        }
+        public Dictionary<string, string> TempData { get; set; } = new Dictionary<string, string>();        
         /// <summary>
         /// jqgridid,默认等于tablename
         /// </summary>
@@ -30,34 +25,16 @@ namespace Fap.AspNetCore.ViewModel
         /// <summary>
         /// 表格标题
         /// </summary>
-        public string Title { get; set; }
+        public string Title { get; set; }        
         /// <summary>
-        /// 向后台传输的数据，加密的json
+        /// 查询设置
         /// </summary>
-        public PostData PostData { get; set; }
+        public QuerySet QuerySet { get; set; }
+        
         /// <summary>
-        /// 更新数据的时候使用
+        /// 是否包含操作列
         /// </summary>
-        public string TableName { get; set; }
-        /// <summary>
-        /// 简单查询设置
-        /// </summary>
-        private QuerySet _simpleQueryOption;
-
-        public QuerySet QueryOption
-        {
-            get { return _simpleQueryOption; }
-            set
-            {
-                _simpleQueryOption = value;
-                TableName =value.TableName;
-            }
-        }
-        //public SimpleQueryOption SimpleQueryOption { get; set; }
-        /// <summary>
-        /// 关联查询设置
-        /// </summary>
-        //public QueryOption QueryOption { get; set; }
+        public bool HasOperCol { get; set; }
         /// <summary>
         /// 操作列
         /// </summary>
@@ -66,18 +43,5 @@ namespace Fap.AspNetCore.ViewModel
         /// 自定义列
         /// </summary>
         public List<Column> CustomColumns { get; set; }
-    }
-    public class PostData
-    {
-        /// <summary>
-        /// QuerySet，查询设置
-        /// </summary>
-        public QuerySet QuerySet { get; set; }
-
-        /// <summary>
-        /// 是否包含操作列
-        /// </summary>
-        public bool HasOperCol { get; set; }
-        
     }
 }

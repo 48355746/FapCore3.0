@@ -8,10 +8,10 @@
 
 <script>
     function GetRefResult() {
-        var id = jQuery("#grid-@Model.CtrlName").jqGrid('getGridParam', 'selrow');
+        var id = jQuery("#grid-@Model.JqgridId").jqGrid('getGridParam', 'selrow');
 
         if (id) {
-            var ret = jQuery("#grid-@Model.CtrlName").jqGrid('getRowData', id);
+            var ret = jQuery("#grid-@Model.JqgridId").jqGrid('getRowData', id);
             var code=ret.@Model.TempData["refid"];
             var name=ret.@Model.TempData["refname"];
             var exts = [];
@@ -30,11 +30,11 @@
         return "";
     }
     function GetResults() {
-        var ids = jQuery("#grid-@Model.CtrlName").jqGrid('getGridParam', 'selarrrow');
+        var ids = jQuery("#grid-@Model.JqgridId").jqGrid('getGridParam', 'selarrrow');
         var result=[];
         if (ids) {
             for (var i = 0; i < ids.length; i++) {
-                var ret = jQuery("#grid-@Model.CtrlName").jqGrid('getRowData', ids[i]);
+                var ret = jQuery("#grid-@Model.JqgridId").jqGrid('getRowData', ids[i]);
                 var code=ret.@Model.TempData["refid"];
                 var name=ret.@Model.TempData["refname"];
                 var exts = [];
@@ -73,7 +73,7 @@
 
 <div class="row">
     <div class="col-xs-12 gridScrollable">
-        <fap-grid id="@Model.CtrlName" query-option="@Model.QueryOption" auto-width="true" post-data="@Model.PostData" height="326" search-toolbar="true" wrapper="gridScrollable" oper-import="false" shrink-fit="false"></fap-grid>
+        <fap-grid id="@Model.JqgridId" grid-model="Model" auto-width="true"  height="326" search-toolbar="true" wrapper="gridScrollable" oper-import="false" shrink-fit="false"></fap-grid>
    
     </div>
 </div>

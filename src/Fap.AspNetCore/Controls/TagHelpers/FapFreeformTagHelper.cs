@@ -32,15 +32,15 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// <summary>
         /// 默认值设置
         /// </summary>
-        public Dictionary<string, string> DefaultData { get; set; }
+        //public Dictionary<string, string> DefaultData { get; set; }
         /// <summary>
         /// 子表默认值集合
         /// </summary>
-        public IEnumerable<SubTableDefaultValue> SubtablelistDefaultdata { get; set; }
+        //public IEnumerable<SubTableDefaultValue> SubtablelistDefaultdata { get; set; }
         /// <summary>
         /// 查询设置
         /// </summary>
-        public QuerySet QueryOption { get; set; }
+        public FormViewModel FormModel { get; set; }
         /// <summary>
         /// 单据状态
         /// </summary>        
@@ -72,17 +72,17 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             {
                 form.SetFormStatus(this.FormStatus);
             }
-            if (DefaultData != null && DefaultData.Count > 0)
+            if (FormModel.DefaultData != null && FormModel.DefaultData.Count > 0)
             {
-                form.SetCustomDefaultData(DefaultData);
+                form.SetCustomDefaultData(FormModel.DefaultData);
             }
-            if (SubtablelistDefaultdata != null && SubtablelistDefaultdata.Any())
+            if (FormModel.SubDefaultDataList != null && FormModel.SubDefaultDataList.Any())
             {
-                form.SetSubTableListDefualtData(SubtablelistDefaultdata);
+                form.SetSubTableListDefualtData(FormModel.SubDefaultDataList);
             }
-            if (QueryOption != null)
+            if (FormModel.QueryOption != null)
             {
-                form.SetQueryOption(QueryOption);
+                form.SetQueryOption(FormModel.QueryOption);
             }
             if (this.GridReadonly)
             {

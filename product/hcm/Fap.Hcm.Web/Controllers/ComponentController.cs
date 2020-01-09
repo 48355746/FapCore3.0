@@ -162,13 +162,9 @@ namespace Fap.Hcm.Web.Controllers
             {
                 q.GlobalWhere = refcondition.Replace(FapDbConstants.EmployeeNoPower, "");
                 q.QueryCols = string.Join(",", colList.Distinct());
-                q.UsePermissions = false;
-                //if (fc.RefCondition.IsPresent() && fc.DisplayFormat.IsPresent())
-                //{
-                //    string paramValue = Request.Query[fc.DisplayFormat];
-                //    q.AddParameter(fc.DisplayFormat, paramValue);
-                //}
+                
             });
+            model.JqgridId = $"ref{model.JqgridId}";
             if (refRefCols.Any())
             {
                 refCols.AddRange(refRefCols);
@@ -180,7 +176,6 @@ namespace Fap.Hcm.Web.Controllers
             model.TempData.Add("refname", fc.RefName);
             model.TempData.Add("frmCols", string.Join(",", frmCols));
             model.TempData.Add("refCols", string.Join(",", refCols));
-            model.CtrlName = formid + ctrlid + fc.TableName + fc.ColName;
             return View(model);
 
         }
@@ -624,15 +619,17 @@ namespace Fap.Hcm.Web.Controllers
             model.TreeTitle = fc.TreeTitle;
             model.GridTitle = fc.GridTitle;
             #region 表
-
             QuerySet qs = new QuerySet();
-            model.TableName = qs.TableName = fc.GridTableName;
+            qs.TableName =  fc.GridTableName;
             qs.QueryCols = fc.GridDisplayFields;
             qs.InitWhere = fc.TableCondition;
-            model.SimpleQueryOption = qs;
-            model.TempData.Add("returnfields", fc.ReturnFields);
-            model.PostData = new PostData { QuerySet = qs, HasOperCol = false };
 
+            model.GridModel = new JqGridViewModel
+            {
+                QuerySet = qs
+            };
+            model.TempData.Add("returnfields", fc.ReturnFields);
+           
             #endregion
 
             #region 树

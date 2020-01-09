@@ -58,7 +58,7 @@ namespace Fap.Hcm.Web.Areas.System.Models
         /// <summary>
         /// 实体列Uid
         /// </summary>
-        public IList<TableCols> ColumnUids
+        public IList<GridCols> ColumnUids
         {
             get;
             set;
@@ -80,9 +80,10 @@ namespace Fap.Hcm.Web.Areas.System.Models
         /// </summary>
         public IList<string> PRoleUids { get; set; }
     }
-    public class TableCols
+    public class GridCols
     {
-        public string TableName { get; set; }
+        public string MenuUid { get; set; }
+        public string GridId { get; set; }
         public string ColUid { get; set; }
     }
 }

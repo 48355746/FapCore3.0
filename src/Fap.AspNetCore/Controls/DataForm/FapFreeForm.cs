@@ -379,7 +379,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 }
                 qs.QueryCols = "*";
                 grid.SetQueryOption(qs);
-                grid.SetPostData(new PostData { QuerySet = qs, HasOperCol = false });
+                grid.SetPostData(new { QuerySet = qs, HasOperCol = false });
                 if (_formStatus != FormStatus.View && !_gridReadonly)
                 {
                     grid.SetEditRowModel(EditRowModel.Inline);

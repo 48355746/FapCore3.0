@@ -30,7 +30,7 @@
 
             <div class="tab-content">
                 <div id="home" class="tab-pane fade in active">
-                    <fap-grid id="setting" query-option="@modelSetting.QueryOption" post-data="@modelSetting.PostData" auto-width="true" wrapper="myTab,home" oper-cud="true"></fap-grid>
+                    <fap-grid id="setting" grid-model="modelSetting"  auto-width="true" wrapper="myTab,home" oper-cud="true"></fap-grid>
 
                 </div>
 
@@ -48,7 +48,7 @@
                     <div class="space-4"></div>
                     <div class="row">
                         <div class="col-xs-12 col-sm-12">
-                            <fap-grid id="log" query-option="@modelLog.QueryOption" post-data="@modelLog.PostData" auto-width="true" wrapper="myTab,messages" multi-box-only="true" multi-select="true" oper-cud="true"></fap-grid>
+                            <fap-grid id="log" grid-model="modelLog"  auto-width="true" wrapper="myTab,messages" multi-box-only="true" multi-select="true" oper-cud="true"></fap-grid>
 
                         </div>
                     </div>

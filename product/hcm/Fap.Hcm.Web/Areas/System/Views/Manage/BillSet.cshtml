@@ -52,7 +52,7 @@
 
             <div class="tab-content">
                 <div id="coderule" class="tab-pane fade in active">
-                    <fap-grid id="cfgbillcoderule" query-option="@coderule.QueryOption" auto-width="true" post-data="@coderule.PostData" wrapper="myTab,coderule"
+                    <fap-grid id="cfgbillcoderule"  auto-width="true" grid-model="coderule" wrapper="myTab,coderule"
                               shrink-fit="false" view-records="true" oper-add="true" oper-update="true" oper-delete="true"></fap-grid>                 
 
                 </div>
@@ -73,10 +73,10 @@
                         </div>
                     </div>
                     <div class="space-4"></div>
-                    <fap-grid id="wfbusinessmapping" query-option="@wbrule.QueryOption" post-data="@wbrule.PostData" auto-width="true" view-records="true" wrapper="myTab,wbrule"></fap-grid>
+                    <fap-grid id="wfbusinessmapping" grid-model="wbrule"  auto-width="true" view-records="true" wrapper="myTab,wbrule"></fap-grid>
                 </div>
                 <div id="freeform" class="tab-pane fade">
-                    <fap-grid id="wffreeform" attach-column="@column" query-option="@freeform.QueryOption" auto-width="true" wrapper="myTab,freeform" post-data="@freeform.PostData" oper-cud="true" on-grid-complete="initMenu"></fap-grid>
+                    <fap-grid id="wffreeform" attach-column="@column" grid-model="freeform" auto-width="true" wrapper="myTab,freeform" oper-cud="true" on-grid-complete="initMenu"></fap-grid>
                
                 </div>
                 <div id="mailtemplate" class="tab-pane fade">
@@ -96,7 +96,7 @@
 
                     </div>
                     <div class="space-4"></div>
-                    <fap-grid id="cfgemailtemplate" query-option="@mailTmpl.QueryOption" auto-width="true" post-data="@mailTmpl.PostData" oper-delete="true" wrapper="myTab,mailtemplate" view-records="true"></fap-grid>
+                    <fap-grid id="cfgemailtemplate" grid-model="mailTmpl" auto-width="true"  oper-delete="true" wrapper="myTab,mailtemplate" view-records="true"></fap-grid>
                    
                 </div>
             </div>

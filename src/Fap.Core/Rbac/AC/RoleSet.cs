@@ -16,7 +16,7 @@ namespace Fap.Core.Rbac.AC
         private IDbSession _dbSession;
         internal RoleSet(IDbSession dbSession)
         {
-           
+
             _dbSession = dbSession;
             Init();
         }
@@ -33,14 +33,16 @@ namespace Fap.Core.Rbac.AC
             lock (Locker)
             {
                 #region 获取所有FapRole
-              
-               _allRoles = _dbSession.Query<FapRole>("select * from FapRole");            
-              
-                //添加普通用户
-                _allRoles.ToList().Insert(0, new FapRole { Id = -1, Fid = FapPlatformConstants.CommonUserRoleFid, RoleCode = "000", RoleName = "普通用户", RoleNote = "用户普通用户的授权" });
+
+                _allRoles = _dbSession.Query<FapRole>("select * from FapRole");
+                _allRoles = _allRoles.Union(AddCommonRole());
                 #endregion
                 _initialized = true;
             }
+        }
+        private IEnumerable<FapRole> AddCommonRole()
+        {
+            yield return new FapRole { Id = -1, Fid = FapPlatformConstants.CommonUserRoleFid, RoleCode = "000", RoleName = "普通用户", RoleNote = "用户普通用户的授权" };
         }
         public IEnumerator<Fap.Core.Rbac.Model.FapRole> GetEnumerator()
         {

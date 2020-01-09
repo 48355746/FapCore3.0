@@ -387,7 +387,8 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             //获取角色报表
             IEnumerable<dynamic> rpts = _dbContext.Query("select RptUid from FapRoleReport where RoleUid=@RoleUid", dparam);
             //获取角色实体属性
-            IEnumerable<dynamic> columnList = _dbContext.Query("select ColumnUid,EditAble,ViewAble from FapRoleColumn where RoleUid=@RoleUid", dparam);
+
+            IEnumerable<FapRoleColumn> columnList = _rbacService.GetRoleColumnList(roleUid);// _dbContext.Query("select ColumnUid,EditAble,ViewAble from FapRoleColumn where RoleUid=@RoleUid", dparam);
             //获取角色角色
             IEnumerable<dynamic> roles = _dbContext.Query("select PRoleUid from FapRoleRole where RoleUid=@RoleUid", dparam);
 
@@ -491,20 +492,20 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             {
                 //实体列
                 List<FapRoleColumn> columns = new List<FapRoleColumn>();
-                //if (auth.ColumnUids != null && auth.ColumnUids.Any())
-                //{
-                //    foreach (var item in auth.ColumnUids)
-                //    {
-                //        if (auth.AType == 3)
-                //        {
-                //            columns.Add(new FapRoleColumn { RoleUid = auth.RoleUid, ColumnUid = item.ColUid, TableUid = item.TableName, EditAble = 1, ViewAble = 0 });
-                //        }
-                //        else
-                //        {
-                //            columns.Add(new FapRoleColumn { RoleUid = auth.RoleUid, ColumnUid = item.ColUid, TableUid = item.TableName, EditAble = 0, ViewAble = 1 });
-                //        }
-                //    }
-                //}
+                if (auth.ColumnUids != null && auth.ColumnUids.Any())
+                {
+                    foreach (var item in auth.ColumnUids)
+                    {
+                        if (auth.AType == 3)
+                        {
+                            columns.Add(new FapRoleColumn { RoleUid = auth.RoleUid, ColumnUid = item.ColUid,GridId=item.GridId, MenuUid = item.MenuUid, EditAble = 1, ViewAble = 0 });
+                        }
+                        else
+                        {
+                            columns.Add(new FapRoleColumn { RoleUid = auth.RoleUid, ColumnUid = item.ColUid, GridId = item.GridId, MenuUid = item.MenuUid, EditAble = 0, ViewAble = 1 });
+                        }
+                    }
+                }
                 success = _rbacService.AddRoleColumn(auth.RoleUid, columns, auth.AType);
                 //刷新应用程序全局域角色列
                 _platformDomain.RoleColumnSet.Refresh();

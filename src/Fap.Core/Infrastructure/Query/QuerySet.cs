@@ -43,15 +43,7 @@ namespace Fap.Core.Infrastructure.Query
         /// 全局条件
         /// </summary>
         public string GlobalWhere { get; set; }
-        private bool _usePermissions = true;
-        /// <summary>
-        /// 应用权限默认true
-        /// </summary>
-        public bool UsePermissions
-        {
-            get { return _usePermissions; }
-            set { _usePermissions = value; }
-        }
+       
 
         public override string ToString()
         {

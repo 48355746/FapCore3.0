@@ -16,6 +16,7 @@ using Dapper;
 using Fap.Core.Infrastructure.Domain;
 using Newtonsoft.Json.Linq;
 using Fap.Model.Infrastructure;
+using Fap.Core.Infrastructure.Metadata;
 
 namespace Fap.Hcm.Service.System
 {
@@ -115,6 +116,7 @@ namespace Fap.Hcm.Service.System
         {
             IEnumerable<FapRoleGroup> roleGroups = _rbacService.GetAllRoleGroup();
             IEnumerable<FapRole> roles = _rbacService.GetAllRole();
+            List<TreeDataView> treeGroup = roleGroups.Select(t => new TreeDataView { Id = t.Fid.ToString(), Data = new { IsRole = false }, Pid = t.Pid.ToString(), Text = t.RoleGroupName, State = new NodeState { Opened = true }, Icon = "icon-folder purple ace-icon fa fa-users" }).ToList<TreeDataView>();
             if (!_applicationContext.IsAdministrator)
             {
                 var roleRoles = _rbacService.GetRoleRoleList(_applicationContext.CurrentRoleUid).Select(r => r.PRoleUid);
@@ -122,7 +124,14 @@ namespace Fap.Hcm.Service.System
                 roles = roles.Where(r => roleRoles.Contains(r.Fid) || r.CreateBy == _applicationContext.EmpUid);
 
             }
-            List<TreeDataView> treeGroup = roleGroups.Select(t => new TreeDataView { Id = t.Fid.ToString(), Data = new { IsRole = false }, Pid = t.Pid.ToString(), Text = t.RoleGroupName, State = new NodeState { Opened = true }, Icon = "icon-folder purple ace-icon fa fa-users" }).ToList<TreeDataView>();
+
+            //普通用户角色加到tree根级
+            FapRole commonRole= roles.FirstOrDefault(r => r.Fid == FapPlatformConstants.CommonUserRoleFid);
+            if (commonRole != null)
+            {
+                treeGroup.Insert(0, new TreeDataView { Id = commonRole.Fid, Data = new { IsRole = true }, Pid = "0", Text = commonRole.RoleName, Icon = "icon-folder orange ace-icon fa fa-users" });
+            }
+            
             List<TreeDataView> treeRole = roles.Select(r => new TreeDataView { Id = r.Fid.ToString(), Data = new { IsRole = true }, Pid = r.RoleGroupUid, Text = r.RoleName, State = new NodeState { Opened = true }, Icon = "icon-folder orange ace-icon fa fa-users" }).ToList<TreeDataView>();
             List<TreeDataView> tree = new List<TreeDataView>();
 
@@ -133,7 +142,7 @@ namespace Fap.Hcm.Service.System
                 TreeViewHelper.MakeTree(treeRoot.Children, treeGroup, treeRoot.Id);
             }
             tree.AddRange(treeRoots);
-            List<TreeDataView> tempGroup = new List<TreeDataView>();
+            List<TreeDataView> emptyGroup = new List<TreeDataView>();
             foreach (var item in tree)
             {
                 var rl = treeRole.Where(r => r.Pid == item.Id);
@@ -143,16 +152,16 @@ namespace Fap.Hcm.Service.System
                 }
                 else
                 {
-                    if (!item.Text.Equals("普通用户"))
+                    if (!item.Id.Equals(FapPlatformConstants.CommonUserRoleFid))
                     {
-                        tempGroup.Add(item);
+                        emptyGroup.Add(item);
                     }
                 }
             }
-            if (tempGroup.Any())
+            if (emptyGroup.Any())
             {
                 //移除没有角色的角色组
-                tempGroup.ForEach((d) => { tree.Remove(d); });
+                emptyGroup.ForEach((d) => { tree.Remove(d); });
             }
             return tree;
         }
@@ -673,6 +682,7 @@ namespace Fap.Hcm.Service.System
             var tree = GetModuleAndMenuTree();
             var mmtor = tree.GetEnumerator();
             AddMenuColumn(mmtor);
+            return tree;
             void AddMenuColumn(IEnumerator<TreeDataView> menuEmumertor)
             {
                 while (menuEmumertor.MoveNext())
@@ -695,81 +705,50 @@ namespace Fap.Hcm.Service.System
             IEnumerable<TreeDataView> AddColumnNode(TreeDataView currNode)
             {
                 string menuUid = currNode.Id;
-                if (_applicationContext.IsAdministrator)
+                var menuColumns = _platformDomain.MenuColumnSet.Where(r => r.MenuUid == menuUid);
+                foreach (var menuColumn in menuColumns)
                 {
-
-                    var menuColumns = _platformDomain.MenuColumnSet.Where(r => r.MenuUid == menuUid);
-                    foreach (var menuColumn in menuColumns)
+                    IEnumerable<FapColumn> columns = _platformDomain.ColumnSet.Where(c => c.IsDefaultCol == 0 && c.TableName == menuColumn.TableName);
+                    if (!_applicationContext.IsAdministrator)
                     {
-                        TreeDataView toper = new TreeDataView()
+                        var roleColumns = _rbacService.GetRoleColumnList(_applicationContext.CurrentRoleUid);
+
+                        columns = columns.Where(c => roleColumns.Select(rc => rc.ColumnUid).Distinct().Contains(c.Fid));
+
+                    }
+                    TreeDataView toper = new TreeDataView()
+                    {
+                        Id = menuColumn.GridId,
+                        Data = new { IsCol = false, IsMenu = false },
+                        Pid = menuUid,
+                        Text = menuColumn.Description,
+                        Icon = "fa fa-table"
+                    };
+                    if (!menuColumn.GridColumn.Trim().Equals("*"))
+                    {
+                        var colNames = menuColumn.GridColumn.SplitComma();
+                        columns = columns.Where(c => colNames.Contains(c.ColName, new FapStringEqualityComparer()));
+                    }
+                    //实体属性
+                    foreach (var column in columns)
+                    {
+                        TreeDataView tcol = new TreeDataView()
                         {
-                            Id = menuColumn.GridId,
-                            Data = new { IsCol = false, IsMenu = false },
-                            Pid = menuUid,
-                            Text = menuColumn.Description,
-                            Icon ="fa fa-table" 
+                            Id =$"{menuUid}|{menuColumn.GridId}|{column.Fid}",
+                            Data = new { IsColumn = true, MenuUid = menuUid,GridId= menuColumn.GridId,ColumnUid=column.Fid },
+                            Pid = toper.Id,
+                            Text = column.ColComment,
+                            Icon = "green fa fa-tag"
                         };
-                        if (menuColumn.GridColumn.Trim().Equals("*"))
-                        {
-
-                        }
-
+                        toper.Children.Add(tcol);
                     }
-                }
-                else
-                {
+                    yield return toper;
 
                 }
 
             }
 
-            IEnumerable<FapTable> tables = _platformDomain.TableSet;
-            //实体分类
-            IEnumerable<FapDict> tableCategory = _dbContext.Dictionarys("TableCategory");
-            //实体属性
-            IEnumerable<FapColumn> columns = _platformDomain.ColumnSet.Where(c => c.IsDefaultCol == 0 && tables.ToList().Exists(t => t.TableName == c.TableName));
-            //构造树
-            List<TreeDataView> tree = new List<TreeDataView>();
-
-            var tableGroup = tables.GroupBy(g => g.TableCategory);
-            int i = 0;
-            foreach (var tg in tableGroup)
-            {
-                //表分类
-                TreeDataView ttc = new TreeDataView();
-                ttc.Id = "tablecategory" + i;
-                ttc.Data = new { IsColumn = false };
-                ttc.Pid = "~";
-                ttc.Text = tableCategory.First(c => c.Code == tg.Key).Name;
-                ttc.Icon = "blue fa fa-filter";
-                ttc.State = new NodeState() { Opened = false };
-                int j = 0;
-                foreach (var tb in tg)
-                {
-                    TreeDataView ttb = new TreeDataView();
-                    ttb.Id = "table" + i + j;
-                    ttb.Data = new { IsColumn = false };
-                    ttb.Pid = "tablecategory" + i;
-                    ttb.Text = tb.TableComment;
-                    ttb.Icon = "purple fa fa-list-alt";
-                    var cols = columns.Where(c => c.TableName == tb.TableName).ToList();
-                    foreach (var col in cols)
-                    {
-                        TreeDataView tcol = new TreeDataView();
-                        tcol.Id = col.Fid;
-                        tcol.Data = new { IsColumn = true, TableName = col.TableName };
-                        tcol.Pid = "table" + i + j;
-                        tcol.Text = col.ColComment;
-                        tcol.Icon = "green fa fa-tag";
-                        ttb.Children.Add(tcol);
-                    }
-                    ttc.Children.Add(ttb);
-                    j++;
-                }
-                tree.Add(ttc);
-                i++;
-            }
         }
-
     }
+
 }

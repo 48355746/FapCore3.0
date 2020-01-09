@@ -34,12 +34,12 @@
 
             <div class="tab-content">
                 <div id="group" class="tab-pane fade in active">
-                    <fap-grid id="fapgroup" query-option="@groupModel.QueryOption" post-data="@groupModel.PostData" auto-width="true" wrapper="myTab,group"></fap-grid>
+                    <fap-grid id="fapgroup" grid-model="groupModel"  auto-width="true" wrapper="myTab,group"></fap-grid>
    
                 </div>
 
                 <div id="org" class="tab-pane fade">
-                    <fap-grid id="faporg" query-option="@orgModel.QueryOption" post-data="@orgModel.PostData" auto-width="true" wrapper="myTab,org" oper-cud="true"></fap-grid>
+                    <fap-grid id="faporg" grid-model="orgModel" auto-width="true" wrapper="myTab,org" oper-cud="true"></fap-grid>
 
                 </div>
 
