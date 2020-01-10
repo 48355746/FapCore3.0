@@ -288,17 +288,8 @@ namespace Fap.AspNetCore.Controls.JqGrid
             }
             if (_fapColumns.Any())
             {
-                List<string> disCols = new List<string>();
-                List<string> hideCols = new List<string>(); ;
-                if (queryset.DispalyCols.IsPresent())
-                {
-                    disCols = queryset.DispalyCols.ToLower().SplitComma();
-                }
-                if (queryset.HiddenCols.IsPresent())
-                {
-                    hideCols = queryset.HiddenCols.ToLower().SplitComma();
-                }
-                List<Column> grdColumns = _fapColumns.OrderBy(c => c.ColOrder).ToColumns( _dataAccessor, _multiLang, disCols, hideCols).ToList();
+               
+                List<Column> grdColumns = _fapColumns.OrderBy(c => c.ColOrder).ToColumns( _dataAccessor, _multiLang).ToList();
 
                 _columns.AddRange(grdColumns);
             }

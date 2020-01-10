@@ -1,17 +1,8 @@
 ﻿using Fap.AspNetCore.Controls.DataForm;
 using Fap.AspNetCore.ViewModel;
-using Fap.Core.DataAccess;
-using Fap.Core.Infrastructure.Query;
-using Fap.Core.Rbac;
-using Fap.Core.Extensions;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using Fap.Core.MultiLanguage;
-using Fap.Core.Infrastructure.Domain;
 using Ardalis.GuardClauses;
 
 namespace Fap.AspNetCore.Controls.TagHelpers
@@ -26,8 +17,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// <summary>
         /// 控件ID
         /// </summary>
-        public string Id { get; set; }
-        
+        public string Id { get; set; }        
         /// <summary>
         /// 子表默认值集合
         /// </summary>

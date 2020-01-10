@@ -225,16 +225,17 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         public string SubgridRowexpanded { get; set; }
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
+            QuerySet querySet = GridModel.QuerySet;
             output.TagName = "div";
             output.Content.Clear();
-            string id = "jqgrid";
+            string id = querySet.TableName;
             if (Id.IsPresent())
             {
                 id = Id;
             }
-            id = $"grid-{id}";
+            this.Id = $"grid-{id}";
             string pager = $"pager-{id}";
-            Grid grid = new Grid(_dbContext, _rbacService, _applicationContext, _multiLang, id);
+            Grid grid = new Grid(_dbContext, _rbacService, _applicationContext, _multiLang, this.Id);
 
             if (Url.IsPresent())
             {
@@ -272,7 +273,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                 grid.AddColumns(AttachColumns);
             }
 
-            QuerySet querySet = GridModel.QuerySet;
+            
             //鉴权列
             string cols = AuthenticationColumn(querySet);
             if (cols.IsPresent())
@@ -422,7 +423,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             {
                 FapMenuButton menuButton = new FapMenuButton()
                 {
-                    ButtonID = Id,
+                    ButtonID =Id,
                     ButtonName = "表格按钮",
                     ButtonType = FapMenuButtonType.Grid,
                     Description = _dbContext.Table(querySet.TableName).TableComment

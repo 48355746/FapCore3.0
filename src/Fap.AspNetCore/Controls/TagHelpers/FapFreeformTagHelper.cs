@@ -5,6 +5,7 @@ using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Infrastructure.Query;
 using Fap.Core.MultiLanguage;
+using Fap.Core.Rbac;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
@@ -15,13 +16,13 @@ namespace Fap.AspNetCore.Controls.TagHelpers
     public class FapFreeformTagHelper : TagHelper
     {
         private IDbContext _dataAccessor;
-        private ILoggerFactory _loggerFactory;
+        private IRbacService _rbacService;
         private IFapApplicationContext _applicationContext;
         private IMultiLangService _multiLang;
-        public FapFreeformTagHelper(IDbContext dataAccessor, ILoggerFactory loggerFactory, IFapApplicationContext applicationContext, IMultiLangService multiLang)
+        public FapFreeformTagHelper(IDbContext dataAccessor, IRbacService rbacService, IFapApplicationContext applicationContext, IMultiLangService multiLang)
         {
             _dataAccessor = dataAccessor;
-            _loggerFactory = loggerFactory;
+            _rbacService = rbacService;
             _applicationContext = applicationContext;
             _multiLang = multiLang;
         }
@@ -63,7 +64,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             {
                 id = Id;
             }
-            FapFreeForm form = new FapFreeForm(_dataAccessor, _loggerFactory, _applicationContext, _multiLang, id);
+            FapFreeForm form = new FapFreeForm(_dataAccessor, _rbacService, _applicationContext, _multiLang, id);
             if (FormTemplate.IsPresent())
             {
                 form.SetFromTemplate(FormTemplate);

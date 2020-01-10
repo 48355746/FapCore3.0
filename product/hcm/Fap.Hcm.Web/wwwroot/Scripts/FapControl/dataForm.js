@@ -255,14 +255,14 @@ var loadRefMessageBox = function (title, frmid, colfid, ctrlid, refurl, extra) {
                 callback: function () {
                     var res = GetRefResult();
                     if (res) {
-                        $("#frm-" + frmid + " #" + ctrlid + "MC").val(res.name).change();
-                        $("#frm-" + frmid + " #" + ctrlid).val(res.code).change();
+                        $("#" + frmid + " #" + ctrlid + "MC").val(res.name).change();
+                        $("#" + frmid + " #" + ctrlid).val(res.code).change();
                         //扩展返回值
                         if (res.frmcols !== undefined && res.frmcols !== '') {
                             var fcs = res.frmcols.split(',');
                             var exts = res.ext.split("^-^");
                             for (var i = 0; i < fcs.length; i++) {
-                                $("#frm-" + frmid + " #" + fcs[i]).val(exts[i]).change();
+                                $("#" + frmid + " #" + fcs[i]).val(exts[i]).change();
                             }
                         }
 
@@ -273,8 +273,8 @@ var loadRefMessageBox = function (title, frmid, colfid, ctrlid, refurl, extra) {
                 label: "清空!",
                 className: "btn-sm btn-danger",
                 callback: function () {
-                    $("#frm-" + frmid + " #" + ctrlid + "MC").val("").change();
-                    $("#frm-" + frmid + " #" + ctrlid).val("").change();
+                    $("#" + frmid + " #" + ctrlid + "MC").val("").change();
+                    $("#" + frmid + " #" + ctrlid).val("").change();
                 }
             },
 

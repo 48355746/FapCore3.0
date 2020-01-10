@@ -28,11 +28,12 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Yahoo.Yui.Compressor;
 using static System.String;
+using Fap.Core.Rbac;
+
 namespace Fap.AspNetCore.Controls.DataForm
 {
     public class FapFreeForm : HtmlString
     {
-        private string _id;
         public CfgFreeForm FFrm { get; private set; }
         private IDbContext _dbContext;
         private IFapApplicationContext _applicationContext;
@@ -55,16 +56,16 @@ namespace Fap.AspNetCore.Controls.DataForm
         private string FidValue { get; set; }
         private ILoggerFactory _loggerFactory;
         private ILogger<FapFreeForm> _logger;
-
-        public FapFreeForm(IDbContext dataAccessor, ILoggerFactory loggerFactory,  IFapApplicationContext applicationContext, IMultiLangService multiLangService, string id, FormStatus frmStatus = FormStatus.Add) : base("")
+        private IRbacService _rbacService;
+        public string Id { get; private set; }
+        public FapFreeForm(IDbContext dataAccessor, IRbacService rbacService,  IFapApplicationContext applicationContext, IMultiLangService multiLangService, string id, FormStatus frmStatus = FormStatus.Add) : base("")
         {
-            _id = id;
+            Id = id;
             _formStatus = frmStatus;
             _dbContext = dataAccessor;
             _applicationContext = applicationContext;
             _multiLangService = multiLangService;
-            _loggerFactory = loggerFactory;
-            _logger = loggerFactory.CreateLogger<FapFreeForm>();
+            _rbacService = rbacService;
         }
         /// <FapFreeForm>
         /// 这个要写在前面，否则不起作用
@@ -131,12 +132,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             FidValue = FormData.Get("Fid").ToString();
             if (fapColumns.Any())
             {
-                SetFapClumns(fapColumns.ToList());
-                //如果id为jqgriddataform的时候 formid改为frm-表名
-                if (_id.Equals("jqgriddataform", System.StringComparison.CurrentCultureIgnoreCase))
-                {
-                    _id = fapColumns.First().TableName;
-                }
+                SetFapClumns(fapColumns.ToList());              
             }
             //获取自由表单设置
             GetFreeFromSet(qs.TableName);
@@ -279,7 +275,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 script.AppendLine("</script>");
 
                 // Insert grid id where needed (in columns)
-                script.Replace("##formid##", _id);
+                script.Replace("##formid##", $"frm-{Id}");
                 // Return script + required elements
                 return script.ToString() + RenderHtmlElements();
             }
@@ -298,7 +294,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 return FFrm.FFContent;
             }
 
-            formHtml.AppendFormat("<form class=\"form-horizontal\" id=\"frm-{0}\" role=\"form\">", _id).AppendLine();
+            formHtml.AppendLine("<form class=\"form-horizontal\" id=\"##formid##\" role=\"form\">");
 
             //Id,Fid,TableName,Ts这三列要隐藏
             string idv = _fapFields.FirstOrDefault(f => f.FieldName == "Id").FieldValue.ToString();
@@ -316,7 +312,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             string ffContent = FFrm.FFContent;
             foreach (var field in _existTemplateFields)
             {
-                ffContent = ffContent.Replace("${" + field.FieldComment + "}", field.BuilderFreeForm(_id, _formStatus));
+                ffContent = ffContent.Replace("${" + field.FieldComment + "}", field.BuilderFreeForm(Id, _formStatus));
             }
             foreach (var table in _childTableList)
             {
@@ -326,7 +322,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     _logger.LogError($"表{table.Value.TableName}未设置和主表的关联字段，请设置关联字段参照主表");
                     continue;
                 }
-                Grid grid = new Grid(_dbContext, _loggerFactory, _applicationContext, _multiLangService, $"grid-{table.Value.TableName}");
+                Grid grid = new Grid(_dbContext,_rbacService , _applicationContext, _multiLangService, $"grid-{table.Value.TableName}");
                 QuerySet qs = new QuerySet();
                 qs.TableName = table.Value.TableName;
 
@@ -407,13 +403,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             formHtml.AppendLine("<div class=\"row\">");
             formHtml.AppendLine("<div class=\"col-xs-12 col-sm-6\" id=\"frm-result\"></div>");
             formHtml.AppendLine("</div>");
-            //当单独设置dataform的时候 生成这个层，如果是jqgrid弹出的form就不用，因为jqgrid中已经生成
-            if (!_id.Equals("jqgriddataform", System.StringComparison.CurrentCultureIgnoreCase))
-            {
-                formHtml.AppendLine(" <div class=\"row\"> <div id=\"fapFormContent-" + _id + "\" class=\"col-lg-12\">");
-                //formDialogDiv.AppendLine("    <iframe width=\"100%\" height=\"100%\" frameborder=\"0\" style=\"border:none 0;\" allowtransparency=\"true\" id=\"_DialogFrame_Dataform\" ></iframe>");
-                formHtml.AppendLine(" </div>  </div>");
-            }
+            formHtml.Replace("##formid##", $"frm-{Id}");
 
             return formHtml.ToString();
         }
@@ -467,11 +457,11 @@ namespace Fap.AspNetCore.Controls.DataForm
                     }
                     if (dateFormat == "yyyy-mm-dd")
                     {
-                        script.AppendLine(" $(\"#frm-" + _id + " #" + column.ColName + "\").scroller('destroy').scroller($.extend({preset:'date', minDate:moment('" + minDate + "').toDate(),maxDate:moment('" + maxDate + "').toDate()},{ theme: 'android-ics light', mode: 'scroller', display:'modal', lang: 'zh' }));");
+                        script.AppendLine(" $(\"###formid## #" + column.ColName + "\").scroller('destroy').scroller($.extend({preset:'date', minDate:moment('" + minDate + "').toDate(),maxDate:moment('" + maxDate + "').toDate()},{ theme: 'android-ics light', mode: 'scroller', display:'modal', lang: 'zh' }));");
                     }
                     else
                     {
-                        script.AppendLine("$(\"#frm-" + _id + " #" + column.ColName + "\").datePicker({  followOffset: [0, 24],onselect:function(date){ var formatDate = DatePicker.formatDate(date, '" + dateFormat + "');this.shell.val(formatDate).change();  return false;},minDate:'" + minDate + "',maxDate:'" + maxDate + "', altFormat:'" + dateFormat + "',showMode:" + model + " }).next().on(ace.click_event, function () {$(this).prev().focus(); });");
+                        script.AppendLine("$(\"###formid## #" + column.ColName + "\").datePicker({  followOffset: [0, 24],onselect:function(date){ var formatDate = DatePicker.formatDate(date, '" + dateFormat + "');this.shell.val(formatDate).change();  return false;},minDate:'" + minDate + "',maxDate:'" + maxDate + "', altFormat:'" + dateFormat + "',showMode:" + model + " }).next().on(ace.click_event, function () {$(this).prev().focus(); });");
 
                     }
                 }
@@ -519,13 +509,13 @@ namespace Fap.AspNetCore.Controls.DataForm
                     {
                         //format = "datetime";
                         //script.AppendLine("opt.datetime = { preset : 'datetime', minDate:moment('" + startDate + "').toDate(), maxDate: minDate:moment('" + endDate + "').toDate() , stepMinute: 5  };");
-                        script.AppendLine(" $(\"#frm-" + _id + " #" + column.ColName + "\").scroller('destroy').scroller($.extend({ preset:'datetime', minDate:moment('" + startDate + "').toDate(), maxDate:moment('" + endDate + "').toDate() , stepMinute: 5  }, { theme:'android-ics light', mode: 'scroller', display:'modal', lang: 'zh' }));");
+                        script.AppendLine(" $(\"###formid## #" + column.ColName + "\").scroller('destroy').scroller($.extend({ preset:'datetime', minDate:moment('" + startDate + "').toDate(), maxDate:moment('" + endDate + "').toDate() , stepMinute: 5  }, { theme:'android-ics light', mode: 'scroller', display:'modal', lang: 'zh' }));");
                     }
                     else if (format.EqualsWithIgnoreCase("HH:mm"))
                     {
                         format = "time";
                         //script.AppendLine("opt.time = {preset : 'time'};");
-                        script.AppendLine(" $(\"#frm-" + _id + " #" + column.ColName + "\").scroller('destroy').scroller($.extend({preset:'time'}, { theme: 'android-ics light', mode: 'scroller', display:'modal', lang: 'zh' }));");
+                        script.AppendLine(" $(\"###formid## #" + column.ColName + "\").scroller('destroy').scroller($.extend({preset:'time'}, { theme: 'android-ics light', mode: 'scroller', display:'modal', lang: 'zh' }));");
                     }
                 }
                 #endregion
@@ -551,7 +541,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     //    refUrl = "TreeGridReference";
                     //}
                     string dispalyName = _multiLangService.GetLangColumnComent(column);
-                    script.AppendLine("$(\"#frm-" + _id + " #"  + column.ColName + "\"+\"MC\").next().on(ace.click_event, function(){");
+                    script.AppendLine("$(\"###formid## #" + column.ColName + "\"+\"MC\").next().on(ace.click_event, function(){");
                     //script.AppendLine("//不可编辑字段不能弹出");
                     script.AppendLine(" if($(this).prev().attr(\"disabled\")==\"disabled\"){return;}");
                     //扩展参考值，参照参数用
@@ -580,9 +570,9 @@ namespace Fap.AspNetCore.Controls.DataForm
                             }
                         }
                     }
-                    script.AppendLine("loadRefMessageBox('" + dispalyName + "','" + _id + "','" + column.Fid + "','" + column.ColName + "','" + refUrl + "',extra)");
+                    script.AppendLine("loadRefMessageBox('" + dispalyName + "','##formid##','" + column.Fid + "','" + column.ColName + "','" + refUrl + "',extra)");
                     script.AppendLine("});");
-                    script.AppendLine("$(\"#frm-" + _id + " #" +column.ColName + "\"+\"MC\").on(ace.click_event,function(e){$(this).next().trigger(ace.click_event);e.preventDefault();})");
+                    script.AppendLine("$(\"###formid## #" + column.ColName + "\"+\"MC\").on(ace.click_event,function(e){$(this).next().trigger(ace.click_event);e.preventDefault();})");
                 }
                 #endregion
 
@@ -590,7 +580,7 @@ namespace Fap.AspNetCore.Controls.DataForm
 
                 else if (column.CtrlType == FapColumn.CTRL_TYPE_FILE)
                 {
-                    script.AppendLine("$(\"#frm-" + _id + " #file" + _id + column.ColName + "\").on(ace.click_event, function () {");
+                    script.AppendLine("$(\"###formid## #file" + Id + column.ColName + "\").on(ace.click_event, function () {");
                     string tempFid =UUIDUtils.Fid;
                     if (field.FieldValue.ToString().IsMissing())
                     {
@@ -598,7 +588,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     }
                     else
                     {
-                        script.AppendLine("loadFileMessageBox('" + tempFid + "','" + _id + "',initFile" + _id + tempFid + ");");
+                        script.AppendLine("loadFileMessageBox('" + tempFid + "','##formid##',initFile" + Id + tempFid + ");");
                     }
                     script.AppendLine("})");
                     string allowExt = string.Empty;
@@ -611,8 +601,8 @@ namespace Fap.AspNetCore.Controls.DataForm
                         }
                     }
                     //建立初始化附件控件js函数
-                    script.AppendLine("var initFile" + _id + tempFid + "=function(){");
-                    script.AppendLine("$(\"#" + _id + tempFid + "-FILE\").fileinput({");
+                    script.AppendLine("var initFile" + Id + tempFid + "=function(){");
+                    script.AppendLine("$(\"###formid##" + tempFid + "-FILE\").fileinput({");
                     script.AppendLine("language: 'zh',");
                     script.AppendLine("uploadUrl:\"" + _applicationContext.BaseUrl+ "/Api/Core/uploadfile/" + field.FieldValue + "\",");
                     //script.AppendLine("deleteUrl:\"http://" + HttpContext.Current.Request.Url.Authority + HttpContext.Current.Request.ApplicationPath  + "/Api/Core/deletefile\",");
@@ -671,7 +661,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                        // alert(index);
                         var files =$(this).fileinput('getFileStack');
                         $(this).fileinput('uploadSingle',index,files,false);
-                    }).on('fileuploaded', function (event, data, previewId, index) {  if(data.response.success==false){bootbox.alert('上传失败：'+data.response.msg);}else{loadFileList('" + _id + "', '" + column.ColName + "', '" + field.FieldValue.ToString() + "',1);                } });       ");
+                    }).on('fileuploaded', function (event, data, previewId, index) {  if(data.response.success==false){bootbox.alert('上传失败：'+data.response.msg);}else{loadFileList('" + Id + "', '" + column.ColName + "', '" + field.FieldValue.ToString() + "',1);                } });       ");
                     script.AppendLine("}");
                     //if (attList != null && attList.Count() > 0)
                     //{
@@ -718,7 +708,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     if (_formStatus == FormStatus.Edit)
                     {
                         string bid = field.FieldValue.ToString();
-                        script.AppendLine("loadFileList('" + _id + "','" + column.ColName + "','" + bid + "',1);");
+                        script.AppendLine("loadFileList('" + Id + "','" + column.ColName + "','" + bid + "',1);");
                     }
                 }
                 #endregion
@@ -733,7 +723,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 #region 富文本控件
                 else if (column.CtrlType == FapColumn.CTRL_TYPE_RICHTEXTBOX)
                 {
-                    script.AppendLine("$(\"#frm-" + _id + " #" + column.ColName + ".wysiwyg-editor\").ace_wysiwyg({" + @"
+                    script.AppendLine("$(\"###formid## #" + column.ColName + ".wysiwyg-editor\").ace_wysiwyg({" + @"
 						toolbar:
 						[
                             'font',
@@ -797,7 +787,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     {
                         step = "0." + "1".PadLeft(precision, '0');
                     }
-                    script.AppendLine(" $(\"#frm-" + _id + " input[name='" + column.ColName + "']\").TouchSpin({");
+                    script.AppendLine(" $(\"###formid## input[name='" + column.ColName + "']\").TouchSpin({");
                     script.AppendLine(@"
                         min: " + min + @",
                         max: " + max + @",
@@ -818,7 +808,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 else if (column.CtrlType == FapColumn.CTRL_TYPE_NATIVE)
                 {
                     //籍贯
-                    script.AppendLine("$(\"#frm-" + _id + " #" + column.ColName + "\").citypicker();");
+                    script.AppendLine("$(\"###formid## #" + column.ColName + "\").citypicker();");
                 }
 
                 #endregion
@@ -828,7 +818,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 else if (column.CtrlType == FapColumn.CTRL_TYPE_CITY)
                 {
                     //城市
-                    script.AppendLine("$(\"#frm-" + _id + " #" + column.ColName + "\").cityselect();");
+                    script.AppendLine("$(\"###formid## #" + column.ColName + "\").cityselect();");
                 }
 
                 #endregion
@@ -840,12 +830,12 @@ namespace Fap.AspNetCore.Controls.DataForm
                         field.FieldValue = "0";
                     }
                     //评星级
-                    script.AppendLine("if(!$(\"#frm-" + _id + " #" + column.ColName + "\").prop(\"disabled\")){ $(\"#frm-" + _id + " #rat-" + column.ColName + "\").raty({number: 5,score:" + field.FieldValue +
+                    script.AppendLine("if(!$(\"###formid## #" + column.ColName + "\").prop(\"disabled\")){ $(\"###formid## #rat-" + column.ColName + "\").raty({number: 5,score:" + field.FieldValue +
                     @", cancel: true,  'starType' : 'i',
                     'click': function(score,evt) {" +
-                        "$(\"#frm-" + _id + " #" + column.ColName + "\").val(score);" +
+                        "$(\"###formid## #" + column.ColName + "\").val(score);" +
                     @"},					
-                    })}else{" + "$(\"#frm-" + _id + " #rat-" + column.ColName + "\").raty({number: 5,score:" + field.FieldValue +
+                    })}else{" + "$(\"###formid## #rat-" + column.ColName + "\").raty({number: 5,score:" + field.FieldValue +
                     @",  'starType' : 'i',readOnly: true			
                     })}");
                 }
@@ -858,10 +848,10 @@ namespace Fap.AspNetCore.Controls.DataForm
                     {
                         ctrmultiLang = ctrmultiLang + _multiLangService.CurrentLanguageName;
                     }
-                    script.AppendLine("$(\"#frm-" + _id + " #" + ctrmultiLang + "\").next().on(ace.click_event, function(){");
+                    script.AppendLine("$(\"###formid## #" + ctrmultiLang + "\").next().on(ace.click_event, function(){");
                     script.AppendLine(" document.addEventListener(\"mousedown\", onMultiLangPoverMouseDown, false);");
                     script.AppendLine("var fid=$(this).data(\"fid\");");
-                    script.AppendLine("var X1 = $(\"#frm-" + _id + " #" + ctrmultiLang + "\").offset().top-55;var Y1 =$(\"#frm-" + _id + " #" + ctrmultiLang + "\").offset().left;");
+                    script.AppendLine("var X1 = $(\"###formid## #" + ctrmultiLang + "\").offset().top-55;var Y1 =$(\"###formid## #" + ctrmultiLang + "\").offset().left;");
                     script.AppendLine("var bg=$(\"#\"+fid).closest(\".modal-lg\");var top=X1;var left=Y1");
                     script.AppendLine("if(bg){ var bgo=bg.offset();   top=X1-bgo.top;left=Y1-bgo.left;}");
                     script.AppendLine("$(\"#\"+fid).css({\"position\": \"fixed\",\"display\":\"inline-grid\",\"top\":top+'px',\"left\":left+'px'});");
@@ -879,7 +869,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             #region 表单校验
 
             //校验
-            script.AppendLine("$('#frm-'+'" + _id + "').validate({");
+            script.AppendLine("$('###formid##').validate({");
             script.AppendLine("		errorElement: 'div',");
             script.AppendLine("		errorClass: 'help-block',");
             script.AppendLine("		focusInvalid: false,");
@@ -947,7 +937,7 @@ namespace Fap.AspNetCore.Controls.DataForm
 
             script.AppendLine("		},");
 
-            script.AppendLine("errorLabelContainer: $(\"#frm-" + _id + " div.error\"),");
+            script.AppendLine("errorLabelContainer: $(\"###formid## div.error\"),");
             script.AppendLine("		highlight: function (e) {");
             script.AppendLine("			$(e).closest('.form-group').removeClass('has-info').addClass('has-error');");
             script.AppendLine("		},");

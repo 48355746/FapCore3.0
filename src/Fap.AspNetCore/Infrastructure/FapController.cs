@@ -31,7 +31,6 @@ namespace Fap.AspNetCore.Infrastructure
             qs.TableName = tableName;
             qs.GlobalWhere = "";
             qs.QueryCols = "*";
-            qs.OrderByList = new List<OrderBy>();
             //事件处理
             handler?.Invoke(qs);
             if (fid.IsMissing())

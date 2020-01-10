@@ -401,12 +401,34 @@ namespace Fap.Hcm.Web.Controllers
             if (_platformDomain.MenuColumnSet.TryGetValue(menuid, out IEnumerable<FapMenuColumn> menuColumns))
             {
                 var menuColumn = menuColumns.Where(r => r.GridId == gid).FirstOrDefault();
-                FormViewModel fd = this.GetFormViewModel(menuColumn.TableName, menuColumn.GridId, fid, qs =>
-                 {
-                     qs.QueryCols = menuColumn.GridColumn;
-                 });
+                if (menuColumn != null)
+                {
+                    //检查权限
+                    var roleCols = _rbacService.GetRoleColumnList(_applicationContext.CurrentRoleUid).Where(r => r.MenuUid == menuid && r.GridId == gid);
+                    if (roleCols.Any())
+                    {
+                        var allColumn = _dbContext.Columns(menuColumn.TableName);
+                        string queryCols =string.Join(',', allColumn.Where(c => roleCols.Select(r => r.ColumnUid).Distinct().Contains(c.Fid)).Select(c => c.ColName));
+                        string readonlyCols = string.Join(',', allColumn.Where(c => roleCols.Where(r => r.ViewAble == 1).Select(r => r.ColumnUid).Contains(c.Fid)).Select(c => c.ColName));
+                        FormViewModel fd = this.GetFormViewModel(menuColumn.TableName, menuColumn.GridId, fid, qs =>
+                         {
+                             qs.QueryCols = queryCols;
+                             qs.ReadOnlyCols = readonlyCols;
 
-                return View(fd);
+                         });
+                        return View(fd);
+                    }
+                    else
+                    {
+                        FormViewModel fd = this.GetFormViewModel(menuColumn.TableName, menuColumn.GridId, fid, qs =>
+                        {
+                            qs.QueryCols = menuColumn.GridColumn;
+
+                        });
+                        return View(fd);
+                    }
+
+                }
             }
             return NotFound();
         }
@@ -426,7 +448,7 @@ namespace Fap.Hcm.Web.Controllers
 
                 return View(fd);
             }
-          
+
             return NotFound();
         }
         /// <summary>

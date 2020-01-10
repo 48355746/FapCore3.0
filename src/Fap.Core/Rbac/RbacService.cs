@@ -382,5 +382,7 @@ namespace Fap.Core.Rbac
             string path = $"~{_applicationContext.Request.Path}";
             return _platformDomain.MenuSet.FirstOrDefault(m => m.MenuUrl.TrimEnd('/').Trim().EqualsWithIgnoreCase(path));
         }
+
+      
     }
 }

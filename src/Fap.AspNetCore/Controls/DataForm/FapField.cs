@@ -44,14 +44,7 @@ namespace Fap.AspNetCore.Controls.DataForm
         /// 只读
         /// </summary>
         public bool ReadOnly { get; set; }
-        /// <summary>
-        /// 可编辑,优先级大于ReadOnly
-        /// </summary>
-        private bool _isEnabled = false;
-        /// <summary>
-        /// 可编辑
-        /// </summary>
-        public bool IsEnable { get { return _isEnabled; } set { _isEnabled = value; } }
+        
         /// <summary>
         /// 字段分组
         /// </summary>
@@ -76,7 +69,7 @@ namespace Fap.AspNetCore.Controls.DataForm
 
             //是否可编辑
             string editAble = string.Empty;
-            if (!IsEnable && (_fapColumn.EditAble == 0 || ReadOnly))
+            if (_fapColumn.EditAble == 0 || ReadOnly)
             {
                 editAble = "disabled='disabled'";
             }
@@ -341,7 +334,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 string ngModel = "formData." + _fapColumn.ColName;
                 //是否可编辑
                 string editAble = string.Empty;
-                if (!IsEnable && (_fapColumn.EditAble == 0 || ReadOnly))
+                if (_fapColumn.EditAble == 0 || ReadOnly)
                 {
                     editAble = "disabled='disabled'";
                 }

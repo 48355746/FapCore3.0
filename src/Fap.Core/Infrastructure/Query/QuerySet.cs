@@ -25,11 +25,8 @@ namespace Fap.Core.Infrastructure.Query
         /// <summary>
         /// 设置可见列，某些情况下需要把一些默认隐藏的列显示出来
         /// </summary>
-        public string DispalyCols { get; set; }
-        /// <summary>
-        /// 设置不可见的列，某些情况下 需要把默认显示的列设置为不可见
-        /// </summary>
-        public string HiddenCols { get; set; }
+        public string ReadOnlyCols { get; set; }
+       
         /// <summary>
         /// 导出列
         /// </summary>

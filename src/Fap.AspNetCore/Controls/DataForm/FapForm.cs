@@ -30,7 +30,6 @@ namespace Fap.AspNetCore.Controls.DataForm
 {
     public class FapForm : HtmlString
     {
-        private string _id;
         private int _colCount = 2;
         private string _tableName;
         private FormStatus _formStatus = FormStatus.Add;
@@ -43,14 +42,10 @@ namespace Fap.AspNetCore.Controls.DataForm
         /// <summary>
         /// 表单Fid的值
         /// </summary>
-        private string FidValue { get; set; }
-        //隐藏列
-        private string _hiddenCols = string.Empty;
-        public string Id
-        {
-            get { return _id; }
-            set { _id = value; }
-        }
+        private string FidValue { get; set; }       
+        //表单id
+        public string Id { get; set; }
+        
         //是否为单据
         private bool IsDocument = false;
 
@@ -110,67 +105,21 @@ namespace Fap.AspNetCore.Controls.DataForm
         /// </summary>
         /// <param name="columns"></param>
         /// <returns></returns>
-        public FapForm SetFapClumns()
+        public FapForm SetFapClumns(QuerySet querySet)
         {
-            List<string> hidecols = new List<string>();
             if (_fapColumns.Any())
             {
                 #region 权限
-                //当前角色
-                //string roleUid = Fap.Core.Platform.FapAppDomain.AcSession.OnlineUser.CurrentRole.Fid;
-                IEnumerable<FapRoleColumn> roleColumn = _rbacService.GetRoleColumnList(_applicationContext.CurrentRoleUid);
-                //只读字段
-                List<string> viewList = new List<string>();
-                //可编辑字段
-                List<string> editList = new List<string>();
-                if (roleColumn != null && roleColumn.Any())
+               //只读字段              
+                string[] readOnlyCols = Array.Empty<string>();
+                if (querySet.ReadOnlyCols.IsPresent())
                 {
-                    ////当前表的角色字段
-                    //var currRoleColumns = roleColumn.Where(t => t.TableUid == TableName);
-                    //if (currRoleColumns != null && currRoleColumns.Any())
-                    //{
-                    //    foreach (var column in _fapColumns)
-                    //    {
-                    //        var powerCol = currRoleColumns.FirstOrDefault(c => c.ColumnUid == column.Fid);
-                    //        if (powerCol != null)
-                    //        {
-                    //            if (powerCol.ViewAble == 1)
-                    //            {
-                    //                viewList.Add(column.Fid);
-                    //            }
-                    //            if (powerCol.EditAble == 1)
-                    //            {
-                    //                editList.Add(column.Fid);
-                    //            }
-                    //        }
-                    //        //默认字段不处理，当不是默认字段，又不在权限中的时候 设置为隐藏字段
-                    //        if (column.IsDefaultCol == 0 && powerCol == null)
-                    //        {
-                    //            if (_hiddenCols.IsMissing())
-                    //            {
-                    //                _hiddenCols = column.ColName;
-                    //            }
-                    //            else
-                    //            {
-                    //                _hiddenCols += "," + column.ColName;
-                    //            }
-                    //        }
-                    //    }
-
-                    //}
+                    readOnlyCols = querySet.ReadOnlyCols.Split(',');
                 }
                 #endregion
-                if (_hiddenCols.IsPresent())
-                {
-                    hidecols = _hiddenCols.ToLower().SplitComma();
-                }
+
                 foreach (var col in _fapColumns)
                 {
-                    //隐藏列跳过
-                    if (hidecols != null && hidecols.Exists(c => c.EqualsWithIgnoreCase(col.ColName.ToLower())))
-                    {
-                        continue;
-                    }
                     //参照MC为自定义列
                     if (col.IsCustomColumn == 1)
                     {
@@ -194,14 +143,11 @@ namespace Fap.AspNetCore.Controls.DataForm
                     }
                     FapField frmField = new FapField(_dbContext, _multiLangService) { FormData = FormData, CurrentColumn = col, FieldGroup = col.ColGroup.IsMissing() ? "默认分组" : col.ColGroup, FieldValue = (fv == null ? "" : fv), FieldMCValue = (fvc == null ? "" : fvc) };
                     #region 权限（只读可编辑）判断
-                    if (viewList != null && viewList.Contains(col.Fid))
+                    if (readOnlyCols.Any() &&readOnlyCols.Contains(col.ColName,new Fap.Core.Utility.FapStringEqualityComparer()))
                     {
                         frmField.ReadOnly = true;
                     }
-                    if (editList != null && editList.Contains(col.Fid))
-                    {
-                        frmField.IsEnable = true;
-                    }
+                  
                     #endregion
                     _fapFields.Add(frmField);
 
@@ -212,7 +158,6 @@ namespace Fap.AspNetCore.Controls.DataForm
         public FapForm SetQueryOption(QuerySet qs)
         {
             _tableName = qs.TableName;
-            _hiddenCols = qs.HiddenCols ?? "";
             _tb = _dbContext.Table(qs.TableName);
             DynamicParameters parameters = new DynamicParameters();
             qs.Parameters.ForEach(q => parameters.Add(q.ParamKey, q.ParamValue));
@@ -243,7 +188,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             FidValue = FormData.Get("Fid").ToString();
             if (_fapColumns.Any())
             {
-                SetFapClumns();             
+                SetFapClumns(qs);             
             }
             return this;
 
@@ -267,7 +212,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 script.AppendLine("</script>");
 
                 // Insert grid id where needed (in columns)
-                script.Replace("##formid##", "frm-" + _id);
+                script.Replace("##formid##", $"frm-{Id}");
 
                 // Return script + required elements
                 return script.ToString() + RenderHtmlElements();
@@ -311,9 +256,8 @@ namespace Fap.AspNetCore.Controls.DataForm
             {
                 formHtml.AppendLine("<form class=\"form-horizontal\" method=\"post\" id=\"##formid##\" role=\"form\">");
             }
-            var grpFields = _fapFields.GroupBy(f => f.FieldGroup);
-            //隐藏字段
-            List<string> hideCols = _hiddenCols.ToLower().SplitComma();
+            var grpFields = _fapFields.GroupBy(f => f.FieldGroup);            
+            
             foreach (var item in grpFields)
             {
                 if (grpFields.Count() != 1 && item.Key != "默认分组")
@@ -350,12 +294,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                         {
                             continue;
                         }
-                    }
-                    //隐藏字段
-                    if (hideCols.Any() && hideCols.Contains(column.CurrentColumn.ColName.ToLower()))
-                    {
-                        continue;
-                    }
+                    }                   
                     bool isColspan = IsColSpan(column.CurrentColumn);
                     //MEMO占一行，遇到提前换行，再生成一个group(当不该换行的时候遇到MEMO要加入换行，否则正常换行)
                     if (i % _colCount != 0 && isColspan)
@@ -370,7 +309,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                         formHtml.AppendLine($"<div class=\"{style}\">");
                     }
 
-                    formHtml.AppendLine(column.BuilderForm(_id, _colCount, isColspan, _formStatus));
+                    formHtml.AppendLine(column.BuilderForm(Id, _colCount, isColspan, _formStatus));
                     i++;
                     //MEMO占一行，遇到提前换行
                     if (isColspan)
@@ -409,10 +348,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             formHtml.AppendLine("<div class=\"row\">");
             formHtml.AppendLine("<div class=\"col-xs-12 col-sm-6\" id=\"frm-result\"></div>");
             formHtml.AppendLine("</div>");
-            //子表显示层
-            formHtml.AppendLine(" <div class=\"row\"> <div id=\"fapFormContent-" + _id + "\" class=\"col-lg-12\">");
-            //formDialogDiv.AppendLine("    <iframe width=\"100%\" height=\"100%\" frameborder=\"0\" style=\"border:none 0;\" allowtransparency=\"true\" id=\"_DialogFrame_Dataform\" ></iframe>");
-            formHtml.AppendLine(" </div>  </div>");
+            formHtml.Replace("##formid##", $"frm-{Id}");
 
             return formHtml.ToString();
         }
@@ -488,11 +424,11 @@ namespace Fap.AspNetCore.Controls.DataForm
                     }
                     if (dateFormat == "yyyy-mm-dd")
                     {
-                        script.AppendLine(" $(\"#frm-" + _id + " #" + column.ColName + "\").scroller('destroy').scroller($.extend({preset:'date', minDate:moment('" + minDate + "').toDate(),maxDate:moment('" + maxDate + "').toDate()},{ theme: 'android-ics light', mode: 'scroller', display:'modal', lang: 'zh' }));");
+                        script.AppendLine(" $(\"###formid## #" + column.ColName + "\").scroller('destroy').scroller($.extend({preset:'date', minDate:moment('" + minDate + "').toDate(),maxDate:moment('" + maxDate + "').toDate()},{ theme: 'android-ics light', mode: 'scroller', display:'modal', lang: 'zh' }));");
                     }
                     else
                     {
-                        script.AppendLine("$(\"#frm-" + _id + " #" + column.ColName + "\").datePicker({  followOffset: [0, 24],onselect:function(date){ var formatDate = DatePicker.formatDate(date, '" + dateFormat + "');this.shell.val(formatDate).change();  return false;},minDate:'" + minDate + "',maxDate:'" + maxDate + "', altFormat:'" + dateFormat + "',showMode:" + model + " }).next().on(ace.click_event, function () {$(this).prev().focus(); });");
+                        script.AppendLine("$(\"###formid## #" + column.ColName + "\").datePicker({  followOffset: [0, 24],onselect:function(date){ var formatDate = DatePicker.formatDate(date, '" + dateFormat + "');this.shell.val(formatDate).change();  return false;},minDate:'" + minDate + "',maxDate:'" + maxDate + "', altFormat:'" + dateFormat + "',showMode:" + model + " }).next().on(ace.click_event, function () {$(this).prev().focus(); });");
 
                     }
                 }
@@ -540,19 +476,19 @@ namespace Fap.AspNetCore.Controls.DataForm
                     {
                         //format = "datetime";
                         //script.AppendLine("opt.datetime = { preset : 'datetime', minDate:moment('" + startDate + "').toDate(), maxDate: minDate:moment('" + endDate + "').toDate() , stepMinute: 5  };");
-                        script.AppendLine(" $(\"#frm-" + _id + " #" + column.ColName + "\").scroller('destroy').scroller($.extend({ preset:'datetime', minDate:moment('" + startDate + "').toDate(), maxDate:moment('" + endDate + "').toDate() , stepMinute: 5  }, { theme:'android-ics light', mode: 'scroller', display:'modal', lang: 'zh' }));");
+                        script.AppendLine(" $(\"###formid## #" + column.ColName + "\").scroller('destroy').scroller($.extend({ preset:'datetime', minDate:moment('" + startDate + "').toDate(), maxDate:moment('" + endDate + "').toDate() , stepMinute: 5  }, { theme:'android-ics light', mode: 'scroller', display:'modal', lang: 'zh' }));");
                     }
                     else if (format.EqualsWithIgnoreCase("HH:mm"))
                     {
                         format = "time";
                         //script.AppendLine("opt.time = {preset : 'time'};");
-                        script.AppendLine(" $(\"#frm-" + _id + " #" + column.ColName + "\").scroller('destroy').scroller($.extend({preset:'time'}, { theme: 'android-ics light', mode: 'scroller', display:'modal', lang: 'zh' }));");
+                        script.AppendLine(" $(\"###formid## #" + column.ColName + "\").scroller('destroy').scroller($.extend({preset:'time'}, { theme: 'android-ics light', mode: 'scroller', display:'modal', lang: 'zh' }));");
                     }
                 }
                 #endregion
 
                 #region 参照
-                else if (column.CtrlType == FapColumn.CTRL_TYPE_REFERENCE && (field.IsEnable || column.EditAble == 1))
+                else if (column.CtrlType == FapColumn.CTRL_TYPE_REFERENCE &&!field.ReadOnly)
                 {
                     //去除自定义列
                     if (column.IsCustomColumn == 1)
@@ -572,7 +508,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     //    refUrl = "TreeGridReference";
                     //}
                     string dispalyName = _multiLangService.GetLangColumnComent(column);
-                    script.AppendLine("$(\"#frm-" + _id + " #" + column.ColName + "\"+\"MC\").next().on(ace.click_event, function(){");
+                    script.AppendLine("$(\"###formid## #" + column.ColName + "\"+\"MC\").next().on(ace.click_event, function(){");
                     //script.AppendLine("//不可编辑字段不能弹出");
                     script.AppendLine(" if($(this).prev().attr(\"disabled\")==\"disabled\"){return;}");
                     //扩展参考值，参照参数用
@@ -600,9 +536,9 @@ namespace Fap.AspNetCore.Controls.DataForm
                             }
                         }
                     }
-                    script.AppendLine("loadRefMessageBox('" + dispalyName + "','" + _id + "','" + column.Fid + "','" + column.ColName + "','" + refUrl + "',extra)");
+                    script.AppendLine("loadRefMessageBox('" + dispalyName + "','##formid##','" + column.Fid + "','" + column.ColName + "','" + refUrl + "',extra)");
                     script.AppendLine("});");
-                    script.AppendLine("$(\"#frm-" + _id + " #" + column.ColName + "\"+\"MC\").on(ace.click_event,function(e){$(this).next().trigger(ace.click_event);e.preventDefault();})");
+                    script.AppendLine("$(\"###formid## #" + column.ColName + "\"+\"MC\").on(ace.click_event,function(e){$(this).next().trigger(ace.click_event);e.preventDefault();})");
                 }
                 #endregion
 
@@ -610,7 +546,7 @@ namespace Fap.AspNetCore.Controls.DataForm
 
                 else if (column.CtrlType == FapColumn.CTRL_TYPE_FILE)
                 {
-                    script.AppendLine("$(\"#frm-" + _id + " #file" + _id + column.ColName + "\").on(ace.click_event, function () {");
+                    script.AppendLine("$(\"###formid## #file" + Id + column.ColName + "\").on(ace.click_event, function () {");
                     string tempFid = UUIDUtils.Fid;
                     if (field.FieldValue.ToString().IsMissing())
                     {
@@ -618,7 +554,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     }
                     else
                     {
-                        script.AppendLine("loadFileMessageBox('" + tempFid + "','" + _id + "',initFile" + _id + tempFid + ");");
+                        script.AppendLine("loadFileMessageBox('" + tempFid + "','##formid##',initFile" + Id + tempFid + ");");
                     }
                     script.AppendLine("})");
                     string allowExt = string.Empty;
@@ -631,8 +567,8 @@ namespace Fap.AspNetCore.Controls.DataForm
                         }
                     }
                     //建立初始化附件控件js函数
-                    script.AppendLine("var initFile" + _id + tempFid + "=function(){");
-                    script.AppendLine("$(\"#" + _id + tempFid + "-FILE\").fileinput({");
+                    script.AppendLine("var initFile" + Id + tempFid + "=function(){");
+                    script.AppendLine("$(\"###formid##" + tempFid + "-FILE\").fileinput({");
                     script.AppendLine("language: 'zh',");
                     script.AppendLine("uploadUrl:\"" + _applicationContext.BaseUrl + "/Api/Core/uploadfile/" + field.FieldValue + "\",");
                     //script.AppendLine("deleteUrl:\"http://" + HttpContext.Current.Request.Url.Authority + HttpContext.Current.Request.ApplicationPath  + "/Api/Core/deletefile\",");
@@ -687,7 +623,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                        // alert(index);
                         var files =$(this).fileinput('getFileStack');
                         $(this).fileinput('uploadSingle',index,files,false);
-                    }).on('fileuploaded', function (event, data, previewId, index) {  if(data.response.success==false){bootbox.alert('上传失败：'+data.response.msg);}else{loadFileList('" + _id + "', '" + column.ColName + "', '" + field.FieldValue.ToString() + "');                } });       ");
+                    }).on('fileuploaded', function (event, data, previewId, index) {  if(data.response.success==false){bootbox.alert('上传失败：'+data.response.msg);}else{loadFileList('" + Id + "', '" + column.ColName + "', '" + field.FieldValue.ToString() + "');                } });       ");
                     script.AppendLine("}");
                     //if (attList != null && attList.Count > 0)
                     //{
@@ -734,13 +670,13 @@ namespace Fap.AspNetCore.Controls.DataForm
                     if (_formStatus == FormStatus.Edit)
                     {
                         string bid = field.FieldValue.ToString();
-                        script.AppendLine("loadFileList('" + _id + "','" + column.ColName + "','" + bid + "');");
+                        script.AppendLine("loadFileList('" + Id + "','" + column.ColName + "','" + bid + "');");
                     }
                 }
                 #endregion
 
                 #region 图片头像
-                else if (column.CtrlType == FapColumn.CTRL_TYPE_IMAGE && (field.IsEnable || column.EditAble == 1))
+                else if (column.CtrlType == FapColumn.CTRL_TYPE_IMAGE && !field.ReadOnly)
                 {
                     script.AppendLine("loadImageControl('avatar" + column.ColName + "')");
                 }
@@ -749,7 +685,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 #region 富文本控件
                 else if (column.CtrlType == FapColumn.CTRL_TYPE_RICHTEXTBOX)
                 {
-                    script.AppendLine("$(\"#frm-" + _id + " #" + column.ColName + ".wysiwyg-editor\").ace_wysiwyg({" + @"
+                    script.AppendLine("$(\"###formid## #" + column.ColName + ".wysiwyg-editor\").ace_wysiwyg({" + @"
 						toolbar:
 						[
                             'font',
@@ -813,7 +749,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     {
                         step = "0." + "1".PadLeft(precision, '0');
                     }
-                    script.AppendLine(" $(\"#frm-" + _id + " input[name='" + column.ColName + "']\").TouchSpin({");
+                    script.AppendLine(" $(\"###formid## input[name='" + column.ColName + "']\").TouchSpin({");
                     script.AppendLine(@"
                         min: " + min + @",
                         max: " + max + @",
@@ -834,7 +770,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 else if (column.CtrlType == FapColumn.CTRL_TYPE_NATIVE)
                 {
                     //籍贯
-                    script.AppendLine("$(\"#frm-" + _id + " #" + column.ColName + "\").citypicker();");
+                    script.AppendLine("$(\"###formid## #" + column.ColName + "\").citypicker();");
                 }
 
                 #endregion
@@ -844,7 +780,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 else if (column.CtrlType == FapColumn.CTRL_TYPE_CITY)
                 {
                     //城市
-                    script.AppendLine("$(\"#frm-" + _id + " #" + column.ColName + "\").cityselect();");
+                    script.AppendLine("$(\"###formid## #" + column.ColName + "\").cityselect();");
                 }
 
                 #endregion
@@ -856,12 +792,12 @@ namespace Fap.AspNetCore.Controls.DataForm
                         field.FieldValue = "0";
                     }
                     //评星级
-                    script.AppendLine("if(!$(\"#frm-" + _id + " #" + column.ColName + "\").prop(\"disabled\")){ $(\"#frm-" + _id + " #rat-" + column.ColName + "\").raty({number: 5,score:" + field.FieldValue +
+                    script.AppendLine("if(!$(\"###formid## #" + column.ColName + "\").prop(\"disabled\")){ $(\"###formid## #rat-" + column.ColName + "\").raty({number: 5,score:" + field.FieldValue +
                     @", cancel: true,  'starType' : 'i',
                     'click': function(score,evt) {" +
-                        "$(\"#frm-" + _id + " #" + column.ColName + "\").val(score);" +
+                        "$(\"###formid## #" + column.ColName + "\").val(score);" +
                     @"},					
-                    })}else{" + "$(\"#frm-" + _id + " #rat-" + column.ColName + "\").raty({number: 5,score:" + field.FieldValue +
+                    })}else{" + "$(\"###formid## #rat-" + column.ColName + "\").raty({number: 5,score:" + field.FieldValue +
                     @",  'starType' : 'i',readOnly: true			
                     })}");
                 }
@@ -874,10 +810,10 @@ namespace Fap.AspNetCore.Controls.DataForm
                     {
                         ctrmultiLang = ctrmultiLang + _multiLangService.CurrentLanguageName;
                     }
-                    script.AppendLine("$(\"#frm-" + _id + " #" + ctrmultiLang + "\").next().on(ace.click_event, function(){");
+                    script.AppendLine("$(\"###formid## #" + ctrmultiLang + "\").next().on(ace.click_event, function(){");
                     script.AppendLine(" document.addEventListener(\"mousedown\", onMultiLangPoverMouseDown, false);");
                     script.AppendLine("var fid=$(this).data(\"fid\");");
-                    script.AppendLine("var X1 = $(\"#frm-" + _id + " #" + ctrmultiLang + "\").offset().top-55;var Y1 =$(\"#frm-" + _id + " #" + ctrmultiLang + "\").offset().left;");
+                    script.AppendLine("var X1 = $(\"###formid## #" + ctrmultiLang + "\").offset().top-55;var Y1 =$(\"###formid## #" + ctrmultiLang + "\").offset().left;");
                     script.AppendLine("var bg=$(\"#\"+fid).closest(\".modal-lg\");var top=X1;var left=Y1");
                     script.AppendLine("if(bg){ var bgo=bg.offset();   top=X1-bgo.top;left=Y1-bgo.left;}");
                     script.AppendLine("$(\"#\"+fid).css({\"position\": \"fixed\",\"display\":\"inline-grid\",\"top\":top+'px',\"left\":left+'px'});");
@@ -915,7 +851,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             if (needValidate)
             {
                 //校验
-                script.AppendLine("$('#frm-'+'" + _id + "').validate({");
+                script.AppendLine("$('###formid##').validate({");
                 script.AppendLine("		errorElement: 'div',");
                 script.AppendLine("		errorClass: 'error',");
                 script.AppendLine("		focusInvalid: false,");
@@ -985,7 +921,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 }
                 script.AppendLine("		},");
                 //校验容器
-                script.AppendLine("errorLabelContainer: $(\"#frm-" + _id + " div.error\"),");
+                script.AppendLine("errorLabelContainer: $(\"###formid## div.error\"),");
                 script.AppendLine("		highlight: function (e) {");
                 script.AppendLine("			$(e).closest('.form-group').removeClass('has-info').addClass('has-error');");
                 script.AppendLine("		},");

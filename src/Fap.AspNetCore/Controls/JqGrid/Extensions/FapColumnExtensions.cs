@@ -3,6 +3,7 @@ using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.MultiLanguage;
+using Fap.Core.Utility;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,7 +14,7 @@ namespace Fap.AspNetCore.Controls.JqGrid.Extensions
     public static class FapColumnExtensions
     {
         public static string[] systemDefaultFields = { "EnableDate", "DisableDate", "CreateBy", "CreateName", "CreateDate", "UpdateBy", "UpdateName", "UpdateDate", "GroupUid", "OrgUid", "Dr", "Ts" };
-        public static IEnumerable<Column> ToColumns(this IEnumerable<FapColumn> fapColumns, IDbContext dbContext, IMultiLangService multiLang,  List<string> disCols, List<string> hideCols)
+        public static IEnumerable<Column> ToColumns(this IEnumerable<FapColumn> fapColumns, IDbContext dbContext, IMultiLangService multiLang)
         {
             if (fapColumns.Any())
             {
@@ -23,13 +24,13 @@ namespace Fap.AspNetCore.Controls.JqGrid.Extensions
                     {
                         if (systemDefaultFields.Contains(fc.ColName))
                             continue;
-                        yield return fc.ToColumn( multiLang,dbContext, disCols, hideCols);
+                        yield return fc.ToColumn( multiLang,dbContext);
                         if(fc.CtrlType==FapColumn.CTRL_TYPE_REFERENCE)
                         {
                             FapColumn fcMC= (FapColumn)fc.Clone();
                             fcMC.ColName = fc.ColName + "MC";
                             fcMC.ShowAble = 0;
-                            yield return fcMC.ToColumn(multiLang, dbContext, disCols, hideCols);
+                            yield return fcMC.ToColumn(multiLang, dbContext);
                         }
                        
                     }
@@ -43,24 +44,18 @@ namespace Fap.AspNetCore.Controls.JqGrid.Extensions
         /// <param name="disCols">手动设置可见的字段，默认可能为不可见</param>
         /// <param name="hideCols">要隐藏的字段</param>
         /// <returns></returns>
-        public static Column ToColumn(this FapColumn fapColumn, IMultiLangService multiLang,IDbContext dbContext, List<string> disCols, List<string> hideCols)
+        public static Column ToColumn(this FapColumn fapColumn, IMultiLangService multiLang,IDbContext dbContext)
         {
             //判断是否为隐藏。当disCols不包含且 ShowAble==0
 
-            bool hideAble = false;
+            bool hideAble =fapColumn.ShowAble==0;
             string colName = fapColumn.ColName;
             //if (colName.EndsWith("MC") && fapColumn.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
             //{
             //    colName = colName.Substring(0, colName.Length - 2);
             //}
-            if (fapColumn.ShowAble == 0 && (!disCols.Contains(colName.ToLower())))
-            {
-                hideAble = true;
-            }
-            if (hideCols.Contains(colName.ToLower()))
-            {
-                hideAble = true;
-            }
+           
+           
             //如果是参照字段，隐藏之，显示MC字段
             //if (fapColumn.CtrlType == FapColumn.CTRL_TYPE_REFERENCE && !hideAble && fapColumn.IsCustomColumn == 0)
             //{
