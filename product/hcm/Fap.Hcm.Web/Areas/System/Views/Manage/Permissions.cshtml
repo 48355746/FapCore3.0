@@ -318,12 +318,12 @@
             $.msg("请选中角色进行设置");
             return;
         }
-        $("#frm-FapRoleData #RoleUidMC").val(node.text);
-        $("#frm-FapRoleData #RoleUid").val(selRole[0]);
-        $("#frm-FapRoleData #RoleUidMC").attr("disabled", "disabled");
+        //$("#frm-grid-roledata #RoleUidMC").val(node.text);
+        $("#frm-grid-roledata #RoleUid").val(selRole[0]).next().val(node.text).attr("disabled", "disabled");
+        //$("#frm-grid-roledata #RoleUidMC").attr("disabled", "disabled");
     }
     function initFormRoleDataEdit() {
-         $("#frm-FapRoleData #RoleUidMC").attr("disabled", "disabled");
+         $("#frm-grid-roledata #RoleUidMC").attr("disabled", "disabled");
     }
 
 </script>

@@ -83,7 +83,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                     Enabled=1
                 };
                 //注册按钮
-                return _rbacService.GetButtonAuthorized(menuButton);
+                return _rbacService.GetMenuButtonAuthorized(menuButton);
             }
             return string.Empty;
         }

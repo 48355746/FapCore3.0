@@ -124,8 +124,8 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid, menuid, fro
         initDialog();
     });
     function initDialog() {
-        var url = $.randomUrl(basePath + '/Component/Dataform/' + fid + '?gid=' + gid + '&menuid=' + menuid);
-        $.get(url, function (ev) {
+        var url = $.randomUrl(basePath + '/Component/Dataform/' + fid);
+        $.get(url, { gid: gid, menuid: menuid, fs: 1 }, function (ev) {
             dialog.find('.bootbox-body').html(ev);
             if ($.isFunction(fromInitCallback)) {
                 fromInitCallback();
@@ -139,13 +139,13 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid, menuid, fro
 //查看数据
 var viewFormMessageBox = function (fid, gid, menuid) {
     var dialog = bootbox.dialog({
-        title: '查看',
+        title: '<i class="ace-icon fa fa-search-plus"></i> 查看',
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
         size: "large",
         footer: false
     });
     dialog.init(function () {
-        dialog.find('.bootbox-body').load(basePath + "/Component/DataFormView/" + fid, { gid: gid, menuid: menuid });
+        dialog.find('.bootbox-body').load(basePath + "/Component/DataForm/" + fid, { gid: gid, menuid: menuid,fs:3 });
 
     });
 };
@@ -199,7 +199,7 @@ var deleteGridRow = function (gid, tableName, onCompletedCallback) {
 };
 var openRefrenceWindow = function (title, colfid, refurl, selectcallback, clearcallback) {
     var dialog = bootbox.dialog({
-        title: title,
+        title: '<i class="ace-icon fa fa-search "></i> ' + title,
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
         buttons: {
             success: {
@@ -244,8 +244,8 @@ var loadBatchUpdateMessageBox = function (title, gid, qryCols, tablename, id, ca
     var rowDatas = getSelectedRows(gid);
     if (rowDatas === null)
         return;
-    var dialog = bootbox.dialog({
-        title: title,
+    var dialog = bootbox.dialog({ 
+        title: '<i class="ace-icon fa fa-pencil-square-o"></i> ' + title,
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
         buttons: {
             cancel: {
@@ -378,7 +378,7 @@ var loadExportExcelMessageBox = function (title, gid, qryCols, tablename, callba
     var $fieldList = $("<select multiple='multiple' size='10' id='duallistbox_" + tablename + "' name='duallistbox_" + tablename + "'></select>");
 
     var dialog = bootbox.dialog({
-        title: title,
+        title: '<i class="ace-icon fa fa-file-excel-o"></i> ' + title,
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
         buttons: {
             success: {
@@ -443,7 +443,7 @@ var loadExportWordMessageBox = function (title, gid, qryCols, tablename, callbac
             window.location.href = basePath + "/" + rv.data;
         } else {
             var dialog = bootbox.dialog({
-                title: "上传打印模板",
+                title: '<i class="ace-icon fa fa-file-word-o"></i> 上传打印模板' ,
                 message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
                 buttons: {
                     cancel: {
@@ -505,7 +505,7 @@ var loadExportExcelTemplData = function (qryCols, gid) {
 //导入
 var loadImportDataMessageBox = function (title, gid, qryCols, tablename, callback) {
     var dialog = bootbox.dialog({
-        title: title,
+        title: '<i class="ace-icon fa fa-cloud-upload"></i> ' + title,
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
         buttons: {
             success: {

@@ -429,7 +429,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                     Description = _dbContext.Table(querySet.TableName).TableComment
                 };
                 //注册按钮
-                return _rbacService.GetButtonAuthorized(menuButton);
+                return _rbacService.GetMenuButtonAuthorized(menuButton);
             }
             return string.Empty;
         }
@@ -447,7 +447,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                 };
 
                 //注册按钮
-                return _rbacService.GetColumnAuthorized(menuColumn);
+                return _rbacService.GetMenuColumnAuthorized(menuColumn);
             }
             return string.Empty;
         }

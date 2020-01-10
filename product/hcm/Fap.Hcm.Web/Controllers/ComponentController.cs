@@ -18,6 +18,7 @@ using Fap.Core.Rbac.Model;
 using Fap.Core.Infrastructure.Query;
 using Dapper;
 using System.Web;
+using Fap.AspNetCore.Controls.DataForm;
 
 namespace Fap.Hcm.Web.Controllers
 {
@@ -396,7 +397,7 @@ namespace Fap.Hcm.Web.Controllers
         /// <param name="gid">jqgridId</param>
         /// <param name="menuid">菜单uid</param>
         /// <returns></returns>
-        public IActionResult DataForm(string fid, string gid, string menuid)
+        public IActionResult DataForm(string fid, string gid, string menuid,int fs)
         {
             if (_platformDomain.MenuColumnSet.TryGetValue(menuid, out IEnumerable<FapMenuColumn> menuColumns))
             {
@@ -416,6 +417,7 @@ namespace Fap.Hcm.Web.Controllers
                              qs.ReadOnlyCols = readonlyCols;
 
                          });
+                        fd.FormStatus = (FormStatus)fs;
                         return View(fd);
                     }
                     else
@@ -423,8 +425,8 @@ namespace Fap.Hcm.Web.Controllers
                         FormViewModel fd = this.GetFormViewModel(menuColumn.TableName, menuColumn.GridId, fid, qs =>
                         {
                             qs.QueryCols = menuColumn.GridColumn;
-
                         });
+                        fd.FormStatus = (FormStatus)fs;
                         return View(fd);
                     }
 
@@ -432,25 +434,7 @@ namespace Fap.Hcm.Web.Controllers
             }
             return NotFound();
         }
-        /// <summary>
-        /// 表单查看
-        /// </summary>
-        /// <returns></returns>
-        public IActionResult DataFormView(string fid, string gid, string menuid)
-        {
-            if (_platformDomain.MenuColumnSet.TryGetValue(menuid, out IEnumerable<FapMenuColumn> menuColumns))
-            {
-                var menuColumn = menuColumns.Where(r => r.GridId == gid).FirstOrDefault();
-                FormViewModel fd = this.GetFormViewModel(menuColumn.TableName, menuColumn.GridId, fid, qs =>
-                {
-                    qs.QueryCols = menuColumn.GridColumn;
-                });
-
-                return View(fd);
-            }
-
-            return NotFound();
-        }
+        
         /// <summary>
         /// 自由表单
         /// </summary>

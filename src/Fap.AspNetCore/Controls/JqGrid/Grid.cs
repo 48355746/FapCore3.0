@@ -2324,7 +2324,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                       var gsr = jQuery('###gridid##').jqGrid('getGridParam', 'selrow');
                       if (gsr) {
                         var ret = jQuery('###gridid##').jqGrid('getRowData', gsr);
-                        loadFormMessageBox('编辑','##gridid##','fa fa-pencil-square-o','" + TableName + @"',ret.Fid,'" + GetCurrentMenuUid() + "',function(){");
+                        loadFormMessageBox('编辑','##gridid##','fa fa-pencil','" + TableName + @"',ret.Fid,'" + GetCurrentMenuUid() + "',function(){");
             if (_onEditAfterInitDataForm.IsPresent())
             {
                 script.AppendLine(_onEditAfterInitDataForm);

@@ -3,7 +3,7 @@ using Fap.AspNetCore.ViewModel;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using System;
 using System.Linq;
-using Ardalis.GuardClauses;
+using Fap.Core.Extensions;
 
 namespace Fap.AspNetCore.Controls.TagHelpers
 {
@@ -27,17 +27,20 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// </summary>
         public FormViewModel FormModel { get; set; }
 
-        public FormStatus FormStatus { get; set; } = FormStatus.Add;
-
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
             output.TagName = "div";
             output.Content.Clear();
-            Guard.Against.NullOrWhiteSpace(Id, nameof(Id));
-            FapForm form = new FapForm(serviceProvider:_serviceProvider, Id);
-            if (this.FormStatus != FormStatus.Add)
+
+            if (Id.IsMissing())
             {
-                form.SetFormStatus(this.FormStatus);
+                Id = FormModel.QueryOption.TableName;
+            }
+            
+            FapForm form = new FapForm(serviceProvider:_serviceProvider, Id);
+            if (FormModel.FormStatus== FormStatus.View)
+            {
+                form.SetFormStatus(FormStatus.View);
             }
             if (FormModel.DefaultData != null && FormModel.DefaultData.Count > 0)
             {

@@ -32,6 +32,8 @@ namespace Fap.Hcm.Service.System
         IEnumerable<TreeDataView> GetMenuButtonTree();
 
         IEnumerable<TreeDataView> GetMenuEntityTree();
+        IEnumerable<TreeDataView> GetJobGroupTree();
+        object GetAuthority(string roleUid);
 
     }
 }

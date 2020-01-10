@@ -10,5 +10,6 @@ namespace Fap.Core.Rbac.AC
         void Refresh();
         bool TryGetUserValue(string roleUid, out IEnumerable<string> userUids);
         bool TryGetRoleValue(string userUid, out IEnumerable<string> roleUids);
+        bool TryGetValue(string roleUid, out IEnumerable<FapRoleUser> roleUsers);
     }
 }

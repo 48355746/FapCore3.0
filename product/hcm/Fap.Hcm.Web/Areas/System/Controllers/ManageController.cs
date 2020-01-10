@@ -39,7 +39,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             }
             JqGridViewModel model = this.GetJqGridModel("FapUser", (qs) =>
             {
-                qs.QueryCols = "Id,Fid,UserCode,UserName,UserEmail, UserPhone,UserIdentity";
+                qs.QueryCols = "Id,Fid,UserCode,UserName,UserEmail, UserPhone,UserIdentity,UserGroupUid,UserType,UserNote,ContentLang,EnableState";
                 qs.GlobalWhere = strWhere;
             });
             //JqGridViewModel model = this.GetJqGridModel("FapUser");

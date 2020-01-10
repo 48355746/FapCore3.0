@@ -246,7 +246,7 @@ $(function () {
 //extra 参照form上控件的值 array
 var loadRefMessageBox = function (title, frmid, colfid, ctrlid, refurl, extra) {
     var dialog = bootbox.dialog({
-        title: title,
+        title: '<i class="ace-icon fa fa-search "></i> ' + title,
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
         buttons: {
             success: {

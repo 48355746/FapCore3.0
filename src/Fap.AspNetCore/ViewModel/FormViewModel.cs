@@ -1,4 +1,5 @@
-﻿using Fap.Core.Infrastructure.Query;
+﻿using Fap.AspNetCore.Controls.DataForm;
+using Fap.Core.Infrastructure.Query;
 using System.Collections.Generic;
 
 namespace Fap.AspNetCore.ViewModel
@@ -9,6 +10,10 @@ namespace Fap.AspNetCore.ViewModel
         /// 表单ID
         /// </summary>
         public string FormId { get; set; }
+        /// <summary>
+        /// 表单状态
+        /// </summary>
+        public FormStatus FormStatus { get; set; }
         /// <summary>
         /// 标题
         /// </summary>

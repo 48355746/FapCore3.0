@@ -255,6 +255,14 @@ namespace Fap.Core.Rbac
             return Enumerable.Empty<FapRoleColumn>();
 
         }
+        public IEnumerable<FapRoleUser> GetRoleUserList(string roleUid)
+        {
+            if(_platformDomain.RoleUserSet.TryGetValue(roleUid,out IEnumerable<FapRoleUser> roleUsers))
+            {
+                return roleUsers;
+            }
+            return Enumerable.Empty<FapRoleUser>();
+        }
         /// <summary>
         /// 获取用户的所有角色
         /// </summary>
@@ -283,7 +291,7 @@ namespace Fap.Core.Rbac
             }
             return Enumerable.Empty<FapRoleButton>();
         }
-        public string GetButtonAuthorized(FapMenuButton button)
+        public string GetMenuButtonAuthorized(FapMenuButton button)
         {
             bool isAdministrator = _applicationContext.IsAdministrator;
             var menu = GetCurrentMenu();
@@ -333,8 +341,8 @@ namespace Fap.Core.Rbac
             _dbContext.DeleteExec(nameof(FapRoleButton), "RoleUid=@RoleUid", new DynamicParameters(new { RoleUid = roleUid }));
             _dbContext.InsertBatch(roleButtons);
         }
-
-        public string GetColumnAuthorized(FapMenuColumn column)
+        [Transactional]
+        public string GetMenuColumnAuthorized(FapMenuColumn column)
         {
             bool isAdministrator = _applicationContext.IsAdministrator;
             var menu = GetCurrentMenu();
@@ -342,7 +350,8 @@ namespace Fap.Core.Rbac
             {
                 if (_platformDomain.MenuColumnSet.TryGetValue(menu.Fid, out IEnumerable<FapMenuColumn> list))
                 {
-                    if (list.Any() && list.ToList().Exists(m => m.GridId == column.GridId))
+                    var gridColumn= list.FirstOrDefault(m => m.GridId == column.GridId);
+                    if (gridColumn != null&&gridColumn.GridColumn==column.GridColumn)
                     {
                         //检查授权
                         if (!isAdministrator && _platformDomain.RoleColumnSet.TryGetValueByRole(_applicationContext.CurrentRoleUid, out IEnumerable<FapRoleColumn> roleColumns))
@@ -350,13 +359,18 @@ namespace Fap.Core.Rbac
                             var cols= _platformDomain.ColumnSet.Where(c=> roleColumns.Where(r=>r.GridId==column.GridId).Select(r=>r.ColumnUid).Contains(c.Fid)).Select(c=>c.ColName);
                             if (cols.Any())
                             {
-                                cols = cols.Union(BaseColumns());
+                                cols = BaseColumns().Union(cols);
                             }
                             return string.Join(',', cols);
                         }
                     }
                     else
                     {
+                        if(gridColumn != null)
+                        {
+                            //删除之前
+                            _dbContext.DeleteExec(nameof(FapMenuColumn), " MenuUid=@MenuUid and GridId=@GridId", new DynamicParameters(new { MenuUid = menu.Fid, GridId = column.GridId }));
+                        }
                         //注册按钮
                         column.MenuUid = menu.Fid;
                         _dbContext.Insert(column);

@@ -61,7 +61,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                 //builder.Append("</button>");
             }
             //注册按钮
-            string authorize= _rbacService.GetButtonAuthorized(button);
+            string authorize= _rbacService.GetMenuButtonAuthorized(button);
             if (authorize.IsPresent() && authorize.Equals("1"))
             {
                 output.Content.SetHtmlContent(builder.ToString());

@@ -749,6 +749,87 @@ namespace Fap.Hcm.Service.System
             }
 
         }
+
+        public IEnumerable<TreeDataView> GetJobGroupTree()
+        {
+            IEnumerable<dynamic> jobGroups = _dbContext.QueryAll("FapJobGroup");
+            List<TreeDataView> oriList = jobGroups.Select(t => new TreeDataView { Id = t.Fid.ToString(), Pid = t.Pid.ToString(), Text = t.JobGroupName, Icon = "icon-folder purple ace-icon fa fa-clock-o" }).ToList<TreeDataView>();
+
+            List<TreeDataView> tree = new List<TreeDataView>();
+            TreeDataView treeRoot = new TreeDataView()
+            {
+                Id = "0",
+                Text = "任务组",
+                State = new NodeState { Opened = true },
+                Icon = "icon-folder blue ace-icon fa fa-sitemap",
+            };
+            tree.Add(treeRoot);
+            TreeViewHelper.MakeTree(treeRoot.Children, oriList, treeRoot.Id);
+            return tree;
+        }
+        public object GetAuthority(string roleUid)
+        {
+            DynamicParameters dparam = new DynamicParameters();
+            dparam.Add("RoleUid", roleUid);
+
+            var roleUsers= _rbacService.GetRoleUserList(roleUid);
+            var userList= _platformDomain.UserSet.Where(u => roleUsers.Select(r => r.UserUid).Contains(u.Fid));
+            var depts = _rbacService.GetRoleDeptList(roleUid).Select(r => r.Fid);
+            var menus = _rbacService.GetRoleMenuList(roleUid).Select(r => r.MenuUid);
+            var roles = _rbacService.GetRoleRoleList(roleUid).Select(r => r.PRoleUid);
+            var roleButtons = _rbacService.GetRoleButtonList(roleUid);
+            //获取角色用户
+            //IEnumerable<dynamic> userList = _dbContext.Query("select Fid, UserCode,UserName,UserEmail,UserIdentity from FapUser where fid in(select useruid from FapRoleUser where RoleUid=@RoleUid) order by UserCode", dparam, true);
+            //获取角色菜单
+            //IEnumerable<dynamic> menus = _dbContext.Query("select MenuUid from FapRoleMenu where RoleUid= @RoleUid", dparam);
+            //获取角色部门
+            //IEnumerable<dynamic> depts = _dbContext.Query("select DeptUid from FapRoleDept where RoleUid=@RoleUid", dparam);
+            //获取角色报表
+            IEnumerable<dynamic> rpts = _dbContext.Query("select RptUid from FapRoleReport where RoleUid=@RoleUid", dparam);
+            //获取角色实体属性
+
+            IEnumerable<FapRoleColumn> columnList = _rbacService.GetRoleColumnList(roleUid);// _dbContext.Query("select ColumnUid,EditAble,ViewAble from FapRoleColumn where RoleUid=@RoleUid", dparam);
+            //获取角色角色
+            //IEnumerable<dynamic> roles = _dbContext.Query("select PRoleUid from FapRoleRole where RoleUid=@RoleUid", dparam);
+
+            //获取角色按钮
+            //IEnumerable<FapRoleButton> roleButtons = _dbContext.Query<FapRoleButton>("select * from FapRoleButton where RoleUid=@RoleUid", dparam);
+
+            //var userJson = users.Select(x => new { Id = x.Fid }).ToList();
+            //var menuJson = menus.Select(x => x.MenuUid).ToList();
+            //var deptJson = depts.Select(x => x.DeptUid).ToList();
+            var rptJson = rpts.Select(x => x.RptUid).ToList();
+            //var roleJson = roles.Select(x => x.PRoleUid).ToList();
+            var buttonJson = GetRoleButtons();
+            var json = new
+            {
+                users = userList,
+                menus = menus,
+                depts = depts,
+                rpts = rptJson,
+                columns = columnList,
+                roles = roles,
+                buttons = buttonJson
+            };
+            return json;
+            IEnumerable<string> GetRoleButtons()
+            {
+                foreach (var rbtn in roleButtons)
+                {
+                    if (rbtn.ButtonType == FapMenuButtonType.Grid || rbtn.ButtonType == FapMenuButtonType.Tree)
+                    {
+                        foreach (var v in rbtn.ButtonValue.SplitComma())
+                        {
+                            yield return $"{rbtn.MenuUid}|{rbtn.ButtonType}|{ rbtn.ButtonId }|{v}";
+                        }
+                    }
+                    else
+                    {
+                        yield return $"{rbtn.MenuUid}|{rbtn.ButtonType}|{ rbtn.ButtonId }|{rbtn.ButtonValue}";
+                    }
+                }
+            }
+        }
     }
 
 }

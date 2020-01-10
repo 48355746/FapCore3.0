@@ -43,6 +43,7 @@ namespace Fap.Core.Rbac
         IEnumerable<OrgDept> GetRoleDeptList(string roleUid,string historyDate = "");
         IEnumerable<FapRoleMenu> GetRoleMenuList(string roleUid);
         IEnumerable<FapRoleReport> GetRoleReportList(string roleUid);
+        IEnumerable<FapRoleUser> GetRoleUserList(string roleUid);
         IEnumerable<FapRole> GetUserRoleList(string userUid);
         IEnumerable<FapRoleRole> GetRoleRoleList(string roleUid);
         IEnumerable<FapRoleButton> GetRoleButtonList(string roleUid);
@@ -51,7 +52,7 @@ namespace Fap.Core.Rbac
         /// </summary>
         /// <param name="button"></param>
         /// <returns></returns>
-        string GetButtonAuthorized(FapMenuButton button);
-        string GetColumnAuthorized(FapMenuColumn column);
+        string GetMenuButtonAuthorized(FapMenuButton button);
+        string GetMenuColumnAuthorized(FapMenuColumn column);
     }
 }

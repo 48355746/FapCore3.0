@@ -77,5 +77,19 @@ namespace Fap.Core.Rbac.AC
         {
             return _allRoleUser.GetEnumerator();
         }
+
+        public bool TryGetValue(string roleUid, out IEnumerable<FapRoleUser> roleUsers)
+        {
+            if (!_initialized)
+            {
+                Init();
+            }
+            roleUsers = _allRoleUser.Where(r => r.RoleUid == roleUid);
+            if (roleUsers.Any())
+            {
+                return true;
+            }
+            return false;
+        }
     }
 }
