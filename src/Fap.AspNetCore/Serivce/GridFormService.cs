@@ -213,14 +213,18 @@ namespace Fap.AspNetCore.Serivce
                 //获得安全sql
                 where = where.FilterDangerSql();
                 //替换部门权限占位符
-                return where.Replace(FapPlatformConstants.DepartmentAuthority, DeptWhere()).ReplaceIgnoreCase("query", "select ");
+                if (where.IndexOf(FapPlatformConstants.DepartmentAuthority) > -1)
+                {
+                    where = where.Replace(FapPlatformConstants.DepartmentAuthority, DeptWhere());
+                }
+                return where.ReplaceIgnoreCase("query", "select ");
             }
             string DeptWhere()
             {
-                var depts = _rbacService.GetRoleDeptList(_applicationContext.CurrentRoleUid, pageable.HistoryTimePoint);
-                if (depts != null && depts.Any())
+                var roledepts = _rbacService.GetRoleDeptList(_applicationContext.CurrentRoleUid);
+                if (roledepts.Any())
                 {
-                    return string.Join(",", depts.Select(d => "'" + d.Fid + "'"));
+                    return string.Join(",", roledepts.Select(d => "'" + d.DeptUid + "'"));
                 }
                 else
                 {
@@ -234,7 +238,7 @@ namespace Fap.AspNetCore.Serivce
                 var roleDatas = _rbacService.GetRoleDataList(_applicationContext.CurrentRoleUid);
                 if (roleDatas != null && roleDatas.Any())
                 {
-                    var rd = roleDatas.FirstOrDefault<FapRoleData>(r => r.TableUid ==qs.TableName);
+                    var rd = roleDatas.FirstOrDefault<FapRoleData>(r => r.TableUid == qs.TableName);
                     if (rd != null)
                     {
                         where = rd.SqlCondition;

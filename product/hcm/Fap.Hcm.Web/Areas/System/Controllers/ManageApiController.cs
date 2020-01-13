@@ -365,60 +365,8 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         public JsonResult GetAuthority(string roleUid)
         {
             var authority= _manageService.GetAuthority(roleUid);
-            return Json(authority, false);
-            //DynamicParameters dparam = new DynamicParameters();
-            //dparam.Add("RoleUid", roleUid);
-            ////获取角色用户
-            //IEnumerable<dynamic> userList = _dbContext.Query("select Fid, UserCode,UserName,UserEmail,UserIdentity from FapUser where fid in(select useruid from FapRoleUser where RoleUid=@RoleUid) order by UserCode", dparam, true);
-            ////获取角色菜单
-            //IEnumerable<dynamic> menus = _dbContext.Query("select MenuUid from FapRoleMenu where RoleUid= @RoleUid", dparam);
-            ////获取角色部门
-            //IEnumerable<dynamic> depts = _dbContext.Query("select DeptUid from FapRoleDept where RoleUid=@RoleUid", dparam);
-            ////获取角色报表
-            //IEnumerable<dynamic> rpts = _dbContext.Query("select RptUid from FapRoleReport where RoleUid=@RoleUid", dparam);
-            ////获取角色实体属性
-
-            //IEnumerable<FapRoleColumn> columnList = _rbacService.GetRoleColumnList(roleUid);// _dbContext.Query("select ColumnUid,EditAble,ViewAble from FapRoleColumn where RoleUid=@RoleUid", dparam);
-            ////获取角色角色
-            //IEnumerable<dynamic> roles = _dbContext.Query("select PRoleUid from FapRoleRole where RoleUid=@RoleUid", dparam);
-
-            ////获取角色按钮
-            //IEnumerable<FapRoleButton> roleButtons = _dbContext.Query<FapRoleButton>("select * from FapRoleButton where RoleUid=@RoleUid", dparam);
-
-            ////var userJson = users.Select(x => new { Id = x.Fid }).ToList();
-            //var menuJson = menus.Select(x => x.MenuUid).ToList();
-            //var deptJson = depts.Select(x => x.DeptUid).ToList();
-            //var rptJson = rpts.Select(x => x.RptUid).ToList();
-            //var roleJson = roles.Select(x => x.PRoleUid).ToList();
-            //var buttonJson = GetRoleButtons();
-            //var json = new
-            //{
-            //    users = userList,
-            //    menus = menuJson,
-            //    depts = deptJson,
-            //    rpts = rptJson,
-            //    columns = columnList,
-            //    roles = roleJson,
-            //    buttons = buttonJson
-            //};
-            //return Json(json, false);
-            //IEnumerable<string> GetRoleButtons()
-            //{
-            //    foreach (var rbtn in roleButtons)
-            //    {
-            //        if (rbtn.ButtonType == FapMenuButtonType.Grid || rbtn.ButtonType == FapMenuButtonType.Tree)
-            //        {
-            //            foreach (var v in rbtn.ButtonValue.SplitComma())
-            //            {
-            //                yield return $"{rbtn.MenuUid}|{rbtn.ButtonType}|{ rbtn.ButtonId }|{v}";
-            //            }
-            //        }
-            //        else
-            //        {
-            //            yield return $"{rbtn.MenuUid}|{rbtn.ButtonType}|{ rbtn.ButtonId }|{rbtn.ButtonValue}";
-            //        }
-            //    }
-            //}
+            return Json(authority,false);
+            
         }
         /// <summary>
         /// 删除用户

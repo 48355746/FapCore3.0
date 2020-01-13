@@ -69,23 +69,14 @@ namespace Fap.AspNetCore.Controls
             LoadTreeData();
             return this;
         }
+        //从ImanageService获取部门树 然后 SetJsonData(rej);
         /// <summary>
         /// 是否为部门树
         /// </summary>
-        /// <param name="power">加权限</param>
         /// <returns></returns>
-        public JsTree IsOrgDept(bool power)
+        public JsTree IsOrgDept()
         {
-            IEnumerable<OrgDept> powerDepts = null;
-            if (power)
-            {
-                powerDepts = _rbacService.GetRoleDeptList(_applicationContext.CurrentRoleUid);
-            }
-            else
-            {
-                powerDepts = _platformDomain.OrgDeptSet.OrderBy(d => d.DeptOrder);
-            }
-
+            IEnumerable<OrgDept> powerDepts = _rbacService.GetDeptInfoAuthority(_applicationContext.CurrentRoleUid);
 
             //将List<dynamic>转换成List<TreeDataView>
             List<TreeDataView> treeList = new List<TreeDataView>();
@@ -133,6 +124,7 @@ namespace Fap.AspNetCore.Controls
             SetJsonData(rej);
             return this;
         }
+
         private List<string> plugins = new List<string>();
         /// <summary>
         /// 显示checkbox框多选
@@ -278,14 +270,12 @@ namespace Fap.AspNetCore.Controls
         }
         private IDbContext _dbContext;
         private IFapApplicationContext _applicationContext;
-        private IFapPlatformDomain _platformDomain;
         private IRbacService _rbacService;
-        public JsTree(IDbContext dataAccessor, IFapApplicationContext applicationContext, IFapPlatformDomain platformDomain, IRbacService rbacService, string id) : base("")
+        public JsTree(IDbContext dataAccessor, IRbacService rbacService, IFapApplicationContext applicationContext,  string id) : base("")
         {
             _id = id;
             _dbContext = dataAccessor;
             _applicationContext = applicationContext;
-            _platformDomain = platformDomain;
             _rbacService = rbacService;
         }
         /// <summary>

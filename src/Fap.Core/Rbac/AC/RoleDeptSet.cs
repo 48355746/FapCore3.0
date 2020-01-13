@@ -1,4 +1,6 @@
-﻿using Fap.Core.DataAccess;
+﻿using Dapper;
+using Fap.Core.DataAccess;
+using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Rbac.Model;
 /* ==============================================================================
@@ -21,7 +23,7 @@ namespace Fap.Core.Rbac.AC
         private const string POWERORGDEPT = "POWERORGDEPT";
         private IDbSession _dbSession;
         private IFapPlatformDomain _fapPlatformDomain;
-        internal RoleDeptSet(IDbSession dbSession,IFapPlatformDomain fapPlatformDomain)
+        internal RoleDeptSet(IDbSession dbSession, IFapPlatformDomain fapPlatformDomain)
         {
             _dbSession = dbSession;
             _fapPlatformDomain = fapPlatformDomain;
@@ -70,14 +72,9 @@ namespace Fap.Core.Rbac.AC
             {
                 Init();
             }
-            var result = _allRoleDept.Where<FapRoleDept>(f => f.RoleUid == roleUid);
-            if (result != null && result.Any())
-            {
-                roleColumns = result;
-                return true;
-            }
-            roleColumns = null;
-            return false;
+            roleColumns = _allRoleDept.Where<FapRoleDept>(f => f.RoleUid == roleUid);
+            return roleColumns.Any();
+
         }
         /// <summary>
         /// 获取带权限的部门列表，如果仅仅是部分权限 OrgDept属性HasPartPower=true
@@ -85,71 +82,69 @@ namespace Fap.Core.Rbac.AC
         /// <param name="roleUid"></param>
         /// <param name="roleDepts"></param>
         /// <returns></returns>
-        public bool TryGetValueByRole(string roleUid, out IEnumerable<OrgDept> roleDepts)
+        public bool TryGetValueByRole(string roleUid, out IEnumerable<OrgDept> orgDepts)
         {
-            List<OrgDept> powerDepts = new List<OrgDept>();
             if (!_initialized)
             {
-                //cacheSupport.RemoveCache(POWERORGDEPT + roleUid);
                 Init();
             }
-            //缓存中获取
-            //if(cacheSupport.GetCache(POWERORGDEPT + roleUid)!=null)
-            //{
-            //   roleDepts= cacheSupport.GetCache(POWERORGDEPT + roleUid) as IEnumerable<OrgDept>;
-            //   return true;
-            //}
-            var result = _allRoleDept.Where<FapRoleDept>(f => f.RoleUid == roleUid);
-          
+            var roleDepts = _allRoleDept.Where<FapRoleDept>(f => f.RoleUid == roleUid);
             IEnumerable<OrgDept> allDepts = _fapPlatformDomain.OrgDeptSet;
             OrgDept rootDept = allDepts.FirstOrDefault(d => string.IsNullOrWhiteSpace(d.Pid) || d.Pid == "#" || d.Pid == "~" || d.Pid == "");
-            if (result != null && result.Any())
+            if (roleDepts.Any())
             {
-                List<FapRoleDept> rds = result.ToList();
-                if (rds.Exists(r => r.DeptUid == rootDept.Fid))
+                var roleDeptList = roleDepts.AsList();
+                if (roleDeptList.Exists(r => r.DeptUid == rootDept.Fid))
                 {
-                    roleDepts = allDepts;
+                    orgDepts = allDepts;
                 }
                 else
                 {
-                    rootDept.HasPartPower = true;
-                    powerDepts.Add(rootDept);
-                    foreach (var rd in result)
+                    List<OrgDept> powerDepts = new List<OrgDept>();
+                    if (rootDept != null)
+                    {
+                        var croot = rootDept.Clone() as OrgDept;
+                        croot.HasPartPower = true;
+                        powerDepts.Add(croot);
+                    }
+
+                    foreach (var rd in roleDepts)
                     {
                         OrgDept tempDept = allDepts.FirstOrDefault<OrgDept>(d => d.Fid == rd.DeptUid);
                         if (tempDept != null)
                         {
                             powerDepts.Add(tempDept);
-                            AddParentOrgDept(rds, allDepts, powerDepts, tempDept);
+                            AddParentOrgDept(tempDept);
                         }
                     }
-                    roleDepts = powerDepts;
+                    orgDepts = powerDepts;
+                    void AddParentOrgDept(OrgDept tempDept)
+                    {
+                        if (tempDept != null && tempDept.Fid != rootDept.Fid)
+                        {
+                            var tempDeptParent = allDepts.FirstOrDefault<OrgDept>(d => d.Fid == tempDept.Pid);
+                            //存在父部门
+                            if (tempDeptParent != null)
+                            {
+                                //父部门没在权限中,且还没包含进去
+                                if (!roleDeptList.Exists(r => r.DeptUid == tempDeptParent.Fid) && !powerDepts.Exists(d=>d.Fid== tempDeptParent.Fid))
+                                {
+                                    var cp = tempDeptParent.Clone() as OrgDept;
+                                    cp.HasPartPower = true;
+                                    powerDepts.Add(cp);
+                                }
+
+                                AddParentOrgDept(tempDeptParent);
+                            }
+                        }
+                    }
                 }
-                //cacheSupport.SetCache(POWERORGDEPT + roleUid, roleDepts);
                 return true;
             }
-            roleDepts = null;
+            orgDepts = Enumerable.Empty<OrgDept>();
             return false;
         }
-        private void AddParentOrgDept(List<FapRoleDept> rds, IEnumerable<OrgDept> allDepts, List<OrgDept> powerDepts, OrgDept tempDept)
-        {
-            if (tempDept != null && !(string.IsNullOrWhiteSpace(tempDept.Pid) || tempDept.Pid == "#" || tempDept.Pid == "~" || tempDept.Pid == ""))
-            {
-                var tempDeptParent = allDepts.FirstOrDefault<OrgDept>(d => d.Fid == tempDept.Pid);
-                //存在父部门
-                if (tempDeptParent != null)
-                {
-                    //父部门没在权限中,且还没包含进去
-                    if (!rds.Exists(r => r.DeptUid == tempDeptParent.Fid) && !powerDepts.Contains(tempDeptParent))
-                    {
-                        tempDeptParent.HasPartPower = true;
-                        powerDepts.Add(tempDeptParent);
-                    }
 
-                    AddParentOrgDept(rds, allDepts, powerDepts, tempDeptParent);
-                }
-            }
-        }
         public IEnumerator<FapRoleDept> GetEnumerator()
         {
             if (!_initialized)

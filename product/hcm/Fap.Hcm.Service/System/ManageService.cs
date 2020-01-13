@@ -443,42 +443,7 @@ namespace Fap.Hcm.Service.System
 
         public IEnumerable<TreeDataView> GetAllDeptTree()
         {
-            IEnumerable<OrgDept> powerDepts = null;
-            if (_applicationContext.IsAdministrator)
-            {
-                powerDepts = _platformDomain.OrgDeptSet.OrderBy(d => d.DeptOrder);
-            }
-            else
-            {
-                powerDepts = _rbacService.GetRoleDeptList(_applicationContext.CurrentRoleUid).ToList();
-                //如果没有授权根节点 需要加载上根节点
-                var allDepts = _platformDomain.OrgDeptSet;
-                OrgDept rootDept = allDepts.FirstOrDefault(d => d.Pid.IsMissing() || d.Pid == "#" || d.Pid == "~" || d.Pid == "");
-                if (!powerDepts.Contains(rootDept))
-                {
-                    int powerDeptRootCodeLength = powerDepts.Min(d => d.DeptCode.Length);
-                    var powerRootDepts = powerDepts.Where(d => d.DeptCode.Length == powerDeptRootCodeLength).ToList();
-                    //向上查找部门
-                    foreach (var powerRootDept in powerRootDepts)
-                    {
-                        FindParentDept(powerRootDept);
-                    }
-                }
-                void FindParentDept(OrgDept powerRootDept)
-                {
-                    var powerParentDept = allDepts.FirstOrDefault(d => d.Fid == powerRootDept.Pid);
-                    if (powerParentDept != null)
-                    {
-                        powerParentDept.HasPartPower = true;
-                        if (!powerDepts.AsList().Exists(d => d.Fid == powerParentDept.Fid))
-                        {
-                            powerDepts.AsList().Add(powerParentDept);
-                        }
-                        FindParentDept(powerParentDept);
-                    }
-                }
-            }
-
+            IEnumerable<OrgDept> powerDepts = _rbacService.GetDeptInfoAuthority(_applicationContext.CurrentRoleUid);
             IEnumerable<TreeDataView> treeList = powerDepts.Select(data => new TreeDataView() { Id = data.Fid, Text = data.DeptName, Pid = data.Pid, Data = new { Code = data.DeptCode, Ext1 = data.HasPartPower, Ext2 = "" }, Icon = data.HasPartPower ? "icon-folder  ace-icon fa fa-folder grey" : "icon-folder  ace-icon fa fa-folder orange" });
             string _rootText = string.Empty;
             List<TreeDataView> tree = new List<TreeDataView>();
@@ -767,51 +732,37 @@ namespace Fap.Hcm.Service.System
             TreeViewHelper.MakeTree(treeRoot.Children, oriList, treeRoot.Id);
             return tree;
         }
-        public object GetAuthority(string roleUid)
+        public AuthorityModel GetAuthority(string roleUid)
         {
             DynamicParameters dparam = new DynamicParameters();
             dparam.Add("RoleUid", roleUid);
 
-            var roleUsers= _rbacService.GetRoleUserList(roleUid);
-            var userList= _platformDomain.UserSet.Where(u => roleUsers.Select(r => r.UserUid).Contains(u.Fid));
-            var depts = _rbacService.GetRoleDeptList(roleUid).Select(r => r.Fid);
+            //获取角色部门
+            var depts = _rbacService.GetRoleDeptList(roleUid).Select(r => r.DeptUid);
+            //获取角色菜单
             var menus = _rbacService.GetRoleMenuList(roleUid).Select(r => r.MenuUid);
+            //获取角色角色
             var roles = _rbacService.GetRoleRoleList(roleUid).Select(r => r.PRoleUid);
+            //获取角色按钮
             var roleButtons = _rbacService.GetRoleButtonList(roleUid);
             //获取角色用户
-            //IEnumerable<dynamic> userList = _dbContext.Query("select Fid, UserCode,UserName,UserEmail,UserIdentity from FapUser where fid in(select useruid from FapRoleUser where RoleUid=@RoleUid) order by UserCode", dparam, true);
-            //获取角色菜单
-            //IEnumerable<dynamic> menus = _dbContext.Query("select MenuUid from FapRoleMenu where RoleUid= @RoleUid", dparam);
-            //获取角色部门
-            //IEnumerable<dynamic> depts = _dbContext.Query("select DeptUid from FapRoleDept where RoleUid=@RoleUid", dparam);
+            IEnumerable<FapUser> userList = _dbContext.Query<FapUser>("select Fid, UserCode,UserName,UserEmail,UserIdentity from FapUser where fid in(select useruid from FapRoleUser where RoleUid=@RoleUid) order by UserCode", dparam, true);
             //获取角色报表
             IEnumerable<dynamic> rpts = _dbContext.Query("select RptUid from FapRoleReport where RoleUid=@RoleUid", dparam);
             //获取角色实体属性
-
             IEnumerable<FapRoleColumn> columnList = _rbacService.GetRoleColumnList(roleUid);// _dbContext.Query("select ColumnUid,EditAble,ViewAble from FapRoleColumn where RoleUid=@RoleUid", dparam);
-            //获取角色角色
-            //IEnumerable<dynamic> roles = _dbContext.Query("select PRoleUid from FapRoleRole where RoleUid=@RoleUid", dparam);
-
-            //获取角色按钮
-            //IEnumerable<FapRoleButton> roleButtons = _dbContext.Query<FapRoleButton>("select * from FapRoleButton where RoleUid=@RoleUid", dparam);
-
-            //var userJson = users.Select(x => new { Id = x.Fid }).ToList();
-            //var menuJson = menus.Select(x => x.MenuUid).ToList();
-            //var deptJson = depts.Select(x => x.DeptUid).ToList();
             var rptJson = rpts.Select(x => x.RptUid).ToList();
-            //var roleJson = roles.Select(x => x.PRoleUid).ToList();
             var buttonJson = GetRoleButtons();
-            var json = new
+            return new AuthorityModel()
             {
-                users = userList,
-                menus = menus,
-                depts = depts,
-                rpts = rptJson,
-                columns = columnList,
-                roles = roles,
-                buttons = buttonJson
+                Users = userList,
+                Menus = menus,
+                Depts = depts,
+                Rpts = rptJson,
+                Columns = columnList,
+                Roles = roles,
+                Buttons = buttonJson
             };
-            return json;
             IEnumerable<string> GetRoleButtons()
             {
                 foreach (var rbtn in roleButtons)

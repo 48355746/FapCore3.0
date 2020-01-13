@@ -21,9 +21,11 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         public string IconBefore { get; set; }
         public string IconAfter { get; set; }
         private readonly IRbacService _rbacService;
-        public FapButtonTagHelper(IRbacService rbacService)
+        private readonly IFapApplicationContext _applicationContext;
+        public FapButtonTagHelper(IRbacService rbacService, IFapApplicationContext applicationContext)
         {
             _rbacService = rbacService;
+            _applicationContext = applicationContext;
         }
         public override Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
@@ -61,8 +63,8 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                 //builder.Append("</button>");
             }
             //注册按钮
-            string authorize= _rbacService.GetMenuButtonAuthorized(button);
-            if (authorize.IsPresent() && authorize.Equals("1"))
+            string permission= _rbacService.GetMenuButtonAuthority(_applicationContext.CurrentRoleUid,button);
+            if (permission.IsPresent() && permission.Equals("1"))
             {
                 output.Content.SetHtmlContent(builder.ToString());
             }

@@ -1,4 +1,5 @@
 ﻿using Fap.Core.Extensions;
+using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Infrastructure.Enums;
 using Fap.Core.Rbac;
 using Fap.Core.Rbac.Model;
@@ -23,19 +24,21 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// </summary>
         public bool RegisterButton { get; set; } = true;
         private readonly IRbacService _rbacService;
-        public FapTreeButtonTagHelper(IRbacService rbacService)
+        private readonly IFapApplicationContext _applicationContext;
+        public FapTreeButtonTagHelper(IRbacService rbacService,IFapApplicationContext applicationContext)
         {
             _rbacService = rbacService;
+            _applicationContext = applicationContext;
         }
         public override Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             //鉴权
-            string authorize = Authentication();
-            if (authorize.IsMissing())
+            string permission = GetButtonPermission();
+            if (permission.IsMissing())
             {
                 return Task.CompletedTask;
             }
-            OperType = GetTreeOper(authorize);
+            OperType = GetTreeOper(permission);
             //OperType |= OperEnum.Add | OperEnum.Update | OperEnum.Delete;
             output.TagName = "div";
             output.Content.Clear();
@@ -70,7 +73,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             }
             return (OperEnum)formType;
         }
-        private string Authentication()
+        private string GetButtonPermission()
         {
             if (RegisterButton)
             {
@@ -83,7 +86,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                     Enabled=1
                 };
                 //注册按钮
-                return _rbacService.GetMenuButtonAuthorized(menuButton);
+                return _rbacService.GetMenuButtonAuthority(_applicationContext.CurrentRoleUid, menuButton);
             }
             return string.Empty;
         }

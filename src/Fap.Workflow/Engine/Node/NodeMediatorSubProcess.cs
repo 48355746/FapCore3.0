@@ -59,7 +59,7 @@ namespace Fap.Workflow.Engine.Node
                     ContinueForwardCurrentNode(false);
                 }
             }
-            catch (System.Exception ex)
+            catch 
             {
                 throw;
             }

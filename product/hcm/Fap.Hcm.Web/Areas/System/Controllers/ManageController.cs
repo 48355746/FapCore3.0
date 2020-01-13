@@ -78,10 +78,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         }
         public IActionResult MenuMgt()
         {
-            JqGridViewModel model = this.GetJqGridModel("FapMenu", (qs) =>
-            {
-                qs.InitWhere = "1=2";
-            });
+            JqGridViewModel model = this.GetJqGridModel("FapMenu");
             return View(model);
         }
         /// <summary>

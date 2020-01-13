@@ -275,7 +275,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
 
             
             //鉴权列
-            string cols = AuthenticationColumn(querySet);
+            string cols = GetColumnPermission(querySet);
             if (cols.IsPresent())
             {
                 querySet.QueryCols = cols;
@@ -429,11 +429,11 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                     Description = _dbContext.Table(querySet.TableName).TableComment
                 };
                 //注册按钮
-                return _rbacService.GetMenuButtonAuthorized(menuButton);
+                return _rbacService.GetMenuButtonAuthority(_applicationContext.CurrentRoleUid,menuButton);
             }
             return string.Empty;
         }
-        private string AuthenticationColumn(QuerySet querySet)
+        private string GetColumnPermission(QuerySet querySet)
         {
             if (RegisterAuthority)
             {
@@ -447,7 +447,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                 };
 
                 //注册按钮
-                return _rbacService.GetMenuColumnAuthorized(menuColumn);
+                return _rbacService.GetMenuColumnAuthority(_applicationContext.CurrentRoleUid,menuColumn);
             }
             return string.Empty;
         }

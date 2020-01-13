@@ -33,7 +33,7 @@ namespace Fap.Hcm.Service.System
 
         IEnumerable<TreeDataView> GetMenuEntityTree();
         IEnumerable<TreeDataView> GetJobGroupTree();
-        object GetAuthority(string roleUid);
+        AuthorityModel GetAuthority(string roleUid);
 
     }
 }

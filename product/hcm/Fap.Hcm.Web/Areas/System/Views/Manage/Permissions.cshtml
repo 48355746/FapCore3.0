@@ -359,9 +359,9 @@
                     var treeRole = $('#tree-roleandgroup').jstree(true);
                     $.get("@Url.Content("~/System/Api/Manage/Authority/")" + roleUid, function (data) {
                         //角色人员
-                        window.users = data.users;
+                        window.users = data.Users;
                         $("#profile-feed-user").html("");
-                        $("#roleusers").tmpl(data.users).appendTo("#profile-feed-user");
+                        $("#roleusers").tmpl(data.Users).appendTo("#profile-feed-user");
                         //权限树
                         var treeMenu = $("#tree-moduleandmenu").jstree(true);
                         var treeDept = $("#tree-orgdept").jstree(true);
@@ -382,15 +382,15 @@
                         //jstree-icon jstree-themeicon green fa fa-tag jstree-themeicon-custom
                         //jstree-icon jstree-themeicon green fa fa-tag jstree-themeicon-custom
                         //菜单
-                        $.each(data.menus, function (i, v) {
+                        $.each(data.Menus, function (i, v) {
                             treeMenu.check_node(v);
                         });
                         //部门
-                        $.each(data.depts, function (i, v) {
+                        $.each(data.Depts, function (i, v) {
                             treeDept.check_node(v);
                         });
                         //按钮
-                        $.each(data.buttons, function (i, v) {
+                        $.each(data.Buttons, function (i, v) {
                             treeButton.check_node(v);
                         });
                         //数据
@@ -404,15 +404,15 @@
                             page: 1
                         }).trigger("reloadGrid"); //重新载入
                         //报表
-                        $.each(data.rpts, function (i, v) {
+                        $.each(data.Rpts, function (i, v) {
                             treeRpt.check_node(v);
                         });
                         //角色
-                        $.each(data.roles, function (i, v) {
+                        $.each(data.Roles, function (i, v) {
                             treePRole.check_node(v);
                         });
                         //实体
-                        $.each(data.columns, function (i, v) {
+                        $.each(data.Columns, function (i, v) {
                             let sid = v.MenuUid + '|' + v.GridId + '|' + v.ColumnUid;
                             if (v.EditAble == "1") {
                                 //可编辑

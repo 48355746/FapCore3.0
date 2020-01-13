@@ -1,11 +1,12 @@
 ﻿using Dapper.Contrib.Extensions;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 
 namespace Fap.Core.Infrastructure.Metadata
 {
-
+  
     public class BaseModel : ICloneable
     {
         [Key]
@@ -22,10 +23,12 @@ namespace Fap.Core.Infrastructure.Metadata
         /// <summary>
         /// 有效开始时间
         /// </summary>
+        [JsonIgnore]
         public string EnableDate { get; set; }
         /// <summary>
         /// 有效截至时间
         /// </summary>
+        [JsonIgnore]
         public string DisableDate { get; set; } // 有效截至时间
         /// <summary>
         /// 删除标记， 默认是0

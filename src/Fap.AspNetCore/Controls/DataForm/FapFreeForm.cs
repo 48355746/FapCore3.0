@@ -29,6 +29,8 @@ using System.Text.RegularExpressions;
 using Yahoo.Yui.Compressor;
 using static System.String;
 using Fap.Core.Rbac;
+using Fap.Core.Exceptions;
+using Ardalis.GuardClauses;
 
 namespace Fap.AspNetCore.Controls.DataForm
 {
@@ -54,8 +56,6 @@ namespace Fap.AspNetCore.Controls.DataForm
         /// 表单Fid的值
         /// </summary>
         private string FidValue { get; set; }
-        private ILoggerFactory _loggerFactory;
-        private ILogger<FapFreeForm> _logger;
         private IRbacService _rbacService;
         public string Id { get; private set; }
         public FapFreeForm(IDbContext dataAccessor, IRbacService rbacService,  IFapApplicationContext applicationContext, IMultiLangService multiLangService, string id, FormStatus frmStatus = FormStatus.Add) : base("")
@@ -236,7 +236,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                         {
                             //替换第一个为空，始终保留一个
                             FFrm.FFContent = reg.Replace(FFrm.FFContent, "", 1, 0);
-                            _logger.LogError("自由表单包含两个一样的子表设置");
+                            throw new FapException("自由表单包含两个一样的子表设置");
                         }
                     }
                 }
@@ -317,11 +317,8 @@ namespace Fap.AspNetCore.Controls.DataForm
             foreach (var table in _childTableList)
             {
                 string primaryKey =_dbContext.Columns(table.Value.TableName).FirstOrDefault(f => f.RefTable == _tb.TableName)?.ColName ?? "";
-                if (IsNullOrWhiteSpace(primaryKey))
-                {
-                    _logger.LogError($"表{table.Value.TableName}未设置和主表的关联字段，请设置关联字段参照主表");
-                    continue;
-                }
+                Guard.Against.NullOrWhiteSpace(primaryKey, nameof(primaryKey));
+                
                 Grid grid = new Grid(_dbContext,_rbacService , _applicationContext, _multiLangService, $"grid-{table.Value.TableName}");
                 QuerySet qs = new QuerySet();
                 qs.TableName = table.Value.TableName;

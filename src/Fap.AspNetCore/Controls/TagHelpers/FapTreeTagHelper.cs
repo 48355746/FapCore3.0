@@ -20,11 +20,8 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// <summary>
         /// 是否部门树
         /// </summary>
-        public bool IsOrgdept { get; set; } = false;
-        /// <summary>
-        /// 部门树是否加权限
-        /// </summary>
-        public bool HasPower { get; set; } = true;
+        public bool IsOrgdept { get; set; } = false;        
+        
         /// <summary>
         /// 获取数据URL
         /// </summary>
@@ -75,11 +72,11 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             {
                 id = $"tree-{Id}";
             }
-            JsTree tree = new JsTree(_dataAccessor, _applicationContext, _appDomain, _rbacService, id);
+            JsTree tree = new JsTree(_dataAccessor,_rbacService,_applicationContext,  id);
             tree.SetAsync(IsAsync);
             if (IsOrgdept)
             {
-                tree.IsOrgDept(HasPower);
+                tree.IsOrgDept();
             }
             if (GetUrl.IsPresent())
             {

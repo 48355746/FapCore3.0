@@ -1,5 +1,6 @@
 ﻿using Dapper.Contrib.Extensions;
 using Fap.Core.Infrastructure.Metadata;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,6 +33,7 @@ namespace Fap.Core.Rbac.Model
         /// <summary>
         /// 用户密码
         /// </summary>
+        [JsonIgnore]
         public string UserPassword { get; set; }
         /// <summary>
         /// 所属用户组
@@ -40,7 +42,7 @@ namespace Fap.Core.Rbac.Model
         /// <summary>
         /// 所属用户组 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string UserGroupUidMC { get; set; }
         /// <summary>
         /// 用户类型【开发用户，业务用户】
@@ -58,10 +60,12 @@ namespace Fap.Core.Rbac.Model
         /// <summary>
         /// 启用状态
         /// </summary>
+        [JsonIgnore]
         public int EnableState { get; set; }
         /// <summary>
         /// 尝试次数
         /// </summary>
+        [JsonIgnore]
         public int PasswordTryTimes { get; set; }
         /// <summary>
         /// 备注
@@ -70,6 +74,7 @@ namespace Fap.Core.Rbac.Model
         /// <summary>
         /// 密码安全级别编码
         /// </summary>
+        [JsonIgnore]
         public string PwdLevelCode { get; set; }
         /// <summary>
         /// 锁定
@@ -78,6 +83,7 @@ namespace Fap.Core.Rbac.Model
         /// <summary>
         /// 最后登录时间
         /// </summary>
+        [JsonIgnore]
         public string LastLoginTime { get; set; }
         /// <summary>
         /// 身份
@@ -86,7 +92,7 @@ namespace Fap.Core.Rbac.Model
         /// <summary>
         /// 身份MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string UserIdentityMC { get; set; }
         /// <summary>
         /// 主题
