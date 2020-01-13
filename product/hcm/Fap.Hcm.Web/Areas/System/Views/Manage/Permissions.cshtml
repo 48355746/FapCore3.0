@@ -347,7 +347,7 @@
             }, 0);
 
             window.users = [];
-            var currRoleUid=1;
+            var currRoleUid;
             $('#tree-roleandgroup').on("changed.jstree", function (event, data) {
                 if (data && data.selected && data.selected.length) {
                     //判断是否为角色
@@ -411,7 +411,7 @@
                         //角色
                        // let ss = treePRole.get_node(roleUid);
                         //不能分配自己角色的权限
-                        if (currRoleUid !== 1) {
+                        if (currRoleUid !== undefined) {
                             treePRole.enable_node(currRoleUid);
                         }
                         treePRole.disable_node(roleUid);
