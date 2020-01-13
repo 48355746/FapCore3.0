@@ -51,12 +51,9 @@ namespace Fap.Core.Rbac.AC
             {
                 Init();
             }
-            roleButtons= fapRoleButtons.Where(rb => rb.RoleUid == roleUid);
-            if (roleButtons.Any())
-            {
-                return true;
-            }
-            return false;
+            roleButtons = fapRoleButtons.Where(rb => rb.RoleUid == roleUid);
+            return roleButtons.Any();
+           
         }
 
         IEnumerator IEnumerable.GetEnumerator()

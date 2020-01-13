@@ -732,7 +732,7 @@ namespace Fap.Hcm.Service.System
             TreeViewHelper.MakeTree(treeRoot.Children, oriList, treeRoot.Id);
             return tree;
         }
-        public AuthorityModel GetAuthority(string roleUid)
+        public AuthorityViewModel GetAuthority(string roleUid)
         {
             DynamicParameters dparam = new DynamicParameters();
             dparam.Add("RoleUid", roleUid);
@@ -753,7 +753,7 @@ namespace Fap.Hcm.Service.System
             IEnumerable<FapRoleColumn> columnList = _rbacService.GetRoleColumnList(roleUid);// _dbContext.Query("select ColumnUid,EditAble,ViewAble from FapRoleColumn where RoleUid=@RoleUid", dparam);
             var rptJson = rpts.Select(x => x.RptUid).ToList();
             var buttonJson = GetRoleButtons();
-            return new AuthorityModel()
+            return new AuthorityViewModel()
             {
                 Users = userList,
                 Menus = menus,
@@ -777,6 +777,167 @@ namespace Fap.Hcm.Service.System
                     else
                     {
                         yield return $"{rbtn.MenuUid}|{rbtn.ButtonType}|{ rbtn.ButtonId }|{rbtn.ButtonValue}";
+                    }
+                }
+            }
+        }
+
+        public ResponseViewModel SaveAuthority(AuthorityModel authority)
+        {
+            bool success = false;
+            //菜单
+            if (authority.AType == AuthorityTypeEnum.Menu)
+            {
+                List<FapRoleMenu> menus = new List<FapRoleMenu>();
+                if (authority.MenuUids != null && authority.MenuUids.Any())
+                {
+                    foreach (var item in authority.MenuUids)
+                    {
+                        FapRoleMenu fdoMenu = new FapRoleMenu();
+                        fdoMenu.RoleUid = authority.RoleUid;
+                        fdoMenu.MenuUid = item;
+                        menus.Add(fdoMenu);
+                    }
+                }
+                success = _rbacService.AddRoleMenu(authority.RoleUid, menus);
+                _platformDomain.RoleMenuSet.Refresh();
+            }
+            else if (authority.AType == AuthorityTypeEnum.Dept)
+            {//部门
+                List<FapRoleDept> depts = new List<FapRoleDept>();
+                if (authority.OrgDeptUids != null && authority.OrgDeptUids.Any())
+                {
+                    foreach (var item in authority.OrgDeptUids)
+                    {
+                        FapRoleDept fdoDept = new FapRoleDept();
+                        fdoDept.RoleUid = authority.RoleUid;
+                        fdoDept.DeptUid = item;
+                        depts.Add(fdoDept);
+                    }
+                }
+
+                success = _rbacService.AddRoleDept(authority.RoleUid, depts);
+
+                _platformDomain.RoleDeptSet.Refresh();
+            }
+            else if (authority.AType ==  AuthorityTypeEnum.ColumnEdit || authority.AType == AuthorityTypeEnum.ColumnView)
+            {
+                //实体列
+                List<FapRoleColumn> columns = new List<FapRoleColumn>();
+                if (authority.ColumnUids != null && authority.ColumnUids.Any())
+                {
+                    foreach (var item in authority.ColumnUids)
+                    {
+                        if (authority.AType == AuthorityTypeEnum.ColumnEdit)
+                        {
+                            columns.Add(new FapRoleColumn { RoleUid = authority.RoleUid, ColumnUid = item.ColUid, GridId = item.GridId, MenuUid = item.MenuUid, EditAble = 1, ViewAble = 0 });
+                        }
+                        else
+                        {
+                            columns.Add(new FapRoleColumn { RoleUid = authority.RoleUid, ColumnUid = item.ColUid, GridId = item.GridId, MenuUid = item.MenuUid, EditAble = 0, ViewAble = 1 });
+                        }
+                    }
+                }
+                success = _rbacService.AddRoleColumn(authority.RoleUid, columns, (int)authority.AType);
+                //刷新应用程序全局域角色列
+                _platformDomain.RoleColumnSet.Refresh();
+            }
+            else if (authority.AType == AuthorityTypeEnum.User)
+            {
+                List<FapRoleUser> users = new List<FapRoleUser>();
+                //保存用户
+                if (authority.UserUids != null && authority.UserUids.Any())
+                {
+                    foreach (var item in authority.UserUids)
+                    {
+                        users.Add(new FapRoleUser() { RoleUid = authority.RoleUid, UserUid = item });
+                    }
+                }
+                if (users.Count > 0)
+                {
+                    _rbacService.AddRoleUser(users);
+                    success = true;
+                }
+            }
+            else if (authority.AType == AuthorityTypeEnum.Rpt)
+            {
+                //报表
+                List<FapRoleReport> rpts = new List<FapRoleReport>();
+                if (authority.RptUids != null && authority.RptUids.Any())
+                {
+                    foreach (var item in authority.RptUids)
+                    {
+                        FapRoleReport fdoMenu = new FapRoleReport();
+                        fdoMenu.RoleUid = authority.RoleUid;
+                        fdoMenu.RptUid = item;
+                        rpts.Add(fdoMenu);
+                    }
+                }
+                _rbacService.AddRoleReport(authority.RoleUid, rpts);
+                success = true;
+                _platformDomain.RoleReportSet.Refresh();
+            }
+            else if (authority.AType == AuthorityTypeEnum.Role)
+            {
+                //角色
+                List<FapRoleRole> rrs = new List<FapRoleRole>();
+                if (authority.PRoleUids != null && authority.PRoleUids.Any())
+                {
+                    foreach (var item in authority.PRoleUids)
+                    {
+                        FapRoleRole fdoRR = new FapRoleRole();
+                        fdoRR.RoleUid = authority.RoleUid;
+                        fdoRR.PRoleUid = item;
+                        rrs.Add(fdoRR);
+                    }
+                }
+                _rbacService.AddRoleRole(authority.RoleUid, rrs);
+                success = true;
+                _platformDomain.RoleRoleSet.Refresh();
+            }
+            else if (authority.AType == AuthorityTypeEnum.Button)
+            {
+                //按钮
+                var roleButtons = GetRoleButtons(authority.BtnUids);
+                _rbacService.AddRoleButton(authority.RoleUid, roleButtons);
+                success = true;
+
+                _platformDomain.RoleButtonSet.Refresh();
+            }
+            return new ResponseViewModel() { success = success };
+            IEnumerable<FapRoleButton> GetRoleButtons(IList<string> btnUids)
+            {
+                if (authority.BtnUids != null)
+                {
+                    var btnList = btnUids.Select(b =>
+                    {
+                        string[] s = b.Split('|');
+                        return new { MenuUid = s[0], BtnType = s[1], BtnId = s[2], BtnValue = s[3] };
+                    });
+                    foreach (var btnGrp in btnList.GroupBy(b => b.MenuUid))
+                    {
+                        foreach (var buttons in btnGrp.GroupBy(b => b.BtnType))
+                        {
+                            if (buttons.Key == FapMenuButtonType.Grid || buttons.Key == FapMenuButtonType.Tree)
+                            {
+                                FapRoleButton roleButton = new FapRoleButton { RoleUid = authority.RoleUid, MenuUid = btnGrp.Key };
+                                roleButton.ButtonType = buttons.Key;
+                                roleButton.ButtonValue = string.Join(',', buttons.ToList().Select(b => b.BtnValue));
+                                roleButton.ButtonId = buttons.First().BtnId;
+                                yield return roleButton;
+                            }
+                            else
+                            {
+                                foreach (var button in buttons)
+                                {
+                                    FapRoleButton roleButton = new FapRoleButton { RoleUid = authority.RoleUid, MenuUid = btnGrp.Key };
+                                    roleButton.ButtonType = buttons.Key;
+                                    roleButton.ButtonValue = button.BtnValue;
+                                    roleButton.ButtonId = button.BtnId;
+                                    yield return roleButton;
+                                }
+                            }
+                        }
                     }
                 }
             }

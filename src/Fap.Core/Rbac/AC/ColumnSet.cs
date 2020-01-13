@@ -78,14 +78,9 @@ namespace Fap.Core.Rbac.AC
             {
                 Init();
             }
-            var result = _allColumns.Where<FapColumn>(c => c.TableName.Equals(tableName, StringComparison.CurrentCultureIgnoreCase));
-            if (result != null && result.Any())
-            {
-                fapColumns = result;
-                return true;
-            }
-            fapColumns = null;
-            return false;
+            fapColumns = _allColumns.Where<FapColumn>(c => c.TableName.Equals(tableName, StringComparison.CurrentCultureIgnoreCase));
+           
+            return fapColumns.Any();
         }
 
 

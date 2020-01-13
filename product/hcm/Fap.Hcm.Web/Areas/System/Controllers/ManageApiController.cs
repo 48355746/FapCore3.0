@@ -227,7 +227,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             return Json(tree);
         }
 
-       
+
         #endregion
 
         #region 任务组任务
@@ -357,6 +357,19 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         #region 授权
 
         /// <summary>
+        /// 删除用户
+        /// </summary>
+        /// <param name="roleUser"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("DelRoleUser")]
+        public JsonResult DeleteRoleUser(FapRoleUser roleUser)
+        {
+            var sc= _rbacService.DeleteRoleUser(roleUser.RoleUid, roleUser.UserUid);
+            
+            return Json(new ResponseViewModel { success = sc });
+        }
+        /// <summary>
         /// 获取权限
         /// </summary>
         /// <param name="rolefid"></param>
@@ -364,189 +377,20 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         [HttpGet("Authority/{roleUid}")]
         public JsonResult GetAuthority(string roleUid)
         {
-            var authority= _manageService.GetAuthority(roleUid);
-            return Json(authority,false);
-            
-        }
-        /// <summary>
-        /// 删除用户
-        /// </summary>
-        /// <param name="roleUser"></param>
-        /// <returns></returns>
-        [HttpPost]
-        [Route("DelRoleUser")]
-        public JsonResult SetRoleUser(FapRoleUser roleUser)
-        {
-            _dbContext.DeleteExec(nameof(FapRoleUser), "RoleUid=@RoleUid and UserUid=@UserUid", new DynamicParameters(new { RoleUid = roleUser.RoleUid, UserUid = roleUser.UserUid }));
-            var result = new { success = true };
-            return Json(result);
+            var authority = _manageService.GetAuthority(roleUid);
+            return Json(authority, false);
+
         }
         /// <summary>
         /// 授权
         /// </summary>
-        /// <param name="auth"></param>
+        /// <param name="authority"></param>
         /// <returns></returns>
-        [HttpPost]
-        [Route("Authority")]
-        public JsonResult SetAuthority(Authority auth)
+        [HttpPost("Authority")]
+        public JsonResult SetAuthority(AuthorityModel authority)
         {
-            bool success = false;
-            //菜单
-            if (auth.AType == 1)
-            {
-                List<FapRoleMenu> menus = new List<FapRoleMenu>();
-                if (auth.MenuUids != null && auth.MenuUids.Any())
-                {
-                    foreach (var item in auth.MenuUids)
-                    {
-                        FapRoleMenu fdoMenu = new FapRoleMenu();
-                        fdoMenu.RoleUid = auth.RoleUid;
-                        fdoMenu.MenuUid = item;
-                        menus.Add(fdoMenu);
-                    }
-                }
-                success = _rbacService.AddRoleMenu(auth.RoleUid, menus);
-                _platformDomain.RoleMenuSet.Refresh();
-            }
-            else if (auth.AType == 2)
-            {//部门
-                List<FapRoleDept> depts = new List<FapRoleDept>();
-                if (auth.OrgDeptUids != null && auth.OrgDeptUids.Any())
-                {
-                    foreach (var item in auth.OrgDeptUids)
-                    {
-                        FapRoleDept fdoDept = new FapRoleDept();
-                        fdoDept.RoleUid = auth.RoleUid;
-                        fdoDept.DeptUid = item;
-                        depts.Add(fdoDept);
-                    }
-                }
-
-                success = _rbacService.AddRoleDept(auth.RoleUid, depts);
-
-                _platformDomain.RoleDeptSet.Refresh();
-            }
-            else if (auth.AType == 3 || auth.AType == 4)
-            {
-                //实体列
-                List<FapRoleColumn> columns = new List<FapRoleColumn>();
-                if (auth.ColumnUids != null && auth.ColumnUids.Any())
-                {
-                    foreach (var item in auth.ColumnUids)
-                    {
-                        if (auth.AType == 3)
-                        {
-                            columns.Add(new FapRoleColumn { RoleUid = auth.RoleUid, ColumnUid = item.ColUid,GridId=item.GridId, MenuUid = item.MenuUid, EditAble = 1, ViewAble = 0 });
-                        }
-                        else
-                        {
-                            columns.Add(new FapRoleColumn { RoleUid = auth.RoleUid, ColumnUid = item.ColUid, GridId = item.GridId, MenuUid = item.MenuUid, EditAble = 0, ViewAble = 1 });
-                        }
-                    }
-                }
-                success = _rbacService.AddRoleColumn(auth.RoleUid, columns, auth.AType);
-                //刷新应用程序全局域角色列
-                _platformDomain.RoleColumnSet.Refresh();
-            }
-            else if (auth.AType == 5)
-            {
-                List<FapRoleUser> users = new List<FapRoleUser>();
-                //保存用户
-                if (auth.UserUids != null && auth.UserUids.Any())
-                {
-                    foreach (var item in auth.UserUids)
-                    {
-                        users.Add(new FapRoleUser() { RoleUid = auth.RoleUid, UserUid = item });
-                    }
-                }
-                if (users.Count > 0)
-                {
-                    _rbacService.AddRoleUser(users);
-                    success = true;
-                }
-            }
-            else if (auth.AType == 6)
-            {
-                //报表
-                List<FapRoleReport> rpts = new List<FapRoleReport>();
-                if (auth.RptUids != null && auth.RptUids.Any())
-                {
-                    foreach (var item in auth.RptUids)
-                    {
-                        FapRoleReport fdoMenu = new FapRoleReport();
-                        fdoMenu.RoleUid = auth.RoleUid;
-                        fdoMenu.RptUid = item;
-                        rpts.Add(fdoMenu);
-                    }
-                }
-                _rbacService.AddRoleReport(auth.RoleUid, rpts);
-                success = true;
-                _platformDomain.RoleReportSet.Refresh();
-            }
-            else if (auth.AType == 7)
-            {
-                //角色
-                List<FapRoleRole> rrs = new List<FapRoleRole>();
-                if (auth.PRoleUids != null && auth.PRoleUids.Any())
-                {
-                    foreach (var item in auth.PRoleUids)
-                    {
-                        FapRoleRole fdoRR = new FapRoleRole();
-                        fdoRR.RoleUid = auth.RoleUid;
-                        fdoRR.PRoleUid = item;
-                        rrs.Add(fdoRR);
-                    }
-                }
-                _rbacService.AddRoleRole(auth.RoleUid, rrs);
-                success = true;
-                _platformDomain.RoleRoleSet.Refresh();
-            }
-            else if (auth.AType == 8)
-            {
-                //按钮
-                var roleButtons = GetRoleButtons(auth.BtnUids);
-                _rbacService.AddRoleButton(auth.RoleUid, roleButtons);
-                success = true;
-
-                _platformDomain.RoleButtonSet.Refresh();
-            }
-            return Json(new ResponseViewModel() { success = success });
-            IEnumerable<FapRoleButton> GetRoleButtons(IList<string> btnUids)
-            {
-                if (auth.BtnUids != null)
-                {
-                    var btnList = btnUids.Select(b =>
-                    {
-                        string[] s = b.Split('|');
-                        return new { MenuUid = s[0], BtnType = s[1], BtnId = s[2], BtnValue = s[3] };
-                    });
-                    foreach (var btnGrp in btnList.GroupBy(b => b.MenuUid))
-                    {
-                        foreach (var buttons in btnGrp.GroupBy(b => b.BtnType))
-                        {
-                            if (buttons.Key == FapMenuButtonType.Grid || buttons.Key == FapMenuButtonType.Tree)
-                            {
-                                FapRoleButton roleButton = new FapRoleButton { RoleUid = auth.RoleUid, MenuUid = btnGrp.Key };
-                                roleButton.ButtonType = buttons.Key;
-                                roleButton.ButtonValue = string.Join(',', buttons.ToList().Select(b => b.BtnValue));
-                                roleButton.ButtonId = buttons.First().BtnId;
-                                yield return roleButton;
-                            }
-                            else
-                            {
-                                foreach (var button in buttons)
-                                {
-                                    FapRoleButton roleButton = new FapRoleButton { RoleUid = auth.RoleUid, MenuUid = btnGrp.Key };
-                                    roleButton.ButtonType = buttons.Key;
-                                    roleButton.ButtonValue = button.BtnValue;
-                                    roleButton.ButtonId = button.BtnId;
-                                    yield return roleButton;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            var rv = _manageService.SaveAuthority(authority);
+            return Json(rv);
         }
 
         #endregion

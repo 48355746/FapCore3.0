@@ -53,7 +53,7 @@ namespace Fap.Core.Rbac.AC
                 Init();
             }
             fapColumnList = _allColumn.Where(m => m.MenuUid == menuUid);
-            return true;
+            return fapColumnList.Any();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

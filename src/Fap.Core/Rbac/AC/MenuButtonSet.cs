@@ -60,7 +60,7 @@ namespace Fap.Core.Rbac.AC
                 Init();
             }
             fapButtonList = _allButtons.Where(m => m.MenuUid == menuUid);
-            return true;
+            return fapButtonList.Any();
         }
     }
 }

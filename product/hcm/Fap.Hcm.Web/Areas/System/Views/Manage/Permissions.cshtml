@@ -296,7 +296,7 @@
             //保存User
             $.post("@Url.Content("~/System/Api/Manage/DelRoleUser")", { "RoleUid": roleUid, "UserUid": fid }, function (rv) {
                 //请求成功时处理
-                if (req.success) {
+                if (rv.success) {
                     $.msg("删除成功");
                     $("[data-userfid='" + fid + "']").parent().parent().remove();
                 } else {

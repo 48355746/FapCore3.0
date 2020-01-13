@@ -382,6 +382,10 @@ namespace Fap.Core.Rbac
             return _platformDomain.MenuSet.FirstOrDefault(m => m.MenuUrl.TrimEnd('/').Trim().EqualsWithIgnoreCase(path));
         }
 
-
+        public bool DeleteRoleUser(string roleUid, string userUid)
+        {
+            int c = _dbContext.DeleteExec(nameof(FapRoleUser), "RoleUid=@RoleUid and UserUid=@UserUid", new DynamicParameters(new { RoleUid = roleUid, UserUid = userUid}));
+            return c>0?true:false;
+        }
     }
 }

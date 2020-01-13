@@ -34,6 +34,7 @@ namespace Fap.Core.Rbac
         bool AddRoleDept(string roleUid, IEnumerable<FapRoleDept> depts);
         bool AddRoleColumn(string roleUid, IEnumerable<FapRoleColumn> columns, int editType);
         void AddRoleUser(IEnumerable<FapRoleUser> users);
+        bool DeleteRoleUser(string roleUid, string userUid);
         void AddRoleReport(string roleUid, IEnumerable<FapRoleReport> rpts);
         void AddRoleButton(string roleUid, IEnumerable<FapRoleButton> roleButtons);
         void AddRoleRole(string roleUid, IEnumerable<FapRoleRole> roleRoles);
