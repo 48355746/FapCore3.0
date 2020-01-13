@@ -347,7 +347,7 @@
             }, 0);
 
             window.users = [];
-
+            var currRoleUid=1;
             $('#tree-roleandgroup').on("changed.jstree", function (event, data) {
                 if (data && data.selected && data.selected.length) {
                     //判断是否为角色
@@ -407,7 +407,15 @@
                         $.each(data.Rpts, function (i, v) {
                             treeRpt.check_node(v);
                         });
+
                         //角色
+                       // let ss = treePRole.get_node(roleUid);
+                        //不能分配自己角色的权限
+                        if (currRoleUid !== 1) {
+                            treePRole.enable_node(currRoleUid);
+                        }
+                        treePRole.disable_node(roleUid);
+                        currRoleUid = roleUid;
                         $.each(data.Roles, function (i, v) {
                             treePRole.check_node(v);
                         });
@@ -580,8 +588,8 @@
                     checks = treeRR.get_checked();
                 //筛选是报表的节点
                 var sels = $.grep(checks, function (d, i) {
-
-                    return treeRR.get_node(d).data.isRole == true;
+                    //角色自己不管理自己
+                    return d!=roleUid&&treeRR.get_node(d).data.isRole == true;
 
                 });
                 saveAuthority({ "RoleUid": roleUid, "PRoleUids": sels, "AType": 7 });
