@@ -1,0 +1,207 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+
+<title>@_multiLangService.GetResName("orgdept_orghistory_page_title", "历史架构")</title>
+<div class="row">
+    <div class="col-xs-12">
+        <div id="orgposition" class="col-xs-12">
+            <div class="row">
+               
+                <div class="col-xs-12 col-sm-12">
+                    <div class="widget-box">
+                        <div class="widget-header widget-header-flat">
+                            <h4 class="widget-title">@_multiLangService.GetResName("orgdept_orghistory_page_historyjob", "历史岗位")</h4>
+
+                            <div class="widget-toolbar">
+                                <a href="#" data-action="fullscreen" class="orange2">
+                                    <i class="ace-icon fa fa-expand"></i>
+                                </a>
+                            </div>
+
+                            <div class="widget-toolbar">
+                                <div class="inline ">
+                                    <button id="btnSynPositionNum" class="btn btn-xs btn-success bigger">
+                                        <i class="ace-icon fa fa-refresh"></i>
+                                        @_multiLangService.GetResName("orgdept_orgjob_page_synchrohistoryjobingnums", "同步历史在岗人数")
+                                    </button>
+
+                                    <button id="btnJobChart" class="btn btn-xs btn-pink bigger">
+                                        <i class="ace-icon fa fa-sitemap"></i>
+                                        @_multiLangService.GetResName("orgdept_orgjob_page_historypostdrawing", "历史机构岗位图")
+                                    </button>
+                                    <button id="btnRestoreDept" class="btn btn-xs btn-purple bigger">
+                                        <i class="ace-icon fa fa-undo"></i>
+                                        恢复部门
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="widget-body">
+                            <div class="widget-main jobpostionclass">                             
+                                <fap-grid id="orgposition" grid-model="Model"  auto-width="true"
+                                         footer-row="true" userdata-footer="true" multi-box-only="true" multi-select="true" view-records="true" ></fap-grid>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="right-menu" class="modal aside" data-body-scroll="false" data-offset="true" data-placement="right" data-fixed="true" data-backdrop="invisible" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header no-padding">
+                        <div class="table-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                <span class="white">&times;</span>
+                            </button>
+                            历史组织机构
+                        </div>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="input-group" style="padding:2px">
+                            <span class="input-group-addon">
+                                <i class="ace-icon fa fa-calendar bigger-110"></i>
+                            </span>
+
+                            <input type="text" id="dateHistroy" class="form-control search-query" placeholder="历史时间点" />
+                            <span class="input-group-btn">
+                                <button type="button" data-action="search" id="btnSearchHistory" title="@_multiLangService.GetResName("global_oper_viewer", "查看")" class="btn btn-default btn-sm">
+                                    <span class="ace-icon fa fa-search icon-on-right bigger-110"></span>
+                                </button>
+                            </span>
+                        </div>
+                        <div id="treeDeptDiv" class="widget-main ">
+                            <div class="scrollable">
+                                <fap-tree id="orgdept" is-async="true"></fap-tree>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /.modal-content -->
+
+                <button class="aside-trigger btn btn-purple btn-app btn-xs ace-settings-btn" data-target="#right-menu" data-toggle="modal" type="button">
+                    <i data-icon1="fa-sitemap" data-icon2="fa-minus" class="ace-icon fa fa-sitemap bigger-110 icon-only"></i>
+                </button>
+            </div><!-- /.modal-dialog -->
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var scripts = [null, "/Content/js/jquery.orgchart.min.js", null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $('.modal.aside').ace_aside();
+            $(document).one('ajaxloadstart.page', function (e) {
+                $('#tree-orgdept').jstree("destroy");
+                $('.modal.aside').remove();
+                $(window).off('.aside');
+            })
+            $("#treeDeptDiv").autoWindowHeight();
+            $("#dateHistroy").datePicker({ followOffset: [0, 24], altFormat: 'yyyy-mm-dd', showMode: 0 }).prev().on(ace.click_event, function () { $(this).next().focus(); });
+            $("#btnSearchHistory").on(ace.click_event, function () {
+                var historyDate = $("#dateHistroy").val();
+                if (historyDate == '') {
+                    $("#dateHistroy").focus();
+                    return;
+                }
+                $('#tree-orgdept').jstree('destroy', false);
+                $('#tree-orgdept').jstree({
+
+                    'core': {
+                        "check_callback": true,
+                        'force_text': true,
+                        "themes": { "stripes": true },
+                        'data': {
+                            'url': basePath + '/api/orgdept/historyorgdepts/' + historyDate,
+                            'dataType': 'json', // needed only if you do not supply JSON headers
+                            'data': function (node) { return { 'id': node.id }; }
+                        },
+                    }
+                }).bind('changed.jstree', function (e, data) {
+                    if (data && data.selected && data.selected.length) {
+                        var deptid = data.selected[0];
+                        var deptMC = data.node.text;
+                        //获取所有子Fid
+                        var childs = data.node.children_d;
+                        var selids = childs.concat(deptid);
+                        //过滤可操作部门
+                        var treeDept = $('#tree-orgdept').jstree(true);
+                        var sels = $.grep(selids, function (d, i) {
+
+                            return treeDept.get_node(d).data.selectable == true;
+
+                        });
+                        debugger
+                        var filter = '{"groupOp":"AND","rules":[{"field":"DeptUid","op":"in","data":"' + sels + '"}]}'
+                        $("#grid-orgposition").jqGrid('setGridParam', {
+                            datatype: 'json',
+                            postData: { filters: filter, timePoint: $("#dateHistroy").val() }, //发送数据
+                            page: 1
+                        }).trigger("reloadGrid"); //重新载入
+                    }
+
+                });;
+
+            });
+
+
+            $('#tree-orgdept').on("changed.jstree", function (e, data) {
+                if (data && data.selected && data.selected.length) {
+                    var deptid = data.selected[0];
+                    var deptMC = data.node.text;
+                    //获取所有子Fid
+                    var childs = data.node.children_d;
+                    var selids = childs.concat(deptid);
+
+                    var filter = '{"groupOp":"AND","rules":[{"field":"DeptUid","op":"in","data":"' + selids + '"}]}'
+                    $("#grid-orgposition").jqGrid('setGridParam', {
+                        datatype: 'json',
+                        postData: { filters: filter, timePoint: $("#dateHistroy").val() }, //发送数据
+                        page: 1
+                    }).trigger("reloadGrid"); //重新载入
+                }
+                //console.log(data.selected);
+            });
+            //同步历史在岗人数
+            $("#btnSynPositionNum").on(ace.click_event, function () {
+                $.get("@Url.Content("~/api/orgdept/synpositionnum")", { histroyDate: $("#dateHistroy").val() }, function (rv) {
+                    if (rv.success == true) {
+                        $("#grid-orgposition").jqGrid('setGridParam', {
+                            datatype: 'json',
+                            postData: { timePoint: $("#dateHistroy").val() }, //发送数据
+                            page: 1
+                        }).trigger("reloadGrid"); //重新载入
+                    }
+                })
+            })
+            //从历史恢复已移除的部门
+            $("#btnRestoreDept").on(ace.click_event, function () {
+                //获取所有子Fid
+                var ref = $('#tree-orgdept').jstree(true),
+                    sel = ref.get_selected();
+                if (!sel.length) {
+                    bootbox.alert(MultiLangHelper.getResName("orgdept_index_page_pleaseSelshowdept", "请选择一个部门查看"));
+                    return;
+                }
+                var fid = sel[0];
+                var historyDate = $("#dateHistroy").val();
+                $.get(basePath + "/api/orgdept/restoredept/" + fid + "/" + historyDate, function (rv) {
+                    $.msg(rv.message);
+                })
+            })
+            //历史机构图
+            $("#btnJobChart").on(ace.click_event, function () {
+                //获取所有子Fid
+                var ref = $('#tree-orgdept').jstree(true),
+                                    sel = ref.get_selected();
+
+                if (!sel.length) {
+                    bootbox.alert(MultiLangHelper.getResName("orgdept_index_page_pleaseSelshowdept", "请选择一个部门查看"));
+                    return;
+                }
+                openUrl("@Url.Content("~/Organization/OrgDept/PositionChart/")" + sel[0] + "?date=" + $("#dateHistroy").val());
+            })
+        })
+    })
+</script>

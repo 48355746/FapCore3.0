@@ -1,0 +1,249 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+
+<title><fap-multilang lang-key="orgdept_index_page_title" default-content="组织部门"></fap-multilang> </title>
+<link href="~/Content/css/jquery.orgchart.css" rel="stylesheet" />
+<link href="~/Content/css/bootstrap-timeline.css" rel="stylesheet" />
+
+<div class="row">
+    <div class="col-xs-12">
+        <div id="widget-box-orgdept" class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">
+                    <fap-multilang lang-key="global_info_dept" default-content="部门"></fap-multilang>
+                </h4>
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="widget-body">
+                <!-- #section:custom/widget-box.toolbox -->
+                <div class="widget-toolbox">
+                    <div class="btn-toolbar">
+                        <div class="btn-group">
+                            <button id="btnAddDept" class="btn btn-sm btn-round  btn-purple bigger">
+                                <i class="ace-icon fa fa-plus-circle"></i>
+                                @_multiLangService.GetResName("global_oper_new", "新增")
+                            </button>
+                            <button id="btnEditDept" class="btn btn-sm btn-round  btn-primary bigger">
+                                <i class="ace-icon fa fa-pencil"></i>
+                                @_multiLangService.GetResName("global_oper_edit", "编辑")
+                            </button>
+                            <button id="btnRemoveDept" class="btn btn-sm btn-round  btn-danger bigger">
+                                <i class="ace-icon fa fa-trash-o"></i>
+                                @_multiLangService.GetResName("global_oper_remove", "移除")
+                            </button>
+                        </div>
+                        <div class="btn-group">
+                            <button id="btnMergeDept" class="btn btn-sm btn-round  btn-info bigger">
+                                <i class="ace-icon fa fa-link"></i>
+                                @_multiLangService.GetResName("global_oper_merge", "合并")
+                            </button>
+                            <button id="btnMoveDept" class="btn btn-sm btn-round  btn-success bigger">
+                                <i class="ace-icon fa fa-arrows-v"></i>
+                                @_multiLangService.GetResName("global_oper_mobile", "移动")
+                            </button>
+
+                        </div>
+                        <div class="btn-group">
+                            <button id="btnHistoryDept" class="btn btn-sm btn-round  btn-warning bigger">
+                                <i class="ace-icon fa fa-history"></i>
+                                @_multiLangService.GetResName("global_oper_history", "历史")
+                            </button>
+                        </div>
+                        <div class="btn-group">
+                            <button id="btnOrgChart" class="btn btn-sm btn-round  btn-pink bigger">
+                                <i class="ace-icon fa fa-sitemap"></i>
+                                @_multiLangService.GetResName("orgdept_index_page_organizationchart", "机构图")
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="widget-main">
+                    <fap-grid id="orgdept" grid-model="Model" 
+                              is-tree-grid="true" expand-column="DeptName" col-menu="false" row-numbers="false" view-records="true" shrink-fit="false" oper-import="true"></fap-grid>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var scripts = [null, "/Content/js/jquery.orgchart.min.js", null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            //新增
+            $("#btnAddDept").on(ace.click_event, function () {
+                loadFormMessageBox(MultiLangHelper.getResName("global_oper_new", "新增"), 'grid-orgdept', 'fa fa-plus', 'OrgDept', 0);
+            })
+            //编辑
+            $("#btnEditDept").on(ace.click_event, function () {
+
+                var gsr = jQuery('#grid-orgdept').jqGrid('getGridParam', 'selrow');
+                if (gsr) {
+                    var ret = jQuery('#grid-orgdept').jqGrid('getRowData', gsr);
+                    $.get(basePath + "/api/orgdept/validedeptpermission/" + ret.Fid, function (rv) {
+                        if (rv) {
+                            loadFormMessageBox(MultiLangHelper.getResName("global_oper_edit", "编辑"), 'grid-orgdept', 'fa fa-pencil-square-o', 'OrgDept', ret.Id);
+                        } else {
+                            $.msg("你没有操作此部门的权限！");
+                        }
+                    })
+                } else {
+                    alert(MultiLangHelper.getResName("global_oper_selectrow", "请选择一条数据"))
+                }
+            })
+            //机构图
+            $("#btnOrgChart").on(ace.click_event, function () {
+                var fid = jQuery("#grid-orgdept").jqGrid('getGridParam', 'selrow');
+                var obj = $("#grid-orgdept").jqGrid('getRowData', fid);
+                if (fid == null) {
+                    bootbox.alert(MultiLangHelper.getResName("orgdept_index_page_pleaseSelshowdept", "请选择一个部门查看"));
+                    return;
+                }
+                openUrl("@Url.Content("~/Organization/OrgDept/OrgChart/")" + fid + "?type=directorName");
+
+            })
+
+
+            $("#btnHistoryDept").on(ace.click_event, function () {
+                var fid = jQuery("#grid-orgdept").jqGrid('getGridParam', 'selrow');
+                if (fid == null) {
+                    bootbox.alert(MultiLangHelper.getResName("orgdept_index_page_selshowhistoricaltracingdept", "请选择要历史追溯的部门"));
+                    return;
+                }
+                var dialog = bootbox.dialog({
+                    title: "历史追溯",
+                    size: "large",
+                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                    buttons: {
+                        cancel: {
+                            label: "关闭", className: "btn-default"
+                        }
+                    }
+
+                });
+
+                dialog.init(function () {
+                    var url = "@Html.Raw(Url.Action("DataHistory", "CommonCtrls", new { area = "Common", bn = "OrgDept" }))&fid=" + fid;
+                    $.get(url, function (ev) {
+                        dialog.find('.bootbox-body').html(ev);
+                    })
+                });
+            })
+            //合并
+            $("#btnMergeDept").on(ace.click_event, function () {
+                var fid = jQuery("#grid-orgdept").jqGrid('getGridParam', 'selrow');
+                if (fid == null) {
+                    bootbox.alert(MultiLangHelper.getResName("orgdept_index_page_selmergefatherdept", "请选择要合并到的父部门"));
+                    return;
+                }
+                var dialog = bootbox.dialog({
+                    title: MultiLangHelper.getResName("orgdept_index_page_mergedepartment", "合并部门"),
+                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                    size: "large",
+                    buttons: {
+                        success: {
+                            label: MultiLangHelper.getResName("global_oper_enter", "确定"),
+                            className: "btn-primary",
+                            callback: function () {
+                                var result = mergeDepts();
+                                if (result) {
+                                    $('#grid-orgdept').trigger('reloadGrid');
+                                } else {
+                                    return false;
+
+                                }
+                            }
+                        },
+
+                        cancel: {
+                            label: MultiLangHelper.getResName("global_oper_cancel", "取消"), className: "btn-default"
+                        }
+                    }
+
+                });
+                dialog.init(function () {
+                    var url = "@Url.Content("~/Organization/OrgDept/MergeDept")/" + fid;
+                    $.get(url, function (ev) {
+                        dialog.find('.bootbox-body').html(ev);
+                        $("#orgdeptmergePidMC").attr("disabled", true);
+                    })
+                });
+
+            })
+            //移动
+            $("#btnMoveDept").on(ace.click_event, function () {
+                var dialog = bootbox.dialog({
+                    title: "移动部门",
+                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                    buttons: {
+                        success: {
+                            label: MultiLangHelper.getResName("global_oper_enter", "确定"),
+                            className: "btn-primary",
+                            callback: function () {
+                                $('#grid-orgdept').trigger('reloadGrid');
+                            }
+                        },
+
+                        cancel: {
+                            label: "取消", className: "btn-default"
+                        }
+                    }
+
+                });
+
+                dialog.init(function () {
+                    var url = "@Url.Content("~/Organization/OrgDept/MoveDept")";
+                    $.get(url, function (ev) {
+                        dialog.find('.bootbox-body').html(ev);
+                    })
+                });
+            })
+            //移除
+            $("#btnRemoveDept").on(ace.click_event, function () {
+                var fid = jQuery("#grid-orgdept").jqGrid('getGridParam', 'selrow');
+                var obj = $("#grid-orgdept").jqGrid('getRowData', fid);
+                if (fid == null) {
+                    bootbox.alert(MultiLangHelper.getResName("orgdept_index_page_selremovedept", "请选择要移除的部门"));
+                    return;
+                }
+                $.get(basePath + "/api/orgdept/validedeptpermission/" + fid, function (rv) {
+                    if (rv) {
+                        bootbox.confirm({
+                            message: MultiLangHelper.getResName("orgdept_index_page_sureremove", "确定要移除") + "【" + obj.DeptName + "（" + obj.DeptCode + "）】" + MultiLangHelper.getResName("orgdept_index_page_arethisdept", "这个部门吗") + "?",
+                            buttons: {
+                                confirm: {
+                                    label: MultiLangHelper.getResName("global_oper_enter", "确定"),
+                                    className: "btn-primary btn-sm",
+                                },
+                                cancel: {
+                                    label: MultiLangHelper.getResName("global_oper_cancel", "取消"),
+                                    className: "btn-sm",
+                                }
+                            },
+                            callback: function (result) {
+                                if (result) {
+                                    $.get("@Url.Content("~/api/orgdept/removedept")/" + fid, function (data) {
+                                        if (data.result) {
+                                            $('#grid-orgdept').trigger('reloadGrid');
+                                        } else {
+                                            bootbox.alert(data.message);
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    } else {
+                        $.msg("你没有操作此部门的权限！");
+                    }
+                })
+
+            })
+        })
+    })
+</script>

@@ -8,6 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Areas\Department\**" />
+    <Content Remove="Areas\Department\**" />
+    <EmbeddedResource Remove="Areas\Department\**" />
+    <None Remove="Areas\Department\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="fap_hcm_web_log.txt" />
   </ItemGroup>
 
@@ -49,6 +56,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="3.0.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.0.0" />
     <PackageReference Include="MiniProfiler.AspNetCore.Mvc" Version="4.1.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="3.2.0" />
   </ItemGroup>
@@ -61,6 +69,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Areas\Organization\Data\" />
+    <Folder Include="Areas\Organization\Models\" />
     <Folder Include="Areas\System\Data\" />
   </ItemGroup>
 

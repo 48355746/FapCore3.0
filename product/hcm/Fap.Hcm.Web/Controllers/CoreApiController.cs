@@ -42,18 +42,30 @@ namespace Fap.Hcm.Web.Controllers
             Guard.Against.Null(frmModel,nameof(frmModel));
             var rv = await _gridFormService.PersistenceAsync(frmModel);
             return Json(rv);
-        }     
+        }
         /// <summary>
         /// 获取表格数据
         /// </summary>
-        /// <param name="model"></param>
+        /// <param name="postDataModel"></param>
         /// <returns></returns>
         [HttpPost("DataList")]
         public JsonResult Datalist(JqGridPostData postDataModel)
         {
             Guard.Against.Null(postDataModel, nameof(postDataModel));
             var result = _gridFormService.QueryPageDataResultView(postDataModel);
-            return Json(result);
+            return Json(result.GetJqGridJsonData());
+        }
+        /// <summary>
+        /// 获取树表数据
+        /// </summary>
+        /// <param name="postDataModel"></param>
+        /// <returns></returns>
+        [HttpPost("TreeDataList")]
+        public JsonResult TreeDatalist(JqGridPostData postDataModel)
+        {
+            Guard.Against.Null(postDataModel, nameof(postDataModel));
+            var result = _gridFormService.QueryPageDataResultView(postDataModel);
+            return Json(result.GetJqGridTreeJsonData());
         }
         /// <summary>
         /// 导出表格数据(不用于导入)

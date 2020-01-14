@@ -288,8 +288,8 @@ namespace Fap.AspNetCore.Controls.JqGrid
             }
             if (_fapColumns.Any())
             {
-               
-                List<Column> grdColumns = _fapColumns.OrderBy(c => c.ColOrder).ToColumns( _dataAccessor, _multiLang).ToList();
+
+                List<Column> grdColumns = _fapColumns.OrderBy(c => c.ColOrder).ToColumns(_dataAccessor, _multiLang).ToList();
 
                 _columns.AddRange(grdColumns);
             }
@@ -1473,7 +1473,6 @@ namespace Fap.AspNetCore.Controls.JqGrid
             //_treeGridRootLevel = 0;
             _enabledTreeGrid = true;
             _treeGridModel = treeGridModel;
-
             return this;
         }
 
@@ -1780,13 +1779,20 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 script.AppendFormat("toppager:{0},", _topPager.ToString().ToLower()).AppendLine();
 
             // Url
-            if (!_url.IsMissing())
+            if (_url.IsPresent())
             {
                 script.AppendFormat("url:'{0}',", _url).AppendLine();
             }
             else
             {
-                script.AppendLine($"url:'{ _applicationContext.BaseUrl }/Api/Core/datalist',");
+                if (_enabledTreeGrid)
+                {
+                    script.AppendLine($"url:'{ _applicationContext.BaseUrl }/Api/Core/TreeDataList',");
+                }
+                else
+                {
+                    script.AppendLine($"url:'{ _applicationContext.BaseUrl }/Api/Core/DataList',");
+                }
             }
             script.AppendFormat("tn:'{0}',", TableName).AppendLine();
             //EditUrl
@@ -1913,7 +1919,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                            updatePagerIcons(table);
                            enableTooltips(table);                            
 						}}, 0);
-                        {0} }},", _onLoadComplete.IsPresent()?_onLoadComplete : "").AppendLine();
+                        {0} }},", _onLoadComplete.IsPresent() ? _onLoadComplete : "").AppendLine();
 
             // onLoadError
             if (!_onLoadError.IsMissing())
@@ -2021,15 +2027,15 @@ namespace Fap.AspNetCore.Controls.JqGrid
 
             // Colmodel
             script.AppendLine("colModel: [");
-            if (_enabledTreeGrid)
-            {
-                script.AppendLine("{name:'Tid',hidden:true,key:true,index:'Tid'},");
-                var keycol = _columns.FirstOrDefault(c => c.IsKey == true);
-                if (keycol != null)
-                {
-                    keycol.IsKey = false;
-                }
-            }
+            //if (_enabledTreeGrid)
+            //{
+            //    script.AppendLine("{name:'Tid',hidden:true,key:true,index:'Tid'},");
+            //    var keycol = _columns.FirstOrDefault(c => c.IsKey == true);
+            //    if (keycol != null)
+            //    {
+            //        keycol.IsKey = false;
+            //    }
+            //}
             var colModel = string.Join(",", _columns.Select(c => c.ToString()));
             //var colModel = string.Join(",", ((from c in _columns select c.ToString()).ToArray()));
             script.AppendLine(colModel);
@@ -2349,7 +2355,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                       position:'first',  
                       buttonicon:'ace-icon fa fa-plus-circle purple',
                       onClickButton : function() {
-                      loadFormMessageBox('新增','##gridid##','fa fa-plus-circle','" + TableName + @"',0,'" +GetCurrentMenuUid() + "',function(){");
+                      loadFormMessageBox('新增','##gridid##','fa fa-plus-circle','" + TableName + @"',0,'" + GetCurrentMenuUid() + "',function(){");
             if (_onAddAfterInitDataForm.IsPresent())
             {
                 script.AppendLine(_onAddAfterInitDataForm);
@@ -2392,7 +2398,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                        var gsr = jQuery('###gridid##').jqGrid('getGridParam', 'selrow');
                       if (gsr) {
                         var ret = jQuery('###gridid##').jqGrid('getRowData', gsr);
-                        viewFormMessageBox(ret.Fid,'##gridid##','" + GetCurrentMenuUid()+ "'" + @");
+                        viewFormMessageBox(ret.Fid,'##gridid##','" + GetCurrentMenuUid() + "'" + @");
                         }else{
                             $.msg('请选择一条数据查看')
                         }

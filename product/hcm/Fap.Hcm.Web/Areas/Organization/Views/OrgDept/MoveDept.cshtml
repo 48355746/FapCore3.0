@@ -1,0 +1,17 @@
+﻿
+<div class="widget-box transparent">
+    <div class="widget-header widget-header-small">
+        <h4 class="widget-title blue smaller">
+            <i class="ace-icon fa fa-sitemap orange"></i>
+            @_multiLangService.GetResName("orgdept_movedept_page_movemobiledept", "拖拽移动部门")
+        </h4>
+
+
+    </div>
+
+    <div class="widget-body">
+        <div class="widget-main scrollable">
+            <fap-tree id="orgdeptremove" is-async="false" edit-url="@Url.Content("~/api/orgdept/movedept")" is-orgdept="true" plugin-dnd="true"></fap-tree>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,388 @@
+﻿@using Fap.AspNetCore.ViewModel
+@using Fap.AspNetCore.Controls.JqGrid
+@model Fap.AspNetCore.ViewModel.MultiJqGridViewModel
+@{
+    JqGridViewModel jobModel = Model.JqGridViewModels["orgjob"];
+    JqGridViewModel positionModel = Model.JqGridViewModels["orgposition"];
+    //增加操作列
+    Column column = new Column("oper");
+    column.SetLabel("操作");
+    column.SetSortable(false);
+    column.SetWidth(110);
+}
+<title>
+    <fap-multilang lang-key="orgdept_orgjob_title" default-content="职务岗位"></fap-multilang>
+    </title>
+
+<div class="row">
+    <div class="col-xs-12">
+        <div class="tabbable">
+            <ul class="nav nav-tabs" id="orgJobTab">
+                <li class="active">
+                    <a data-toggle="tab" href="#orgjob">
+                        <i class="green ace-icon fa fa-fire bigger-120"></i>
+                        <fap-multilang lang-key="orgdept_orgjob_page_jobplan" default-content="职务规划"></fap-multilang>
+                    </a>
+                </li>
+
+                <li>
+                    <a data-toggle="tab" href="#orgposition">
+                        <i class="green ace-icon fa fa-users bigger-120"></i>
+                        <fap-multilang lang-key="orgdept_orgjob_page_jobdistribution" default-content="岗位分布"></fap-multilang>
+                        @*<span class="badge badge-danger">4</span>*@
+                    </a>
+                </li>
+
+            </ul>
+
+            <div class="tab-content">
+                <div id="orgjob" class="tab-pane fade in active">
+                    <fap-grid id="orgjob" grid-model="jobModel"wrapper="orgJobTab,orgjob" auto-width="true"
+                              view-records="true" oper-cud="true"></fap-grid>
+
+                </div>
+
+                <div id="orgposition" class="tab-pane fade">
+                    <div class="row">                    
+                        <div class="col-xs-12 col-sm-12">
+                            <div class="widget-box">
+                                <div class="widget-header widget-header-flat">
+                                    <h4 class="widget-title">
+                                    <fap-multilang lang-key="ess_userpropfule_page_post" default-content="岗位"></fap-multilang>
+                                 </h4>
+
+                                    <div class="widget-toolbar">
+                                        <a href="#" data-action="fullscreen" class="orange2">
+                                            <i class="ace-icon fa fa-expand"></i>
+                                        </a>
+                                    </div>
+                                    <div class="widget-toolbar no-border">
+                                        <label>
+                                            <input type="checkbox" id="chkshowemps" class="ace" />
+                                            <span class="lbl">@_multiLangService.GetResName("mss_employees_page_employee", "员工")</span>
+                                        </label>
+                                    </div>
+                                    @*<div class="widget-toolbar">
+                                            <div class="inline ">
+                                            </div>
+                                        </div>*@
+                                </div>
+                                <div class="widget-body">
+                                    <div class="widget-toolbox">
+                                        <div class="btn-toolbar">
+                                            <div class="btn-group">
+                                                <button id="btnAddPosition" class="btn btn-sm btn-round  btn-purple bigger">
+                                                    <i class="ace-icon fa fa-plus-circle"></i>
+                                                    @_multiLangService.GetResName("global_oper_new", "新增")
+                                                </button>
+                                                <button id="btnEditPosition" class="btn btn-sm btn-round  btn-primary bigger">
+                                                    <i class="ace-icon fa fa-pencil"></i>
+                                                    @_multiLangService.GetResName("global_oper_edit", "编辑")
+                                                </button>
+                                            </div>
+                                            <div class="btn-group">
+                                                <button id="btnPositionDocTmpl" class="btn btn-sm btn-round  btn-pink bigger">
+                                                    <i class="ace-icon fa fa-book"></i>
+                                                    @_multiLangService.GetResName("orgdept_orgjob_page_explanbooktmpl", "说明书模板")
+                                                </button>
+
+                                                <button id="btnPositionDoc" class="btn btn-sm btn-round  btn-purple bigger">
+                                                    <i class="ace-icon fa fa-book"></i>
+                                                    @_multiLangService.GetResName("global_txt_showexpan", "查看说明书")
+                                                </button>
+                                            </div>
+                                            <div class="btn-group">
+                                                <button id="btnSynPositionNum" class="btn btn-sm btn-round  btn-success bigger">
+                                                    <i class="ace-icon fa fa-refresh"></i>
+                                                    @_multiLangService.GetResName("orgdept_orgjob_page_synchrojobingnums", "同步在岗人数")
+                                                </button>
+                                            </div>
+                                            <div class="btn-group">
+                                                <button id="btnJobChart" class="btn btn-sm btn-round  btn-pink bigger">
+                                                    <i class="ace-icon fa fa-sitemap"></i>
+                                                    @_multiLangService.GetResName("orgdept_orgjob_page_postdrawing", "岗位图")
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="widget-main jobpostionclass">
+                                        <fap-grid id="orgposition" attach-column="@column" grid-model="positionModel" auto-width="true"
+                                                  on-select-row="ShowEmployees(rowid)"
+                                                  footer-row="true" userdata-footer="true" on-form-init-add="afterformInitCallback" shrink-fit="false"
+                                                  view-records="true" multi-box-only="true" multi-select="true" oper-cud="true" on-grid-complete="initMenu"></fap-grid>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+        <div id="right-menu" class="modal aside" data-body-scroll="false" data-offset="true" data-placement="right" data-fixed="true" data-backdrop="invisible" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header no-padding">
+                        <div class="table-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                <span class="white">&times;</span>
+                            </button>
+                            组织机构
+                        </div>
+                    </div>
+
+                    <div class="modal-body">
+                        <div id="treeDeptDiv" class="widget-main ">
+                            <div class="scrollable">
+                                <fap-tree id="orgdept" is-async="false" is-orgdept="true"></fap-tree>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /.modal-content -->
+
+                <button class="aside-trigger btn btn-purple btn-app btn-xs ace-settings-btn" data-target="#right-menu" data-toggle="modal" type="button">
+                    <i data-icon1="fa-sitemap" data-icon2="fa-minus" class="ace-icon fa fa-sitemap bigger-110 icon-only"></i>
+                </button>
+            </div><!-- /.modal-dialog -->
+        </div>
+    </div>
+</div>
+
+<script>
+    //初始化说明书链接
+    var initMenu = function () {
+        var ids = jQuery("#grid-orgposition").jqGrid('getDataIDs');
+        for (var i = 0; i < ids.length; i++) {
+            var de = '';
+            var cl = ids[i];
+            var ret = jQuery('#grid-orgposition').jqGrid('getRowData', cl);
+            var fid = ret.Fid;
+            de += "<a  href='javascript:void(0)' onclick='setPositionManual(\"" + fid + "\",\"" + ret.PstName + "\")'>说明书 </a>";
+            jQuery('#grid-orgposition').jqGrid('setRowData', ids[i], { oper: de });
+        }
+    }
+    //说明书
+    var setPositionManual = function (fid, pstName) {
+        //e.stopPropagation();
+        var dialog = bootbox.dialog({
+            title: pstName + "说明书",
+            message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+            size: "large",
+            buttons: {
+                success: {
+                    label: MultiLangHelper.getResName("global_oper_enter", "确定"),
+                    className: "btn-primary",
+                    callback: function () {
+                        var formid = 'frm-OrgPositionManual';
+                        //持久化
+                        var res = Persistence(formid, '');
+                        if (res == false) {
+                            bootbox.alert("设置失败！");
+                            return false;
+                        }
+                        if (res.success == true) {
+                            return true;
+                            $.msg("设置成功！");
+
+                        } else {
+                            bootbox.alert("设置失败！");
+                            return false;
+                        }
+                    }
+                },
+                cancel: {
+                    label: MultiLangHelper.getResName("global_oper_cancel", "取消"), className: "btn-default"
+                }
+            }
+
+        });
+
+        dialog.init(function () {
+            $.get(basePath + "/api/orgdept/existpositionmanual/" + fid, function (d) {
+                var url = $.randomUrl(basePath + '/PublicCtrl/Dataform/' + d + '?tn=OrgPositionManual');
+                $.get(url, function (ev) {
+                    dialog.find('.bootbox-body').html(ev);
+                    if (d == 0) {
+                        $("#frm-OrgPositionManual #PositionUid").val(fid).next().val(pstName);
+                    }
+                });
+
+            })
+        });
+    }
+    //显示员工
+    var ShowEmployees = function (rid) {
+        if ($('#chkshowemps').get(0).checked) {
+            var rowData = jQuery("#grid-orgposition").jqGrid('getRowData', rid);
+            var fid = rowData.Fid;
+            $.get("@Url.Content("~/api/orgdept/positionemps/")" + fid, function (data) {
+                if (data != '') {
+                    var emps = [];
+                    $.each(data, function (i, d) {
+                        emps.push(d.empName);
+                    })
+                    $.gritter.add({
+                        title: MultiLangHelper.getResName("ess_userpropfule_page_post", "岗位") + '：' + rowData.PstName,
+                        text: emps.join(),
+                        class_name: 'gritter-light'
+                    });
+                } else {
+                    $.gritter.add({
+                        title: MultiLangHelper.getResName("ess_userpropfule_page_post", "岗位") + '：' + rowData.PstName,
+                        text: "此岗位没有员工",
+                        class_name: 'gritter-light'
+                    });
+                }
+            })
+
+        }
+
+        return false;
+    }
+    var afterformInitCallback = function () {
+        var deptid = '', deptmc = '';
+        var treeDept = $('#tree-orgdept').jstree(true);
+        var selV = treeDept.get_selected();
+        if (selV.length) {
+            deptid = selV[0];
+            deptmc = treeDept.get_node(selV[0]).text;
+
+        }
+        $("#DeptUid").val(deptid).next().val(deptmc);
+    }
+    var scripts = [null, null];
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $('.modal.aside').ace_aside();
+            $(document).one('ajaxloadstart.page', function (e) {
+                $('#tree-orgdept').jstree("destroy");
+                $('.modal.aside').remove();
+                $(window).off('.aside');
+            })
+            $('#tree-orgdept').on("changed.jstree", function (e, data) {
+                if (data && data.selected && data.selected.length) {
+                    var deptid = data.selected[0];
+                    //获取所有子Fid
+                    var childs = data.node.children_d;
+                    var selids = childs.concat(deptid);
+                    //筛选有权限的节点
+                    var treeDept = $('#tree-orgdept').jstree(true);
+                    var sels = $.grep(selids, function (d, i) {
+
+                        return treeDept.get_node(d).data.ext1 == false;
+
+                    });
+                    var filter = '{"groupOp":"AND","rules":[{"field":"DeptUid","op":"in","data":"' + sels + '"}]}'
+                    $("#grid-orgposition").jqGrid('setGridParam', {
+                        datatype: 'json',
+                        postData: { filters: filter }, //发送数据
+                        page: 1
+                    }).trigger("reloadGrid"); //重新载入
+                }
+                //console.log(data.selected);
+            });
+            //同步在岗人数
+            $("#btnSynPositionNum").on(ace.click_event, function () {
+                $.get("@Url.Content("~/api/orgdept/synpositionnum")", function (rv) {
+                    if (rv.success == true) {
+                        $("#grid-orgposition").jqGrid('setGridParam', {
+                            datatype: 'json',
+                            page: 1
+                        }).trigger("reloadGrid"); //重新载入
+                    }
+                })
+            })
+            $("#btnJobChart").on(ace.click_event, function () {
+                //获取所有子Fid
+                var ref = $('#tree-orgdept').jstree(true),
+                                    sel = ref.get_selected();
+
+                if (!sel.length) {
+                    bootbox.alert(MultiLangHelper.getResName("orgdept_index_page_pleaseSelshowdept", "请选择一个部门查看"));
+                    return;
+                }
+                openNewWindow("@Url.Content("~/Organization/OrgDept/PositionChart/")" + sel[0]);
+            })
+            //说明书模板
+            $("#btnPositionDocTmpl").on(ace.click_event, function () {
+
+                var url = "@Html.Raw(Url.Action("EntityDocmentTmpl", "CommonCtrls", new { area = "Common", moduleuid = "OrgPositionDocument", tn = "OrgPosition" }))";
+                $.get(url, function (rv) {
+                    var index= layer.open({
+                        type: 1,
+                        area:  '800px',
+                        //maxmin: true,
+                        title: MultiLangHelper.getResName("orgdept_orgjob_page_jobexplanbooktmpl", "岗位说明书模板"),
+                        btn: ['确定', '关闭'], //只是为了演示
+                        content: rv //这里content是一个普通的String
+                        , yes: function (index, layero) {
+                            saveTmpl();                           
+                        }
+                        , btn2: function (index) {
+                            layer.close(index);
+                        }
+                    });
+                    //layer.full(index);
+                })
+            })
+            //说明书查看
+            $("#btnPositionDoc").on(ace.click_event, function () {
+                var id = jQuery("#grid-orgposition").jqGrid('getGridParam', 'selrow');
+                if (id == null) {
+                    bootbox.alert(MultiLangHelper.getResName("orgdept_index_page_seljobshow", "请选择一个岗位查看"));
+                    return;
+                }
+                var rowData = jQuery("#grid-orgposition").jqGrid('getRowData', id);
+                var uid = rowData.Fid;
+
+                $.get(basePath + "/api/orgdept/positionmanual/" + uid, function (rv) {
+                    if (rv.manualContent != "") {
+                        var index = layer.open({
+                            type: 1,
+                            title: MultiLangHelper.getResName("ess_userpropfule_page_jobdescription", "岗位说明书"),
+                            content: rv.manualContent
+
+                        });
+                        layer.full(index);
+                    } else {
+                        var url = "@Html.Raw(Url.Action("EntityDocument", "CommonCtrls", new { area = "Common", moduleuid = "OrgPositionDocument", tn = "OrgPosition" }))" + "&fid=" + uid;
+                        $.get(url, function (rv) {
+                            var index = layer.open({
+                                type: 1,
+                                title: MultiLangHelper.getResName("ess_userpropfule_page_jobdescription", "岗位说明书"),
+                                content: rv //这里content是一个普通的String
+                            });
+                            layer.full(index);
+                        })
+                        }
+                    })
+            })
+            //新增
+            $("#btnAddPosition").on(ace.click_event, function () {
+                loadFormMessageBox(MultiLangHelper.getResName("global_oper_new", "新增"), 'grid-orgposition', 'fa fa-plus', 'OrgPosition', 0, function () { afterformInitCallback(); });
+            })
+
+            //编辑
+            $("#btnEditPosition").on(ace.click_event, function () {
+                var gsr = jQuery('#grid-orgposition').jqGrid('getGridParam', 'selrow');
+                if (gsr) {
+                    var ret = jQuery('#grid-orgposition').jqGrid('getRowData', gsr);
+                    loadFormMessageBox(MultiLangHelper.getResName("global_oper_edit", "编辑"), 'grid-orgposition', 'fa fa-pencil-square-o', 'OrgPosition', ret.Id);
+                } else {
+                    $.msg(MultiLangHelper.getResName("global_oper_selectrow", "请选择一条数据"))
+                }
+            })
+
+            $('#orgJobTab a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                if ($(e.target).attr('href') == "#orgposition") {
+                    //设置宽度
+                    var parent_width = $('#grid-orgposition').closest('.jobpostionclass').width();
+                    $('#grid-orgposition').jqGrid('setGridWidth', parent_width);
+                }
+            })
+        })
+    })
+</script>

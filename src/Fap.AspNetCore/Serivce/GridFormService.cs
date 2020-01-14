@@ -61,12 +61,12 @@ namespace Fap.AspNetCore.Serivce
             _logger = logger;
             _memoryCache = memoryCache;
         }
-        public JqGridData QueryPageDataResultView(JqGridPostData jqGridPostData)
+        public PageDataResultView QueryPageDataResultView(JqGridPostData jqGridPostData)
         {
             Pageable pageable = AnalysisPostData(jqGridPostData);
             //queryOption.Where = AnalysisWhere(queryOption.Where);
             PageDataResultView result = QueryPagedDynamicData();
-            return result.GetJqGridJsonData();
+            return result;
 
             PageDataResultView QueryPagedDynamicData()
             {

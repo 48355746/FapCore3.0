@@ -910,12 +910,12 @@ namespace Fap.Core.DataAccess
             return _dbSession.QueryAsync(sql, dynParams);
         }
 
-        public IEnumerable<T> Query<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : BaseModel
+        public IEnumerable<T> Query<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : class
         {
             var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
             return _dbSession.Query<T>(sql, dynParams);
         }
-        public Task<IEnumerable<T>> QueryAsync<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : BaseModel
+        public Task<IEnumerable<T>> QueryAsync<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : class
         {
             var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
             return _dbSession.QueryAsync<T>(sql, dynParams);

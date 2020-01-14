@@ -241,6 +241,17 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             {
                 grid.SetUrl(Url);
             }
+            else
+            {
+                if (IsTreeGrid)
+                {
+                    grid.SetUrl($"{ _applicationContext.BaseUrl }/Api/Core/TreeDataList");
+                }
+                else
+                {
+                    grid.SetUrl($"{ _applicationContext.BaseUrl }/Api/Core/DataList");
+                }
+            }
             if (EditUrl.IsPresent())
             {
                 grid.SetEditUrl(EditUrl);
@@ -273,7 +284,6 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                 grid.AddColumns(AttachColumns);
             }
 
-            
             //鉴权列
             string cols = GetColumnPermission(querySet);
             if (cols.IsPresent())
@@ -333,12 +343,12 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             }
             grid.SetFooterRow(FooterRow);
             grid.SetUserDataOnFooter(UserdataFooter);
-            if (ExpandColumn.IsPresent())
-            {
-                grid.SetExpandColumn(ExpandColumn);
-            }
             if (IsTreeGrid)
             {
+                if (ExpandColumn.IsPresent())
+                {
+                    grid.SetExpandColumn(ExpandColumn);
+                }
                 grid.EnableTreeGrid();
             }
             if (OnGridComplete.IsPresent())
@@ -385,7 +395,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                     grid.OnSelectRow($"{OnSelectRow}(rowid, status);");
                 }
             }
-          
+
             if (SearchToolbar)
             {
                 grid.SetSearchToolbar(SearchToolbar);
@@ -423,13 +433,13 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             {
                 FapMenuButton menuButton = new FapMenuButton()
                 {
-                    ButtonID =Id,
+                    ButtonID = Id,
                     ButtonName = "表格按钮",
                     ButtonType = FapMenuButtonType.Grid,
                     Description = _dbContext.Table(querySet.TableName).TableComment
                 };
                 //注册按钮
-                return _rbacService.GetMenuButtonAuthority(_applicationContext.CurrentRoleUid,menuButton);
+                return _rbacService.GetMenuButtonAuthority(_applicationContext.CurrentRoleUid, menuButton);
             }
             return string.Empty;
         }
@@ -447,7 +457,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                 };
 
                 //注册按钮
-                return _rbacService.GetMenuColumnAuthority(_applicationContext.CurrentRoleUid,menuColumn);
+                return _rbacService.GetMenuColumnAuthority(_applicationContext.CurrentRoleUid, menuColumn);
             }
             return string.Empty;
         }
