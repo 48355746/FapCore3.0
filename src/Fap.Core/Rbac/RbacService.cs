@@ -288,6 +288,13 @@ namespace Fap.Core.Rbac
                         _platformDomain.MenuButtonSet.Refresh();
                     }
                 }
+                else
+                {
+                    //注册按钮
+                    menuButton.MenuUid = menu.Fid;
+                    _dbContext.Insert(menuButton);
+                    _platformDomain.MenuButtonSet.Refresh();
+                }
                 if (isAdministrator)
                 {
                     if (menuButton.ButtonType == FapMenuButtonType.Grid)
@@ -352,6 +359,13 @@ namespace Fap.Core.Rbac
                         }
                         _platformDomain.MenuColumnSet.Refresh();
                     }
+                }
+                else
+                {
+                    //注册按钮
+                    menuColumn.MenuUid = menu.Fid;
+                    _dbContext.Insert(menuColumn);
+                    _platformDomain.MenuColumnSet.Refresh();
                 }
                 if (isAdministrator)
                 {

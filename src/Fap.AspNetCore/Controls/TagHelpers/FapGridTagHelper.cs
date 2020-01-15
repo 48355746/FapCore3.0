@@ -423,6 +423,11 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             int formType = 0;
             foreach (int p in power)
             {
+                if (IsTreeGrid && p == 128)
+                {
+                    //树表格不应用批量编辑
+                    continue;
+                }
                 formType |= p;
             }
             grid.SetFormType((OperEnum)formType);

@@ -208,12 +208,9 @@ namespace Fap.AspNetCore.Controls.DataForm
                 //压缩js
                 JavaScriptCompressor compressor = new JavaScriptCompressor();
                 compressor.Encoding = Encoding.UTF8;
-                script.Append(compressor.Compress(RenderJavascript()));
+                string js = RenderJavascript().Replace("##formid##", $"frm-{Id}");
+                script.Append(compressor.Compress(js));
                 script.AppendLine("</script>");
-
-                // Insert grid id where needed (in columns)
-                script.Replace("##formid##", $"frm-{Id}");
-
                 // Return script + required elements
                 return script.ToString() + RenderHtmlElements();
             }
@@ -508,7 +505,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     //    refUrl = "TreeGridReference";
                     //}
                     string dispalyName = _multiLangService.GetLangColumnComent(column);
-                    script.AppendLine("$(\"###formid## #" + column.ColName + "\"+\"MC\").next().on(ace.click_event, function(){");
+                    script.AppendLine("$(\"###formid## #" + column.ColName + "MC\").next().on(ace.click_event, function(){");
                     //script.AppendLine("//不可编辑字段不能弹出");
                     script.AppendLine(" if($(this).prev().attr(\"disabled\")==\"disabled\"){return;}");
                     //扩展参考值，参照参数用
@@ -538,7 +535,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     }
                     script.AppendLine("loadRefMessageBox('" + dispalyName + "','##formid##','" + column.Fid + "','" + column.ColName + "','" + refUrl + "',extra)");
                     script.AppendLine("});");
-                    script.AppendLine("$(\"###formid## #" + column.ColName + "\"+\"MC\").on(ace.click_event,function(e){$(this).next().trigger(ace.click_event);e.preventDefault();})");
+                    script.AppendLine("$(\"###formid## #" + column.ColName +"MC\").on(ace.click_event,function(e){$(this).next().trigger(ace.click_event);e.preventDefault();});");
                 }
                 #endregion
 
@@ -554,9 +551,9 @@ namespace Fap.AspNetCore.Controls.DataForm
                     }
                     else
                     {
-                        script.AppendLine("loadFileMessageBox('" + tempFid + "','##formid##',initFile" + Id + tempFid + ");");
+                        script.AppendLine("loadFileMessageBox('" + tempFid + "','##formid##',initFile" + Id.Replace('-','_') + tempFid + ");");
                     }
-                    script.AppendLine("})");
+                    script.AppendLine("});");
                     string allowExt = string.Empty;
                     if (column.FileSuffix.IsPresent())
                     {
@@ -567,7 +564,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                         }
                     }
                     //建立初始化附件控件js函数
-                    script.AppendLine("var initFile" + Id + tempFid + "=function(){");
+                    script.AppendLine("var initFile" + Id.Replace('-', '_') + tempFid + "=function(){");
                     script.AppendLine("$(\"###formid##" + tempFid + "-FILE\").fileinput({");
                     script.AppendLine("language: 'zh',");
                     script.AppendLine("uploadUrl:\"" + _applicationContext.BaseUrl + "/Api/Core/uploadfile/" + field.FieldValue + "\",");

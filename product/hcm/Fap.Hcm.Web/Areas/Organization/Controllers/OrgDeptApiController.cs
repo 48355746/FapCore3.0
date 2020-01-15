@@ -24,10 +24,11 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
     public class OrgDeptApiController : FapController
     {
         private readonly ILogger<OrgDeptApiController> _logger;
-
-        public OrgDeptApiController(IServiceProvider serviceProvider) : base(serviceProvider)
+        private readonly IOrganizationService _organizationService;
+        public OrgDeptApiController(IServiceProvider serviceProvider,IOrganizationService organizationService) : base(serviceProvider)
         {
             _logger = _loggerFactory.CreateLogger<OrgDeptApiController>();
+            _organizationService = organizationService;
         }
 
         [Route("~/api/orgdept/orgdepts/{pid=''}")]
@@ -132,22 +133,22 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
                 return JsonIgnoreNull(tree);
             }
         }
-        [HttpGet]
-        [Route("~/api/orgdept/validedeptpermission/{fid=''}")]
-        public bool ValideDeptPermission(string fid)
-        {
-            IEnumerable<OrgDept> powerDepts = _rbacService.GetDeptInfoAuthority(_applicationContext.CurrentRoleUid);
-            if (powerDepts == null || powerDepts.Count() < 1)
-            {
-                return false;
-            }
-            powerDepts = powerDepts.Where(d => d.HasPartPower == false);
-            if (powerDepts != null && powerDepts.Any() && powerDepts.FirstOrDefault(d => d.Fid == fid) != null)
-            {
-                return true;
-            }
-            return false;
-        }
+        //[HttpGet]
+        //[Route("~/api/orgdept/validedeptpermission/{fid=''}")]
+        //public bool ValideDeptPermission(string fid)
+        //{
+        //    IEnumerable<OrgDept> powerDepts = _rbacService.GetDeptInfoAuthority(_applicationContext.CurrentRoleUid);
+        //    if (powerDepts == null || powerDepts.Count() < 1)
+        //    {
+        //        return false;
+        //    }
+        //    powerDepts = powerDepts.Where(d => d.HasPartPower == false);
+        //    if (powerDepts != null && powerDepts.Any() && powerDepts.FirstOrDefault(d => d.Fid == fid) != null)
+        //    {
+        //        return true;
+        //    }
+        //    return false;
+        //}
         /// <summary>
         /// 合并部门
         /// </summary>
@@ -210,54 +211,11 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
         /// <param name="text"></param>
         /// <param name="position"></param>
         /// <returns></returns>
-        [HttpGet]
-        [Route("~/api/orgdept/movedept")]
-        public JsonResult GetMoveDept(string operation, string id, string parent = "", string text = "", string position = "")
+        [HttpPost("MoveDept")]
+        public JsonResult GetMoveDept(TreePostData postData)
         {
-            bool success = false;
-            //权限判断
-            IEnumerable<OrgDept> powerDepts = _rbacService.GetDeptInfoAuthority(_applicationContext.CurrentRoleUid).Where(d => d.HasPartPower == false);
-            if (powerDepts != null && powerDepts.FirstOrDefault(d => d.Fid == id) == null)
-            {
-                return Json(success);
-            }
-            if (operation == "move_node")
-            {
-                //父级部门
-                OrgDept pOrgDept = _dbContext.Get<OrgDept>(parent);
-                OrgDept currDept = _dbContext.Get<OrgDept>(id);
-                DynamicParameters param = new DynamicParameters();
-                param.Add("Pid", parent);
-                var maxCodeStr = _dbContext.ExecuteScalar("select max(DeptCode) from OrgDept where  Pid=@Pid", param);
-                int maxLength = 0;
-                int maxOrder = 1;
-                string deptCode = "";
-                if (maxCodeStr != null)
-                {
-                    maxLength = maxCodeStr.ToString().Length;
-                    maxOrder = maxCodeStr.ToString().Substring(maxLength - 2).ToInt() + 1;
-                    int maxCode = maxCodeStr.ToString().ToInt() + 1;
-                    deptCode = maxCode.ToString().PadLeft(maxLength, '0');
-                }
-                else
-                {
-                    deptCode = pOrgDept.DeptCode + "01";
-                }
-                dynamic fdo = new FapDynamicObject(_dbContext.Columns("OrgDept"));
-                //fdo.TableName = "OrgDept";
-                fdo.Pid = parent;
-                fdo.Fid = id;//根据Fid进行更新操作
-                fdo.DeptCode = deptCode;
-                fdo.DeptOrder = currDept.DeptOrder;
-                fdo.FullName = currDept.FullName;
-                fdo.DeptName = currDept.DeptName;
-                fdo.TreeLevel = currDept.TreeLevel;
-                fdo.PCode = currDept.PCode;
-                _dbContext.UpdateDynamicData(fdo);
-                success = true;
-                //DataAccessor.Excute("update FapUserGroup set Pid=@Pid where Id=@Id", new  { Pid=parent,Id=id});
-            }
-            return Json(success);
+            var rv= _organizationService.MoveDepartment(postData);
+            return Json(rv);
         }
 
         /// <summary>

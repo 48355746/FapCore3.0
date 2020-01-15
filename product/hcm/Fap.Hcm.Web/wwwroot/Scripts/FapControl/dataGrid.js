@@ -240,10 +240,12 @@ var openRefrenceWindow = function (title, colfid, refurl, selectcallback, clearc
 
 };
 //批量编辑
-var loadBatchUpdateMessageBox = function (title, gid, qryCols, tablename, id, callback) {
-    var rowDatas = getSelectedRows(gid);
-    if (rowDatas === null)
+var loadBatchUpdateMessageBox = function (title, gid, qryCols, tablename, menuUid, callback) {
+    var rowDatas = getSelectedRows(gid);    
+    if (rowDatas === null || rowDatas.length === 0) {
+        $.msg('请选择要修改的多条数据');
         return;
+    }
     var dialog = bootbox.dialog({ 
         title: '<i class="ace-icon fa fa-pencil-square-o"></i> ' + title,
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
@@ -319,8 +321,8 @@ var loadBatchUpdateMessageBox = function (title, gid, qryCols, tablename, id, ca
                     return;
                 }
                 dialog.find(".modal-body .step-content [data-step=2]").html('<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>');
-                var url = $.randomUrl(basePath + '/Component/Dataform/?tn=' + tablename + "&frm=batchupdate&qrycols=" + fields.join());
-                $.get(url, function (ev) {
+                var url = $.randomUrl(basePath + '/Component/Dataform/0');
+                $.get(url, { gid: gid, menuid: menuUid, fs: 1, qrycols: fields.join() }, function (ev) {
                     dialog.find(".modal-body .step-content [data-step=2]").html(ev);
                 });
                 //e.preventDefault();
@@ -328,7 +330,7 @@ var loadBatchUpdateMessageBox = function (title, gid, qryCols, tablename, id, ca
                 //alert(0);
             }
         }).on('finished.fu.wizard', function (e) {
-            if (!$("#frm-batchupdate").valid()) {
+            if (!$("#frm-" + gid).valid()) {
                 e.preventDefault();
                 return false;
             }
@@ -340,7 +342,7 @@ var loadBatchUpdateMessageBox = function (title, gid, qryCols, tablename, id, ca
             });
             var entityData = {};
             entityData.oper = "batch_edit";
-            entityData.mainData = GetFapFormData("frm-batchupdate");
+            entityData.mainData = GetFapFormData("frm-" + gid);
             entityData.tableName = tablename;
             entityData.avoid_repeat_token = entityData.mainData["avoid_repeat_token"];
             entityData.Ids = ids.join();

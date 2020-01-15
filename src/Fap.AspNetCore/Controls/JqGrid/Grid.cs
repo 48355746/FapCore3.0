@@ -2266,7 +2266,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                       position:'first',  
                       buttonicon:'ace-icon fa fa-pencil-square-o',
                       onClickButton : function() {                      
-                        loadBatchUpdateMessageBox('批量编辑','##gridid##','" + HttpUtility.UrlEncode(_querySet.QueryCols) + "','" + TableName + @"',0);
+                        loadBatchUpdateMessageBox('批量编辑','##gridid##','" + HttpUtility.UrlEncode(_querySet.QueryCols) + "','" + TableName + "','" + GetCurrentMenuUid() + @"');
                     }
                   });");
         }

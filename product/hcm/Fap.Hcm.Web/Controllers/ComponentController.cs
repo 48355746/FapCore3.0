@@ -396,8 +396,10 @@ namespace Fap.Hcm.Web.Controllers
         /// <param name="fid">数据Fid</param>
         /// <param name="gid">jqgridId</param>
         /// <param name="menuid">菜单uid</param>
+        /// <param name="fs">单据状态</param>
+        /// <param name="qrycols">优先级高，指定的col</param>
         /// <returns></returns>
-        public IActionResult DataForm(string fid, string gid, string menuid,int fs)
+        public IActionResult DataForm(string fid, string gid, string menuid,int fs,string qrycols)
         {
             if (_platformDomain.MenuColumnSet.TryGetValue(menuid, out IEnumerable<FapMenuColumn> menuColumns))
             {
@@ -418,6 +420,11 @@ namespace Fap.Hcm.Web.Controllers
 
                          });
                         fd.FormStatus = (FormStatus)fs;
+                        //高优先级
+                        if (qrycols.IsPresent())
+                        {
+                            fd.QueryOption.QueryCols = qrycols;
+                        }
                         return View(fd);
                     }
                     else
@@ -427,12 +434,17 @@ namespace Fap.Hcm.Web.Controllers
                             qs.QueryCols = menuColumn.GridColumn;
                         });
                         fd.FormStatus = (FormStatus)fs;
+                        //高优先级
+                        if (qrycols.IsPresent())
+                        {
+                            fd.QueryOption.QueryCols = qrycols;
+                        }
                         return View(fd);
                     }
 
                 }
             }
-            return NotFound();
+            return Content("未授权");
         }
         
         /// <summary>

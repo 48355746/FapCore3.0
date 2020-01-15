@@ -626,7 +626,7 @@ namespace Fap.Core.DataAccess
                 string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
                 string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
                 //设置clone数据的enabledate为当前时间
-                var currDate = DateTimeUtils.CurrentDateTimeStr;
+                var currDate = DateTimeUtils.LastSecondDateTimeStr;
                 try
                 {
                     //clone老数据到新数据
@@ -712,7 +712,7 @@ namespace Fap.Core.DataAccess
                 string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
                 string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
                 //设置clone数据的enabledate为当前时间
-                var currDate = DateTimeUtils.CurrentDateTimeStr;
+                var currDate = DateTimeUtils.LastSecondDateTimeStr;
                 try
                 {
                     //clone老数据到新数据
@@ -742,9 +742,9 @@ namespace Fap.Core.DataAccess
         /// </summary>
         /// <typeparam name="newData">DapperRow</typeparam>
         /// <param name="currDate"></param>
-        private void SetNewDynamicToDelete(FapDynamicObject newData, string currDate)
+        private void SetNewDynamicToDelete(FapDynamicObject newData,string enableDate, string currDate)
         {
-            newData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_EnableDate,currDate);
+            newData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_EnableDate, enableDate);
             newData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_DisableDate, DateTimeUtils.PermanentTimeStr);
             newData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Dr, 1);
             newData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_UpdateBy, _applicationContext.EmpUid);
@@ -1680,7 +1680,7 @@ namespace Fap.Core.DataAccess
                     string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
                     string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
                     //设置clone数据的enabledate为当前时间
-                    var currDate = DateTimeUtils.CurrentDateTimeStr;
+                    var currDate = DateTimeUtils.LastSecondDateTimeStr;
                     try
                     {
                         //clone老数据到新数据
@@ -1756,7 +1756,7 @@ namespace Fap.Core.DataAccess
                     string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
                     string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
                     //设置clone数据的enabledate为当前时间
-                    var currDate = DateTimeUtils.CurrentDateTimeStr;
+                    var currDate = DateTimeUtils.LastSecondDateTimeStr;
                     try
                     {
                         //clone老数据到新数据
@@ -1994,8 +1994,9 @@ namespace Fap.Core.DataAccess
                     try
                     {
                         var currDate = DateTimeUtils.CurrentDateTimeStr;
+                        var enableDate = DateTimeUtils.LastSecondDateTimeStr;
                         //复制一份old data 形成新数据，修改EnableDate为当前日期                       
-                        oriData.EnableDate = currDate;
+                        oriData.EnableDate = enableDate;
                         string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
                         string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
                         long newId = _dbSession.Insert(tableName, columnList, paramList, oriData);
@@ -2008,9 +2009,11 @@ namespace Fap.Core.DataAccess
                         _dbSession.Update(fapDynData);
                         //修改老数据过期时间
                         FapDynamicObject oldUpdate = new FapDynamicObject(Columns(tableName));
-                        oldUpdate.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Id, oriData.Id);
-                        oldUpdate.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Ts, oriData.Ts);
-                        oldUpdate.SetValue(FapDbConstants.FAPCOLUMN_FIELD_DisableDate, currDate);
+                        long id= oriData.Id;
+                        long ts = oriData.Ts;
+                        oldUpdate.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Id,id);
+                        oldUpdate.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Ts, ts);
+                        oldUpdate.SetValue(FapDbConstants.FAPCOLUMN_FIELD_DisableDate, enableDate);
                         return _dbSession.Update(oldUpdate);
 
                     }
@@ -2087,8 +2090,10 @@ namespace Fap.Core.DataAccess
                         else //逻辑删除
                         {
                             FapDynamicObject dyData = new FapDynamicObject(Columns(tableName));
-                            dyData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Id, dynamicData.Get(FapDbConstants.FAPCOLUMN_FIELD_Id));
-                            dyData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Ts, dynamicData.Get(FapDbConstants.FAPCOLUMN_FIELD_Ts));
+                            long id = dynamicData.Get(FapDbConstants.FAPCOLUMN_FIELD_Id).ToLong();
+                            long ts = dynamicData.Get(FapDbConstants.FAPCOLUMN_FIELD_Ts).ToLong();
+                            dyData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Id, id);
+                            dyData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Ts, ts);
                             SetDynamicToLogicDelete(dyData);
                             _dbSession.Update(dyData);
                         }
@@ -2109,8 +2114,9 @@ namespace Fap.Core.DataAccess
                     long ts = dynamicData.Get(FapDbConstants.FAPCOLUMN_FIELD_Ts).ToLong();
                     var fieldList = Columns(tableName).Select(c => c.ColName);
                     var currDate = DateTimeUtils.CurrentDateTimeStr;
+                    var enableDate = DateTimeUtils.LastSecondDateTimeStr;
                     //insert new data                   
-                    SetNewDynamicToDelete(dynamicData, currDate);
+                    SetNewDynamicToDelete(dynamicData, enableDate, currDate);
                     string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
                     string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
                     long newId = _dbSession.Insert(tableName, columnList, paramList, dynamicData);
@@ -2119,7 +2125,7 @@ namespace Fap.Core.DataAccess
                     FapDynamicObject dyData = new FapDynamicObject(Columns(tableName));
                     dyData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Id, id);
                     dyData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Ts, ts);
-                    SetOldDynamicInvalid(dyData, currDate);
+                    SetOldDynamicInvalid(dyData, enableDate);
                     return _dbSession.Update(dyData);
                 }
             }
