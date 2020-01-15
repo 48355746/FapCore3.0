@@ -17,6 +17,7 @@ using Fap.Core.Infrastructure.Domain;
 using Newtonsoft.Json.Linq;
 using Fap.Model.Infrastructure;
 using Fap.Core.Infrastructure.Metadata;
+using Ardalis.GuardClauses;
 
 namespace Fap.Hcm.Service.System
 {
@@ -299,6 +300,7 @@ namespace Fap.Hcm.Service.System
 
         public ResponseViewModel OperConfigGroup(TreePostData postData)
         {
+            Guard.Against.Null(postData,nameof(postData));
             ResponseViewModel vm = new ResponseViewModel();
             if (postData.Operation == TreeNodeOper.DELETE_NODE)
             {

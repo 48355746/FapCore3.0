@@ -1,10 +1,15 @@
 ﻿using Fap.AspNetCore.ViewModel;
 using Fap.Core.DataAccess;
 using Fap.Core.DI;
+using Fap.Core.Infrastructure.Domain;
+using Fap.Core.Infrastructure.Enums;
 using Fap.Core.Rbac.Model;
+using Fap.Core.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using Ardalis.GuardClauses;
 
 namespace Fap.Hcm.Service.Organization
 {
@@ -12,49 +17,36 @@ namespace Fap.Hcm.Service.Organization
     public class OrganizationService : IOrganizationService
     {
         private readonly IDbContext _dbContext;
-        public OrganizationService(IDbContext dbContext)
+        private readonly IFapPlatformDomain _platformDomain;
+        public OrganizationService(IDbContext dbContext,IFapPlatformDomain platformDomain)
         {
             _dbContext = dbContext;
+            _platformDomain = platformDomain;
         }
+        [Transactional]
         public ResponseViewModel MoveDepartment(TreePostData postData)
         {
-            bool success = false;
-            if (postData.Operation == "move_node")
+            Guard.Against.Null(postData,nameof(postData));
+            if (postData.Operation == TreeNodeOper.MOVE_NODE)
             {
-                //父级部门
-                OrgDept pOrgDept = _dbContext.Get<OrgDept>(parent);
-                OrgDept currDept = _dbContext.Get<OrgDept>(id);
-                DynamicParameters param = new DynamicParameters();
-                param.Add("Pid", parent);
-                var maxCodeStr = _dbContext.ExecuteScalar("select max(DeptCode) from OrgDept where  Pid=@Pid", param);
-                int maxLength = 0;
-                int maxOrder = 1;
-                string deptCode = "";
-                if (maxCodeStr != null)
+                //当前部门
+                _platformDomain.OrgDeptSet.TryGetValue(postData.Id, out OrgDept currDept);
+
+                //检查之前父部门子级
+                _platformDomain.OrgDeptSet.TryGetValueByPid(currDept.Pid, out IEnumerable<OrgDept> childs);
+                if (childs.Any() && childs.Count() == 1)
                 {
-                    maxLength = maxCodeStr.ToString().Length;
-                    maxOrder = maxCodeStr.ToString().Substring(maxLength - 2).ToInt() + 1;
-                    int maxCode = maxCodeStr.ToString().ToInt() + 1;
-                    deptCode = maxCode.ToString().PadLeft(maxLength, '0');
+                    if(_platformDomain.OrgDeptSet.TryGetValue(currDept.Pid, out OrgDept parentDept))
+                    {
+                        parentDept.IsFinal = 1;
+                        _dbContext.Update(parentDept);
+                    }
+
                 }
-                else
-                {
-                    deptCode = pOrgDept.DeptCode + "01";
-                }
-                dynamic fdo = new FapDynamicObject(_dbContext.Columns("OrgDept"));
-                //fdo.TableName = "OrgDept";
-                fdo.Pid = parent;
-                fdo.Fid = id;//根据Fid进行更新操作
-                fdo.DeptCode = deptCode;
-                fdo.DeptOrder = currDept.DeptOrder;
-                fdo.FullName = currDept.FullName;
-                fdo.DeptName = currDept.DeptName;
-                fdo.TreeLevel = currDept.TreeLevel;
-                fdo.PCode = currDept.PCode;
-                _dbContext.UpdateDynamicData(fdo);
-                success = true;
-                //DataAccessor.Excute("update FapUserGroup set Pid=@Pid where Id=@Id", new  { Pid=parent,Id=id});
+                currDept.Pid = postData.Parent;
+                _dbContext.Update(currDept);
             }
+            return new ResponseViewModel { success = true };
         }
     }
 }

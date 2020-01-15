@@ -65,7 +65,42 @@ namespace Fap.Core.Infrastructure.Interceptor
                 }
             }
         }
+        private void HandlerOrgdept(OrgDept orgDept)
+        {
+            string pid = orgDept.Pid;
+            if (pid.IsPresent())
+            {
+                _appDomain.OrgDeptSet.TryGetValue(pid, out OrgDept parentDept);
+                _appDomain.OrgDeptSet.TryGetValueByPid(pid, out IEnumerable<OrgDept> childDepts);
+                if (parentDept.IsFinal == 1)
+                {
+                    //更新父部门是否末级标记
+                    parentDept.IsFinal = 0;
+                    _dbContext.Update(parentDept);
+                }
+                orgDept.PCode= parentDept.DeptCode;
+                orgDept.TreeLevel=parentDept.TreeLevel + 1;
+                if (orgDept.DeptOrder == 0)
+                {
+                    orgDept.DeptOrder= childDepts.Any() ? childDepts.Count() : 1;
 
+                }
+                orgDept.FullName= parentDept.FullName + "/" + orgDept.DeptName;
+                orgDept.DeptCode= childDepts.Any() ? (childDepts.Max(d => d.DeptCode).ToInt() + 1).ToString() : $"{parentDept.DeptCode}01";
+
+            }
+            else
+            {
+                int c = _appDomain.OrgDeptSet.Count(d => d.Pid.IsMissing()) + 1;
+                if (orgDept.DeptCode.IsMissing())
+                {
+                    orgDept.DeptCode= c.ToString();
+                    orgDept.FullName= orgDept.DeptName;
+                    orgDept.TreeLevel= 0;
+                    orgDept.DeptOrder= c;
+                }
+            }
+        }
 
         /// <summary>
         /// 更新前
@@ -181,6 +216,19 @@ namespace Fap.Core.Infrastructure.Interceptor
         }
 
         #endregion 动态对象
+        public override void BeforeEntityUpdate(object entity)
+        {
+            OrgDept orgDept = entity as OrgDept;
+            string fid = orgDept.Fid;
+            _appDomain.OrgDeptSet.TryGetValue(fid, out OrgDept oriDept);
+
+            string pid = orgDept.Pid;
+            //父部门没变化
+            if (pid != oriDept.Pid)
+            {
+                HandlerOrgdept(orgDept);
+            }
+        }
         public override void AfterEntityUpdate(object entity)
         {
             OrgDept orgDept = entity as OrgDept;
