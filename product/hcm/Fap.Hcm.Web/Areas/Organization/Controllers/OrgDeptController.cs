@@ -33,26 +33,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
         //合并部门
         //Get:/Organization/OrgDept/MergeDept
         public PartialViewResult MergeDept()
-        {           
-            ////父级部门
-            //OrgDept pOrgDept = _dbContext.Get<OrgDept>(fid);
-            //DynamicParameters param = new DynamicParameters();
-            //param.Add("Pid", fid);
-            //var maxCodeStr = _dbContext.ExecuteScalar<string>("select max(deptcode) from OrgDept where pid=@Pid", param);
-            //int maxLength = 0;
-            //int maxOrder = 1;
-            //string deptCode = "";
-            //if (maxCodeStr.IsPresent())
-            //{
-            //    maxLength = maxCodeStr.Length;
-            //    maxOrder = maxCodeStr.Substring(maxLength - 2).ToInt() + 1;
-            //    int maxCode = maxCodeStr.ToInt() + 1;
-            //    deptCode = maxCode.ToString().PadLeft(maxLength, '0');
-            //}
-            //else
-            //{
-            //    deptCode = pOrgDept.DeptCode + "01";
-            //}
+        {   
             FormViewModel fd = new FormViewModel();
             QuerySet  sq = new QuerySet();
             sq.TableName = "OrgDept";
@@ -60,16 +41,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
             sq.InitWhere = "Id=@Id";
             sq.Parameters.Add(new Parameter("Id", -1));
             fd.QueryOption = sq;
-            fd.TableName = "OrgDept";
-            //Dictionary<string, string> defaultData = new Dictionary<string, string>();
-            //defaultData.Add("DeptCode", deptCode);
-            //defaultData.Add("Pid", fid);
-            //defaultData.Add("PidMC", pOrgDept.DeptName);
-            //defaultData.Add("PCode", pOrgDept.DeptCode);
-            //defaultData.Add("DeptType", pOrgDept.DeptType);
-            //defaultData.Add("TreeLevel", (pOrgDept.TreeLevel + 1).ToString());
-            //defaultData.Add("DeptOrder", maxOrder.ToString());
-            //fd.DefaultData = defaultData;
+            fd.TableName = "OrgDept";           
             return PartialView(fd);
         }
         //移动部门
@@ -82,7 +54,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
         /// 组织机构图
         /// </summary>
         /// <returns></returns>
-        public ViewResult OrgChart(string id, string type)
+        public ViewResult OrgChart(string fid, string type)
         {
             //
             //List<OrgDept> orgDepts = acc.QueryEntityByWhere<OrgDept>();
@@ -95,7 +67,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
             //OrgDeptViewModel model = new OrgDeptViewModel();
             //model.RootOrgDept = pOrgDept;
             //return View(model);
-            ViewBag.Fid = id;
+            ViewBag.Fid = fid;
             if (string.IsNullOrWhiteSpace(type))
             {
                 type = "managerName";

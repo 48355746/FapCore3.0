@@ -42,13 +42,12 @@
         jQuery(function ($) {
             //机构图
             $("#btnOrgChart").on(ace.click_event, function () {
-                var fid = jQuery("#grid-orgdept").jqGrid('getGridParam', 'selrow');
-                var obj = $("#grid-orgdept").jqGrid('getRowData', fid);
-                if (fid == null) {
-                    bootbox.alert(MultiLangHelper.getResName("orgdept_index_page_pleaseSelshowdept", "请选择一个部门查看"));
+                var rowData = getSelectedRow('grid-orgdept');
+                if (rowData == null) {
+                    //bootbox.alert(MultiLangHelper.getResName("orgdept_index_page_pleaseSelshowdept", "请选择一个部门查看"));
                     return;
                 }
-                openUrl("@Url.Content("~/Organization/OrgDept/OrgChart/")" + fid + "?type=directorName");
+                openUrl("@Url.Content("~/Organization/OrgDept/OrgChart/")" + rowData.Fid+ "?type=directorName");
 
             })
 
@@ -83,26 +82,11 @@
                     title: MultiLangHelper.getResName("orgdept_index_page_mergedepartment", "合并部门"),
                     message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
                     size: "large",
-                    buttons: {
-                        success: {
-                            label: MultiLangHelper.getResName("global_oper_enter", "确定"),
-                            className: "btn-primary",
-                            callback: function () {
-                                var result = mergeDepts();
-                                if (result) {
-                                    $('#grid-orgdept').trigger('reloadGrid');
-                                } else {
-                                    return false;
-
-                                }
-                            }
-                        },
-
+                    buttons: {                       
                         cancel: {
                             label: MultiLangHelper.getResName("global_oper_cancel", "取消"), className: "btn-default"
                         }
                     }
-
                 });
                 dialog.init(function () {
                     var url = "@Url.Content("~/Organization/OrgDept/MergeDept")" ;
@@ -143,9 +127,11 @@
                                 $.each(chks, function (i, v) {
                                     mergeUids.push(v.value);
                                 })
-                                $.post(basePath + "/Organization//Api/OrgDept/Merge", { DeptFid: data.Fid, DeptCode: data.DeptCode, MergeFids: mergeUids }, function (rv) {
+                                $.post(basePath + "/Organization/Api/OrgDept/Merge", { DeptFid: data.Fid, DeptCode: data.DeptCode, MergeFids: mergeUids }, function (rv) {
                                     if (rv.success) {
                                         $.msg('合并成功');
+                                        dialog.modal("hide");
+                                         $('#grid-orgdept').trigger('reloadGrid');
                                     } else {
                                         bootbox.alert(rv.msg);
                                     }

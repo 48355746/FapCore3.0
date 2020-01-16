@@ -1,42 +1,6 @@
 ﻿
 @model Fap.AspNetCore.ViewModel.FormViewModel
-@*<div class="row">
-        <div class="col-sm-3">
-            <div class="widget-box transparent">
-                <div class="widget-header widget-header-small">
-                    <h4 class="widget-title blue smaller">
-                        <i class="ace-icon fa fa-sitemap orange"></i>
-                        <fap-multilang lang-key="orgdept_Mergedept_page_themergedepartment" default-content="要合并部门"></fap-multilang>
-                    </h4>
-                </div>
 
-                <div class="widget-body">
-
-                   <fap-tree id="orgdeptmerge" is-async="false" is-orgdept="true" plugin-checkbox="true"></fap-tree>
-
-                  </div>
-            </div>
-        </div>
-        <div class="col-sm-9">
-            <div class="widget-box transparent">
-                <div class="widget-header widget-header-small">
-                    <h4 class="widget-title blue smaller">
-                        <i class="ace-icon fa fa-crosshairs blue"></i>
-                        <fap-multilang lang-key="orgdept_Mergedept_page_targetdept" default-content="目标部门"></fap-multilang>
-                    </h4>
-
-
-                </div>
-
-                <div class="widget-body">
-                    <div class="widget-main padding-8">
-                        <fap-form id="orgdeptmerge" form-model="Model"></fap-form>
-
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>*@
 <div id="modal-wizard-container">
     <div>
         <ul class="steps">
@@ -80,60 +44,3 @@
     </button>
     <!-- /section:plugins/fuelux.wizard.buttons -->
 </div>
-<script>
-    //$(function () {
-    //    $("#btnSaveMergeDept").on(ace.click_event, function () {
-    //        //将部门中的人都加到新部门，旧部门删除
-    //        mergeDepts();
-    //    })
-    //})
-
-    var mergeDepts = function () {
-        var treeDept = $("#tree-orgdeptmerge").jstree(true);
-        //获取选中的部门
-        var selDepts = treeDept.get_checked();
-        if (selDepts.length < 2) {
-            bootbox.alert(MultiLangHelper.getResName("orgdept_Mergedept_page_pleaselleattwodeptmerger", "请至少选择两个部门合并"));
-            return false;
-        }
-
-        //获取增部门数据
-        var formData = {};
-        if (!$("#frm-orgdeptmerge").valid()) {
-            return false;
-        } else {
-            $("#frm-orgdeptmerge .form-control").each(function () {
-                if ($(this).is('input') && $(this).attr('type') == 'checkbox') {
-                    formData[$(this).attr("Id")] = $(this).is(":checked") ? $(this).val() : 0;
-                    return;
-                }
-                formData[$(this).attr("Id")] = $(this).val();
-            });
-            formData['oper'] = "add";
-            formData["mergedepts"] = selDepts;
-            var rv = false;
-            $.ajax({
-                type: "post",
-                url: basePath + '/api/orgdept/mergedept',//这里不用带tn 因为 表单中有tn值
-                data: formData,
-                async: false,
-                dataType: "json",
-                success: function (data) {
-                    if (data.success) {
-                        bootbox.alert(MultiLangHelper.getResName("orgdept_Mergedept_page_successfulmergerdept", "已成功合并部门"));
-                        rv = true;
-                    } else {
-                        bootbox.alert(data.msg);
-                        rv = false;
-                    }
-                },
-                error: function () {
-                    //请求出错处理
-                    bootbox.alert(MultiLangHelper.getResName("global_txt_systemerror", "系统错误"));
-                    rv = false;
-                }
-            });
-            return rv;
-        }
-    }
-</script>

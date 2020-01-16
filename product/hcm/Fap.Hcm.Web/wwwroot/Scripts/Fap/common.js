@@ -1,13 +1,13 @@
 ﻿//打开新窗口（不被拦截）
 var openUrl = function (url) {   
-    var form = document.createElement('form');
-    form.action = url;
-    form.target = '_blank';
-
-    form.method = 'POST';
-
-    document.body.appendChild(form);
-    form.submit();
+    //弹出即全屏
+    var index = layer.open({
+        type: 2,
+        content: url,
+        area: ['320px', '195px'],
+        maxmin: true
+    });
+    layer.full(index);
 };
 var openNewWindow = function (url,closeCallback) {
     //弹出即全屏

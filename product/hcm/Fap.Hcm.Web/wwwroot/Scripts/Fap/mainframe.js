@@ -14,7 +14,7 @@ $(function () {
                 bootbox.alert("获取申请码出现异常，其原因如下：" + textStatus);
             }
         });
-    })
+    });
     //激活
     $("#btnActivated").on(ace.click_event, function () {
         bootbox.prompt("请输入您的产品密钥！", function (result) {
@@ -49,7 +49,7 @@ $(function () {
 var getHandling = function () {
     //获取待办数目
     $.ajax({
-        url: basePath+"/Common/Home/GetHandling",    //请求的url地址
+        url: basePath + "/Common/Home/GetHandling",    //请求的url地址
         dataType: "json",   //返回格式为json
         async: true, //请求是否异步，默认为异步，这也是ajax重要特性
         data: {},    //参数值
@@ -66,7 +66,7 @@ var getHandling = function () {
                 percent = ((totals - handling) * 100.0 / totals).toFixed(2);
             }
             $(".handingcount").text(handling);
-            $(".totalcount").text("总任务数:"+totals);
+            $(".totalcount").text("总任务数:" + totals);
             $(".hanglingtxt").text(handling + '待处理任务');
             $(".pull-right.percent").text(percent + '%');
             $(".progress-bar.totalcount").css({ width: percent + '%' });
@@ -78,20 +78,20 @@ var getHandling = function () {
             //请求出错处理
         }
     });
-}
+};
 //获取菜单徽章
 var getBadge = function () {
     $(".badge.badge-warning").each(function () {
         var plugin = $(this).data("plug");
         if (plugin !== '') {
             var badge = $(this);
-            $.post(basePath+'/Common/Home/GetBadge', { pluginclass: plugin }, function (data) {
+            $.post(basePath + '/Common/Home/GetBadge', { pluginclass: plugin }, function (data) {
                 if (data.count > 0) {
                     badge.text(data.count);
                 } else {
                     badge.remove();
                 }
-            })
+            });
         }
     });
-}
+};

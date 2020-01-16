@@ -332,7 +332,7 @@
                 // Gets the default parent for inserting new cells. This
                 // is normally the first child of the root (ie. layer 0).
                 var parent = graph.getDefaultParent();
-                $.get("@Url.Content("~/api/orgdept/orgchartgojs/")@fid", function (nodes) {
+                $.get("@Url.Content("~/Organization/Api/OrgDept/OrgChartGojs/")@fid", function (nodes) {
                     if (nodes) {
                         // Adds the root vertex of the tree
                         graph.getModel().beginUpdate();
@@ -341,7 +341,7 @@
                             var pnode = _.find(nodes, { key: '@fid' });
                             var photoKey = pnode.managerUid == '' ? '111' : pnode.managerUid
                             var v1 = graph.insertVertex(parent, 'treeRoot',
-                                pnode.deptName, w / 2 - 30, 20, 140, 60, 'image=/Home/UserPhotoByFid/' + photoKey + ';');
+                                pnode.deptName, w / 2 - 30, 20, 140, 60, 'image=/Component/Photo/' + photoKey + ';');
                             v1.manager = pnode.managerName;
                             v1.direct = pnode.directorName;
                             v1.num = pnode.deptNum;
@@ -420,7 +420,7 @@
                     geometry.width = size.width;
                     geometry.height = size.height;
                     var photoKey = node.managerUid == '' ? '111' : node.managerUid
-                    vertex.style = 'image=/Home/UserPhotoByFid/' + photoKey+ ';';
+                    vertex.style = 'image=/Component/Photo/' + photoKey+ ';';
                     // Adds the edge between the existing cell
                     // and the new vertex and executes the
                     // automatic layout on the parent

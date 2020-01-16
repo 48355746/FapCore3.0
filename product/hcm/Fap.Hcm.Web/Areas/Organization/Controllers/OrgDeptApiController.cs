@@ -183,46 +183,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
         {
             var rv = _organizationService.MoveDepartment(postData);
             return Json(rv);
-        }
-
-        /// <summary>
-        /// 移除部门
-        /// </summary>
-        /// <param name="fid"></param>
-        /// <returns></returns>
-        [HttpGet]
-        [Route("~/api/orgdept/removedept/{fid=''}")]
-        public JsonResult GetRemoveDept(string fid)
-        {
-            bool success = false;
-            string strResult = "";
-            DynamicParameters param = new DynamicParameters();
-            param.Add("Pid", fid);
-            int count = _dbContext.Count("OrgDept", "Pid=@Pid", param);
-            if (count > 0)
-            {
-                strResult = "此部门下还有部门，不能移除！请先移除其子部门。";
-            }
-            else
-            {
-                int ecount = _dbContext.Count("Employee", "EmpStatus='Current' and  DeptUid=@Pid", param);
-                if (ecount > 0)
-                {
-                    strResult = "此部门下还有人员，不能移除。";
-                }
-            }
-            if (strResult == "")
-            {
-                //移除操作
-                dynamic fdo = new FapDynamicObject(_dbContext.Columns("OrgDept"));
-                //fdo.TableName = "OrgDept";
-                fdo.Fid = fid;//根据Fid进行更新操作
-                _dbContext.DeleteDynamicData(fdo);
-                success = true;
-            }
-
-            return Json(new { message = strResult, result = success });
-        }
+        }    
         /// <summary>
         /// 恢复已经移除的部门
         /// </summary>
@@ -287,8 +248,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
         /// </summary>
         /// <param name="fid">选中部门</param>
         /// <returns></returns>
-        [HttpGet]
-        [Route("~/api/orgdept/orgchartgojs/{fid=''}")]
+        [HttpGet("OrgChartGojs/{fid}")]
         public JsonResult GetOrgChart2(string fid)
         {
             //人员类别设置
@@ -307,7 +267,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
             IEnumerable<string> powerdepts = deptList.Where(d => d.HasPartPower == false).Select(d => d.Fid);
             if (powerdepts != null && powerdepts.Any())
             {
-                sql += " and  DeptUid in (@PowerDepts)";
+                sql += " and  DeptUid in @PowerDepts";
                 parameters.Add("PowerDepts", powerdepts);
             }
             sql += " group by DeptUid";
@@ -321,18 +281,18 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
             //人数计算
             depts.ToList().ForEach((d) =>
             {
-                d.EmpNum = Convert.ToInt32(list.FirstOrDefault(e => e.DeptUid == d.Fid) == null ? "0" : list.FirstOrDefault(e => e.DeptUid == d.Fid).Num.ToString());
+                d.EmpNum = Convert.ToInt32(list.FirstOrDefault(e => e.DeptUid == d.Fid)?.Num.ToString() ?? "0");
             });
             depts.ToList().ForEach((d) =>
             {
                 d.EmpNum = depts.Where(dd => dd.DeptCode.StartsWith(d.DeptCode)).Sum(dd => dd.EmpNum);
                 if (d.DeptManager.IsPresent())
                 {
-                    d.DeptManagerMC = employees.FirstOrDefault(e => e.Fid == d.DeptManager).EmpName;
+                    d.DeptManagerMC = employees.FirstOrDefault(e => e.Fid == d.DeptManager)?.EmpName;
                 }
                 if (d.Director.IsPresent())
                 {
-                    d.DirectorMC = employees.FirstOrDefault(e => e.Fid == d.Director).EmpName;
+                    d.DirectorMC = employees.FirstOrDefault(e => e.Fid == d.Director)?.EmpName;
                 }
             });
             IEnumerable<OrgChartNode2> nodeList = depts

@@ -431,15 +431,15 @@ var loadImageControl = function (ctrlid) {
                 //so we return just here to prevent problems
                 var value = $(avatar).next().find('input[type=hidden]:eq(0)').val();
                 if (!value || value.length === 0) {
-                    deferred = new $.Deferred
+                    deferred = new $.Deferred;
                     deferred.resolve();
                     return deferred.promise();
                 }
-                var $form = $(avatar).next().find('.editableform:eq(0)')
+                var $form = $(avatar).next().find('.editableform:eq(0)');
                 var file_input = $form.find('input[type=file]:eq(0)');
                 var pk = $(avatar).attr('data-pk');//primary key to be sent to server
                 submit_url += pk;
-                var ie_timeout = null
+                var ie_timeout = null;
                 if ("FormData" in window) {
                     var formData_object = new FormData();//create empty FormData object
 
@@ -470,7 +470,7 @@ var loadImageControl = function (ctrlid) {
                     });
                 }
                 else {
-                    deferred = new $.Deferred
+                    deferred = new $.Deferred;
 
                     var temporary_iframe_id = 'temporary-iframe-' + (new Date()).getTime() + '-' + (parseInt(Math.random() * 1000));
                     var temp_iframe =
