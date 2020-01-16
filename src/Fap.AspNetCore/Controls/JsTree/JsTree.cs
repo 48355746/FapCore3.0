@@ -477,7 +477,7 @@ namespace Fap.AspNetCore.Controls
 	                });
                 }).on('move_node.jstree', function (e, data) {
 	                $.post('##editurl##', { operation: 'move_node', 'id': data.node.id, 'parent': data.parent, 'position': data.position }, function (rv) {
-		                data.instance.refresh();
+		                if(rv.success){$.msg('移动成功');}else{data.instance.refresh();}
 	                });
                 }).on('copy_node.jstree', function (e, data) {
 	                $.post('##editurl##', { operation: 'copy_node', 'id': data.original.id, 'parent': data.parent, 'position': data.position }, function (rv) {

@@ -48,5 +48,25 @@ namespace Fap.Hcm.Service.Organization
             }
             return new ResponseViewModel { success = true };
         }
+
+        public ResponseViewModel MergeDepartment(MergeDeptModel mergeDept)
+        {
+            Guard.Against.Null(mergeDept, nameof(mergeDept));
+
+            var employees = _dbContext.QueryWhere<Employee>("DeptUid in @Depts", new Dapper.DynamicParameters(new { Depts = mergeDept.MergeFids }));
+            foreach (var employee in employees)
+            {
+                employee.DeptUid = mergeDept.DeptFid;
+                employee.DeptCode = mergeDept.DeptCode;
+                _dbContext.Update(employee);
+            }
+            //删除旧部门
+            var mergeDepts= _platformDomain.OrgDeptSet.Where(d => mergeDept.MergeFids.Contains(d.Fid));
+            foreach (var dept in mergeDepts)
+            {
+                _dbContext.Delete(dept);
+            }
+            return ResponseViewModelUtils.Sueecss();
+        }
     }
 }

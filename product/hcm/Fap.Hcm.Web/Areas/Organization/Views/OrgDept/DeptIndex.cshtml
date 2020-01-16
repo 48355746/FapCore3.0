@@ -26,7 +26,7 @@
             <div class="widget-body">
                 <!-- #section:custom/widget-box.toolbox -->
                 <div class="widget-main">
-                    <fap-grid id="orgdept" grid-model="Model"  
+                    <fap-grid id="orgdept" grid-model="Model"
                               is-tree-grid="true" expand-column="DeptName" col-menu="false" row-numbers="false" view-records="true" shrink-fit="false" oper-import="true"></fap-grid>
 
                 </div>
@@ -39,7 +39,7 @@
 <script>
     var scripts = [null, "/Content/js/jquery.orgchart.min.js", null]
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
-        jQuery(function ($) { 
+        jQuery(function ($) {
             //机构图
             $("#btnOrgChart").on(ace.click_event, function () {
                 var fid = jQuery("#grid-orgdept").jqGrid('getGridParam', 'selrow');
@@ -78,12 +78,7 @@
                 });
             })
             //合并
-            $("#btnMergeDept").on(ace.click_event, function () {
-                var fid = jQuery("#grid-orgdept").jqGrid('getGridParam', 'selrow');
-                if (fid == null) {
-                    bootbox.alert(MultiLangHelper.getResName("orgdept_index_page_selmergefatherdept", "请选择要合并到的父部门"));
-                    return;
-                }
+            $("#btnMergeDept").on(ace.click_event, function () {               
                 var dialog = bootbox.dialog({
                     title: MultiLangHelper.getResName("orgdept_index_page_mergedepartment", "合并部门"),
                     message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
@@ -110,13 +105,55 @@
 
                 });
                 dialog.init(function () {
-                    var url = "@Url.Content("~/Organization/OrgDept/MergeDept")/" + fid;
+                    var url = "@Url.Content("~/Organization/OrgDept/MergeDept")" ;
                     $.get(url, function (ev) {
                         dialog.find('.bootbox-body').html(ev);
-                        $("#orgdeptmergePidMC").attr("disabled", true);
+                        dialog.find('.modal-footer').html($(".wizard-actions").eq(0));
+                        dialog.find('#modal-wizard-container').ace_wizard({
+                            //手动指定按钮
+                            buttons: '.wizard-actions:eq(0)'
+                        }).on('actionclicked.fu.wizard', function (e, info) {
+                            if (info.step === 1) {
+                                 var treeDept = $("#tree-orgdeptmerge").jstree(true);
+                                //获取选中的部门
+                                var selDepts = treeDept.get_checked();
+                                if (selDepts.length < 2) {
+                                    $.msg('至少请选择两个部门合并');
+                                    return false;
+                                }
+                                $("#confirmDepts").empty();
+                                $.each(selDepts, function (i, v) {                                    
+                                    var $lbl = $(`     <label>
+                                        <input name="form-field-checkbox" type="checkbox" checked value='`+v+`' class="ace" />
+                                        <span class="lbl"> `+treeDept.get_node(v).text+`</span>
+                                    </label>   `);
+                                    $("#confirmDepts").append($lbl);
+                                })
+                            } else if (info.step === 2) {
+                                var chks = $("#confirmDepts input[type='checkbox']:checked");
+                                 if (chks.length < 2) {
+                                    $.msg('至少请选择两个部门合并');
+                                    return false;
+                                }
+                            }
+                        }).on('finished.fu.wizard', function (e) {
+                            Persistence('frm-orgdeptmerge', 'OrgDept', null, function (data) {
+                                var chks = $("#confirmDepts input[type='checkbox']:checked");
+                                var mergeUids = [];
+                                $.each(chks, function (i, v) {
+                                    mergeUids.push(v.value);
+                                })
+                                $.post(basePath + "/Organization//Api/OrgDept/Merge", { DeptFid: data.Fid, DeptCode: data.DeptCode, MergeFids: mergeUids }, function (rv) {
+                                    if (rv.success) {
+                                        $.msg('合并成功');
+                                    } else {
+                                        bootbox.alert(rv.msg);
+                                    }
+                                })
+                            });
+                        });
                     })
                 });
-
             })
             //移动
             $("#btnMoveDept").on(ace.click_event, function () {
@@ -145,7 +182,7 @@
                     })
                 });
             })
-            
+
         })
     })
 </script>

@@ -65,21 +65,17 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid, menuid, fro
             callback: function () {
                 var formid = 'frm-' + gid;
                 //持久化
-                var res = Persistence(formid, tablename);
+                var res = Persistence(formid, tablename, fromInitCallback, saveCompletedCallback);
                 if (res === false) {
                     return false;
                 }
-                if (res.success === true) {
-                    if ($.isFunction(saveCompletedCallback)) {
-                        saveCompletedCallback();
-                    }
+                if (res.success === true) {                   
                     if ($('#' + gid).length && $('#' + gid).length > 0) {
                         $('#' + gid).jqGrid('setGridParam', {
                             //page: 1
                         }).trigger("reloadGrid"); //重新载入
                     }
                 } else {
-
                     return false;
                 }
             }

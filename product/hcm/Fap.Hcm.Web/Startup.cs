@@ -114,7 +114,7 @@ namespace Fap.Hcm.Web
             {
                 endpoints.MapControllerRoute(
                     name: "areaRoute",
-                    pattern: "{area:exists}/{controller}/{action}",
+                    pattern: "{area:exists}/{controller}/{action}/{fid?}",
                     defaults: new { action = "Index" });
 
                 endpoints.MapControllerRoute(

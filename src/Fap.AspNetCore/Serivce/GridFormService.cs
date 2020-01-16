@@ -332,7 +332,7 @@ namespace Fap.AspNetCore.Serivce
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return ResponseViewModelUtils.Failure("发生错误，操作失败");
+                return ResponseViewModelUtils.Failure("操作失败:"+ex.Message);
             }
 
         }

@@ -32,43 +32,44 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
         }
         //合并部门
         //Get:/Organization/OrgDept/MergeDept
-        public PartialViewResult MergeDept(string id)
+        public PartialViewResult MergeDept()
         {           
-            //父级部门
-            OrgDept pOrgDept = _dbContext.Get<OrgDept>(id);
-            DynamicParameters param = new DynamicParameters();
-            param.Add("Pid", id);
-            var maxCodeStr = _dbContext.ExecuteScalar<string>("select max(deptcode) from OrgDept where pid=@Pid", param);
-            int maxLength = 0;
-            int maxOrder = 1;
-            string deptCode = "";
-            if (maxCodeStr.IsPresent())
-            {
-                maxLength = maxCodeStr.Length;
-                maxOrder = maxCodeStr.Substring(maxLength - 2).ToInt() + 1;
-                int maxCode = maxCodeStr.ToInt() + 1;
-                deptCode = maxCode.ToString().PadLeft(maxLength, '0');
-            }
-            else
-            {
-                deptCode = pOrgDept.DeptCode + "01";
-            }
+            ////父级部门
+            //OrgDept pOrgDept = _dbContext.Get<OrgDept>(fid);
+            //DynamicParameters param = new DynamicParameters();
+            //param.Add("Pid", fid);
+            //var maxCodeStr = _dbContext.ExecuteScalar<string>("select max(deptcode) from OrgDept where pid=@Pid", param);
+            //int maxLength = 0;
+            //int maxOrder = 1;
+            //string deptCode = "";
+            //if (maxCodeStr.IsPresent())
+            //{
+            //    maxLength = maxCodeStr.Length;
+            //    maxOrder = maxCodeStr.Substring(maxLength - 2).ToInt() + 1;
+            //    int maxCode = maxCodeStr.ToInt() + 1;
+            //    deptCode = maxCode.ToString().PadLeft(maxLength, '0');
+            //}
+            //else
+            //{
+            //    deptCode = pOrgDept.DeptCode + "01";
+            //}
             FormViewModel fd = new FormViewModel();
             QuerySet  sq = new QuerySet();
             sq.TableName = "OrgDept";
+            sq.QueryCols = "*";
             sq.InitWhere = "Id=@Id";
             sq.Parameters.Add(new Parameter("Id", -1));
             fd.QueryOption = sq;
             fd.TableName = "OrgDept";
-            Dictionary<string, string> defaultData = new Dictionary<string, string>();
-            defaultData.Add("DeptCode", deptCode);
-            defaultData.Add("Pid", id);
-            defaultData.Add("PidMC", pOrgDept.DeptName);
-            defaultData.Add("PCode", pOrgDept.DeptCode);
-            defaultData.Add("DeptType", pOrgDept.DeptType);
-            defaultData.Add("TreeLevel", (pOrgDept.TreeLevel + 1).ToString());
-            defaultData.Add("DeptOrder", maxOrder.ToString());
-            fd.DefaultData = defaultData;
+            //Dictionary<string, string> defaultData = new Dictionary<string, string>();
+            //defaultData.Add("DeptCode", deptCode);
+            //defaultData.Add("Pid", fid);
+            //defaultData.Add("PidMC", pOrgDept.DeptName);
+            //defaultData.Add("PCode", pOrgDept.DeptCode);
+            //defaultData.Add("DeptType", pOrgDept.DeptType);
+            //defaultData.Add("TreeLevel", (pOrgDept.TreeLevel + 1).ToString());
+            //defaultData.Add("DeptOrder", maxOrder.ToString());
+            //fd.DefaultData = defaultData;
             return PartialView(fd);
         }
         //移动部门

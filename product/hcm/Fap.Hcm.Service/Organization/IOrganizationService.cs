@@ -8,5 +8,6 @@ namespace Fap.Hcm.Service.Organization
     public interface IOrganizationService
     {
         ResponseViewModel MoveDepartment(TreePostData postData);
+        ResponseViewModel MergeDepartment(MergeDeptModel mergeDept);
     }
 }

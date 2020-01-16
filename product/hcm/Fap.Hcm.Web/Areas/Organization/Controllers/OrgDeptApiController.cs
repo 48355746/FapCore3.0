@@ -25,7 +25,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
     {
         private readonly ILogger<OrgDeptApiController> _logger;
         private readonly IOrganizationService _organizationService;
-        public OrgDeptApiController(IServiceProvider serviceProvider,IOrganizationService organizationService) : base(serviceProvider)
+        public OrgDeptApiController(IServiceProvider serviceProvider, IOrganizationService organizationService) : base(serviceProvider)
         {
             _logger = _loggerFactory.CreateLogger<OrgDeptApiController>();
             _organizationService = organizationService;
@@ -154,53 +154,20 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
         /// </summary>
         /// <param name="formObj"></param>
         /// <returns></returns>
-        [HttpPost]
-        [Route("~/api/orgdept/mergedept/")]
+        [HttpPost("Merge")]
         // POST: api/Common
-        public JsonResult PostMergeDept(JObject formObj)
+        public JsonResult PostMergeDept(MergeDeptModel mergeDept)
         {
-            string tableName = formObj.GetStringValue("Table_Name");
-
-            IEnumerable<OrgDept> powerDepts = _rbacService.GetDeptInfoAuthority(_applicationContext.CurrentRoleUid).Where(d => d.HasPartPower == false);
-            JToken[] mergeDepts = formObj.GetValue("mergedepts").ToArray();
-            List<string> deptstrs = new List<string>();
-            List<FapDynamicObject> depts = new List<FapDynamicObject>();
-            foreach (var dept in mergeDepts)
+            try
             {
-                //判断是否是权限所有者部门
-                if (powerDepts != null && powerDepts.Any() && powerDepts.FirstOrDefault(d => d.Fid == dept.ToString()) != null)
-                {
-                    deptstrs.Add("'" + dept.ToString() + "'");
-                    FapDynamicObject fdoDept = new FapDynamicObject(_dbContext.Columns("OrgDept"));
-                    //fdoDept.TableName = "OrgDept";
-                    fdoDept.SetValue("Fid", dept.ToString());
-                    depts.Add(fdoDept);
-                }
+                var rv = _organizationService.MergeDepartment(mergeDept);
+                return Json(rv);
             }
-            if (depts.Count < 2)
+            catch (Exception ex)
             {
-                return Json(ResponseViewModelUtils.Failure("您选择的有权限部门少于2个，将不能合并。"));
+                return Json(ResponseViewModelUtils.Failure(ex.Message));
             }
-            //DataAccessor accessor = new DataAccessor();
-            //string oper = formObj.GetStringValue("oper");
 
-            var cols = _dbContext.Columns(tableName);
-            dynamic fdo = formObj.ToFapDynamicObject(cols, new string[] { "oper", "tn", "Table_Name", "mergedepts", "undefined", "formtoken", "logicdelete" });
-            //插入新部门
-            _dbContext.InsertDynamicData(fdo);
-            //更新人员部门为新部门,更新必须要有Id
-            var employees = _dbContext.Query("select Id,Fid,DeptUid from Employee where DeptUid in (@Depts)", new DynamicParameters(new { Depts = deptstrs }), false);
-            IEnumerable<FapDynamicObject> emps = employees.ToFapDynamicObjectList(_dbContext.Columns("Employee"));
-            foreach (dynamic employee in emps)
-            {
-                employee.DeptUid = fdo.Fid;
-            }
-            //需要处理     
-            _dbContext.UpdateDynamicDataBatch(emps);
-            //删除旧部门
-            _dbContext.DeleteDynamicDataBatch(depts);
-
-            return Json(ResponseViewModelUtils.Sueecss("合并成功！"));
         }
         /// <summary>
         /// 移动部门
@@ -214,7 +181,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
         [HttpPost("MoveDept")]
         public JsonResult GetMoveDept(TreePostData postData)
         {
-            var rv= _organizationService.MoveDepartment(postData);
+            var rv = _organizationService.MoveDepartment(postData);
             return Json(rv);
         }
 
@@ -426,10 +393,10 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
 
             //获取所有的职位
             IEnumerable<OrgPosition> positionList = null;
-        
-                _dbContext.HistoryDateTime = histroyDate;
-                positionList = _dbContext.QueryWhere<OrgPosition>("");
-           
+
+            _dbContext.HistoryDateTime = histroyDate;
+            positionList = _dbContext.QueryWhere<OrgPosition>("");
+
             foreach (var dept in selDepts)
             {
                 var ps = positionList?.Where(p => p.DeptUid == dept.Fid);
@@ -465,13 +432,13 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
                 empCategoryWhere = "  EmpCategory in (@EmpCategorys)";
                 parameters.Add("EmpCategorys", empCategorys.Split(','));
             }
-          
-                _dbContext.HistoryDateTime = histroyDate;
-                string sqlinit = " update OrgPosition  set Actual=0 ";
-                _dbContext.Execute(sqlinit);
-                string synSql = $" update OrgPosition set actual=a.Num from ( select empposition,count(0) Num from Employee where {empCategoryWhere}  group by EmpPosition) a where a.empposition=orgposition.fid  ";
+
+            _dbContext.HistoryDateTime = histroyDate;
+            string sqlinit = " update OrgPosition  set Actual=0 ";
+            _dbContext.Execute(sqlinit);
+            string synSql = $" update OrgPosition set actual=a.Num from ( select empposition,count(0) Num from Employee where {empCategoryWhere}  group by EmpPosition) a where a.empposition=orgposition.fid  ";
             _dbContext.Execute(synSql, parameters);
-           
+
             return Json(ResponseViewModelUtils.Sueecss());
         }
         [HttpGet]

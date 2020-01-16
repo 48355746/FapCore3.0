@@ -2105,6 +2105,7 @@ namespace Fap.Core.DataAccess
                 {
                     _logger.LogError(ex.Message);
                     Rollback();
+                    throw ex;
                 }
                 return true;
 

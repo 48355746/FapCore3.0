@@ -118,7 +118,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 }
                 #endregion
 
-                foreach (var col in _fapColumns)
+                foreach (var col in _fapColumns.OrderBy(c=>c.ColOrder))
                 {
                     //参照MC为自定义列
                     if (col.IsCustomColumn == 1)

@@ -173,13 +173,21 @@ namespace Fap.Core.Infrastructure.Interceptor
             {
                 FapUser user = (FapUser)entity;
                 string orginPassword = user.UserPassword;
-                if (!string.IsNullOrEmpty(orginPassword))
+                if (orginPassword.IsPresent())
                 {
                     user.UserPassword = passwordHasher.HashPassword(orginPassword);
                 }
                 else
                 {
-                    user.UserPassword = passwordHasher.HashPassword("1");
+                    //配置默认密码
+                    string password = _provider.GetService<IFapConfigService>().GetSysParamValue("employee.user.password");
+                    if (password.IsMissing())
+                    {
+                        password = "1";
+                    }
+                    PasswordHasher pwdHasher = new PasswordHasher();
+                    password = pwdHasher.HashPassword(password);
+                    user.UserPassword = password;
                 }
             }
         }

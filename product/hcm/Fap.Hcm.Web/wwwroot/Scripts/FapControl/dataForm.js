@@ -104,7 +104,7 @@ var GetFapChildGridData = function (formid) {
     return null;
 };
 //持久化{success:true,data:obj}noPrompt--是否弹框
-var Persistence = function (formid, tableName, callback) {   
+var Persistence = function (formid, tableName, beforeSaveCallback,afterSaveCallback) {   
     if (!$("#" + formid).valid()) {
         $.msg('表单校验失败，请完善表单' + $(".error").html());
         return false;
@@ -150,8 +150,8 @@ var Persistence = function (formid, tableName, callback) {
             entityData.childDataList = childTableDatas;
         }
         //干预赋值
-        if (callback !== undefined && $.isFunction(callback)) {
-            callback(entityData.mainData);
+        if (beforeSaveCallback !== undefined && $.isFunction(beforeSaveCallback)) {
+            beforeSaveCallback(entityData.mainData);
         }
         //判断Id的值
         if (entityData.mainData["Id"] !== "") {
@@ -180,6 +180,10 @@ var Persistence = function (formid, tableName, callback) {
                         
                         $("#" + formid + " .form-control#Id").val(resultData.Id);
                         $("#" + formid + " .form-control#Ts").val(resultData.Ts);
+                        //保存成功后事件
+                        if (afterSaveCallback !== undefined && $.isFunction(afterSaveCallback)) {
+                            afterSaveCallback(resultData);
+                        }
                     }
                 }
                 if (result.msg) {
