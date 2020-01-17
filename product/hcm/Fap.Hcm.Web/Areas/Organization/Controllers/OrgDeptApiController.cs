@@ -158,16 +158,8 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
         // POST: api/Common
         public JsonResult PostMergeDept(MergeDeptModel mergeDept)
         {
-            try
-            {
-                var rv = _organizationService.MergeDepartment(mergeDept);
-                return Json(rv);
-            }
-            catch (Exception ex)
-            {
-                return Json(ResponseViewModelUtils.Failure(ex.Message));
-            }
-
+            var rv = _organizationService.MergeDepartment(mergeDept);
+            return Json(rv);
         }
         /// <summary>
         /// 移动部门
@@ -183,7 +175,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
         {
             var rv = _organizationService.MoveDepartment(postData);
             return Json(rv);
-        }    
+        }
         /// <summary>
         /// 恢复已经移除的部门
         /// </summary>

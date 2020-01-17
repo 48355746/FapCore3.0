@@ -11,12 +11,14 @@ using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.Tracker;
 using Fap.Core.Rbac.Model;
 using Fap.Core.Infrastructure.Enums;
+using Fap.Core.DI;
 
 namespace Fap.Core.Infrastructure.Interceptor
 {
     /// <summary>
     /// 人员数据拦截器
     /// </summary>
+    [Service]
     public class EmployeeDataInterceptor : DataInterceptorBase
     {
         private readonly ILogger _logger;

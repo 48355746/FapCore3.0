@@ -699,6 +699,19 @@ namespace Fap.Hcm.Web.Controllers
 
             return View(model);
         }
+
+        /// <summary>
+        /// 获取数据的历史信息
+        /// </summary>
+        /// <param name="bn">表名</param>
+        /// <param name="fid">fid</param>
+        /// <returns></returns>
+        public PartialViewResult DataHistory(string bn, string fid)
+        {
+            var history = _dbContext.QueryDataHistory(bn, fid);
+            return PartialView(history);
+        }
+
         #region 附件相关
         public PartialViewResult AttachmentInfo(string fid)
         {

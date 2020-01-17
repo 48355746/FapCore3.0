@@ -2011,10 +2011,12 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 // datatype
                 script.AppendLine("treedatatype:'json',");
 
-                script.AppendFormat("treeGridModel : '{0}',", _treeGridModel.ToString().ToLower()).AppendLine();
+                script.AppendFormat("treeGridModel : 'adjacency',").AppendLine();
                 script.AppendLine(@"
                 treeReader:{
-					'parent_id_field':'Pid',
+					//'left_field':'lft',
+                    //'right_field':'rgt',
+                    'parent_id_field':'Pid',
 					'level_field':'level',
 					'leaf_field':'isLeaf',
 					'expanded_field':'expanded',

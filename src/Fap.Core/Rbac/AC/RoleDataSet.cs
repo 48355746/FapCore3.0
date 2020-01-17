@@ -1,10 +1,11 @@
 ﻿using Fap.Core.DataAccess;
 using Fap.Core.Rbac.Model;
+using Fap.Core.Utility;
 /* ==============================================================================
- * 功能描述：  
- * 创 建 者：wyf
- * 创建日期：2016/11/30 19:04:06
- * ==============================================================================*/
+* 功能描述：  
+* 创 建 者：wyf
+* 创建日期：2016/11/30 19:04:06
+* ==============================================================================*/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,7 +38,7 @@ namespace Fap.Core.Rbac.AC
             {
                 #region 获取所有
 
-                _allRoleDatas = _dbSession.Query<FapRoleData>("select * from FapRoleData");
+                _allRoleDatas = _dbSession.Query<FapRoleData>("select * from FapRoleData where  EnableDate<@CurrDate and DisableDate>@CurrDate and Dr=0",new Dapper.DynamicParameters(new { CurrDate=DateTimeUtils.CurrentDateTimeStr}));
 
                 if (_allRoleDatas == null)
                 {

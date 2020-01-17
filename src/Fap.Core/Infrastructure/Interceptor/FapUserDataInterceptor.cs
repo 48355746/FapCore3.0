@@ -11,12 +11,14 @@ using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Config;
 using Fap.Core.DataAccess;
 using Fap.Core.Infrastructure.Metadata;
+using Fap.Core.DI;
 
 namespace Fap.Core.Infrastructure.Interceptor
 {
     /// <summary>
     /// FapUser元数据的数据拦截器
     /// </summary>
+    [Service]
     public class FapUserDataInterceptor : DataInterceptorBase
     {
         PasswordHasher passwordHasher = new PasswordHasher();

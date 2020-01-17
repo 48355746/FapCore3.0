@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Fap.Core.DataAccess;
 using Fap.Core.Extensions;
 
 namespace Fap.AspNetCore.Model
@@ -99,9 +100,14 @@ namespace Fap.AspNetCore.Model
             {
                 return new JqGridData { Total = 0, Page = 0, Records = 0, Rows = Enumerable.Empty<IDictionary<string, object>>(), Userdata = StatFieldData };
             }
-            foreach (var data in DataListForJqGrid)
+            //remark：此处Id 和 Pid 一定是字符串，否则树折叠有问题
+            var enumerator= DataListForJqGrid.GetEnumerator();
+            while (enumerator.MoveNext())
+            //foreach (var data in DataListForJqGrid)
             {
+                var data = enumerator.Current;
                 IDictionary<string, object> item = data as IDictionary<string, object>;
+                item["Id"] = item["Id"].ToString();
                 if (item["Pid"].ToString().IsMissing() || item["Pid"].ToString() == "~" || item["Pid"].ToString() == "#")
                 {
                     item["Pid"] = null;
@@ -109,7 +115,14 @@ namespace Fap.AspNetCore.Model
                 else
                 {
                     dynamic d= DataListForJqGrid.FirstOrDefault(d => (d as IDictionary<string,object>)["Fid"].ToString() == item["Pid"].ToString());
-                    item["Pid"] = (d as IDictionary<string, object>)["Id"];
+                    if (d == null)
+                    {
+                        item["Pid"] = null;
+                    }
+                    else
+                    {
+                        item["Pid"] = (d as IDictionary<string, object>)["Id"].ToString();
+                    }
                 }
                 item["level"] = item["TreeLevel"].ToInt();
                 item["loaded"] = true;
@@ -118,10 +131,10 @@ namespace Fap.AspNetCore.Model
                 {
                     item["expanded"] = true;
                 }
-                else
-                {
-                    item["expanded"] = false;
-                }
+                //else
+                //{
+                //    item["expanded"] = false;
+                //}
 
             }
             var jsonObj = new JqGridData

@@ -253,6 +253,9 @@ namespace Fap.AspNetCore.Serivce
                             if (colName.EqualsWithIgnoreCase("DeptUid"))
                             {
                                 where = where.Replace(mtch.ToString(), _applicationContext.DeptUid);
+                            }else if (colName.EqualsWithIgnoreCase("CurrentRoleUid"))
+                            {
+                                where = where.Replace(mtch.ToString(), _applicationContext.CurrentRoleUid);
                             }
                             else if (colName.EqualsWithIgnoreCase("EmpUid"))
                             {

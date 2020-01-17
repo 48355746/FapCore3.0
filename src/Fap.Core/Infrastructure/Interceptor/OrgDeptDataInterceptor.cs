@@ -11,9 +11,11 @@ using Fap.Core.Tracker;
 using Fap.Core.Extensions;
 using Fap.Core.Rbac.Model;
 using Fap.Core.Infrastructure.Enums;
+using Fap.Core.DI;
 
 namespace Fap.Core.Infrastructure.Interceptor
 {
+    [Service]
     public class OrgDeptDataInterceptor : DataInterceptorBase
     {
         ILogger _logger;
@@ -170,7 +172,7 @@ namespace Fap.Core.Infrastructure.Interceptor
         public override void BeforeDynamicObjectDelete(FapDynamicObject fapDynamicData)
         {
             //校验是否还有员工在此部门下
-            string fid = fapDynamicData.Get("Fid").ToString();
+            string fid = fapDynamicData.Get("Fid").ToString();            
             ValideDelete(fid);
         }
 
@@ -179,7 +181,8 @@ namespace Fap.Core.Infrastructure.Interceptor
             int c = _dbContext.Count<Employee>("DeptUid=@Fid", new DynamicParameters(new { Fid = fid }));
             if (c > 0)
             {
-                throw new Exception("此部门下还有员工，不能删除!");
+                OrgDept dept= _dbContext.Get<OrgDept>(fid);
+                throw new Exception($"[{dept.DeptName}]还有员工，不能删除!");
             }
         }
 

@@ -27,6 +27,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
         // GET: /Organization/OrgDept/
         public ActionResult DeptIndex()
         {
+            //表格权限，不在这里设置，需要取权限--数据权限哪里设置
             JqGridViewModel model = this.GetJqGridModel("OrgDept");
             return View(model);
         }
@@ -56,17 +57,6 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
         /// <returns></returns>
         public ViewResult OrgChart(string fid, string type)
         {
-            //
-            //List<OrgDept> orgDepts = acc.QueryEntityByWhere<OrgDept>();
-            //OrgDept pOrgDept = orgDepts.FirstOrDefault(d => d.Pid.IsNullOrEmpty() || d.Pid == "~");
-
-            //var cOrgDept = orgDepts.Where(d => d.Pid == pOrgDept.Fid);
-
-            //BiuldOrgDept(cOrgDept, orgDepts, pOrgDept);
-
-            //OrgDeptViewModel model = new OrgDeptViewModel();
-            //model.RootOrgDept = pOrgDept;
-            //return View(model);
             ViewBag.Fid = fid;
             if (string.IsNullOrWhiteSpace(type))
             {

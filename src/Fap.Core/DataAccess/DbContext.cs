@@ -20,6 +20,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Fap.Core.DataAccess
 {
@@ -478,7 +479,8 @@ namespace Fap.Core.DataAccess
                     Type type = System.Type.GetType(dataInterceptorClass);
                     if (type != null && type.GetInterface("IDataInterceptor") != null)
                     {
-                        dataInterceptor = (IDataInterceptor)Activator.CreateInstance(type, new object[] { _serviceProvider, this });
+                        //dataInterceptor = (IDataInterceptor)Activator.CreateInstance(type, new object[] { _serviceProvider, this });
+                        dataInterceptor= (IDataInterceptor)ActivatorUtilities.GetServiceOrCreateInstance(_serviceProvider, type);
                     }
                 }
                 catch (Exception ex)
@@ -1671,6 +1673,7 @@ namespace Fap.Core.DataAccess
                 {
                     Rollback();
                     _logger.LogError($"更新dynamic失败：{ex.Message}");
+                    throw ex;
                 }
                 return execResult;
                 bool TraceDelete<T2>(T2 newEntity) where T2 : BaseModel
@@ -1701,7 +1704,7 @@ namespace Fap.Core.DataAccess
                     catch (Exception ex)
                     {
                         _logger.LogError($"跟踪更新失败:{ex.Message}");
-                        throw;
+                        throw ex;
                     }
                 }
             }
@@ -1747,6 +1750,7 @@ namespace Fap.Core.DataAccess
                 {
                     Rollback();
                     _logger.LogError($"更新dynamic失败：{ex.Message}");
+                    throw ex;
                 }
                 return execResult;
                 async Task<bool> TraceDeleteAsync<T2>(T2 newEntity) where T2 : BaseModel
@@ -1778,7 +1782,7 @@ namespace Fap.Core.DataAccess
                     catch (Exception ex)
                     {
                         _logger.LogError($"跟踪更新失败:{ex.Message}");
-                        throw;
+                        throw ex;
                     }
                 }
             }
@@ -1845,6 +1849,7 @@ namespace Fap.Core.DataAccess
                 catch (Exception ex)
                 {
                     _logger.LogError($"删除实体失败：{ex.Message}");
+                    throw ex;
                 }
             }
         }
@@ -1859,6 +1864,7 @@ namespace Fap.Core.DataAccess
                 catch (Exception ex)
                 {
                     _logger.LogError($"删除实体失败：{ex.Message}");
+                    throw ex;
                 }
             }
         }
@@ -2142,7 +2148,8 @@ namespace Fap.Core.DataAccess
                 catch (Exception ex)
                 {
                     _logger.LogError($"删除失败：{ex.Message}");
-                    continue;
+                    //continue;
+                    throw ex;
                 }
             }
 
@@ -2350,8 +2357,6 @@ namespace Fap.Core.DataAccess
         /// <returns></returns>
         public IEnumerable<DataChangeHistory> QueryDataHistory(string tableName, string fid)
         {
-            List<DataChangeHistory> dcHistory = new List<DataChangeHistory>();
-
             string sql = $"SELECT * FROM {tableName} where  Fid=@Fid ORDER BY Id ASC";
             FapSqlParser parse = new FapSqlParser(_fapPlatformDomain, sql, true);
             sql = parse.ParserSelectSqlNoWhere();
@@ -2368,15 +2373,14 @@ namespace Fap.Core.DataAccess
                 if (i == 0)
                 {
                     DataChangeHistory dch = CompareDataChange(list[i], null, table, columns);
-                    dcHistory.Add(dch);
+                    yield return dch;
                 }
                 else
                 {
                     DataChangeHistory dch = CompareDataChange(list[i], list[i - 1], table, columns);
-                    dcHistory.Add(dch);
+                    yield return dch;
                 }
             }
-            return dcHistory;
             DataChangeHistory CompareDataChange(dynamic currentData, dynamic preData, FapTable table, IEnumerable<FapColumn> columnList)
             {
                 IDictionary<string, object> currRow = currentData as IDictionary<string, object>;
@@ -2405,24 +2409,24 @@ namespace Fap.Core.DataAccess
                 dcHistory.Operator = updateName == null ? "未知" : updateName.ToString();
                 List<DataItemChangeHistory> dicHistory = new List<DataItemChangeHistory>();
                 IDictionary<string, object> preRow = preData as IDictionary<string, object>;
-                var keyList = currRow.Keys;
+                var keyList = currRow.Keys.ExcludeBaseColumns();
                 foreach (var key in keyList)
                 {
-                    if (FapDbConstants.FAPCOLUMN_FIELD_Id.Equals(key, StringComparison.CurrentCultureIgnoreCase)
-                        || FapDbConstants.FAPCOLUMN_FIELD_Fid.Equals(key, StringComparison.CurrentCultureIgnoreCase)
-                        || FapDbConstants.FAPCOLUMN_FIELD_CreateBy.Equals(key, StringComparison.CurrentCultureIgnoreCase)
-                        || FapDbConstants.FAPCOLUMN_FIELD_CreateDate.Equals(key, StringComparison.CurrentCultureIgnoreCase)
-                        || FapDbConstants.FAPCOLUMN_FIELD_CreateName.Equals(key, StringComparison.CurrentCultureIgnoreCase)
-                        || FapDbConstants.FAPCOLUMN_FIELD_DisableDate.Equals(key, StringComparison.CurrentCultureIgnoreCase)
-                        || FapDbConstants.FAPCOLUMN_FIELD_EnableDate.Equals(key, StringComparison.CurrentCultureIgnoreCase)
-                        || FapDbConstants.FAPCOLUMN_FIELD_Ts.Equals(key, StringComparison.CurrentCultureIgnoreCase)
-                        || FapDbConstants.FAPCOLUMN_FIELD_UpdateBy.Equals(key, StringComparison.CurrentCultureIgnoreCase)
-                        || FapDbConstants.FAPCOLUMN_FIELD_UpdateDate.Equals(key, StringComparison.CurrentCultureIgnoreCase)
-                        || FapDbConstants.FAPCOLUMN_FIELD_UpdateName.Equals(key, StringComparison.CurrentCultureIgnoreCase)
-                        )
-                    {
-                        continue;
-                    }
+                    //if (FapDbConstants.FAPCOLUMN_FIELD_Id.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                    //    || FapDbConstants.FAPCOLUMN_FIELD_Fid.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                    //    || FapDbConstants.FAPCOLUMN_FIELD_CreateBy.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                    //    || FapDbConstants.FAPCOLUMN_FIELD_CreateDate.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                    //    || FapDbConstants.FAPCOLUMN_FIELD_CreateName.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                    //    || FapDbConstants.FAPCOLUMN_FIELD_DisableDate.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                    //    || FapDbConstants.FAPCOLUMN_FIELD_EnableDate.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                    //    || FapDbConstants.FAPCOLUMN_FIELD_Ts.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                    //    || FapDbConstants.FAPCOLUMN_FIELD_UpdateBy.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                    //    || FapDbConstants.FAPCOLUMN_FIELD_UpdateDate.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                    //    || FapDbConstants.FAPCOLUMN_FIELD_UpdateName.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                    //    )
+                    //{
+                    //    continue;
+                    //}
                     if (key.EndsWith("MC"))
                     {
                         continue;

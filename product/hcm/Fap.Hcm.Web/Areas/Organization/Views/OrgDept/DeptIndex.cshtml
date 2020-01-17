@@ -52,9 +52,9 @@
             })
 
             $("#btnHistoryDept").on(ace.click_event, function () {
-                var fid = jQuery("#grid-orgdept").jqGrid('getGridParam', 'selrow');
-                if (fid == null) {
-                    bootbox.alert(MultiLangHelper.getResName("orgdept_index_page_selshowhistoricaltracingdept", "请选择要历史追溯的部门"));
+                var rowData = getSelectedRow('grid-orgdept');
+                if (rowData == null) {
+                    //bootbox.alert(MultiLangHelper.getResName("orgdept_index_page_selshowhistoricaltracingdept", "请选择要历史追溯的部门"));
                     return;
                 }
                 var dialog = bootbox.dialog({
@@ -70,8 +70,8 @@
                 });
 
                 dialog.init(function () {
-                    var url = "@Html.Raw(Url.Action("DataHistory", "CommonCtrls", new { area = "Common", bn = "OrgDept" }))&fid=" + fid;
-                    $.get(url, function (ev) {
+                    var url = "@Html.Raw(Url.Action("DataHistory", "Component",new { area=""}))";
+                    $.get(url, {bn:'OrgDept',fid:rowData.Fid}, function (ev) {
                         dialog.find('.bootbox-body').html(ev);
                     })
                 });

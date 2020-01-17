@@ -1,0 +1,44 @@
+﻿@model IEnumerable<Fap.Core.Infrastructure.Model.DataChangeHistory>
+@{
+    int i = 0;
+}
+<div class="container-fluid main-content">
+    <ul id="timelineContent" class="timeline animated">
+        @foreach (var item in Model)
+        {
+            i++;
+            <li class="active">
+                <div class="timeline-time">
+                    <strong>@item.Operator</strong>
+                    <strong>@item.ChangeDateTime</strong>
+                </div>
+                <div class="timeline-icon">
+                    <div class="bg-primary">
+                        @if (i == 1)
+                        {
+                            <i class="fa fa-plus"></i>
+                        }
+                        else
+                        {
+                            <i class="fa fa-pencil"></i>
+
+                        }
+                    </div>
+                </div>
+                <div class="timeline-content">
+                    <h2>
+                        详情
+                    </h2>
+                    <p>
+                        @foreach(string msg in item.Message.Split(','))
+                        {
+                            <h5>@msg</h5>
+
+                        }
+                       
+                    </p>
+                </div>
+            </li>
+        }
+    </ul>
+</div>
