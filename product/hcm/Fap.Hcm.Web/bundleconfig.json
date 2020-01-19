@@ -46,7 +46,8 @@
       "wwwroot/Content/js/JsTree/themes/default/style.css",
       "wwwroot/Content/css/colorpicker.css",
       "wwwroot/Content/citypicker/city-picker.css", //籍贯
-      "wwwroot/Content/css/colorbox.css"
+      "wwwroot/Content/css/colorbox.css",
+      "wwwroot/Content/js/jRange/jquery.range.css"
     ],
     "minify": {
       "enabled": true,
@@ -116,6 +117,7 @@
       "wwwroot/Content/citypicker/city-picker.data.js", //籍贯
       "wwwroot/Content/citypicker/city-picker.js", //籍贯
       "wwwroot/Content/citypicker/jquery.citypicker.js", //城市
+      "wwwroot/Content/js/jRange/jquery.range.js",
       "wwwroot/Content/js/jquery.colorbox.js",
       "wwwroot/Content/js/jquery.raty.js",
       "wwwroot/Content/js/fuelux/fuelux.wizard.js",

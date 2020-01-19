@@ -206,6 +206,10 @@ namespace Fap.AspNetCore.Controls.DataForm
             {
                 sbFormGroup.AppendLine(_fapColumn.AsReference(editAble, FieldValue.ToString(), FieldMCValue.ToString()));
             }
+            else if (_fapColumn.CtrlType == FapColumn.CTRL_TYPE_RANGE)
+            {
+                sbFormGroup.AppendLine(_fapColumn.AsRange(editAble, FieldValue.ToString()));
+            }
             else if (_fapColumn.CtrlType == FapColumn.CTRL_TYPE_MEMO)
             {
 

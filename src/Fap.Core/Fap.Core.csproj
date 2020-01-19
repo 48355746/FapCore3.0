@@ -45,4 +45,8 @@
     <Folder Include="Annex\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\..\.editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+
 </Project>

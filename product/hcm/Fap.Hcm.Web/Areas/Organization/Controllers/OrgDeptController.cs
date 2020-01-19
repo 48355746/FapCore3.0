@@ -104,16 +104,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
         /// <returns></returns>
         public ActionResult OrgJob()
         {
-            MultiJqGridViewModel model = new MultiJqGridViewModel();
-            model.JqGridViewModels.Add("orgjob", this.GetJqGridModel("OrgJob"));
-            model.JqGridViewModels.Add("orgposition", this.GetJqGridModel("OrgPosition", (qs) =>
-            {
-                qs.GlobalWhere = "DeptUid in(" + FapPlatformConstants.DepartmentAuthority + ")";
-                //增加统计
-                qs.AddStatSet(StatSymbolEnum.Description, "'合计:' as PstName");
-                qs.AddStatSet(StatSymbolEnum.SUM, "Preparation");
-                qs.AddStatSet(StatSymbolEnum.SUM, "Actual");
-            }, true));
+            JqGridViewModel model = this.GetJqGridModel("OrgJob");
             return View(model);
         }
         /// <summary>

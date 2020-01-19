@@ -306,5 +306,11 @@ namespace Fap.AspNetCore.Controls.DataForm
             string ctrlName = fapColumn.ColName;
             return $"<div id=\"rat-{0}\" class=\"rating inline\"></div><input type=\"text\" {editAble}  class=\"form-control hide\" id=\"{ctrlName}\" name=\"{ctrlName}\" ng-model=\"{ngModel}\" value=\"{fieldValue}\">";
         }
+        public static string AsRange(this FapColumn fapColumn,string editAble,string fieldValue)
+        {
+            string ngModel = "formData." + fapColumn.ColName;
+            string ctrlName = fapColumn.ColName;
+            return $"<input  type=\"hidden\"  {editAble} class=\"form-control slider-input\" id=\"{ctrlName}\" name=\"{ctrlName}\" ng-model=\"{ngModel}\" value=\"{fieldValue}\">";
+        }
     }
 }

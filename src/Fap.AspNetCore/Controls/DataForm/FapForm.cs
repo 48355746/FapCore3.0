@@ -762,6 +762,29 @@ namespace Fap.AspNetCore.Controls.DataForm
                 }
                 #endregion
 
+                #region 数值范围
+                else if (column.CtrlType == FapColumn.CTRL_TYPE_RANGE)
+                {
+                    StringBuilder sr = new StringBuilder("[");
+                    for (int i = column.MinValue.Value; i <= column.MaxValue; i++)
+                    {
+                        sr.Append($"{i},");
+                    }
+                    string r= sr.ToString().TrimEnd(',');
+                    r+="]";
+                    script.AppendLine(@"$('###formid## #" + column.ColName + @"').jRange({
+                        from: "+column.MinValue+ @",
+                        to: " + column.MaxValue + @",
+                        step: 1,
+                        scale: "+r+@",
+                        format: '%s',
+                        width: 300,
+                        showLabels: true,
+                        snap: true
+                    });");
+                }
+                #endregion
+
                 #region 籍贯
 
                 else if (column.CtrlType == FapColumn.CTRL_TYPE_NATIVE)

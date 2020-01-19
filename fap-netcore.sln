@@ -25,7 +25,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fap.AspNetCore", "src\Fap.A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fap.Workflow", "src\Fap.Workflow\Fap.Workflow.csproj", "{C6C1789A-2BE8-4A2F-A6A3-81C008FA4143}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fap.Hcm.Service", "product\hcm\Fap.Hcm.Service\Fap.Hcm.Service.csproj", "{43994168-CF9F-4994-9694-C81408939B85}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fap.Hcm.Service", "product\hcm\Fap.Hcm.Service\Fap.Hcm.Service.csproj", "{43994168-CF9F-4994-9694-C81408939B85}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E7F88132-8E9D-4B4E-B4EC-8254035E7E4F}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

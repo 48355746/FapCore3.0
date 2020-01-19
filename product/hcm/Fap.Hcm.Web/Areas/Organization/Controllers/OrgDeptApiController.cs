@@ -30,7 +30,19 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
             _logger = _loggerFactory.CreateLogger<OrgDeptApiController>();
             _organizationService = organizationService;
         }
+        [HttpGet("OrgJob")]
+        public JsonResult GetUserGroup()
+        {
+            var tree = _organizationService.GetJobGroupTree();
+            return Json(tree);
+        }
 
+        [HttpPost("OrgJob")]
+        public JsonResult OperUserGroup(TreePostData postData)
+        {
+            var result = _organizationService.OperJobGroup(postData);
+            return Json(result);
+        }
         [Route("~/api/orgdept/orgdepts/{pid=''}")]
         // POST: api/Common
         public JsonResult GetOrgDepts(string pid)

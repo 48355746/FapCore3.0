@@ -1,0 +1,4 @@
+﻿[*.cs]
+
+# CA1303: 请不要将文本作为本地化参数传递
+dotnet_diagnostic.CA1303.severity = none

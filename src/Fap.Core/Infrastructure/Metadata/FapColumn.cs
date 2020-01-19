@@ -438,6 +438,10 @@ namespace Fap.Core.Infrastructure.Metadata
         /// 评星级
         /// </summary>
         public const string CTRL_TYPE_STAR = "STAR";
+        /// <summary>
+        /// 数据范围
+        /// </summary>
+        public const string CTRL_TYPE_RANGE = "RANGE";
 
 
     }
