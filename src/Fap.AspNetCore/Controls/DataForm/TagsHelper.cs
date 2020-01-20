@@ -310,7 +310,11 @@ namespace Fap.AspNetCore.Controls.DataForm
         {
             string ngModel = "formData." + fapColumn.ColName;
             string ctrlName = fapColumn.ColName;
-            return $"<input  type=\"hidden\"  {editAble} class=\"form-control slider-input\" id=\"{ctrlName}\" name=\"{ctrlName}\" ng-model=\"{ngModel}\" value=\"{fieldValue}\">";
+            if (fieldValue.IsMissing()||fieldValue=="0")
+            {
+                fieldValue = "1,2";
+            }
+            return $"<input  type=\"hidden\"   class=\"form-control slider-input\" id=\"{ctrlName}\" name=\"{ctrlName}\" ng-model=\"{ngModel}\" value=\"{fieldValue}\">";
         }
     }
 }

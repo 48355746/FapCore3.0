@@ -104,7 +104,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
         /// <returns></returns>
         public ActionResult OrgJob()
         {
-            JqGridViewModel model = this.GetJqGridModel("OrgJob");
+            JqGridViewModel model = this.GetJqGridModel("OrgPosition");
             return View(model);
         }
         /// <summary>

@@ -356,7 +356,12 @@ namespace Fap.AspNetCore.Controls.DataForm
         /// <returns></returns>
         private bool IsColSpan(FapColumn column)
         {
-            return column.CtrlType == FapColumn.CTRL_TYPE_MEMO || column.CtrlType == FapColumn.CTRL_TYPE_IMAGE || column.CtrlType == FapColumn.CTRL_TYPE_FILE || column.CtrlType == FapColumn.CTRL_TYPE_RICHTEXTBOX || column.CtrlType == FapColumn.CTRL_TYPE_NATIVE;
+            return column.CtrlType == FapColumn.CTRL_TYPE_MEMO 
+                || column.CtrlType == FapColumn.CTRL_TYPE_IMAGE 
+                || column.CtrlType == FapColumn.CTRL_TYPE_FILE 
+                || column.CtrlType == FapColumn.CTRL_TYPE_RICHTEXTBOX 
+                || column.CtrlType == FapColumn.CTRL_TYPE_NATIVE
+                ||column.CtrlType==FapColumn.CTRL_TYPE_RANGE;
         }
         private string CreateHiddenControl(string ctrlName, string fieldValue)
         {
@@ -776,11 +781,13 @@ namespace Fap.AspNetCore.Controls.DataForm
                         from: "+column.MinValue+ @",
                         to: " + column.MaxValue + @",
                         step: 1,
-                        scale: "+r+@",
+                        scale: "+r+ @",
                         format: '%s',
-                        width: 300,
+                        width: 680,
+                        disable:"+((column.EditAble==0||field.ReadOnly)?"true,":"false,")+@"
+                        theme:'theme-blue',
                         showLabels: true,
-                        snap: true
+                        isRange: true
                     });");
                 }
                 #endregion

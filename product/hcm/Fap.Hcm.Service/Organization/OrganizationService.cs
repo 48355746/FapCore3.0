@@ -82,13 +82,13 @@ namespace Fap.Hcm.Service.Organization
         public List<TreeDataView> GetOrgJobTree()
         {
             IEnumerable<OrgJob> jobGroups = _dbContext.QueryAll<OrgJob>();
-            List<TreeDataView> oriList = jobGroups.Select(t => new TreeDataView { Id = t.Fid, Pid = t.Pid, Data = new { group = "1",isfinal=t.IsFinal }, Text = t.JobName, Icon = "icon-folder orange ace-icon fa fa-users" }).ToList<TreeDataView>();
+            List<TreeDataView> oriList = jobGroups.Select(t => new TreeDataView { Id = t.Fid, Pid = t.Pid, Data = new { group = "1",isfinal=t.IsFinal,fullname=t.FullName }, Text = t.JobName, Icon = "icon-folder orange ace-icon fa fa-users" }).ToList<TreeDataView>();
             List<TreeDataView> tree = new List<TreeDataView>();
             TreeDataView treeRoot = new TreeDataView()
             {
                 Id = "0",
                 Text = "职位层级",
-                Data = new { group = "0", isfinal=0 },
+                Data = new { group = "0", isfinal=0,fullname="" },
                 State = new NodeState { Opened = true },
                 Icon = "icon-folder blue ace-icon fa fa-sitemap",
             };

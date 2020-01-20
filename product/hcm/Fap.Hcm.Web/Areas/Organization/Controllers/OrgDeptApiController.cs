@@ -33,14 +33,14 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
         [HttpGet("OrgJob")]
         public JsonResult GetUserGroup()
         {
-            var tree = _organizationService.GetJobGroupTree();
+            var tree = _organizationService.GetOrgJobTree();
             return Json(tree);
         }
 
         [HttpPost("OrgJob")]
         public JsonResult OperUserGroup(TreePostData postData)
         {
-            var result = _organizationService.OperJobGroup(postData);
+            var result = _organizationService.OperOrgJob(postData);
             return Json(result);
         }
         [Route("~/api/orgdept/orgdepts/{pid=''}")]
@@ -310,70 +310,70 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
         /// </summary>
         /// <param name="fid"></param>
         /// <returns></returns>
-        [HttpGet]
-        [Route("~/api/orgdept/positionchartgojs/{fid=''}")]
-        public JsonResult GetJobChart2(string fid)
-        {
-            string histroyDate = "";
-            if (Request.Query.ContainsKey("date"))
-            {
-                histroyDate = Request.Query["date"].ToString();
-            }
+        //[HttpGet]
+        //[Route("~/api/orgdept/positionchartgojs/{fid=''}")]
+        //public JsonResult GetJobChart2(string fid)
+        //{
+        //    string histroyDate = "";
+        //    if (Request.Query.ContainsKey("date"))
+        //    {
+        //        histroyDate = Request.Query["date"].ToString();
+        //    }
 
-            //List<OrgDept> deptList = _dbContext.QueryEntity<OrgDept>(true);
-            //查找有权限部门
-            IEnumerable<OrgDept> deptList = _rbacService.GetDeptInfoAuthority(_applicationContext.CurrentRoleUid);
-            string sql = $"select count(0) as  Num,DeptUid from employee  ";
-            DynamicParameters parameters = new DynamicParameters();
-            string empCategorys = _configService.GetSysParamValue("system.stat.empcategory");
-            if (empCategorys.IsPresent())
-            {
-                sql += " where EmpCategory in (@EmpCategorys) ";
-                parameters.Add("EmpCategorys", empCategorys.Split(','));
-            }
-            sql += "   group by DeptUid";
-            IEnumerable<DeptStat> list = null;
+        //    //List<OrgDept> deptList = _dbContext.QueryEntity<OrgDept>(true);
+        //    //查找有权限部门
+        //    IEnumerable<OrgDept> deptList = _rbacService.GetDeptInfoAuthority(_applicationContext.CurrentRoleUid);
+        //    string sql = $"select count(0) as  Num,DeptUid from employee  ";
+        //    DynamicParameters parameters = new DynamicParameters();
+        //    string empCategorys = _configService.GetSysParamValue("system.stat.empcategory");
+        //    if (empCategorys.IsPresent())
+        //    {
+        //        sql += " where EmpCategory in (@EmpCategorys) ";
+        //        parameters.Add("EmpCategorys", empCategorys.Split(','));
+        //    }
+        //    sql += "   group by DeptUid";
+        //    IEnumerable<DeptStat> list = null;
 
-            _dbContext.HistoryDateTime = histroyDate;
-            list = _dbContext.Query<DeptStat>(sql, parameters);
-
-
-            //获取选中部门
-            OrgDept parent = deptList.FirstOrDefault<OrgDept>(d => d.Fid == fid);
+        //    _dbContext.HistoryDateTime = histroyDate;
+        //    list = _dbContext.Query<DeptStat>(sql, parameters);
 
 
-            var selDepts = deptList.Where(d => d.DeptCode.StartsWith(parent.DeptCode));
-            selDepts.ToList().ForEach((d) =>
-            {
-                d.EmpNum = Convert.ToInt32(list.FirstOrDefault(e => e.DeptUid == d.Fid) == null ? "0" : list.FirstOrDefault(e => e.DeptUid == d.Fid).Num.ToString());
-            });
-            selDepts.ToList().ForEach((d) =>
-            {
-                d.EmpNum = selDepts.Where(dd => dd.DeptCode.StartsWith(d.DeptCode)).Sum(dd => dd.EmpNum);
-            });
+        //    //获取选中部门
+        //    OrgDept parent = deptList.FirstOrDefault<OrgDept>(d => d.Fid == fid);
 
-            //过滤子部门 根据DeptCode
-            IEnumerable<OrgChartNode2> nodeList = selDepts.Select<OrgDept, OrgChartNode2>(d => new OrgChartNode2 { Key = d.Fid, Parent = d.Pid, OrgType = "dept", DeptName = d.DeptName, DeptCode = d.DeptCode, ManagerUid = d.DeptManager, ManagerName = d.DeptManagerMC, DeptNum = d.EmpNum.ToString() });
 
-            //获取所有的职位
-            IEnumerable<OrgPosition> positionList = null;
+        //    var selDepts = deptList.Where(d => d.DeptCode.StartsWith(parent.DeptCode));
+        //    selDepts.ToList().ForEach((d) =>
+        //    {
+        //        d.EmpNum = Convert.ToInt32(list.FirstOrDefault(e => e.DeptUid == d.Fid) == null ? "0" : list.FirstOrDefault(e => e.DeptUid == d.Fid).Num.ToString());
+        //    });
+        //    selDepts.ToList().ForEach((d) =>
+        //    {
+        //        d.EmpNum = selDepts.Where(dd => dd.DeptCode.StartsWith(d.DeptCode)).Sum(dd => dd.EmpNum);
+        //    });
 
-            _dbContext.HistoryDateTime = histroyDate;
-            positionList = _dbContext.QueryWhere<OrgPosition>("");
+        //    //过滤子部门 根据DeptCode
+        //    IEnumerable<OrgChartNode2> nodeList = selDepts.Select<OrgDept, OrgChartNode2>(d => new OrgChartNode2 { Key = d.Fid, Parent = d.Pid, OrgType = "dept", DeptName = d.DeptName, DeptCode = d.DeptCode, ManagerUid = d.DeptManager, ManagerName = d.DeptManagerMC, DeptNum = d.EmpNum.ToString() });
 
-            foreach (var dept in selDepts)
-            {
-                var ps = positionList?.Where(p => p.DeptUid == dept.Fid);
-                if (ps != null && ps.Any())
-                {
-                    var pNodes = ps.Select(d => new OrgChartNode2 { Key = d.Fid, Parent = d.DeptUid, OrgType = "position", DeptName = d.PstName, DeptCode = d.PstCode, ManagerUid = "", ManagerName = "", DeptNum = d.Actual.ToString() });
-                    nodeList = nodeList.Concat(pNodes);
-                }
-            }
+        //    //获取所有的职位
+        //    IEnumerable<OrgPosition> positionList = null;
 
-            //IEnumerable<OrgChartNode> nodeList = deptList.Select<OrgDept, OrgChartNode>(d => new OrgChartNode { Id = d.Id, Parent = (deptList.FirstOrDefault(t => t.Fid == d.Pid) == null ? 0 : deptList.FirstOrDefault(t => t.Fid == d.Pid).Id), Text = d.DeptName, ExtendData=d.DeptCode });
-            return Json(nodeList);
-        }
+        //    _dbContext.HistoryDateTime = histroyDate;
+        //    positionList = _dbContext.QueryWhere<OrgPosition>("");
+
+        //    foreach (var dept in selDepts)
+        //    {
+        //        var ps = positionList?.Where(p => p.DeptUid == dept.Fid);
+        //        if (ps != null && ps.Any())
+        //        {
+        //            var pNodes = ps.Select(d => new OrgChartNode2 { Key = d.Fid, Parent = d.DeptUid, OrgType = "position", DeptName = d.PstName, DeptCode = d.PstCode, ManagerUid = "", ManagerName = "", DeptNum = d.Actual.ToString() });
+        //            nodeList = nodeList.Concat(pNodes);
+        //        }
+        //    }
+
+        //    //IEnumerable<OrgChartNode> nodeList = deptList.Select<OrgDept, OrgChartNode>(d => new OrgChartNode { Id = d.Id, Parent = (deptList.FirstOrDefault(t => t.Fid == d.Pid) == null ? 0 : deptList.FirstOrDefault(t => t.Fid == d.Pid).Id), Text = d.DeptName, ExtendData=d.DeptCode });
+        //    return Json(nodeList);
+        //}
         /// <summary>
         /// 同步在岗人数
         /// </summary>

@@ -1,5 +1,6 @@
 .slider-container {
-  width: 300px;
+  /*width: 300px;*/
+  margin-top:10px;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 .slider-container .back-bar {
