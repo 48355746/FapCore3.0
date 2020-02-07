@@ -95,7 +95,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
                     string empCode = names[0];
                     DynamicParameters param = new DynamicParameters();
                     param.Add("EmpCode", empCode);
-                    Employee employee = _dbContext.QueryFirstOrDefaultWhere<Employee>("EmpCode=@EmpCode", param);
+                    Fap.Core.Rbac.Model.Employee employee = _dbContext.QueryFirstOrDefaultWhere<Fap.Core.Rbac.Model.Employee>("EmpCode=@EmpCode", param);
                     if (employee == null)
                     {
                         return "0";

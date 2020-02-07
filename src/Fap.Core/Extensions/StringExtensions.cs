@@ -50,6 +50,10 @@ namespace Fap.Core.Extensions
         }
         public static bool EqualsWithIgnoreCase(this string value, string target)
         {
+            if (value.IsMissing())
+            {
+                return false;
+            }
             return value.Equals(target, StringComparison.OrdinalIgnoreCase);
         }
         /// <summary>

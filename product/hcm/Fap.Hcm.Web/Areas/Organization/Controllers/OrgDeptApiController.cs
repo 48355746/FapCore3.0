@@ -84,7 +84,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
         /// </summary>
         /// <param name="pid"></param>
         /// <returns></returns>
-        [Route("~/api/orgdept/historyorgdepts/{date=''}")]
+        [Route("~/api/orgdept/historyorgdepts/{date}")]
         // POST: api/Common
         public JsonResult GetHistoryOrgDepts(string date)
         {
@@ -281,7 +281,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
             OrgDept parent = deptList.FirstOrDefault<OrgDept>(d => d.Fid == fid);
             //过滤子部门 根据DeptCode
             IEnumerable<OrgDept> depts = deptList.Where(d => d.DeptCode.StartsWith(parent.DeptCode)).OrderBy(d => d.DeptOrder);
-            var employees = _dbContext.QueryAll<Employee>();
+            var employees = _dbContext.QueryAll<Fap.Core.Rbac.Model.Employee>();
             //人数计算
             depts.ToList().ForEach((d) =>
             {
@@ -411,7 +411,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
         {
             DynamicParameters param = new DynamicParameters();
             param.Add("PositionUid", fid);
-            IEnumerable<Employee> list = _dbContext.QueryWhere<Employee>("EmpPosition=@PositionUid", param);
+            IEnumerable<Fap.Core.Rbac.Model.Employee> list = _dbContext.QueryWhere<Fap.Core.Rbac.Model.Employee>("EmpPosition=@PositionUid", param);
 
             return Json(list);
         }
