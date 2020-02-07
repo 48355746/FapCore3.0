@@ -69,6 +69,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Areas\Employee\Data\" />
+    <Folder Include="Areas\Employee\Models\" />
+    <Folder Include="Areas\Employee\Views\" />
     <Folder Include="Areas\Organization\Data\" />
     <Folder Include="Areas\Organization\Models\" />
     <Folder Include="Areas\System\Data\" />
