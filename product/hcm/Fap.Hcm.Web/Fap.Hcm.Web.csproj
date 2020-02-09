@@ -74,6 +74,8 @@
     <Folder Include="Areas\Organization\Data\" />
     <Folder Include="Areas\Organization\Models\" />
     <Folder Include="Areas\System\Data\" />
+    <Folder Include="Areas\Workflow\Data\" />
+    <Folder Include="Areas\Workflow\Models\" />
   </ItemGroup>
 
 </Project>

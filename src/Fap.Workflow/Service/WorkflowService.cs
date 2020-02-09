@@ -42,6 +42,7 @@ namespace Fap.Workflow.Service
             _applicationContext = applicationContext;
             _logger = loggerFactory.CreateLogger<WorkflowService>();
         }
+
         #region 流程CRUD
         /// <summary>
         /// 直接升级流程模板

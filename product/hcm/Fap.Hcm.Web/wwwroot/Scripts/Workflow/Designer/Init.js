@@ -7,19 +7,19 @@ window.MAX_AREA = window.MAX_AREA || 15000 * 15000;
 
 // URLs for save and export
 window.EXPORT_URL = window.EXPORT_URL || '/export';
-window.SAVE_URL = window.SAVE_URL || '/api/Workflow/ProcessApi/SaveWorkflowDiagraph';
-window.SAVEAS_URL = window.SAVEAS_URL || '/Workflow/Designer/SaveFile';
-window.OPEN_URL = window.OPEN_URL || '/api/Workflow/ProcessApi/SaveWorkflowDiagraph';
+window.SAVE_URL = window.SAVE_URL || '/Workflow/Api/WorkflowDiagraph';
+window.SAVEAS_URL = window.SAVEAS_URL || '/Workflow/Process/SaveAsFile';
+window.OPEN_URL = window.OPEN_URL || '/Workflow/Api/WorkflowDiagraph';
 //流转设置
-window.TRANSITION_URL = window.TRANSITION_URL || '/Workflow/Designer/Transition';
+window.TRANSITION_URL = window.TRANSITION_URL || '/Workflow/Process/Transition';
 //单据模板
-window.BILLTEMPLATE_URL = window.BILLTEMPLATE_URL || '/api/Workflow/ProcessApi/GetBillTemplate';
+window.BILLTEMPLATE_URL = window.BILLTEMPLATE_URL || '/Workflow/Api/BillTemplate';
 //单据字段
-window.FIELDLIST_URL = window.FIELDLIST_URL || '/Api/Core/fieldlist';
+window.FIELDLIST_URL = window.FIELDLIST_URL || '/Api/Core/FieldList';
 //子流程模板
-window.SUBPROCESS_URL = window.SUBPROCESS_URL || '/api/Workflow/ProcessApi/GetWfTemplate';
+window.SUBPROCESS_URL = window.SUBPROCESS_URL || '/Workflow/Api/WfTemplate';
 //申请人选择
-window.APPROVER_URL = window.APPROVER_URL || '/Workflow/Designer/Approver';
+window.APPROVER_URL = window.APPROVER_URL || '/Workflow/Process/Approver';
 window.RESOURCES_PATH = window.RESOURCES_PATH || '../../../Content/mxGraph/resources';
 window.RESOURCE_BASE = window.RESOURCE_BASE || window.RESOURCES_PATH + '/grapheditor';
 window.STENCIL_PATH = window.STENCIL_PATH || '../../../Content/mxGraph/stencils';

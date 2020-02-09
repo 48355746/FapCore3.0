@@ -1,0 +1,19 @@
+﻿
+@model Fap.AspNetCore.ViewModel.JqGridViewModel
+
+<title>代理人</title>
+<div class="row">
+    <div class="col-xs-12 col-sm-12">
+        <fap-grid id="agentsetting" grid-model="Model" wrapper="row" auto-width="true" oper-cud="true"></fap-grid>
+      
+    </div>
+</div>
+<script>
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+            })
+        })
+    })
+</script>

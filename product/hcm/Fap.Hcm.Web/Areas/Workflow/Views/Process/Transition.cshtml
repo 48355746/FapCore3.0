@@ -1,0 +1,40 @@
+﻿
+@{
+    ViewData["Title"] = "Transition";
+    Layout = "~/Views/Shared/_Layout_Empty.cshtml";
+}
+@section specificcss{
+    @{await Html.RenderPartialAsync("_ControlCssPartial");}
+    <link href="~/Content/css/codemirror/codemirror.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/Content/css/codemirror/theme/xq-light.css">
+    <style>
+        .CodeMirror {
+            height: 240px;
+        }
+    </style>
+
+}
+@section specificscript{
+    @{await Html.RenderPartialAsync("_ControlJsPartial");}
+
+    <script src="~/Content/js/codemirror/codemirror.js"></script>
+    <script src="~/Content/js/codemirror/mode/sql/sql.js"></script>
+    <script>
+
+            //获取完整的条件结果
+        var getTransition = function () {
+           
+            return getConditionObject();
+        }
+        var setTransition = function (value) {
+            setTimeout(() => {
+                conditionEditor.getDoc().setValue(value);
+            }, 1);
+        }
+    </script>
+}
+<div class="row">
+    <div class="col-xs-12">
+        @await Component.InvokeAsync("ConditionEditor", new { tableName = ViewBag.BillTable })
+    </div>
+</div>

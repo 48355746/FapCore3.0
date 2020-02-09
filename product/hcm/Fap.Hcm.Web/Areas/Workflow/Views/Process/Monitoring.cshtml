@@ -1,0 +1,235 @@
+﻿@using Fap.AspNetCore.Controls
+@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@using Fap.AspNetCore.Controls.JqGrid
+@{
+    Layout = null;
+    var sm = new Select2Model { IdField = "Code", NameField = "Name", TableName = "FapDict", Where = "Category='WfProcessInstanceState'" };
+    //增加操作列
+    Column column = new Column("oper");
+    column.SetLabel("操作");
+    column.SetSortable(false);
+    column.SetWidth(140);
+}
+<title>流程管理</title>
+
+<div class="row">
+
+    <div class="col-xs-12 col-sm-12">
+        <input type="hidden" id="userId" value="@ViewBag.CurrenUserId" />
+
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">已发流程</h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-toolbox">
+                    <div class="btn-toolbar">
+                        <div class="btn-group">
+
+                            <fap-select id="processState" placeholder="流程状态" width="150" select-model="@sm"></fap-select>
+
+                        </div>
+
+                    </div>
+                </div>
+                <div class="widget-main">
+                    <fap-grid id="process" attach-column="column" grid-model="Model" wrapper="widget-main" shrink-fit="false" on-grid-complete="initMenu"></fap-grid>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="right-menu" class="modal aside" data-body-scroll="false" data-offset="true" data-placement="right" data-fixed="true" data-backdrop="invisible" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header no-padding">
+                    <div class="table-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                            <span class="white">&times;</span>
+                        </button>
+                        流程业务
+                    </div>
+                </div>
+
+                <div class="modal-body">
+                    <div id="treeDeptDiv" class="widget-main ">
+                        <div class="scrollable">
+                            <fap-tree id="biztype" is-async="true" get-url="@Url.Content("~/api/Workflow/ProcessApi/BusinessType/")"></fap-tree>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /.modal-content -->
+
+            <button class="aside-trigger btn btn-purple btn-app btn-xs ace-settings-btn" data-target="#right-menu" data-toggle="modal" type="button">
+                <i data-icon1="fa-sitemap" data-icon2="fa-minus" class="ace-icon fa fa-sitemap bigger-110 icon-only"></i>
+            </button>
+        </div><!-- /.modal-dialog -->
+    </div>
+</div>
+
+<script>
+    function initMenu() {
+        var ids = jQuery("#grid-process").jqGrid('getDataIDs');
+        for (var i = 0; i < ids.length; i++) {
+            var de = '';
+            var cl = ids[i];
+            var ret = jQuery('#grid-process').jqGrid('getRowData', cl);
+            var fid = ret.Fid;
+            var status = ret.ProcessState;
+            var processUid = ret.ProcessUid;
+            var bizUid = ret.BizUid;
+            var title = ret.ProcessName;
+            if (status === 'Running') {
+                //运行
+                de += "<a  href='javascript:void(0)' onclick='suspendProcess(\"" + fid + "\")'>挂起</a>  ";
+            } else if (status === 'Suspended') {
+                //挂起
+                de += "<a  href='javascript:void(0)' onclick='endProcess(\"" + fid + "\")'>终止</a>  ";
+                de += "<a  href='javascript:void(0)' onclick='restoreProcess(\"" + fid + "\")'>恢复</a>  ";
+            }
+            de += "<a  href='javascript:void(0)' onclick='workflowChart(\""+title+"\",\"" + processUid + "\",\"" + bizUid + "\")'>流程图</a>  ";
+
+            //de += "<a  href='javascript:void(0)' onclick='viewBill(\"" + fid + "\",\"" + name + "\")'>查看</a> ";
+
+            jQuery('#grid-process').jqGrid('setRowData', ids[i], { oper: de });
+        }
+    }
+    function suspendProcess(processInsFid) {
+        layer.prompt({ title: '请填写挂起原因，并确认', formType: 2 }, function (text, index) {
+            layer.close(index);
+            $.post('@Url.Content("/api/Workflow/ProcessApi/SuspendProcess")',
+                { processInsUid: processInsFid, comment: text },
+                function (data) {
+                    if (data) {
+                        if (data.result == 0) {
+                            bootbox.alert(data.message);
+                        } else {
+                            refreshGrid();
+                        }
+                    }
+                });
+        });
+    }
+    function endProcess(processInsFid) {
+        layer.prompt({ title: '请填写终止原因，并确认', formType: 2 }, function (text, index) {
+            layer.close(index);
+            $.post('@Url.Content("/api/Workflow/ProcessApi/EndProcess")',
+                { processInsUid: processInsFid, comment: text },
+                function (data) {
+                    if (data) {
+                        if (data.result == 0) {
+                            bootbox.alert(data.message);
+                        } else {
+                            refreshGrid();
+                        }
+                    }
+                });
+        });
+    }
+    function restoreProcess(processInsFid) {
+        layer.prompt({ title: '请填写恢复原因，并确认', formType: 2 }, function (text, index) {
+            layer.close(index);
+            $.post('@Url.Content("/api/Workflow/ProcessApi/ResumeProcess")',
+                { processInsUid: processInsFid, comment: text },
+                function (data) {
+                    if (data) {
+                        if (data.result == 0) {
+                            bootbox.alert(data.message);
+                        } else {
+                            refreshGrid();
+                        }
+                    }
+                });
+        });
+    }
+      /**
+     * 流程图
+     * */
+    function workflowChart(title,processUid,bizUid) {
+        var openUrl = $.randomUrl(basePath + "/Workflow/Business/FlowChart?processUid=" + processUid + "&bizUid=" + bizUid);
+        var index = layer.open({
+            type: 2,
+            title: '"'+title+'"申请单',
+            shadeClose: true,
+            shade: 0.8,
+            maxmin: true, //开启最大化最小化按钮
+            skin: 'billskin',
+            btnAlign: 'c',
+            area: ['893px', '600px'],
+            content: openUrl,
+            btn: ['关闭'],
+            yes: function (index, layero) {
+                layer.close(index);
+            }
+            , cancel: function () {
+                //右上角关闭回调
+
+                //return false 开启该代码可禁止点击该按钮关闭
+            }
+        });
+        layer.full(index);
+    }
+
+    //刷新流程列表
+    function refreshGrid() {
+        var filter = { "groupOp": "AND", "rules": [] };
+        if (bizTypeId_selected) {
+            filter.rules.push({ "field": "BizTypeUid", "op": "eq", "data": bizTypeId_selected });
+        }
+        if (processState_selected !== '') {
+            filter.rules.push({ "field": "ProcessState", "op": "eq", "data": processState_selected });
+        }
+
+        $("#grid-process").jqGrid('setGridParam', {
+            datatype: 'json',
+            postData: { filters: JSON.stringify(filter) }, //发送数据
+            page: 1
+        }).trigger("reloadGrid"); //重新载入
+    }
+        var bizTypeId_selected = ""; //选中的业务分类
+        var processState_selected = ""; //选中的流程状态
+    var scripts = [null, "/Content/js/jquery.tmpl.js", null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $('.modal.aside').ace_aside();
+            $(document).one('ajaxloadstart.page', function (e) {
+                $('#tree-biztype').jstree("destory");
+                $('.modal.aside').remove();
+                $(window).off('.aside');
+            })
+            processState_selected = $('#sel-processState').val();
+
+            $('#tree-biztype').on("changed.jstree", function (e, data) {
+                if (data && data.selected && data.selected.length) {
+                    var biztypePid = data.selected[0];
+                    //根节点
+                    if (biztypePid == "0") {
+                        $("#grid-process").jqGrid('setGridParam', {
+                            datatype: 'json',
+                            postData: { filters: {}}, //发送数据
+                            page: 1
+                        }).trigger("reloadGrid"); //重新载入
+                        return;
+                    }
+                    var bizTypeId = bizTypeId_selected = biztypePid;
+
+                    refreshGrid();
+                }
+            });
+
+            $("#sel-processState").on("change", function () {
+                processState_selected = $('#sel-processState').val();
+                refreshGrid();
+            });
+
+
+        });
+    })
+</script>
