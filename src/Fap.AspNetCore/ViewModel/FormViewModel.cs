@@ -57,6 +57,6 @@ namespace Fap.AspNetCore.ViewModel
         /// <summary>
         /// 默认值
         /// </summary>
-        public Dictionary<string,object> Data { get; set; }
+        public Dictionary<string,string> Data { get; set; }
     }
 }

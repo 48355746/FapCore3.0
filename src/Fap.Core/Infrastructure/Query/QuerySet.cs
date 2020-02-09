@@ -137,7 +137,7 @@ namespace Fap.Core.Infrastructure.Query
 
         public List<DefaultValue> DefaultValues { get; set; } = new List<DefaultValue>();
 
-        public void AddDefaultValue(string field, object value)
+        public void AddDefaultValue(string field, string value)
         {
             DefaultValues.Add(new DefaultValue { Field = field, Value = value });
         }
@@ -169,7 +169,7 @@ namespace Fap.Core.Infrastructure.Query
     public class DefaultValue
     {
         public string Field { get; set; }
-        public object Value { get; set; }
+        public string Value { get; set; }
     }
     /// <summary>
     /// 统计设置

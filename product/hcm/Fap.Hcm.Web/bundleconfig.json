@@ -14,18 +14,10 @@
     // An array of relative input file paths. Globbing patterns supported
     "inputFiles": [
       "wwwroot/Content/css/ace.css",
+      "wwwroot/Content/nprogress/nprogress.css",
       "wwwroot/Content/Site.css"
     ]
-  },
-  {
-    "outputFileName": "wwwroot/css/site.min.css",
-    // An array of relative input file paths. Globbing patterns supported
-    "inputFiles": [
-      "wwwroot/Content/nprogress/nprogress.css",
-      "wwwroot/Content/css/jquery.gritter.css",
-      "wwwroot/Content/Handsontable/css/handsontable.full.min.css"
-    ]
-  },
+  }, 
   {
     "outputFileName": "wwwroot/css/control.min.css",
     // An array of relative input file paths. Globbing patterns supported
@@ -33,6 +25,8 @@
       "wwwroot/Content/css/jquery-ui.css",
       "wwwroot/Content/css/jquery-ui.custom.css",
       "wwwroot/Content/JqGrid/css/ui.jqgrid.css",
+      "wwwroot/Content/Handsontable/css/handsontable.full.min.css",
+      "wwwroot/Content/css/jquery.gritter.css",
       "wwwroot/Content/css/bootstrap-editable.css",
       "wwwroot/Content/css/jquery.bootstrap-touchspin.css",
       "wwwroot/Content/css/bootstrap-datetimepicker.css",
@@ -54,38 +48,38 @@
       "renameLocals": true
     }
   },
-  //{
-  //  "outputFileName": "wwwroot/js/ace.min.js",
-  //  "inputFiles": [
-  //    "wwwroot/Content/js/ace/elements.scroller.js",
-  //    "wwwroot/Content/js/ace/elements.colorpicker.js",
-  //    "wwwroot/Content/js/ace/elements.fileinput.js",
-  //    "wwwroot/Content/js/ace/elements.typeahead.js",
-  //    "wwwroot/Content/js/ace/elements.wysiwyg.js",
-  //    "wwwroot/Content/js/ace/elements.spinner.js",
-  //    "wwwroot/Content/js/ace/elements.treeview.js",
-  //    "wwwroot/Content/js/ace/elements.wizard.js",
-  //    "wwwroot/Content/js/ace/elements.aside.js",
-  //    "wwwroot/Content/js/ace/ace.js",
-  //    "wwwroot/Content/js/ace/ace.ajax-content.js",
-  //    "wwwroot/Content/js/ace/ace.touch-drag.js",
-  //    "wwwroot/Content/js/ace/ace.sidebar.js",
-  //    "wwwroot/Content/js/ace/ace.sidebar-scroll-1.js",
-  //    "wwwroot/Content/js/ace/ace.submenu-hover.js",
-  //    "wwwroot/Content/js/ace/ace.widget-box.js",
-  //    "wwwroot/Content/js/ace/ace.settings.js",
-  //    "wwwroot/Content/js/ace/ace.settings-rtl.js",
-  //    "wwwroot/Content/js/ace/ace.settings-skin.js",
-  //    "wwwroot/Content/js/ace/ace.widget-on-reload.js"
-  //  ],
-  //  // Optionally specify minification options
-  //  "minify": {
-  //    "enabled": true,
-  //    "renameLocals": true
-  //  },
-  //  // Optionally generate .map file
-  //  "sourceMap": false
-  //},
+  {
+    "outputFileName": "wwwroot/js/ace.min.js",
+    "inputFiles": [
+      "wwwroot/Content/js/ace/elements.scroller.js",
+      "wwwroot/Content/js/ace/elements.colorpicker.js",
+      "wwwroot/Content/js/ace/elements.fileinput.js",
+      "wwwroot/Content/js/ace/elements.typeahead.js",
+      "wwwroot/Content/js/ace/elements.wysiwyg.js",
+      "wwwroot/Content/js/ace/elements.spinner.js",
+      "wwwroot/Content/js/ace/elements.treeview.js",
+      "wwwroot/Content/js/ace/elements.wizard.js",
+      "wwwroot/Content/js/ace/elements.aside.js",
+      "wwwroot/Content/js/ace/ace.js",
+      "wwwroot/Content/js/ace/ace.ajax-content.js",
+      "wwwroot/Content/js/ace/ace.touch-drag.js",
+      "wwwroot/Content/js/ace/ace.sidebar.js",
+      "wwwroot/Content/js/ace/ace.sidebar-scroll-1.js",
+      "wwwroot/Content/js/ace/ace.submenu-hover.js",
+      "wwwroot/Content/js/ace/ace.widget-box.js",
+      "wwwroot/Content/js/ace/ace.settings.js",
+      "wwwroot/Content/js/ace/ace.settings-rtl.js",
+      "wwwroot/Content/js/ace/ace.settings-skin.js",
+      "wwwroot/Content/js/ace/ace.widget-on-reload.js"
+    ],
+    // Optionally specify minification options
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
+    // Optionally generate .map file
+    "sourceMap": false
+  },
   {
     "outputFileName": "wwwroot/js/fapcommon.min.js",
     "inputFiles": [

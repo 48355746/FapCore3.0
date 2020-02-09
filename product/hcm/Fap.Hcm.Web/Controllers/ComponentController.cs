@@ -19,6 +19,7 @@ using Fap.Core.Infrastructure.Query;
 using Dapper;
 using System.Web;
 using Fap.AspNetCore.Controls.DataForm;
+using Fap.Hcm.Web.Models;
 
 namespace Fap.Hcm.Web.Controllers
 {
@@ -384,12 +385,35 @@ namespace Fap.Hcm.Web.Controllers
             treeModel.TempData.Add("refCols", string.Join(",", refCols));
             return View(treeModel);
         }
-        public IActionResult DataGrid(string tableName)
+        public IActionResult DataGrid(GridViewModel gridView)
         {
-            JqGridViewModel model = GetJqGridModel(tableName);
+            JqGridViewModel model = GetJqGridModel(gridView.TableName, qs=> {
+                qs.GlobalWhere = gridView.Condition;
+            });
             return View(model);
         }
+        /// <summary>
+        /// post才能获取List信息
+        /// </summary>
+        /// <param name="gridViews"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult MultiDataGrid(List<GridViewModel> gridViews)
+        {
+            MultiJqGridViewModel multiModels = new MultiJqGridViewModel();
+            foreach (var gridView in gridViews)
+            {
+                var model=GetJqGridModel(gridView.TableName, qs =>
+                {
+                    qs.GlobalWhere = gridView.Condition;
+                    qs.DefaultValues = gridView.DefaultValues;
+                });
+                model.Title = gridView.TableLabel;
+                multiModels.JqGridViewModels.Add(gridView.TableName, model);
+            }
+            return View(multiModels);
 
+        }
         /// <summary>
         ///  表单
         /// </summary>

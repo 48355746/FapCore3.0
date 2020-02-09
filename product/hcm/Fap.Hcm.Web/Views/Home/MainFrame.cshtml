@@ -27,6 +27,8 @@
         <link rel="stylesheet" href="~/Content/css/jquery-ui.css" />
         <link rel="stylesheet" href="~/Content/JqGrid/css/ui.jqgrid.css" />
         <link rel="stylesheet" href="~/Content/css/jquery-ui.custom.css" />
+        <link rel="stylesheet" href="~/Content/Handsontable/css/handsontable.full.min.css" />
+        <link rel="stylesheet" href="~/Content/css/jquery.gritter.css" />
         <link rel="stylesheet" href="~/Content/css/bootstrap-editable.css" />
         <link rel="stylesheet" href="~/Content/css/jquery.bootstrap-touchspin.css" />
         <link rel="stylesheet" href="~/Content/css/bootstrap-datetimepicker.css" />
@@ -41,23 +43,15 @@
         <link rel="stylesheet" href="~/Content/css/colorpicker.css" />
         <link rel="stylesheet" href="~/Content/citypicker/city-picker.css" />
         <link rel="stylesheet" href="~/Content/css/colorbox.css" />
-        <link rel="stylesheet" href="~/Content/js/jRange/jquery.range.css" asp-append-version="true"/>
+        <link rel="stylesheet" href="~/Content/js/jRange/jquery.range.css" asp-append-version="true" />
     </environment>
     <environment exclude="Development">
         <link rel="stylesheet" href="~/css/control.min.css" asp-append-version="true" />
     </environment>
-    @*site css*@
-    <environment include="Development">
-        <link href="~/Content/nprogress/nprogress.css" rel="stylesheet" />
-        <link rel="stylesheet" href="~/Content/css/jquery.gritter.css" />
-        <link rel="stylesheet" href="~/Content/Handsontable/css/handsontable.full.min.css" />
-    </environment>
-    <environment exclude="Development">
-        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
-    </environment>
 
     @*ace main css*@
     <environment include="Development">
+        <link rel="stylesheet" href="~/Content/nprogress/nprogress.css" />
         <link rel="stylesheet" href="~/Content/css/ace.css" class="ace-main-stylesheet" id="main-ace-style" asp-append-version="true" />
         <link rel="stylesheet" href="~/Content/Site.css" class="ace-main-stylesheet" id="main-ace-style" asp-append-version="true" />
     </environment>
@@ -74,7 +68,7 @@
     <!-- page specific plugin styles -->
     <!--实时IM的样式-->
     @*<link href="/Content/chat/Css/ChatCore.css" rel="stylesheet" />*@
-    <!-- inline styles related to this page --> 
+    <!-- inline styles related to this page -->
     <!-- basic scripts -->
     <!--[if !IE]> -->
     <script type="text/javascript">

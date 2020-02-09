@@ -42,10 +42,14 @@ function getSelectedRow(grdid) {
         return rowData;
     }
 }
-function refreshBaseJqGrid(grdid) {
-    var grid = $("#" + grdid);
-    grid.jqGrid('setGridParam', {
-
+function reloadGrid(grdid, postData) {
+    if (postData === undefined || postData === null) {
+        postData = {};
+    }
+    $("#" + grdid).jqGrid('setGridParam', {
+        datatype: 'json',
+        postData: postData, //发送数据
+        page: 1
     }).trigger("reloadGrid"); //重新载入
 }
 //新增，编辑方法
@@ -356,7 +360,7 @@ var loadBatchUpdateMessageBox = function (title, gid, qryCols, tablename, menuUi
                     if (rv.success) {
                         dialog.modal("hide");
                         $.msg(rv.msg);
-                        refreshBaseJqGrid(gid);
+                        reloadGrid(gid);
                     } else {
                         bootbox.alert(rv.msg);
                     }

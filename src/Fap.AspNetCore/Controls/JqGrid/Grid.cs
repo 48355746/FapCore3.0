@@ -2366,7 +2366,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
             {
                 foreach (var dv in _defaultValues)
                 {
-                    script.AppendLine("$('#frm-" + TableName + " #" + dv.Field + "').val('" + dv.Value + "')");
+                    script.AppendLine("$('#frm-##gridid## #" + dv.Field + "').val('" + dv.Value + "')");
                 }
             }
             script.AppendLine(@" 
