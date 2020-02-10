@@ -7,6 +7,7 @@ using Fap.AspNetCore.Infrastructure;
 using Fap.AspNetCore.ViewModel;
 using System;
 using Fap.Core.Infrastructure.Domain;
+using Fap.Core.Infrastructure.Metadata;
 
 namespace Fap.Hcm.Web.Areas.System.Controllers
 {
@@ -38,33 +39,25 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         ///数据属性
         /// </summary>
         /// <returns></returns>
-        public IActionResult DataEntityToDataProperty()
+        public PartialViewResult ColumnMetadata(int id)
         {
-            string tableName = Request.Query["tn"];
+            FapTable table = _dbContext.Get<FapTable>(id);
 
             JqGridViewModel model = this.GetJqGridModel("FapColumn", (q) =>
               {
-                  q.InitWhere = "TableName=@TableName";
-                  q.AddParameter("TableName", tableName);
+                  q.GlobalWhere = $"TableName='{table.TableName}'";
               });
-
-            return View(model);
+            ViewBag.Id = id;
+            return PartialView(model);
         }
         /// <summary>
-        /// 表定义
+        /// 元数据管理
         /// </summary>
         /// <returns></returns>
-        public IActionResult TableDefine()
+        public IActionResult TableMetadata()
         {
-            FormViewModel model = new FormViewModel();
-            model.QueryOption = new Core.Infrastructure.Query.QuerySet()
-            {
-                TableName = "Employee",
-                QueryCols = "*",
-                InitWhere = "Fid='c4a711e5aee22b59bbe9'"
-            };
+            var model = GetJqGridModel(nameof(FapTable));
             return View(model);
-
         }
         /// <summary>
         /// 字典表

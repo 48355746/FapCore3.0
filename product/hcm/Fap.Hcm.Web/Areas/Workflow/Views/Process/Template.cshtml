@@ -64,7 +64,7 @@
                     <div class="widget-body">
 
                         <div class="widget-main">
-                            <fap-grid id="process" grid-model="Model" wrapper="widget-main" oper-cud="true"  on-form-init-add="initForm" multi-select="false" subgrid-rowexpanded="showHistoryVersionGrid"></fap-grid>
+                            <fap-grid id="process" grid-model="Model" wrapper="widget-main" oper-cud="true" on-form-init-add="initForm" multi-select="false" subgrid-rowexpanded="showHistoryVersionGrid"></fap-grid>
 
                         </div>
 
@@ -84,6 +84,19 @@
             return;
         }
         $("#frm-grid-process #ProcessGroupUid").val(wfProcessGroupUid).next().val(wfProcessGroupName);
+    }
+        //流程设计
+    function workflowDesigner(fid) {
+        var index = layer.open({
+            type: 2,
+            title: '流程设计器 V1.0',
+            shadeClose: true,
+            shade: 0.8,
+            maxmin: true, //开启最大化最小化按钮
+            area: ['893px', '600px'],
+            content: '@Url.Content("~/Workflow/Process/Design")/' + fid,
+        });
+        layer.full(index);
     }
     var wfProcessGroupUid, wfProcessGroupName;
     var scripts = [null, null]
@@ -106,7 +119,7 @@
                     var jsonc = { 'ProcessGroupUid': wfProcessGroupUid, 'ProcessGroupUidMC': wfProcessGroupName };
                     var filter = '{"groupOp":"AND","rules":[{"field":"ProcessGroupUid","op":"eq","data":"' + wfProcessGroupUid + '"}]}'
                     reloadGrid("grid-process",{ pageCondition: filter })
-                    
+
                 }
             });
 
@@ -115,16 +128,7 @@
                 if (rowData === null) {
                     return;
                 }
-                var index = layer.open({
-                    type: 2,
-                    title: '流程设计器 V1.0',
-                    shadeClose: true,
-                    shade: 0.8,
-                    maxmin: true, //开启最大化最小化按钮
-                    area: ['893px', '600px'],
-                    content: '@Url.Content("~/Workflow/Process/Design")/' + rowData.Fid,
-                });
-                layer.full(index);
+                workflowDesigner(rowData.Fid);
             });
 
 

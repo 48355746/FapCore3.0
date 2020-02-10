@@ -7,7 +7,7 @@
     </style>
     <script src="~/Content/js/codemirror/codemirror.js"></script>
     <script src="~/Content/js/codemirror/mode/sql/sql.js"></script>*@
-@inject Fap.Core.DataAccess.DbContext _db;
+@inject Fap.Core.DataAccess.IDbContext _db;
 @{
     string tn = ViewBag.TableName;
     var cols = _db.Columns(tn);

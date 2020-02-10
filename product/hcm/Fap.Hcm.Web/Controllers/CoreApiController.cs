@@ -20,6 +20,7 @@ using Microsoft.Extensions.Primitives;
 using Fap.AspNetCore.Binder;
 using Fap.AspNetCore.Serivce;
 using Fap.Core.Infrastructure.Model;
+using System.Text.RegularExpressions;
 
 namespace Fap.Hcm.Web.Controllers
 {
@@ -215,6 +216,35 @@ namespace Fap.Hcm.Web.Controllers
             bool rv = c > 0 ? false : true;
             return Json(rv);
 
+        }
+        #endregion
+
+        #region 校验条件sql设置
+        
+        [HttpPost("ValideSqlCondition")]
+        // POST: api/Common
+        public JsonResult PostValideSqlCondition(string tableName,string conditionSql)
+        {
+            bool success = true;
+            string msg = string.Empty;          
+            Regex rgx = new Regex(FapPlatformConstants.VariablePattern);
+            MatchCollection matchs = rgx.Matches(conditionSql);
+            foreach (var mtch in matchs)
+            {
+                conditionSql = conditionSql.Replace(mtch.ToString(), "'1'");
+            }
+            string sql = "select 1 from dual where " + conditionSql;
+
+            try
+            {
+                _dbContext.Execute(sql);
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                msg = ex.Message;
+            }
+            return Json(new ResponseViewModel{ success = success, msg = msg });
         }
         #endregion
     }
