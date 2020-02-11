@@ -30,7 +30,7 @@
 
             <div class="widget-body">
                 <div class="widget-main scrollable" id="divDictCategory">
-                    <fap-tree id="dictcategory" is-async="true" get-url="/SystemApi/Tools/DictCategory"></fap-tree>
+                    <fap-tree id="dictcategory" is-async="true" get-url="/System/Api/Tools/DictCategory"></fap-tree>
                 </div>
             </div>
         </div>
@@ -140,7 +140,7 @@
                     }
                     bootbox.confirm("删除分类会将字典一起删除,确认删除？", function (result) {
                         if (result) {
-                            $.get(basePath + "/SystemApi/Tools/DeleteDict/" + sel[0], function (rv) {
+                            $.get(basePath + "/System/Api/Tools/DeleteDict/" + sel[0], function (rv) {
                                 if (rv.success) {
                                     $.msg(rv.msg);
                                     $("#tree-dictcategory").jstree("delete_node", tree.get_node(sel[0]));

@@ -58,7 +58,7 @@
 
                                 <div class="widget-body">
                                     <div class="widget-main">
-                                        <fap-tree id="bizrole" is-async="true" get-url="/SystemApi/Manage/BusinessRole" edit-url="/SystemApi/Manage/OperBusinessRole"></fap-tree>
+                                        <fap-tree id="bizrole" is-async="true" get-url="/System/Api/Manage/BusinessRole" edit-url="/SystemApi/Manage/OperBusinessRole"></fap-tree>
                                     </div>
                                 </div>
                             </div>
@@ -192,7 +192,7 @@
                                     bootbox.alert("您没有选中人员");
                                     return;
                                 };
-                                $.post("@Url.Content("~/SystemApi/Manage/BusinessRoleEmployee")", { emps: emps, bizRole: selRole[0] }, function (data) {
+                                $.post("@Url.Content("~/System/Api/Manage/BusinessRoleEmployee")", { emps: emps, bizRole: selRole[0] }, function (data) {
                                     if (data.success) {
                                         var filter = { "groupOp": "AND" };
                                         filter.rules = [{ "field": "Fid", "op": "in", "data": "(select EmpUid from FapBizRoleEmployee where BizRoleUid ='" + selRole[0] + "') " }];
@@ -240,7 +240,7 @@
                             bootbox.alert("请选中角色进行移除");
                             return false;
                         }
-                        $.post("@Url.Content("~/SystemApi/Manage/RemoveBizRoleEmployee")", { "emps": emps, bizRole: selRole[0] }, function (rv) {
+                        $.post("@Url.Content("~/System/Api/Manage/RemoveBizRoleEmployee")", { "emps": emps, bizRole: selRole[0] }, function (rv) {
                             if (rv.success) {
                                 $.msg("移除成功");
                                 $("#grid-bizRole").jqGrid().trigger("reloadGrid");

@@ -13,18 +13,22 @@ using Fap.AspNetCore.Controls;
 using Fap.Core.Rbac.Model;
 using Fap.Core.Utility;
 using Fap.Core.Infrastructure.Model;
+using Fap.Core.DataAccess;
+using System.Net.Mime;
 
 namespace Fap.Hcm.Web.Areas.System.Controllers
 {
-    [Produces("application/json")]
-    [Route("SystemApi/Tools")]
+    [Area("System")]
+    [Produces(MediaTypeNames.Application.Json)]
+    [Route("[area]/Api/Tools")]
     public class ToolsApiController : FapController
     {
         private IFapFileService _fileService;
-
-        public ToolsApiController(IServiceProvider serviceProvider, IFapFileService fileService) : base(serviceProvider)
+        private IDbMetadataContext _dbMetadataContext;
+        public ToolsApiController(IServiceProvider serviceProvider, IFapFileService fileService, IDbMetadataContext dbMetadataContext) : base(serviceProvider)
         {
             _fileService = fileService;
+            _dbMetadataContext = dbMetadataContext;
         }
 
 
@@ -32,7 +36,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         /// 获取字典分类
         /// </summary>
         /// <returns></returns>
-        [Route("DictCategory/")]
+        [Route("DictCategory")]
         // POST: api/Common
         public JsonResult DictCategory()
         {
@@ -82,7 +86,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         /// </summary>
         /// <param name="id">用户的ID</param>
         /// <returns></returns>        
-        [Route("EmpPhotoImport/")]
+        [Route("EmpPhotoImport")]
         public string AttachmentProcess()
         {
             try
@@ -127,6 +131,12 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             }
 
             return "1";
+        }
+        [HttpGet("ForceSync/{id}")]
+        public JsonResult ForceSync(int id)
+        {
+            _dbMetadataContext.CreateTable(id);
+            return Json(ResponseViewModelUtils.Sueecss());
         }
     }
 }

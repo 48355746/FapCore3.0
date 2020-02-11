@@ -61,6 +61,7 @@ namespace Fap.AspNetCore.Serivce
             _logger = logger;
             _memoryCache = memoryCache;
         }
+        [Transactional]
         public PageDataResultView QueryPageDataResultView(JqGridPostData jqGridPostData)
         {
             Pageable pageable = AnalysisPostData(jqGridPostData);

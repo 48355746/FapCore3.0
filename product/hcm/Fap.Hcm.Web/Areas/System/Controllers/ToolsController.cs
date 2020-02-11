@@ -39,15 +39,14 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         ///数据属性
         /// </summary>
         /// <returns></returns>
-        public PartialViewResult ColumnMetadata(int id)
+        public PartialViewResult ColumnMetadata(string fid)
         {
-            FapTable table = _dbContext.Get<FapTable>(id);
+            FapTable table = _dbContext.Get<FapTable>(fid);
 
             JqGridViewModel model = this.GetJqGridModel("FapColumn", (q) =>
               {
                   q.GlobalWhere = $"TableName='{table.TableName}'";
               });
-            ViewBag.Id = id;
             return PartialView(model);
         }
         /// <summary>

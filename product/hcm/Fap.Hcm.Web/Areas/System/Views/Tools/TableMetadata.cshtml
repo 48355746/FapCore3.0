@@ -1,15 +1,27 @@
 ﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
 @{
-    _platformDomain.DictSet.TryGetValueByCategory("TableCategory" ,out IEnumerable<Fap.Core.Infrastructure.Metadata.FapDict> tableCategorys);
+    _platformDomain.DictSet.TryGetValueByCategory("TableCategory", out IEnumerable<Fap.Core.Infrastructure.Metadata.FapDict> tableCategorys);
 }
 <title><fap-multilang lang-key="system_tools_tablemetadata_title" default-content="表元数据"></fap-multilang>    </title>
 <link href="~/Content//css/chosen.css" rel="stylesheet" />
 <script>
       //加载历史版本
-    function showColumnMetadataGrid(parentRowID, parentRowKey)
-    {
-        $('#' + parentRowID).load($.randomUrl("@Url.Content("~/System/Tools/ColumnMetadata")?id="+parentRowKey));
+    function showColumnMetadataGrid(parentRowID, parentRowKey) {
+        var url = "@Url.Content("~/System/Tools/ColumnMetadata")?id=" + parentRowKey;
+        //$('#' + parentRowID).load($.randomUrl("@Url.Content("~/System/Tools/ColumnMetadata")?id=" + parentRowKey), function (rv) {
+        $.get(url, function (rv) {
+        var index = layer.open({
+            type: 1,
+            skin: 'layui-layer-rim', //加上边框
+            area: ['100%','100%'], //宽高
+            content:rv
+        });
+        layer.full(index);
+
+        });
+
     }
+
 </script>
 <div class="row">
     <div class="col-xs-12">
@@ -23,10 +35,6 @@
                         <i class="ace-icon fa fa-expand"></i>
                     </a>
                 </div>
-                <div class="widget-toolbar no-border">
-                    <fap-button id="btnForceSync" btn-tag="link" content="强制同步" icon-before="fa fa-bolt blue" class-name="info"></fap-button>
-                    <fap-button id="btnIncrementSync" btn-tag="link" content="增量同步" icon-before="fa fa-exchange blue" class-name="info"></fap-button>
-                </div>
                 <div class="widget-toolbar">
                     <select class="chosen-select form-control" style="width:300px" id="selTableCategory" data-placeholder="表分类...">
                         <option value="">  </option>
@@ -36,11 +44,16 @@
                         }
                     </select>
                 </div>
+                <div class="widget-toolbar no-border">
+                    <fap-button id="btnColumnMetadata" btn-tag="link" content="列元数据" icon-before="fa fa-table blue" class-name="info"></fap-button>
+                    <fap-button id="btnForceSync" btn-tag="link" content="强制同步" icon-before="fa fa-bolt blue" class-name="info"></fap-button>
+                    <fap-button id="btnIncrementSync" btn-tag="link" content="增量同步" icon-before="fa fa-exchange blue" class-name="info"></fap-button>
+                </div>
             </div>
             <div class="widget-body">
                 <!-- #section:custom/widget-box.toolbox -->
                 <div class="widget-main">
-                    <fap-grid id="faptable" grid-model="Model" subgrid-rowexpanded="showColumnMetadataGrid" source-type="Local" auto-width="true" shrink-fit="false"></fap-grid>
+                    <fap-grid id="faptable" grid-model="Model"  source-type="Local" auto-width="true" ></fap-grid>
                 </div>
             </div>
         </div>
@@ -65,7 +78,35 @@
 
                 reloadGrid("grid-faptable", { filters: filter })
             });
+            $("#btnColumnMetadata").on(ace.click_event, function () {
+                var rowData = getSelectedRow("grid-faptable");
+                if (rowData == null) {
+                    return;
+                }
+                var url = "@Url.Content("~/System/Tools/ColumnMetadata")/" + rowData.Fid+"?menuUrl=~/System/Tools/TableMetadata";
+                $.get(url, function (rv) {
+                    var index = layer.open({
+                        type: 1,
+                        zIndex:500,
+                        skin: 'layui-layer-rim', //加上边框
+                        area: ['100%', '100%'], //宽高
+                        content: rv
+                    });
+                    layer.full(index);
 
+                });
+            })
+            $("#btnForceSync").on(ace.click_event, function () {
+                  var rowData = getSelectedRow("grid-faptable");
+                if (rowData == null) {
+                    return;
+                }
+                $.get(basePath + "/System/Api/Tools/ForceSync/" + rowData.Id, function (rv) {
+                    if (rv.success) {
+                        $.msg("成功");
+                    }
+                })
+            })
 
         })
     });
