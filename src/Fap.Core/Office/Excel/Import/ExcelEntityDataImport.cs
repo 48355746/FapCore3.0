@@ -68,14 +68,14 @@ namespace Fap.Core.Office.Excel.Import
                 return;
             }
 
-            if (mode == ImportMode.FORCE) //强制导入
-            {
-                _dataAccessor.DeleteExec(tableName);
-                if (!string.IsNullOrWhiteSpace(table.ExtTable))
-                {
-                    _dataAccessor.DeleteExec(table.ExtTable);
-                }
-            }
+            //if (mode == ImportMode.FORCE) //强制导入
+            //{
+            //    _dataAccessor.DeleteExec(tableName);
+            //    if (!string.IsNullOrWhiteSpace(table.ExtTable))
+            //    {
+            //        _dataAccessor.DeleteExec(table.ExtTable);
+            //    }
+            //}
 
             ImportDataToTable(workbook, workbook.GetSheetAt(0), this.tableName);
 

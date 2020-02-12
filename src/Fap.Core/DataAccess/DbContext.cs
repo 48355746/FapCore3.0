@@ -2230,7 +2230,7 @@ namespace Fap.Core.DataAccess
             }
 
             //Join条件
-            string join = pageable.Wraper.MakeJoinSql();
+            string join = string.Empty;// pageable.Wraper.MakeJoinSql();
           
             if (pageable.MaxId != null)
             {
@@ -2291,8 +2291,8 @@ namespace Fap.Core.DataAccess
                 sqlBuilder.Append(" FROM ").Append(pageable.Wraper.MakeFromSql());
 
                 //Join条件
-                string join = pageable.Wraper.MakeJoinSql();
-                sqlBuilder.Append($" {join} ");
+                //string join = pageable.Wraper.MakeJoinSql();
+                //sqlBuilder.Append($" {join} ");
                 //Where条件
                 sqlBuilder.Append($" {pageable.Wraper.MakeWhere()} ");
                 return sqlBuilder.ToString();

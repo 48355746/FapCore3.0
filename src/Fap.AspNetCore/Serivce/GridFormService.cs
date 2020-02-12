@@ -412,7 +412,7 @@ namespace Fap.AspNetCore.Serivce
                     return;
                 }
                 //检查子表，删除子表数据
-                var childtableList = _dbContext.Tables(t => t.ExtTable == mainData.TableName);
+                var childtableList = _dbContext.Tables(t => t.MainTable == mainData.TableName);
 
                 foreach (var childTable in childtableList)
                 {

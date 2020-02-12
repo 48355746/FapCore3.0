@@ -266,41 +266,41 @@ namespace Fap.Core.Infrastructure.Query
             }
         }
 
-        public FapTable ExtTable
-        {
-            get
-            {
-                if (!_pageAble.IsQueryExtTable)
-                {
-                    return null;
-                }
-                FapTable mainTable = MainTable;
-                if (mainTable.ExtTable.IsPresent())
-                {
-                    return _dbContext.Table(MainTable.ExtTable);
-                }
-                return null;
-            }
-        }
+        //public FapTable ExtTable
+        //{
+        //    get
+        //    {
+        //        if (!_pageAble.IsQueryExtTable)
+        //        {
+        //            return null;
+        //        }
+        //        FapTable mainTable = MainTable;
+        //        if (mainTable.MainTable.IsPresent())
+        //        {
+        //            return _dbContext.Table(MainTable.ExtTable);
+        //        }
+        //        return null;
+        //    }
+        //}
 
-        public IEnumerable<FapColumn> ExtColumnList
-        {
-            get
-            {
-                if (!_pageAble.IsQueryExtTable)
-                {
-                    return null;
-                }
+        //public IEnumerable<FapColumn> ExtColumnList
+        //{
+        //    get
+        //    {
+        //        if (!_pageAble.IsQueryExtTable)
+        //        {
+        //            return null;
+        //        }
 
-                FapTable mainTable = MainTable;
-                if (mainTable.ExtTable.IsPresent())
-                {
-                    return _dbContext.Columns(MainTable.ExtTable);
-                }
+        //        FapTable mainTable = MainTable;
+        //        if (mainTable.ExtTable.IsPresent())
+        //        {
+        //            return _dbContext.Columns(MainTable.ExtTable);
+        //        }
 
-                return null;
-            }
-        }
+        //        return null;
+        //    }
+        //}
         /// <summary>
         /// 生成Select的SQL
         /// </summary>
@@ -346,7 +346,7 @@ namespace Fap.Core.Infrastructure.Query
                 orderBy = " order by Id ";
             }
             //Join条件
-            string join = MakeJoinSql();
+            string join = string.Empty; //MakeJoinSql();
             string where = MakeWhere();
             return $"select {MakeSelectSql()} from {MakeFromSql()} {join} {where} {orderBy} ";
 
@@ -355,23 +355,23 @@ namespace Fap.Core.Infrastructure.Query
         /// 组装成Join部分的SQL
         /// </summary>
         /// <returns></returns>
-        public string MakeJoinSql()
-        {
-            StringBuilder sqlBuilder = new StringBuilder();
-            //查询扩展表
-            if (_pageAble.IsQueryExtTable)
-            {
-                FapTable mainTable = MainTable;
-                if (mainTable.ExtTable.IsPresent())
-                {
-                    sqlBuilder.Append(" LEFT JOIN ").Append(mainTable.ExtTable);
-                    sqlBuilder.Append(" ON ");
-                    sqlBuilder.Append(mainTable.ExtTable + ".Fid=").Append(_pageAble.TableName + ".Fid");
-                }
-            }
+        //public string MakeJoinSql()
+        //{
+        //    StringBuilder sqlBuilder = new StringBuilder();
+        //    //查询扩展表
+        //    if (_pageAble.IsQueryExtTable)
+        //    {
+        //        FapTable mainTable = MainTable;
+        //        if (mainTable.ExtTable.IsPresent())
+        //        {
+        //            sqlBuilder.Append(" LEFT JOIN ").Append(mainTable.ExtTable);
+        //            sqlBuilder.Append(" ON ");
+        //            sqlBuilder.Append(mainTable.ExtTable + ".Fid=").Append(_pageAble.TableName + ".Fid");
+        //        }
+        //    }
 
-            return sqlBuilder.ToString();
-        }
+        //    return sqlBuilder.ToString();
+        //}
 
         /// <summary>
         /// 组装Orderby部分的SQL语句

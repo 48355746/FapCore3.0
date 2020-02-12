@@ -82,7 +82,7 @@ namespace Fap.Core.DataAccess.SqlParser
             if (command is SelectBuilder)
             {
                 SelectBuilder select = command as SelectBuilder;
-                var projections = select.Projection;               
+                var projections = select.Projection;
                 int fieldCount = projections.Count();
                 if (fieldCount > 0)
                 {
@@ -210,7 +210,7 @@ namespace Fap.Core.DataAccess.SqlParser
                     else if (item is Column)
                     {
                         Column currItem = item as Column;
-                        HandleSelectStatement(select, currItem);                       
+                        HandleSelectStatement(select, currItem);
                     }
                 }
             }
@@ -361,6 +361,11 @@ namespace Fap.Core.DataAccess.SqlParser
                 new LessThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
                 new GreaterThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
                 new EqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_Dr)));
+            if (column.RefTable.EqualsWithIgnoreCase(nameof(FapColumn)))
+            {
+                IFilter filter = new EqualToFilter(innerTable.Column("TableName"), table.Column("TableName"));
+                joinFilter.AddFilter(filter);
+            }
             inner.AddWhere(joinFilter);
             select.AddProjection(inner, $"{column.ColName}MCID");
         }
@@ -370,22 +375,23 @@ namespace Fap.Core.DataAccess.SqlParser
             SelectBuilder inner = new SelectBuilder();
             AliasedSource innerTable = inner.AddTable(new Table($"{column.RefTable}"), refAlias);
             inner.AddProjection(innerTable.Column($"{column.RefName}"));
-            if (column.MultiAble == 1) //是否多选
-            {
 
-            }
             FilterGroup joinFilter = new FilterGroup(Conjunction.And,
                 new EqualToFilter(innerTable.Column($"{column.RefID}"), table.Column(column.ColName)),
                 new LessThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
                 new GreaterThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
                 new EqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_Dr)));
+
+            if (column.RefTable.EqualsWithIgnoreCase(nameof(FapColumn)))
+            {
+                //fapcolumn存在重复colName，加一个去重
+                IFilter filter = new EqualToFilter(innerTable.Column("TableName"), table.Column("TableName"));
+                joinFilter.AddFilter(filter);
+            }
             inner.AddWhere(joinFilter);
             select.AddProjection(inner, $"{column.ColName}MC");
 
-            if (column.MultiAble == 1) //是否多选
-            {
 
-            }
         }
 
         private static void BuildFapDict(SelectBuilder select, FapColumn column, AliasedSource table, string refAlias)

@@ -57,9 +57,9 @@ namespace Fap.Core.Infrastructure.Metadata
         /// </summary>
         public string SubTable { get; set; }
         /// <summary>
-        /// 扩展表
+        /// 主表
         /// </summary>
-        public string ExtTable { get; set; }
+        public string MainTable { get; set; }
         /// <summary>
         /// 是否是树
         /// </summary>

@@ -205,7 +205,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         public IActionResult FreeFormSet(string fid)
         {
             CfgFreeForm ffModel = _dbContext.Get<CfgFreeForm>(fid);
-            IEnumerable<FapTable> childTables=  _platformDomain.TableSet.Where(t => t.ExtTable == ffModel.BillTable);
+            IEnumerable<FapTable> childTables=  _platformDomain.TableSet.Where(t => t.MainTable == ffModel.BillTable);
             ViewBag.DbFields = _dbContext.Columns(ffModel.BillTable);
             ViewBag.ChildTables = childTables;
             return View(ffModel);

@@ -221,7 +221,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             matchs = reg.Matches(FFrm.FFContent);
             if (matchs.Any())
             {
-                var childTableList =_dbContext.Tables(t => t.ExtTable == _tb.TableName);
+                var childTableList =_dbContext.Tables(t => t.MainTable == _tb.TableName);
                 foreach (var mtch in matchs)
                 {
                     string childTableLabel = mtch.ToString().TrimStart(new char[] { '{', '{' }).TrimEnd(new char[] { '}', '}' });
