@@ -548,7 +548,7 @@ namespace Fap.AspNetCore.Serivce
                         }
                         else if (column.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX)
                         {
-                            dic.Add(column.ColComment, _dbContext.Dictionary(column.RefTable, row.Get(key).ToString())?.Name);
+                            dic.Add(column.ColComment, _dbContext.Dictionary(column.ComboxSource, row.Get(key).ToString())?.Name);
                         }
                         else
                         {

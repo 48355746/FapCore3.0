@@ -5322,7 +5322,9 @@ body.mob-safari .sidebar.sidebar-fixed {
     bottom: auto;
     right: auto;
 }
-
+.modal-full{
+    width:95%
+}
 .modal-content {
     border-radius: 0;
     /*-webkit-box-shadow: none;

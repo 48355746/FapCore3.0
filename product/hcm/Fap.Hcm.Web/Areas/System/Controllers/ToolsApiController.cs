@@ -56,6 +56,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
 
             return Json(tree);
         }
+    
         [Route("DeleteDict/{cat=''}")]
         public JsonResult GetDeleteDict(string cat)
         {

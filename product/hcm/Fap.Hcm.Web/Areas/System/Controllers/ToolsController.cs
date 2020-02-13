@@ -45,7 +45,8 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
 
             JqGridViewModel model = this.GetJqGridModel("FapColumn", (q) =>
               {
-                  q.GlobalWhere = $"TableName='{table.TableName}'";
+                  q.GlobalWhere = $"TableName='{table.TableName}' and IsDefaultCol=0";
+                  q.AddDefaultValue("TableName", table.TableName);
               });
             return PartialView(model);
         }

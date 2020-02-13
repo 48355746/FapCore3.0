@@ -276,15 +276,13 @@ namespace Fap.AspNetCore.Model
                         FapColumn col = cols.FirstOrDefault(c => c.ColName == colName);
                         if (col.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX)
                         {
-                            data = _dbContext.Dictionary(col.RefTable, data)?.Name;
-
+                            data = _dbContext.Dictionary(col.ComboxSource, data)?.Name;
                         }
 
                         if (!string.IsNullOrEmpty(op))// && !string.IsNullOrEmpty(data))
                         {
                             FilterDescModel model = new FilterDescModel();
                             i++;
-                            //field = executeField(field);
                             if (i != 1)
                                 model.Group = group;
                             model.FilterDesc = col.ColComment;

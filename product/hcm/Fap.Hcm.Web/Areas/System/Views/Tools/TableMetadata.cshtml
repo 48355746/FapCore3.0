@@ -83,19 +83,33 @@
                 if (rowData == null) {
                     return;
                 }
-                var url = "@Url.Content("~/System/Tools/ColumnMetadata")/" + rowData.Fid+"?menuUrl=~/System/Tools/TableMetadata";
-                $.get(url, function (rv) {
-                    var index = layer.open({
-                        type: 1,
-                        zIndex:500,
-                        skin: 'layui-layer-rim', //加上边框
-                        area: ['100%', '100%'], //宽高
-                        content: rv
-                    });
-                    layer.full(index);
+                var url = "@Url.Content("~/System/Tools/ColumnMetadata")/" + rowData.Fid + "?menuUrl=~/System/Tools/TableMetadata";
 
+                var dialog = bootbox.dialog({
+                    title: '列元数据',
+                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                    size: "fullscreen",
+                    footer: false,
+                   // buttons: buttons
                 });
-            })
+                dialog.init(function () {
+                    $.get(url, function (ev) {
+                        dialog.find('.bootbox-body').html(ev);
+
+                    });
+                });
+                //$.get(url, function (rv) {
+                //    var index = layer.open({
+                //        type: 1,
+                //        zIndex:500,
+                //        skin: 'layui-layer-rim', //加上边框
+                //        area: ['100%', '100%'], //宽高
+                //        content: rv
+                //    });
+                //    layer.full(index);
+
+                //});
+            });
             $("#btnForceSync").on(ace.click_event, function () {
                   var rowData = getSelectedRow("grid-faptable");
                 if (rowData == null) {

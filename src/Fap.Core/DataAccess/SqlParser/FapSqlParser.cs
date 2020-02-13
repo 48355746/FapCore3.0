@@ -18,6 +18,7 @@ namespace Fap.Core.DataAccess.SqlParser
         private string _sql = "";
         private bool _withMC = false; //是否取参照的名称
         private bool _withId = false; //是否取参照的ID
+       
         private IFapPlatformDomain _appDomain;
 
         /// <summary>
@@ -33,7 +34,10 @@ namespace Fap.Core.DataAccess.SqlParser
             _withMC = withMC;
             _appDomain = platformDomain;
         }
-
+        /// <summary>
+        /// jqGrid查询的时候不用关联dict
+        /// </summary>
+        public bool IsGridQuery { get; set; }
         /// <summary>
         /// 获得解析完整的SQL语句
         /// </summary>
@@ -317,7 +321,7 @@ namespace Fap.Core.DataAccess.SqlParser
                 if (this._withMC)
                 {
                     //处理MC字段
-                    if (FapColumn.CTRL_TYPE_COMBOBOX == column.CtrlType)
+                    if (FapColumn.CTRL_TYPE_COMBOBOX == column.CtrlType&&!IsGridQuery)
                     {
                         string refAlias = "b" + (mcIndex++);
                         BuildFapDict(select, column, aliaseSource, refAlias);
@@ -385,7 +389,7 @@ namespace Fap.Core.DataAccess.SqlParser
             if (column.RefTable.EqualsWithIgnoreCase(nameof(FapColumn)))
             {
                 //fapcolumn存在重复colName，加一个去重
-                IFilter filter = new EqualToFilter(innerTable.Column("TableName"), table.Column("TableName"));
+                IFilter filter = new EqualToFilter(innerTable.Column("TableName"), table.Column("RefTable"));
                 joinFilter.AddFilter(filter);
             }
             inner.AddWhere(joinFilter);
@@ -430,7 +434,7 @@ namespace Fap.Core.DataAccess.SqlParser
             //AliasedSource table = select.AddTable(new Table($"{fCol.TableName}"), tableAlias);
             //select.AddProjection(table.Column(fCol.ColName));
             //处理MC字段
-            if (FapColumn.CTRL_TYPE_COMBOBOX == fCol.CtrlType)
+            if (FapColumn.CTRL_TYPE_COMBOBOX == fCol.CtrlType&& !IsGridQuery)
             {
                 string refAlias = "b" + (mcIndex++);
 

@@ -115,7 +115,7 @@ namespace Fap.AspNetCore.Controls.JqGrid.Extensions
                     col.SetFormatter(Enums.Formatters.Select);
                     //编辑设置
                     col.SetEditType(Enums.EditType.Select);
-                    IEnumerable<FapDict> list = dbContext.Dictionarys(fapColumn.RefTable);
+                    IEnumerable<FapDict> list = dbContext.Dictionarys(fapColumn.ComboxSource);
                     if (list != null && list.Any())
                     {
                         string codeValues = string.Join(";", list.Select(c => c.Code + ":" + c.Name).ToList());

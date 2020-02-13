@@ -148,9 +148,9 @@ namespace Fap.Core.Infrastructure.Metadata
         /// </summary>
         public int MultiAble { get; set; }
         /// <summary>
-        /// 树参照节点图标
+        /// 下拉控件数据源
         /// </summary>
-        public string Icon { get; set; }
+        public string ComboxSource { get; set; }
         /// <summary>
         /// 参照类型：TREE树形参照，GRID表格参照，TREEGRID树表参照
         /// </summary>

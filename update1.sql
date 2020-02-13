@@ -396,7 +396,7 @@ SET [ColGroup]='字段校验设置'
 WHERE [TableName]='FapColumn' AND [ColName]='RemoteChkMsg'
 GO
 UPDATE [FapColumn]
-SET [ColGroup]='控件显示格式设置'
+SET [ColGroup]='控件设置'
 WHERE [TableName]='FapColumn' AND [ColName]='DisplayFormat'
 GO
 UPDATE [FapColumn]
@@ -414,4 +414,216 @@ GO
 UPDATE [FapColumn]
 SET [ShowAble]=0
 WHERE [TableName]='FapColumn' AND [ColName]='ComponentUid'
+GO
+
+UPDATE [FapColumn]
+SET [ColOrder]=71
+WHERE [TableName]='FapColumn' AND [ColName]='RemoteChkMsg'
+GO
+UPDATE [FapColumn]
+SET [ColOrder]=70
+WHERE [TableName]='FapColumn' AND [ColName]='RemoteChkURL'
+GO
+
+UPDATE [FapColumn]
+SET [NullAble]=0
+WHERE [TableName]='FapColumn' AND [ColName]='CtrlType'
+GO
+UPDATE [FapColumn]
+SET [NullAble]=0
+WHERE [TableName]='FapColumn' AND [ColName]='ColType'
+GO
+UPDATE [FapColumn]
+SET [NullAble]=0
+WHERE [TableName]='FapColumn' AND [ColName]='ColComment'
+GO
+UPDATE [FapColumn]
+SET [ColDefault]='1'
+WHERE [TableName]='FapColumn' AND [ColName]='ShowAble'
+GO
+UPDATE [FapColumn]
+SET [ColDefault]='1'
+WHERE [TableName]='FapColumn' AND [ColName]='NullAble'
+GO
+UPDATE [FapColumn]
+SET [ColDefault]='120', [NullAble]=0
+WHERE [TableName]='FapColumn' AND [ColName]='DisplayWidth'
+GO
+UPDATE [FapColumn]
+SET [ColDefault]='1'
+WHERE [TableName]='FapColumn' AND [ColName]='EditAble'
+GO
+UPDATE [FapColumn]
+SET [NullAble]=0,[ColDefault]=3
+WHERE [TableName]='FapColumn' AND [ColName]='ColOrder'
+GO
+UPDATE [FapColumn]
+SET [NullAble]=0
+WHERE [TableName]='FapColumn' AND [ColName]='TableName'
+GO
+UPDATE [FapColumn]
+SET [NullAble]=0
+WHERE [TableName]='FapColumn' AND [ColName]='ColName'
+GO
+UPDATE [FapColumn]
+SET [NullAble]=0
+WHERE [TableName]='FapColumn' AND [ColName]='ColLength'
+GO
+UPDATE [FapColumn]
+SET [ColComment]='可多选'
+WHERE [TableName]='FapColumn' AND [ColName]='MultiAble'
+GO
+UPDATE [FapColumn]
+SET [ColComment]='为空'
+WHERE [TableName]='FapColumn' AND [ColName]='NullAble'
+GO
+UPDATE [FapColumn]
+SET [ColDefault]='0'
+WHERE [TableName]='FapColumn' AND [ColName]='ColPrecision'
+GO
+UPDATE [FapColumn]
+SET [ColComment]='可编辑'
+WHERE [TableName]='FapColumn' AND [ColName]='EditAble'
+GO
+UPDATE [FapColumn]
+SET [ColOrder]=80
+WHERE [TableName]='FapColumn' AND [ColName]='OrgUid'
+GO
+UPDATE [FapColumn]
+SET [ColOrder]=81
+WHERE [TableName]='FapColumn' AND [ColName]='GroupUid'
+GO
+UPDATE [FapColumn]
+SET [ColComment]='多语字段'
+WHERE [TableName]='FapColumn' AND [ColName]='IsMultiLang'
+GO
+UPDATE [FapColumn]
+SET [ColComment]='可见'
+WHERE [TableName]='FapColumn' AND [ColName]='ShowAble'
+GO
+UPDATE [FapColumn]
+SET [ColOrder]=25
+WHERE [TableName]='FapColumn' AND [ColName]='RefCondition'
+GO
+UPDATE [FapColumn]
+SET [ColOrder]=24
+WHERE [TableName]='FapColumn' AND [ColName]='RefName'
+GO
+UPDATE [FapColumn]
+SET [ColOrder]=20
+WHERE [TableName]='FapColumn' AND [ColName]='RefType'
+GO
+UPDATE [FapColumn]
+SET [ColOrder]=27
+WHERE [TableName]='FapColumn' AND [ColName]='RefReturnMapping'
+GO
+UPDATE [FapColumn]
+SET [ColOrder]=21
+WHERE [TableName]='FapColumn' AND [ColName]='RefTable'
+GO
+UPDATE [FapColumn]
+SET [ColOrder]=26
+WHERE [TableName]='FapColumn' AND [ColName]='RefCols'
+GO
+UPDATE [FapColumn]
+SET [ColOrder]=23
+WHERE [TableName]='FapColumn' AND [ColName]='RefCode'
+GO
+UPDATE [FapColumn]
+SET [ColOrder]=22
+WHERE [TableName]='FapColumn' AND [ColName]='RefID'
+GO
+EXEC sp_rename 'FapColumn.Icon', 'ComboxSource' , 'COLUMN';
+GO
+UPDATE [FapColumn]
+SET [ColName]='ComboxSource', [ColComment]='下拉数据源', [ShowAble]=1, [ColLength]=50, [CtrlType]='COMBOBOX', [RefTable]='FapDict', [ColGroup]='下拉控件设置'
+WHERE [TableName]='FapColumn' AND [ColName]='Icon'
+GO
+
+alter table Fapcolumn
+alter column ComboxSource varchar(50)
+GO
+--更新下拉数据源为ComboxSource
+update FapColumn set ComboxSource=RefTable where CtrlType='combobox' and RefTable!=''
+
+
+UPDATE [fapdict]
+SET [Code]='0'
+WHERE [Name]='主键' AND [Category]='ColProperty'
+GO
+UPDATE [FapCore].[dbo].[fapdict]
+SET [Code]='1'
+WHERE [Name]='固定项' AND [Category]='ColProperty'
+GO
+UPDATE [FapCore].[dbo].[fapdict]
+SET [Code]='3'
+WHERE [Name]='扩展项' AND [Category]='ColProperty'
+GO
+
+UPDATE [FapColumn]
+SET [ColOrder]=38
+WHERE [TableName]='FapColumn' AND [ColName]='ComboxSource'
+GO
+UPDATE [FapColumn]
+SET [ColOrder]=35
+WHERE [TableName]='FapColumn' AND [ColName]='RefCondition'
+GO
+UPDATE [FapColumn]
+SET [ColOrder]=20
+WHERE [TableName]='FapColumn' AND [ColName]='LangEn'
+GO
+UPDATE [FapColumn]
+SET [ColOrder]=21
+WHERE [TableName]='FapColumn' AND [ColName]='LangJa'
+GO
+UPDATE [FapColumn]
+SET [ColOrder]=37
+WHERE [TableName]='FapColumn' AND [ColName]='RefReturnMapping'
+GO
+UPDATE [FapColumn]
+SET [ColOrder]=19
+WHERE [TableName]='FapColumn' AND [ColName]='LangZhTW'
+GO
+UPDATE [FapColumn]
+SET [ColOrder]=32
+WHERE [TableName]='FapColumn' AND [ColName]='RefID'
+GO
+UPDATE [FapColumn]
+SET [ColOrder]=33
+WHERE [TableName]='FapColumn' AND [ColName]='RefCode'
+GO
+UPDATE [FapColumn]
+SET [ColOrder]=30
+WHERE [TableName]='FapColumn' AND [ColName]='RefType'
+GO
+UPDATE [FapColumn]
+SET [ColOrder]=18
+WHERE [TableName]='FapColumn' AND [ColName]='SortDirection'
+GO
+UPDATE [FapColumn]
+SET [ColOrder]=34
+WHERE [TableName]='FapColumn' AND [ColName]='RefName'
+GO
+UPDATE [FapColumn]
+SET [ColOrder]=31
+WHERE [TableName]='FapColumn' AND [ColName]='RefTable'
+GO
+UPDATE [FapColumn]
+SET [ColOrder]=36
+WHERE [TableName]='FapColumn' AND [ColName]='RefCols'
+GO
+UPDATE [FapColumn]
+SET [ColOrder]=18
+WHERE [TableName]='FapColumn' AND [ColName]='DisplayFormat'
+GO
+UPDATE [FapColumn]
+SET [CtrlType]='COMBOBOX', [ComboxSource]='FieldSortType'
+WHERE [TableName]='FapColumn' AND [ColName]='SortDirection'
+GO
+
+INSERT INTO [FapDict]([Fid], [Code], [Name], [Pid], [IsEndLevel], [CPath], [Category], [CategoryName], [OrgUid], [GroupUid], [EnableDate], [DisableDate], [Dr], [Ts], [CreateBy], [CreateName], [CreateDate], [UpdateBy], [UpdateName], [UpdateDate], [IsSystem], [SortBy])
+  VALUES( '677482586057998336', 'ASC', '正序', '', 1, '', 'FieldSortType', '字段排序类型', '', '', '2020-02-13 19:40:36', '9999-12-31 23:59:59', 0, 637172196374555126, '3521928112763830273', '王燕飞', '2020-02-13 19:40:37', NULL, NULL, NULL, 0, 0)
+GO
+INSERT INTO [FapDict]( [Fid], [Code], [Name], [Pid], [IsEndLevel], [CPath], [Category], [CategoryName], [OrgUid], [GroupUid], [EnableDate], [DisableDate], [Dr], [Ts], [CreateBy], [CreateName], [CreateDate], [UpdateBy], [UpdateName], [UpdateDate], [IsSystem], [SortBy])
+  VALUES( '677482783827820544', 'DESC', '倒序', '', 1, '', 'FieldSortType', '字段排序类型', '', '', '2020-02-13 19:41:06', '9999-12-31 23:59:59', 0, 637172196677113118, '3521928112763830273', '王燕飞', '2020-02-13 19:41:07', NULL, NULL, NULL, 0, 1)
 GO

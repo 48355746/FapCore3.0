@@ -233,10 +233,7 @@ namespace Fap.Hcm.Web.Controllers
             }
 
             string icon = "icon-folder  ace-icon fa fa-folder blue";
-            if (!string.IsNullOrWhiteSpace(fc.Icon))
-            {
-                icon = fc.Icon;
-            }
+          
             List<string> refCols = new List<string>();
             List<string> frmCols = new List<string>();
             //参照名称
@@ -388,8 +385,10 @@ namespace Fap.Hcm.Web.Controllers
         public IActionResult DataGrid(GridViewModel gridView)
         {
             JqGridViewModel model = GetJqGridModel(gridView.TableName, qs=> {
+                qs.QueryCols = gridView.Cols.IsMissing() ? "*" : gridView.Cols;
                 qs.GlobalWhere = gridView.Condition;
             });
+            model.JqgridId = $"datagrid_" + gridView.TableName;
             return View(model);
         }
         /// <summary>

@@ -34,7 +34,9 @@ namespace Fap.Core.Rbac.AC
             lock (Locker)
             {
                 _allDicts = _dbSession.Query<FapDict>("select * from FapDict");
-
+                //增加本身分类为字典
+                var listCat = _dbSession.Query<FapDict>("select Category Code ,CategoryName [Name],'FapDict' Category,'字典分类' CategoryName from FapDict group by Category,CategoryName");
+                _allDicts = _allDicts.Union(listCat);
                 _initialized = true;
             }
         }
@@ -80,7 +82,7 @@ namespace Fap.Core.Rbac.AC
                 Init();
             }
             fapDicts = _allDicts.Where(c => c.Category == category).OrderBy(c => c.SortBy);
-            
+
             return fapDicts.Any();
         }
 

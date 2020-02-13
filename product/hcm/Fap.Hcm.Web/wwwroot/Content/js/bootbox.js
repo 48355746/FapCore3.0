@@ -618,6 +618,8 @@
             innerDialog.addClass("modal-lg");
         } else if (options.size === "small") {
             innerDialog.addClass("modal-sm");
+        } else if (options.size === 'fullscreen') {
+            innerDialog.addClass('modal-full');
         }
 
         if (options.title) {

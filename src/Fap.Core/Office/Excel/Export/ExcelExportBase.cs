@@ -604,12 +604,11 @@ namespace Fap.Core.Office.Excel.Export
         /// <returns></returns>
         protected void GetCodeDictionaryData(FapColumn column, Dictionary<string, DictionarySheetData> dictionaryToExport)
         {
-            string refTable = column.RefTable;
             //string code = Get30String("C_" + refTable);
             string code = "C_" + column.Id;
             if (!dictionaryToExport.ContainsKey(code))
             {
-                IEnumerable<FapDict> dicData = _dataAccessor.Dictionarys(refTable);
+                IEnumerable<FapDict> dicData = _dataAccessor.Dictionarys(column.ComboxSource);
                 if (dicData != null && dicData.Count() > 0)
                 {
                     DictionarySheetData dictionarySheetData = new DictionarySheetData();

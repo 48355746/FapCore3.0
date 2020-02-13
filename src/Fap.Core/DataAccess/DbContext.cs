@@ -2202,7 +2202,9 @@ namespace Fap.Core.DataAccess
             PageInfo<dynamic> page = new PageInfo<dynamic>();
             page.PageSize = pageable.PageSize;
             page.TotalCount = ExecuteScalar<int>(sqls[1], dynamicParameters);
-            page.Items = Query(sqls[0], dynamicParameters, true);
+            FapSqlParser parse = new FapSqlParser(_fapPlatformDomain, sqls[0], true) {  IsGridQuery=true};
+            var sqlQuery = parse.ParserSqlStatement();
+            page.Items =_dbSession.Query(sqlQuery, dynamicParameters);
             if (page.Items.Count() > 0)
             {
                 page.MaxIdValue = page.Items.Max(a => a.Id);

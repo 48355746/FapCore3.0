@@ -10,6 +10,7 @@ namespace Fap.Hcm.Web.Models
     {
         public string TableLabel { get; set; }
         public string TableName { get; set; }
+        public string Cols { get; set; }
         public string Condition { get; set; }
         /// <summary>
         /// 初始化表单默认值

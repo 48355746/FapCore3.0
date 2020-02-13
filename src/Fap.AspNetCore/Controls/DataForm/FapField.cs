@@ -170,7 +170,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             }
             else if (_fapColumn.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX)
             {
-                Guard.Against.Null(_fapColumn.RefTable, nameof(_fapColumn.RefTable));
+                Guard.Against.Null(_fapColumn.ComboxSource, nameof(_fapColumn.ComboxSource));
 
                 List<string> tempList = new List<string>();
                 if (_fapColumn.MultiAble == 1)
@@ -181,7 +181,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                         GetMultiSelValues(tempList);
                     }
                 }
-                IEnumerable<FapDict> dicList = _dataAccessor.Dictionarys(_fapColumn.RefTable);
+                IEnumerable<FapDict> dicList = _dataAccessor.Dictionarys(_fapColumn.ComboxSource);
                 sbFormGroup.AppendLine(_fapColumn.AsCombobox(editAble, dicList, tempList, FieldValue.ToString()));
             }
             else if (_fapColumn.CtrlType == FapColumn.CTRL_TYPE_CHECKBOXLIST)
@@ -222,9 +222,9 @@ namespace Fap.AspNetCore.Controls.DataForm
             else if (_fapColumn.CtrlType == FapColumn.CTRL_TYPE_CHECKBOX)
             {
                 IEnumerable<FapDict> dicList = new List<FapDict>();
-                if (!string.IsNullOrWhiteSpace(_fapColumn.RefTable))
+                if (_fapColumn.ComboxSource.IsPresent())
                 {
-                    dicList = _dataAccessor.Dictionarys(_fapColumn.RefTable);
+                    dicList = _dataAccessor.Dictionarys(_fapColumn.ComboxSource);
                 }
                 sbFormGroup.AppendLine(_fapColumn.AsCheckbox(editAble, dicList, FieldValue.ToString()));
             }
@@ -363,7 +363,7 @@ namespace Fap.AspNetCore.Controls.DataForm
         {
             if (_fapColumn.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX)
             {
-                var dicts = _dataAccessor.Dictionarys(_fapColumn.RefTable);
+                var dicts = _dataAccessor.Dictionarys(_fapColumn.ComboxSource);
                 if (_fapColumn.MultiAble == 1)
                 {
                     //多选
@@ -484,7 +484,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             }
             else if (_fapColumn.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX)
             {
-                Guard.Against.NullOrEmpty(_fapColumn.RefTable, nameof(_fapColumn.RefTable));
+                Guard.Against.NullOrEmpty(_fapColumn.ComboxSource, nameof(_fapColumn.ComboxSource));
 
                 List<string> tempList = new List<string>();
                 if (_fapColumn.MultiAble == 1)
@@ -495,7 +495,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                         GetMultiSelValues(tempList);
                     }
                 }
-                IEnumerable<FapDict> dicList = _dataAccessor.Dictionarys(_fapColumn.RefTable);
+                IEnumerable<FapDict> dicList = _dataAccessor.Dictionarys(_fapColumn.ComboxSource);
                 if (_fapColumn.MultiAble == 0)
                 {
                     sbFormGroup.AppendFormat(" <select id=\"{0}\" name=\"{0}\" ng-model=\"{1}\" " + editAble + " class=\"form-control \" data-placeholder=\"请选择\" >", ctrlName, ngModel).AppendLine();
@@ -626,7 +626,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 sbFormGroup.AppendFormat("<div class=\"control-group form-horizontal\" id=\"{0}\">", ctrlName).AppendLine();
                 //内容动态添加
                 string chk = "";
-                if (string.IsNullOrWhiteSpace(_fapColumn.RefTable))
+                if (_fapColumn.ComboxSource.IsMissing())
                 {
                     if (FieldValue.ToString() == "1")
                     {
@@ -639,7 +639,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 }
                 else
                 {
-                    IEnumerable<FapDict> dicList = _dataAccessor.Dictionarys(_fapColumn.RefTable);
+                    IEnumerable<FapDict> dicList = _dataAccessor.Dictionarys(_fapColumn.ComboxSource);
                     if (dicList.Any())
                     {
                         List<string> selCodes = new List<string>();

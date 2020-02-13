@@ -299,16 +299,9 @@ namespace Fap.Core.Office.Excel.Export
                         else if (column.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX)
                         {
                             cellData = new CellData();
-                            //if (exportDataSql.IsPresent())
-                            //{
-                            //    //自定义sql的时候从缓存取字典名称
-                            //    FapDict fapDict = _dataAccessor.Dictionary(column.RefTable, row[item.Key].ToStringOrEmpty());
-                            //    cellData.Data = fapDict?.Name;
-                            //}
-                            //else
-                            //{
+                            
                             cellData.Data = row[item.Key + "MC"];
-                            //}
+                            
                             cellData.Type = CellDataType.STRING;
                             rowDataToExcel.Data.Add(cellData);
                         }
