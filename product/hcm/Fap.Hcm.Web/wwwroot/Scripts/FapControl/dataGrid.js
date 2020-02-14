@@ -65,7 +65,7 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid, menuid, fro
     var buttons = {
         success: {
             label: MultiLangHelper.getResName("global_oper_save", "保存"),
-            className: "btn-primary",
+            className: "btn-primary btn-link",
             callback: function () {
                 var formid = 'frm-' + gid;
                 //持久化
@@ -79,6 +79,9 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid, menuid, fro
                             //page: 1
                         }).trigger("reloadGrid"); //重新载入
                     }
+                    if (fid !== 0) {
+                        return false;
+                    }
                 } else {
                     return false;
                 }
@@ -88,7 +91,7 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid, menuid, fro
     if (fid === 0) {
         buttons.SaveAndAdd = {
             label: "保存并新增",
-            className: "btn-primary",
+            className: "btn-primary btn-link",
             callback: function () {
                 var formid = 'frm-' + gid;
                 //持久化
@@ -110,6 +113,44 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid, menuid, fro
                 } else {
                     return false;
                 }
+            }
+        };
+    } else {
+        var grid = $("#" + gid);
+        buttons.NextBtn = {
+            label: "下一条",
+            className: "btn-primary btn-link",
+            callback: function () {  
+                var rows = grid.jqGrid('getRowData');
+                var fids = $.map(rows, function (d) {
+                    return d.Fid;
+                });
+                var index = $.inArray(fid, fids);
+                if (index === fids.length - 1) {
+                    $.msg("已到达最后一条");
+                } else {
+                    fid = fids[index + 1];
+                    initDialog();
+                }
+                return false;
+            }
+        };
+        buttons.PreBtn = {
+            label: "上一条",
+            className: "btn-primary btn-link",
+            callback: function () {                
+                var rows = grid.jqGrid('getRowData');
+                var fids = $.map(rows, function (d) {
+                    return d.Fid;
+                });
+                var index = $.inArray(fid, fids);
+                if (index ===0) {
+                    $.msg("已到达第一条");
+                } else {
+                    fid = fids[index - 1];
+                    initDialog();
+                }     
+                return false;
             }
         };
     }
