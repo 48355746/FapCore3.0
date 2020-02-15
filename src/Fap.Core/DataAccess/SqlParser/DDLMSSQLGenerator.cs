@@ -12,9 +12,9 @@ namespace Fap.Core.DataAccess.SqlParser
         public string CreateTable(FapTable table, IEnumerable<FapColumn> columns)
         {
             StringBuilder sqlBuilder = new StringBuilder();
-            sqlBuilder.Append($"CREATE TABLE {table.TableName}(");
+            sqlBuilder.Append($"CREATE TABLE {table.TableName}(").AppendLine();
 
-            foreach (var column in columns)
+            foreach (var column in columns.OrderBy(c=>c.ColOrder))
             {
                 MakeFieldTypeSql(column, sqlBuilder);
             }
@@ -111,23 +111,7 @@ namespace Fap.Core.DataAccess.SqlParser
                 else
                 {
                     sqlBuilder.Append(field.ColName).Append(" VARCHAR(" + (field.ColLength > 0 ? field.ColLength : 32) + "),");
-                }
-                if (field.IsMultiLang == 1) //多语
-                {
-                    var languageList = typeof(MultiLanguage.MultiLanguageEnum).EnumItems();
-                    foreach (var item in languageList)
-                    {
-                        if (field.ColLength > 4000)
-                        {
-                            sqlBuilder.Append(field.ColName).Append(item.Value).Append(" VARCHAR(MAX),");
-                        }
-                        else
-                        {
-                            sqlBuilder.Append(field.ColName).Append(item.Value).Append(" VARCHAR(" + (field.ColLength > 0 ? field.ColLength : 32) + "),");
-                        }
-                    }
-
-                }
+                }                
             }
             else if (FapColumn.COL_TYPE_PK.Equals(field.ColType))
             {
@@ -169,6 +153,18 @@ namespace Fap.Core.DataAccess.SqlParser
             else
             {
                 sqlBuilder.Append(field.ColName).Append(" VARCHAR(" + (field.ColLength > 0 ? field.ColLength : 32) + "),");
+            }
+            sqlBuilder.AppendLine();
+            if (field.IsMultiLang == 1) //多语
+            {
+                var languageList = typeof(MultiLanguage.MultiLanguageEnum).EnumItems();
+                foreach (var item in languageList)
+                {
+                    field.ColName = field.ColName + item.Value;
+                    field.IsMultiLang = 0;
+                    MakeFieldTypeSql(field, sqlBuilder);
+                }
+
             }
         }
         /// <summary>

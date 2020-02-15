@@ -652,6 +652,10 @@ namespace Fap.Core.DataAccess
         public void TransactionProxy(Action<IDbConnection, IDbTransaction> execAction)
         {
             using var connection = GetDbConnection(DataSourceEnum.MASTER);
+            if (connection.State == ConnectionState.Closed)
+            {
+                connection.Open();
+            }
             using var transaction = connection.BeginTransaction();
             try
             {
