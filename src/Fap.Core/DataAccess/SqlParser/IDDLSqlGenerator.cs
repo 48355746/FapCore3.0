@@ -7,6 +7,7 @@ namespace Fap.Core.DataAccess.SqlParser
 {
     interface IDDLSqlGenerator
     {
-        string CreateTable(FapTable table, IEnumerable<FapColumn> columns);
+        string CreateTableSql(FapTable table, IEnumerable<FapColumn> columns);
+        string GetPhysicalTableColumnSql();
     }
 }

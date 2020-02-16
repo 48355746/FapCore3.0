@@ -68,7 +68,7 @@ namespace Fap.Core.Infrastructure.Domain
         {
             get
             {
-                if (_httpContextAccessor?.HttpContext.Items["language"] != null)
+                if (_httpContextAccessor?.HttpContext?.Items["language"] != null)
                 {
                     return (MultiLanguageEnum)Enum.Parse(typeof(MultiLanguageEnum), _httpContextAccessor?.HttpContext.Items["language"].ToString());
                 }

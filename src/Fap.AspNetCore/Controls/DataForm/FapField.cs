@@ -44,7 +44,7 @@ namespace Fap.AspNetCore.Controls.DataForm
         /// 只读
         /// </summary>
         public bool ReadOnly { get; set; }
-        
+
         /// <summary>
         /// 字段分组
         /// </summary>
@@ -267,38 +267,28 @@ namespace Fap.AspNetCore.Controls.DataForm
                     //多語字段處理
                     string ctrlName = _fapColumn.ColName;
                     string currCtrlName = ctrlName;
-                    if (_multiLangService.CurrentLanguage != MultiLanguageEnum.ZhCn)
+                    FieldValue = FormData.Get(currCtrlName);
+                    if (FieldValue == null)
                     {
-                        currCtrlName = ctrlName + _multiLangService.CurrentLanguageName;
-                        FieldValue = FormData.Get(currCtrlName);
-                        if (FieldValue == null)
-                        {
-                            FieldValue = "";
-                        }
+                        FieldValue = "";
                     }
-                    string currentLangDesc = _multiLangService.CurrentLanguage.Description();
-                    var langList = typeof(MultiLanguageEnum).EnumItems();
+
+                    string currentLangDesc = _fapColumn.ColComment;
                     Dictionary<string, string> dicLangValue = new Dictionary<string, string>();
+
+                    var langList = typeof(MultiLanguageEnum).EnumItems();
                     foreach (var langField in langList)
-                    {
-                        if (langField.Description == currentLangDesc)
-                        {
-                            continue;
-                        }
-                        string cname = ctrlName;
-                        if (langField.Value != MultiLanguageEnum.ZhCn.ToString())
-                        {
-                            cname = ctrlName + langField.Value;
-                        }
+                    {                        
+                        string cname = ctrlName + langField.Value;
+
                         var value = FormData.Get(cname);
-                        dicLangValue.Add(cname, value.ToString());
+                        dicLangValue.Add(cname, value?.ToString()??"");
                     }
                     sbFormGroup.AppendLine(_fapColumn.AsMultiLanguageTextBox(editAble, currCtrlName, currentLangDesc, dicLangValue, FieldValue.ToString()));
 
                 }
                 else
                 {
-
                     sbFormGroup.AppendLine(_fapColumn.AsTextBox(editAble, FieldValue.ToString()));
                 }
             }
@@ -724,19 +714,18 @@ namespace Fap.AspNetCore.Controls.DataForm
                 {
                     //多語字段處理
                     string currCtrlName = ctrlName;
-                    if (_multiLangService.CurrentLanguage != MultiLanguageEnum.ZhCn)
+
+                    currCtrlName = ctrlName + _multiLangService.CurrentLanguageName;
+                    FieldValue = FormData.Get(_fapColumn.TableName + "_" + currCtrlName);
+                    if (FieldValue == null)
                     {
-                        currCtrlName = ctrlName + _multiLangService.CurrentLanguageName;
-                        FieldValue = FormData.Get(_fapColumn.TableName + "_" + currCtrlName);
-                        if (FieldValue == null)
-                        {
-                            FieldValue = "";
-                        }
+                        FieldValue = "";
                     }
+
                     sbFormGroup.AppendLine("<span class=\"input-icon input-icon-right\">");
                     sbFormGroup.AppendFormat("<input type=\"text\" " + editAble + " class=\"form-control\" id=\"{0}\" name=\"{0}\" ng-model=\"{1}\" value=\"{2}\"/>", currCtrlName, ngModel, HtmlEncoder.Default.Encode(FieldValue.ToString())).AppendLine();
                     sbFormGroup.AppendFormat("<i class=\"ace-icon fa fa-language green\" data-fid=\"{0}\"></i></span>", _fapColumn.Fid);
-                    var langList =typeof(MultiLanguageEnum).EnumItems();
+                    var langList = typeof(MultiLanguageEnum).EnumItems();
                     //style="top: 26px; left: 155.656px; display: block;"
                     sbFormGroup.AppendFormat("<div class=\"popover popovermultilang fade right in \" role=\"tooltip\" id=\"{0}\" ><div class=\"arrow\" style=\"top: 50%;\"></div><h3 class=\"popover-title\"><i class=\"ace-icon fa fa-language green\"></i><button type=\"button\" class=\"multilangpopoverclose close red\" ><i class=\"ace-icon fa fa-times\"></i></button> 多语言</h3><div class=\"popover-content\">", _fapColumn.Fid);
                     foreach (var langField in langList)
@@ -745,11 +734,8 @@ namespace Fap.AspNetCore.Controls.DataForm
                         {
                             continue;
                         }
-                        string cname = ctrlName;
-                        if (langField.Value != MultiLanguageEnum.ZhCn.ToString())
-                        {
-                            cname = ctrlName + langField.Value;
-                        }
+                        string cname = ctrlName + langField.Value;
+
                         string value = FormData.Get(cname).ToString();
                         sbFormGroup.AppendFormat("<input type=\"text\" id=\"{0}\" placeholder=\"{1}\" class=\"form-control col-xs-12 col-sm-12\" value=\"{2}\" style=\"margin:1px\" {3}/>", cname, langField.Description, value, editAble);
                     }

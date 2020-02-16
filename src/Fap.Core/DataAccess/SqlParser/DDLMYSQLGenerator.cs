@@ -9,7 +9,7 @@ namespace Fap.Core.DataAccess.SqlParser
 {
     class DDLMYSQLGenerator : IDDLSqlGenerator
     {
-        public string CreateTable(FapTable table, IEnumerable<FapColumn> columns)
+        public string CreateTableSql(FapTable table, IEnumerable<FapColumn> columns)
         {
             StringBuilder sqlBuilder = new StringBuilder();
             sqlBuilder.Append("CREATE TABLE ").Append(table.TableName).Append("(").AppendLine();
@@ -30,6 +30,12 @@ namespace Fap.Core.DataAccess.SqlParser
 
             return sqlBuilder.ToString();
         }
+
+        public string GetPhysicalTableColumnSql()
+        {
+            return "select  Table_name as TableName,COLUMN_NAME as ColumnName,DATA_TYPE as ColumnType,CHARACTER_MAXIMUM_LENGTH as ColumnLength  from Information_schema.columns  where table_Name =@TableName";
+        }
+
         /// <summary>
         /// 生成createTable中每个字段的SQL
         /// </summary>
@@ -101,11 +107,13 @@ namespace Fap.Core.DataAccess.SqlParser
             sql.AppendLine();
             if (field.IsMultiLang == 1) //多语
             {
+                string fname = field.ColName;
+                string description = field.ColComment;
                 var languageList = typeof(MultiLanguage.MultiLanguageEnum).EnumItems();
                 foreach (var lang in languageList)
                 {
-                    field.ColName += lang.Value;
-                    field.ColComment += lang.Description;
+                    field.ColName= fname+ lang.Value;
+                    field.ColComment=description+ lang.Description;
                     field.IsMultiLang = 0;
                     MakeFieldTypeSql(field, sql);
                 }

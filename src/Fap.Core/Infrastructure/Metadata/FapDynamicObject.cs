@@ -1,6 +1,8 @@
 ﻿using Ardalis.GuardClauses;
 using Dapper;
 using Fap.Core.DataAccess;
+using Fap.Core.Extensions;
+using Fap.Core.MultiLanguage;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -22,6 +24,7 @@ namespace Fap.Core.Infrastructure.Metadata
         //存储值
         private IDictionary<string, object> fapKeyValues = new Dictionary<string, object>();
         private IEnumerable<FapColumn> _fapColumns;
+        private IEnumerable<string> allColNames;
         /// <summary>
         /// 表名
         /// </summary>
@@ -42,9 +45,25 @@ namespace Fap.Core.Infrastructure.Metadata
             _fapColumns = fapColumns;
             TableName = fapColumns.First().TableName;
             PrimaryKey = fapColumns.First(c => c.ColType == FapColumn.COL_TYPE_PK)?.ColName ?? FapDbConstants.FAPCOLUMN_FIELD_Id;
-
+            allColNames = fapColumns.Select(c => c.ColName).Union(GetExtColNames(fapColumns));
         }
-
+        private IEnumerable<string> GetExtColNames(IEnumerable<FapColumn> columns)
+        {
+            var rcs= columns.Where(c => c.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX || c.CtrlType == FapColumn.CTRL_TYPE_REFERENCE);
+            foreach (var rc in rcs)
+            {
+                yield return rc.ColName + "MC";
+            }
+            var lcs= columns.Where(c => c.IsMultiLang == 1);
+            var langs = typeof(MultiLanguageEnum).EnumItems();
+            foreach (var lc in lcs)
+            {
+                foreach (var lang in langs)
+                {
+                    yield return lc.ColName + lang.Value;
+                }
+            }
+        }
         public override int GetHashCode()
         {
             int hashCode = 17; // we *know* we are using this in a dictionary, so pre-compute this
@@ -187,16 +206,19 @@ namespace Fap.Core.Infrastructure.Metadata
         {
             return SetValue(key, value, false);
         }
-
+        /// <summary>
+        /// 增加
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="isAdd"></param>
+        /// <param name="language">多语言</param>
+        /// <returns></returns>
         private object SetValue(string key, object value, bool isAdd)
         {
             Guard.Against.Null(key, nameof(key));
-            string colName = key;
-            if (key.EndsWith("MC"))
-            {
-                colName = key.Substring(0, key.Length - 2);
-            }
-            if (_fapColumns.FirstOrDefault(c => c.ColName.Equals(colName, StringComparison.OrdinalIgnoreCase)) != null)
+            
+            if (allColNames.Contains(key))
             {
                 if (fapKeyValues.ContainsKey(key) && isAdd)
                 {

@@ -730,8 +730,9 @@ namespace Fap.AspNetCore.Controls.DataForm
                 {
                     if (column.EditAble != 1)
                         continue;
-                    int min = -1000000000;
-                    int max = 1000000000;
+                    int min =0;
+                    int max =0;
+
                     if (column.MinValue.HasValue)
                     {
                         min = column.MinValue.Value;
@@ -739,6 +740,11 @@ namespace Fap.AspNetCore.Controls.DataForm
                     if (column.MaxValue.HasValue)
                     {
                         max = column.MaxValue.Value;
+                    }
+                    if(min==0&&max==0)
+                    {
+                         min = int.MinValue;
+                         max = int.MaxValue;
                     }
                     string unit = "";
                     if (column.CtrlType == FapColumn.CTRL_TYPE_MONEY)
@@ -832,15 +838,14 @@ namespace Fap.AspNetCore.Controls.DataForm
                 #region 多語
                 else if (column.CtrlType == FapColumn.CTRL_TYPE_TEXT && column.IsMultiLang == 1)
                 {
-                    string ctrmultiLang = column.ColName;
-                    if (_multiLangService.CurrentLanguage != MultiLanguageEnum.ZhCn)
-                    {
-                        ctrmultiLang = ctrmultiLang + _multiLangService.CurrentLanguageName;
-                    }
-                    script.AppendLine("$(\"###formid## #" + ctrmultiLang + "\").next().on(ace.click_event, function(){");
+                    string oriCtrl = column.ColName;
+                   
+                    string ctrmultiLang = oriCtrl + _multiLangService.CurrentLanguageName;
+                  
+                    script.AppendLine("$(\"###formid## #" + oriCtrl + "\").on(\"blur\",function(){$(\"###formid## #" + ctrmultiLang + "\").val($(this).val())}).next().on(ace.click_event, function(){");
                     script.AppendLine(" document.addEventListener(\"mousedown\", onMultiLangPoverMouseDown, false);");
                     script.AppendLine("var fid=$(this).data(\"fid\");");
-                    script.AppendLine("var X1 = $(\"###formid## #" + ctrmultiLang + "\").offset().top-55;var Y1 =$(\"###formid## #" + ctrmultiLang + "\").offset().left;");
+                    script.AppendLine("var X1 = $(\"###formid## #" + oriCtrl + "\").offset().top-55;var Y1 =$(\"###formid## #" + oriCtrl + "\").offset().left;");
                     script.AppendLine("var bg=$(\"#\"+fid).closest(\".modal-lg\");var top=X1;var left=Y1");
                     script.AppendLine("if(bg){ var bgo=bg.offset();   top=X1-bgo.top;left=Y1-bgo.left;}");
                     script.AppendLine("$(\"#\"+fid).css({\"position\": \"fixed\",\"display\":\"inline-grid\",\"top\":top+'px',\"left\":left+'px'});");

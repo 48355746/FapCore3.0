@@ -76,5 +76,11 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         {
             return View();
         }
+
+        public IActionResult TestGrid()
+        {
+            var model = this.GetJqGridModel("BonusTest");
+            return View(model);
+        }
     }
 }

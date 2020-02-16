@@ -1,6 +1,7 @@
 ﻿using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Infrastructure.Metadata;
+using Fap.Core.MultiLanguage;
 using SQLGeneration.Builders;
 using SQLGeneration.Generators;
 using System;
@@ -18,7 +19,7 @@ namespace Fap.Core.DataAccess.SqlParser
         private string _sql = "";
         private bool _withMC = false; //是否取参照的名称
         private bool _withId = false; //是否取参照的ID
-       
+
         private IFapPlatformDomain _appDomain;
 
         /// <summary>
@@ -38,6 +39,7 @@ namespace Fap.Core.DataAccess.SqlParser
         /// jqGrid查询的时候不用关联dict
         /// </summary>
         public bool IsGridQuery { get; set; }
+        public string CurrentLang { get; set; } = MultiLanguageEnum.ZhCn.ToString();
         /// <summary>
         /// 获得解析完整的SQL语句
         /// </summary>
@@ -105,7 +107,7 @@ namespace Fap.Core.DataAccess.SqlParser
                         else if (item is Column)
                         {
                             Column currItem = item as Column;
-                            HandleSelectStatement(select, currItem);
+                            HandleSelectStatement(select, arryProjections[i], currItem);
                             i++;
                         }
                     }
@@ -214,7 +216,7 @@ namespace Fap.Core.DataAccess.SqlParser
                     else if (item is Column)
                     {
                         Column currItem = item as Column;
-                        HandleSelectStatement(select, currItem);
+                        HandleSelectStatement(select, arryProjections[i], currItem);
                     }
                 }
             }
@@ -264,16 +266,19 @@ namespace Fap.Core.DataAccess.SqlParser
         /// <param name="tables"></param>
         /// <param name="field"></param>
         /// <param name="builder"></param>
-        private void HandleSelectStatement(SelectBuilder select, Column column)
+        private void HandleSelectStatement(SelectBuilder select, AliasedProjection currProjection, Column column)
         {
+            string colName = column.Name;
+            //string tableAlias = column.Source.Alias;
+            string tableName = column.Source.Source.GetSourceName();
+            FapColumn fCol = GetSingleColumnOfTable(tableName, colName);
+            if (fCol.IsMultiLang == 1)
+            {
+                select.RemoveProjection(currProjection);
+                select.AddProjection(column.Source.Column($"{colName}{CurrentLang}"), colName);
+            }
             if (_withMC)
             {
-                string colName = column.Name;
-                string tableAlias = column.Source.Alias;
-                string tableName = column.Source.Source.GetSourceName();
-
-                FapColumn fCol = GetSingleColumnOfTable(tableName, colName);
-
                 this.MakeSelectPartition(fCol, select, column);
 
             }
@@ -317,11 +322,23 @@ namespace Fap.Core.DataAccess.SqlParser
             foreach (var column in columnList)
             {
                 //AliasedSource table = select.AddTable(new Table($"{column.TableName}"), tableAlias);
-                select.AddProjection(aliaseSource.Column(column.ColName));
+                if (column.IsMultiLang == 1)
+                {
+                    select.AddProjection(aliaseSource.Column($"{column.ColName}{CurrentLang}"), column.ColName);
+                    var langs= typeof(MultiLanguageEnum).EnumItems();
+                    foreach (var lang in langs)
+                    {
+                        select.AddProjection(aliaseSource.Column($"{column.ColName}{lang.Value}"), $"{column.ColName}{lang.Value}");
+                    }
+                }
+                else
+                {
+                    select.AddProjection(aliaseSource.Column(column.ColName));
+                }
                 if (this._withMC)
                 {
                     //处理MC字段
-                    if (FapColumn.CTRL_TYPE_COMBOBOX == column.CtrlType&&!IsGridQuery)
+                    if (FapColumn.CTRL_TYPE_COMBOBOX == column.CtrlType && !IsGridQuery)
                     {
                         string refAlias = "b" + (mcIndex++);
                         BuildFapDict(select, column, aliaseSource, refAlias);
@@ -434,7 +451,7 @@ namespace Fap.Core.DataAccess.SqlParser
             //AliasedSource table = select.AddTable(new Table($"{fCol.TableName}"), tableAlias);
             //select.AddProjection(table.Column(fCol.ColName));
             //处理MC字段
-            if (FapColumn.CTRL_TYPE_COMBOBOX == fCol.CtrlType&& !IsGridQuery)
+            if (FapColumn.CTRL_TYPE_COMBOBOX == fCol.CtrlType && !IsGridQuery)
             {
                 string refAlias = "b" + (mcIndex++);
 

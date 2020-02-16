@@ -232,15 +232,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             sbMultiLang.AppendFormat("<div class=\"popover popovermultilang fade right in \" role=\"tooltip\" id=\"{0}\" ><div class=\"arrow\" style=\"top: 50%;\"></div><h3 class=\"popover-title\"><i class=\"ace-icon fa fa-language green\"></i><button type=\"button\" class=\"multilangpopoverclose close red\" ><i class=\"ace-icon fa fa-times\"></i></button> 多语言</h3><div class=\"popover-content\">", fapColumn.Fid);
             foreach (var langField in langList)
             {
-                if (langField.Description == currentLangDesc)
-                {
-                    continue;
-                }
-                string cname = ctrlName;
-                if (langField.Value != MultiLanguageEnum.ZhCn.ToString())
-                {
-                    cname = ctrlName + langField.Value;
-                }
+                string cname = ctrlName + langField.Value;                
                 string value = formData[cname];
                 sbMultiLang.AppendFormat("<input type=\"text\" id=\"{0}\" placeholder=\"{1}\" class=\"form-control col-xs-12 col-sm-12\" value=\"{2}\" style=\"margin:1px\" {3}/>", cname, langField.Description, value, editAble);
             }

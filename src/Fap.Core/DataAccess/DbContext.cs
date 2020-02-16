@@ -21,6 +21,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Fap.Core.MultiLanguage;
 
 namespace Fap.Core.DataAccess
 {
@@ -61,7 +62,7 @@ namespace Fap.Core.DataAccess
             {
                 _logger.LogTrace($"wrap前的sql:{sqlOri}");
                 FapSqlParser parse = new FapSqlParser(_fapPlatformDomain, sqlOri, withMC, withId);
-
+                parse.CurrentLang = _applicationContext.Language.ToString();
                 var sql = parse.ParserSqlStatement();
                 _logger.LogTrace($"wrap后的sql:{sql}");
                 return sql;
@@ -405,6 +406,15 @@ namespace Fap.Core.DataAccess
                 {
                     dynEntity.SetValue(key, "");
                 }
+                if (column.IsMultiLang == 1)
+                {
+                    //设置多语字段
+                    var langs= typeof(MultiLanguageEnum).EnumItems();
+                    foreach (var lang in langs)
+                    {
+                        dynEntity.SetValue(key+lang, "");
+                    }
+                }
             }
             //是否有配置的编码
             Dictionary<string, string> ccr = GetBillCode(tableName);
@@ -480,7 +490,7 @@ namespace Fap.Core.DataAccess
                     if (type != null && type.GetInterface("IDataInterceptor") != null)
                     {
                         //dataInterceptor = (IDataInterceptor)Activator.CreateInstance(type, new object[] { _serviceProvider, this });
-                        dataInterceptor= (IDataInterceptor)ActivatorUtilities.GetServiceOrCreateInstance(_serviceProvider, type);
+                        dataInterceptor = (IDataInterceptor)ActivatorUtilities.GetServiceOrCreateInstance(_serviceProvider, type);
                     }
                 }
                 catch (Exception ex)
@@ -744,7 +754,7 @@ namespace Fap.Core.DataAccess
         /// </summary>
         /// <typeparam name="newData">DapperRow</typeparam>
         /// <param name="currDate"></param>
-        private void SetNewDynamicToDelete(FapDynamicObject newData,string enableDate, string currDate)
+        private void SetNewDynamicToDelete(FapDynamicObject newData, string enableDate, string currDate)
         {
             newData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_EnableDate, enableDate);
             newData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_DisableDate, DateTimeUtils.PermanentTimeStr);
@@ -2015,9 +2025,9 @@ namespace Fap.Core.DataAccess
                         _dbSession.Update(fapDynData);
                         //修改老数据过期时间
                         FapDynamicObject oldUpdate = new FapDynamicObject(Columns(tableName));
-                        long id= oriData.Id;
+                        long id = oriData.Id;
                         long ts = oriData.Ts;
-                        oldUpdate.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Id,id);
+                        oldUpdate.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Id, id);
                         oldUpdate.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Ts, ts);
                         oldUpdate.SetValue(FapDbConstants.FAPCOLUMN_FIELD_DisableDate, enableDate);
                         return _dbSession.Update(oldUpdate);
@@ -2202,9 +2212,13 @@ namespace Fap.Core.DataAccess
             PageInfo<dynamic> page = new PageInfo<dynamic>();
             page.PageSize = pageable.PageSize;
             page.TotalCount = ExecuteScalar<int>(sqls[1], dynamicParameters);
-            FapSqlParser parse = new FapSqlParser(_fapPlatformDomain, sqls[0], true) {  IsGridQuery=true};
+            FapSqlParser parse = new FapSqlParser(_fapPlatformDomain, sqls[0], true)
+            {
+                IsGridQuery = true,
+                CurrentLang = _applicationContext.Language.ToString()
+            };
             var sqlQuery = parse.ParserSqlStatement();
-            page.Items =_dbSession.Query(sqlQuery, dynamicParameters);
+            page.Items = _dbSession.Query(sqlQuery, dynamicParameters);
             if (page.Items.Count() > 0)
             {
                 page.MaxIdValue = page.Items.Max(a => a.Id);
@@ -2219,7 +2233,7 @@ namespace Fap.Core.DataAccess
         }
         #region page sql
         private string PagingSQL(Pageable pageable)
-        { 
+        {
             //Orderby条件
             string orderBy = pageable.Wraper.MakeOrderBySql();
             if (!string.IsNullOrEmpty(orderBy))
@@ -2233,14 +2247,14 @@ namespace Fap.Core.DataAccess
 
             //Join条件
             string join = string.Empty;// pageable.Wraper.MakeJoinSql();
-          
+
             if (pageable.MaxId != null)
             {
                 pageable.AddWhere($"Id>{pageable.MaxId}");
             }
             string where = pageable.Wraper.MakeWhere();
             StringBuilder sql = new StringBuilder();
-            var databaseDialect =_dbSession.DatabaseDialect;
+            var databaseDialect = _dbSession.DatabaseDialect;
             if (databaseDialect == DatabaseDialectEnum.MSSQL)
             {
                 sql.Append($"select {pageable.Wraper.MakeSelectSql()} from {pageable.Wraper.MakeFromSql()} {join} {where} {orderBy}  offset {pageable.Offset} rows fetch next {pageable.PageSize} rows only ;");

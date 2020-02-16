@@ -268,7 +268,7 @@ $("#RefReturnMapping").on("focus", function () {
             var ov = $('#filed-oritable').val();
             if (rv === null || ov === null)
                 return;
-            var jv = { "RefCol": rv, "FrmCol": ov };
+            var jv = { "RefCol": rv[0], "FrmCol": ov[0] };
             var rt = $('#filed-reftable option:selected').text();
             var ot = $('#filed-oritable option:selected').text();
             $("#filed-join").append("<option value='" + JSON.stringify(jv) + "'>" + rt + "--" + ot + "</option>");
