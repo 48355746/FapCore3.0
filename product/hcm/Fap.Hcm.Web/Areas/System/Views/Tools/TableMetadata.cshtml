@@ -47,7 +47,7 @@
                 <div class="widget-toolbar no-border">
                     <fap-button id="btnColumnMetadata" btn-tag="link" content="列元数据" icon-before="glyphicon glyphicon-th blue" class-name="info"></fap-button>
                     <fap-button id="btnForceSync" btn-tag="link" content="强制同步" icon-before="fa fa-bolt blue" class-name="info"></fap-button>
-                    <fap-button id="btnIncrementSync" btn-tag="link" content="增量同步" icon-before="fa fa-exchange blue" class-name="info"></fap-button>
+                    <fap-button id="btnRefreshMetadata" btn-tag="link" content="刷新元数据" icon-before="fa fa-refresh blue" class-name="info"></fap-button>
                 </div>
             </div>
             <div class="widget-body">
@@ -111,13 +111,20 @@
                 //});
             });
             $("#btnForceSync").on(ace.click_event, function () {
-                  var rowData = getSelectedRow("grid-faptable");
+                var rowData = getSelectedRow("grid-faptable");
                 if (rowData == null) {
                     return;
                 }
                 $.get(basePath + "/System/Api/Tools/ForceSync/" + rowData.Id, function (rv) {
                     if (rv.success) {
-                        $.msg("成功");
+                        $.msg("同步成功");
+                    }
+                })
+            });
+            $("#btnRefreshMetadata").on(ace.click_event, function () {
+                $.get(basePath + "/System/Api/Tools/RefreshMetadata", function (rv) {
+                    if (rv.success) {
+                        $.msg("刷新成功");
                     }
                 })
             })

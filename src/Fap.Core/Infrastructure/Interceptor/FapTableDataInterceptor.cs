@@ -16,8 +16,10 @@ namespace Fap.Core.Infrastructure.Interceptor
     [Service]
     class FapTableDataInterceptor : DataInterceptorBase
     {
-        public FapTableDataInterceptor(IServiceProvider provider, IDbContext dbContext) : base(provider, dbContext)
+        private readonly IDbMetadataContext _metadataContext;
+        public FapTableDataInterceptor(IServiceProvider provider, IDbContext dbContext, IDbMetadataContext metadataContext) : base(provider, dbContext)
         {
+            _metadataContext = metadataContext;
         }
         public override void AfterDynamicObjectInsert(FapDynamicObject fapDynamicData)
         {
@@ -69,6 +71,21 @@ namespace Fap.Core.Infrastructure.Interceptor
                     {
                         var fcs = featureColumns.ToList();
                         var cols = fcs.Select(c => c.ColName);
+                        if (fapTable.IsSync == 1)
+                        {
+                            var columns = _dbContext.Query<FapColumn>("select * from FapColumn where TableName=@TableName and ColName in @Cols", new Dapper.DynamicParameters(new { TableName = fapTable.TableName, Cols = cols }));
+                            try
+                            {
+                                foreach (var column in columns)
+                                {
+                                    _metadataContext.DropColumn(column);
+                                }
+                            }
+                            catch (Exception)
+                            {
+                                throw new FapException("物理表删除列出错！");
+                            }
+                        }
 
                         _dbContext.DeleteExec(nameof(FapColumn), "TableName=@TableName and ColName in @Cols"
                             , new Dapper.DynamicParameters(new { TableName = fapTable.TableName, Cols = cols }));
@@ -85,6 +102,13 @@ namespace Fap.Core.Infrastructure.Interceptor
                     {
                         var fcs = featureColumns.ToList();
                         fcs.ForEach(c => c.TableName = fapTable.TableName);
+                        if (fapTable.IsSync == 1)
+                        {
+                            foreach (var column in fcs)
+                            {
+                                _metadataContext.AddColumn(column);
+                            }
+                        }
                         _dbContext.InsertBatch(fcs);
                     }
                 }

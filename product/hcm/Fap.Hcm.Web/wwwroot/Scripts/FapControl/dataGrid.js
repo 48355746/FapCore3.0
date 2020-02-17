@@ -125,7 +125,11 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid, menuid, fro
                 var fids = $.map(rows, function (d) {
                     return d.Fid;
                 });
+                var ids = $.map(rows, function (d) {
+                    return d.Id;
+                });
                 var index = $.inArray(fid, fids);
+                grid.jqGrid('setSelection', ids[index+1]);
                 if (index === fids.length - 1) {
                     $.msg("已到达最后一条");
                 } else {
@@ -143,7 +147,11 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid, menuid, fro
                 var fids = $.map(rows, function (d) {
                     return d.Fid;
                 });
+                var ids = $.map(rows, function (d) {
+                    return d.Id;
+                });
                 var index = $.inArray(fid, fids);
+                grid.jqGrid('setSelection', ids[index - 1]);               
                 if (index ===0) {
                     $.msg("已到达第一条");
                 } else {

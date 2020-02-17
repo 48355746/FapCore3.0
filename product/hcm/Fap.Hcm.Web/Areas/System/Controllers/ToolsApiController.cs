@@ -139,5 +139,12 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             _dbMetadataContext.CreateTable(id);
             return Json(ResponseViewModelUtils.Sueecss());
         }
+        [HttpGet("RefreshMetadata")]
+        public JsonResult RefreshMetadata()
+        {
+            _platformDomain.ColumnSet.Refresh();
+            _platformDomain.TableSet.Refresh();
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
     }
 }

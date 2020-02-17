@@ -41,11 +41,11 @@ $("#frm-grid-columnmetadata #CtrlType").on("change", function () {
     $("#FileCount").val('');
     $("#FileSize").val('');
     $("#RefID").val("");
-    $("#frm-grid-columnmetadata #ColLength").val(20);
+    //$("#frm-grid-columnmetadata #ColLength").val(20);
     $("#frm-grid-columnmetadata #ColDefault").val('');
     var tv = $(this).val();
     if (tv === 'COMBOBOX') {
-        $("#ColLength").val(40);
+        //$("#ColLength").val(40);
         $("#ComboxSource").closest('.ctrlcontainer').prev('label').addClass("red");
         $("#ComboxSource").rules("add", {
             required: true,

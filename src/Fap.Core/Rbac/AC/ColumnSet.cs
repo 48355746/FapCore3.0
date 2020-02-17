@@ -32,7 +32,7 @@ namespace Fap.Core.Rbac.AC
             lock (Locker)
             {
 
-                _allColumns = _dbSession.Query<FapColumn>("select * from FapColumn");
+                _allColumns = _dbSession.Query<FapColumn>("select * from FapColumn where Dr=0");
 
                 _initialized = true;
             }
