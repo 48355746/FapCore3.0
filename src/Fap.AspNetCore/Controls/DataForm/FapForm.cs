@@ -42,10 +42,10 @@ namespace Fap.AspNetCore.Controls.DataForm
         /// <summary>
         /// 表单Fid的值
         /// </summary>
-        private string FidValue { get; set; }       
+        private string FidValue { get; set; }
         //表单id
         public string Id { get; set; }
-        
+
         //是否为单据
         private bool IsDocument = false;
 
@@ -110,7 +110,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             if (_fapColumns.Any())
             {
                 #region 权限
-               //只读字段              
+                //只读字段              
                 string[] readOnlyCols = Array.Empty<string>();
                 if (querySet.ReadOnlyCols.IsPresent())
                 {
@@ -118,7 +118,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 }
                 #endregion
 
-                foreach (var col in _fapColumns.OrderBy(c=>c.ColOrder))
+                foreach (var col in _fapColumns.OrderBy(c => c.ColOrder))
                 {
                     //参照MC为自定义列
                     if (col.IsCustomColumn == 1)
@@ -143,11 +143,11 @@ namespace Fap.AspNetCore.Controls.DataForm
                     }
                     FapField frmField = new FapField(_dbContext, _multiLangService) { FormData = FormData, CurrentColumn = col, FieldGroup = col.ColGroup.IsMissing() ? "默认分组" : col.ColGroup, FieldValue = (fv == null ? "" : fv), FieldMCValue = (fvc == null ? "" : fvc) };
                     #region 权限（只读可编辑）判断
-                    if (readOnlyCols.Any() &&readOnlyCols.Contains(col.ColName,new Fap.Core.Utility.FapStringEqualityComparer()))
+                    if (readOnlyCols.Any() && readOnlyCols.Contains(col.ColName, new Fap.Core.Utility.FapStringEqualityComparer()))
                     {
                         frmField.ReadOnly = true;
                     }
-                  
+
                     #endregion
                     _fapFields.Add(frmField);
 
@@ -188,7 +188,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             FidValue = FormData.Get("Fid").ToString();
             if (_fapColumns.Any())
             {
-                SetFapClumns(qs);             
+                SetFapClumns(qs);
             }
             return this;
 
@@ -253,8 +253,8 @@ namespace Fap.AspNetCore.Controls.DataForm
             {
                 formHtml.AppendLine("<form class=\"form-horizontal\" method=\"post\" id=\"##formid##\" role=\"form\">");
             }
-            var grpFields = _fapFields.GroupBy(f => f.FieldGroup);            
-            
+            var grpFields = _fapFields.GroupBy(f => f.FieldGroup);
+
             foreach (var item in grpFields)
             {
                 if (grpFields.Count() != 1 && item.Key != "默认分组")
@@ -291,7 +291,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                         {
                             continue;
                         }
-                    }                   
+                    }
                     bool isColspan = IsColSpan(column.CurrentColumn);
                     //MEMO占一行，遇到提前换行，再生成一个group(当不该换行的时候遇到MEMO要加入换行，否则正常换行)
                     if (i % _colCount != 0 && isColspan)
@@ -356,12 +356,12 @@ namespace Fap.AspNetCore.Controls.DataForm
         /// <returns></returns>
         private bool IsColSpan(FapColumn column)
         {
-            return column.CtrlType == FapColumn.CTRL_TYPE_MEMO 
-                || column.CtrlType == FapColumn.CTRL_TYPE_IMAGE 
-                || column.CtrlType == FapColumn.CTRL_TYPE_FILE 
-                || column.CtrlType == FapColumn.CTRL_TYPE_RICHTEXTBOX 
+            return column.CtrlType == FapColumn.CTRL_TYPE_MEMO
+                || column.CtrlType == FapColumn.CTRL_TYPE_IMAGE
+                || column.CtrlType == FapColumn.CTRL_TYPE_FILE
+                || column.CtrlType == FapColumn.CTRL_TYPE_RICHTEXTBOX
                 || column.CtrlType == FapColumn.CTRL_TYPE_NATIVE
-                ||column.CtrlType==FapColumn.CTRL_TYPE_RANGE;
+                || column.CtrlType == FapColumn.CTRL_TYPE_RANGE;
         }
         private string CreateHiddenControl(string ctrlName, string fieldValue)
         {
@@ -490,7 +490,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 #endregion
 
                 #region 参照
-                else if (column.CtrlType == FapColumn.CTRL_TYPE_REFERENCE &&!field.ReadOnly)
+                else if (column.CtrlType == FapColumn.CTRL_TYPE_REFERENCE && !field.ReadOnly)
                 {
                     //去除自定义列
                     if (column.IsCustomColumn == 1)
@@ -540,7 +540,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     }
                     script.AppendLine("loadRefMessageBox('" + dispalyName + "','##formid##','" + column.Fid + "','" + column.ColName + "','" + refUrl + "',extra)");
                     script.AppendLine("});");
-                    script.AppendLine("$(\"###formid## #" + column.ColName +"MC\").on(ace.click_event,function(e){$(this).next().trigger(ace.click_event);e.preventDefault();});");
+                    script.AppendLine("$(\"###formid## #" + column.ColName + "MC\").on(ace.click_event,function(e){$(this).next().trigger(ace.click_event);e.preventDefault();});");
                 }
                 #endregion
 
@@ -552,12 +552,10 @@ namespace Fap.AspNetCore.Controls.DataForm
                     string tempFid = UUIDUtils.Fid;
                     if (field.FieldValue.ToString().IsMissing())
                     {
-                        script.AppendLine("alert('数据导入的时候没有生成附件值，不能上传附件！')");
+                        field.FieldValue = tempFid;
                     }
-                    else
-                    {
-                        script.AppendLine("loadFileMessageBox('" + tempFid + "','##formid##',initFile" + Id.Replace('-','_') + tempFid + ");");
-                    }
+                    script.AppendLine("loadFileMessageBox('" + tempFid + "','##formid##',initFile" + Id.Replace('-', '_') + tempFid + ");");
+
                     script.AppendLine("});");
                     string allowExt = string.Empty;
                     if (column.FileSuffix.IsPresent())
@@ -572,7 +570,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     script.AppendLine("var initFile" + Id.Replace('-', '_') + tempFid + "=function(){");
                     script.AppendLine("$(\"###formid##" + tempFid + "-FILE\").fileinput({");
                     script.AppendLine("language: 'zh',");
-                    script.AppendLine("uploadUrl:\"" + _applicationContext.BaseUrl + "/Api/Core/uploadfile/" + field.FieldValue + "\",");
+                    script.AppendLine("uploadUrl:\"" + _applicationContext.BaseUrl + "/Component/UploadFile/" + field.FieldValue + "\",");
                     //script.AppendLine("deleteUrl:\"http://" + HttpContext.Current.Request.Url.Authority + HttpContext.Current.Request.ApplicationPath  + "/Api/Core/deletefile\",");
                     if (allowExt.IsPresent())
                     {
@@ -627,48 +625,6 @@ namespace Fap.AspNetCore.Controls.DataForm
                         $(this).fileinput('uploadSingle',index,files,false);
                     }).on('fileuploaded', function (event, data, previewId, index) {  if(data.response.success==false){bootbox.alert('上传失败：'+data.response.msg);}else{loadFileList('" + Id + "', '" + column.ColName + "', '" + field.FieldValue.ToString() + "');                } });       ");
                     script.AppendLine("}");
-                    //if (attList != null && attList.Count > 0)
-                    //{
-                    //    string child = "<div class='col-sm-2'></div> <div class='col-xs-10 col-sm-10'> ";
-                    //    child += "<ul class='attachment-list pull-left list-unstyled'>";
-                    //    foreach (var file in attList)
-                    //    {
-
-                    //        child += " <li>";
-                    //        child += "     <a href='#' class='formctrl attached-file' data-filefid='" + file.Fid + "' data-rel='tooltip' title='" + file.FileName + "'>";
-                    //        if (file.FileType.Contains("image"))
-                    //        {
-                    //            child += "    <i class='ace-icon fa fa-file-image-o bigger-110 purple'></i>";
-
-                    //        }
-                    //        else if (file.FileType.Contains("word"))
-                    //        {
-                    //            child += "  <i class='ace-icon fa fa-file-word-o bigger-110 blue'></i>";
-                    //        }
-                    //        else if (file.FileType.Contains("excel"))
-                    //        {
-                    //            child += "  <i class='ace-icon fa fa-file-excel-o bigger-110 green'></i>";
-                    //        }
-                    //        else
-                    //        {
-                    //            child += " <i class='ace-icon fa fa-file-o bigger-110 orange'></i>";
-                    //        }
-                    //        child += "  <span class='attached-name'>" + file.FileName + "</span>";
-                    //        child += " </a>";
-                    //        child += " <span class='action-buttons'>";
-                    //        child += "      <a href='" + _session.BaseURL + "/PublicCtrl/DownloadFile/" + file.Fid + "'>";
-                    //        child += "       <i class='ace-icon fa fa-download bigger-125 blue'></i>";
-                    //        child += "     </a>";
-                    //        child += "  <a href='#' data-filefid='" + file.Fid + "' class='formctrl deletefile'>";
-                    //        child += "      <i class='ace-icon fa fa-trash-o bigger-125 red'></i>";
-                    //        child += " </a>";
-                    //        child += "</span></li>";
-
-                    //    }
-                    //    child += " </ul></div>";
-                    //    //script.AppendLine("$(\"#file" + _id + column.ColName + "\").parent().append(\"<span class='badge badge-yellow'>" + attList.Count + "</span>\")");
-                    //    script.AppendLine("$(\"#frm-" + _id + " #file" + _id + column.ColName + "\").parent().parent().parent().append(\"" + child + "\")");
-                    //}
                     if (_formStatus == FormStatus.Edit)
                     {
                         string bid = field.FieldValue.ToString();
@@ -680,6 +636,10 @@ namespace Fap.AspNetCore.Controls.DataForm
                 #region 图片头像
                 else if (column.CtrlType == FapColumn.CTRL_TYPE_IMAGE && !field.ReadOnly)
                 {
+                    if (field.FieldValue.ToString().IsMissing())
+                    {
+                        field.FieldValue = UUIDUtils.Fid;
+                    }
                     script.AppendLine("loadImageControl('avatar" + column.ColName + "')");
                 }
                 #endregion
@@ -730,8 +690,8 @@ namespace Fap.AspNetCore.Controls.DataForm
                 {
                     if (column.EditAble != 1)
                         continue;
-                    int min =0;
-                    int max =0;
+                    int min = 0;
+                    int max = 0;
 
                     if (column.MinValue.HasValue)
                     {
@@ -741,10 +701,10 @@ namespace Fap.AspNetCore.Controls.DataForm
                     {
                         max = column.MaxValue.Value;
                     }
-                    if(min==0&&max==0)
+                    if (min == 0 && max == 0)
                     {
-                         min = int.MinValue;
-                         max = int.MaxValue;
+                        min = int.MinValue;
+                        max = int.MaxValue;
                     }
                     string unit = "";
                     if (column.CtrlType == FapColumn.CTRL_TYPE_MONEY)
@@ -781,16 +741,16 @@ namespace Fap.AspNetCore.Controls.DataForm
                     {
                         sr.Append($"{i},");
                     }
-                    string r= sr.ToString().TrimEnd(',');
-                    r+="]";
+                    string r = sr.ToString().TrimEnd(',');
+                    r += "]";
                     script.AppendLine(@"$('###formid## #" + column.ColName + @"').jRange({
-                        from: "+column.MinValue+ @",
+                        from: " + column.MinValue + @",
                         to: " + column.MaxValue + @",
                         step: 1,
-                        scale: "+r+ @",
+                        scale: " + r + @",
                         format: '%s',
                         width: 680,
-                        disable:"+((column.EditAble==0||field.ReadOnly)?"true,":"false,")+@"
+                        disable:" + ((column.EditAble == 0 || field.ReadOnly) ? "true," : "false,") + @"
                         theme:'theme-blue',
                         showLabels: true,
                         isRange: true
@@ -839,9 +799,9 @@ namespace Fap.AspNetCore.Controls.DataForm
                 else if (column.CtrlType == FapColumn.CTRL_TYPE_TEXT && column.IsMultiLang == 1)
                 {
                     string oriCtrl = column.ColName;
-                   
+
                     string ctrmultiLang = oriCtrl + _multiLangService.CurrentLanguageName;
-                  
+
                     script.AppendLine("$(\"###formid## #" + oriCtrl + "\").on(\"blur\",function(){$(\"###formid## #" + ctrmultiLang + "\").val($(this).val())}).next().on(ace.click_event, function(){");
                     script.AppendLine(" document.addEventListener(\"mousedown\", onMultiLangPoverMouseDown, false);");
                     script.AppendLine("var fid=$(this).data(\"fid\");");

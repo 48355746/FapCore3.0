@@ -130,7 +130,6 @@
     //显示照片
     var ShowPhoto = function (rid) {
         if ($('#chkphoto').get(0).checked) {
-            debugger
             var rowData = jQuery("#grid-employee").jqGrid('getRowData', rid);
             $.gritter.add({
                 title: rowData.EmpName,
@@ -313,7 +312,6 @@
                     }
                 });
                 var data = { "gridViews": @Html.Raw(ViewBag.SubInfo)};
-                debugger
                 $.each(data.gridViews, function (i, v) {
                     v.defaultValues.push({ "Field": "EmpUid", "Value": rowData.Fid });
                     v.defaultValues.push({ "Field": "EmpUidMC", "Value": rowData.EmpName });
@@ -379,7 +377,6 @@
                 var empcat = $this.data("empcat");
                 var title = $this.text();
                 var formtype = $this.data("formtype");
-                debugger
                 if (isSelEmp) {
                     var id = jQuery("#grid-employee").jqGrid('getGridParam', 'selrow');
                     if (id == null) {

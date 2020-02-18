@@ -16,7 +16,7 @@
         });
         return serializeObj;
     };
-   
+
 })(jQuery);
 //获取checkboxlist 的值，形如:"a:b;c:d"
 jQuery.GetChkListValue = function (cellValue) {
@@ -40,7 +40,7 @@ jQuery.GetChkListValue = function (cellValue) {
 };
 
 //获取表单数据
-var GetFapFormData = function (formid) {   
+var GetFapFormData = function (formid) {
     var disabledCtrl = [];
     $("#" + formid + " :disabled").each(function () {//移除disable,后台方可取值        
         $(this).attr("disabled", false);
@@ -85,7 +85,7 @@ var GetFapFormData = function (formid) {
 var GetFapChildGridData = function (formid) {
     var lblGrids = $("#" + formid).find("#lblchildgrid");
     if (lblGrids.length === 1) {
-        var griddata = [],inlineValidate=true;
+        var griddata = [], inlineValidate = true;
         var tables = lblGrids[0].innerText.trim();
         $.each(tables.split(','), function (i, table) {
             var rowData = $('#grid-' + table).jqGrid('getRowData', null, true);
@@ -104,7 +104,7 @@ var GetFapChildGridData = function (formid) {
     return null;
 };
 //持久化{success:true,data:obj}noPrompt--是否弹框
-var Persistence = function (formid, tableName, beforeSaveCallback,afterSaveCallback) {   
+var Persistence = function (formid, tableName, beforeSaveCallback, afterSaveCallback) {
     if (!$("#" + formid).valid()) {
         $.msg('表单校验失败，请完善表单' + $(".error").html());
         return false;
@@ -122,11 +122,11 @@ var Persistence = function (formid, tableName, beforeSaveCallback,afterSaveCallb
             var result = false;
             $.ajax({
                 type: "get",
-                url: basePath + "/Api/Core/filecount/" + fid,
+                url: basePath + "/Component/ExistFile/" + fid,
                 async: false,
                 dataType: "text",
-                success: function (obj) {
-                    if (obj < 1) {
+                success: function (rv) {
+                    if (rv.success) {
                         result = true;
                     }
                 }
@@ -136,7 +136,7 @@ var Persistence = function (formid, tableName, beforeSaveCallback,afterSaveCallb
                 return false;
             }
         }
-        var entityData = {};        
+        var entityData = {};
         //主表单数据
         entityData.mainData = GetFapFormData(formid);
         entityData.tableName = tableName;
@@ -167,17 +167,17 @@ var Persistence = function (formid, tableName, beforeSaveCallback,afterSaveCallb
             data: entityData,
             async: false,
             dataType: "json",
-            headers:{
+            headers: {
                 //CSRF攻击
                 'RequestVerificationToken': $("input[name='__RequestVerificationToken']").val()
-            },            
+            },
             success: function (result) {
                 rv = result;
                 if (result.success === true) {
                     //赋值给ID 为了防止重复增加
                     if (rv.data) {
                         var resultData = rv.data;// JSON.parse(rv.data);
-                        
+
                         $("#" + formid + " .form-control#Id").val(resultData.Id);
                         $("#" + formid + " .form-control#Ts").val(resultData.Ts);
                         //保存成功后事件
@@ -195,7 +195,7 @@ var Persistence = function (formid, tableName, beforeSaveCallback,afterSaveCallb
         return rv;
     }
 }
-;
+    ;
 $(function () {
     //设置弹出参照框的显示头样式
     $.widget("ui.dialog", $.extend({}, $.ui.dialog.prototype, {
@@ -217,8 +217,8 @@ $(function () {
         bootbox.confirm("确定删除此附件?", function (result) {
             if (result) {
                 //
-                $.post(basePath + "/Api/Core/deletefile/", { key: fid }, function (rv) {
-                    if (rv === "1") {
+                $.get(basePath + "/Component/DeleteFile/" + fid, function (rv) {
+                    if (rv.success) {
                         df.parent().parent().remove();
                     }
                 });
@@ -231,11 +231,11 @@ $(function () {
     $(document).on(ace.click_event, ".formctrl.attached-file", function (e) {
         e.preventDefault();
         var fid = $(this).data("filefid");
-        $.get(basePath + "/Api/Core/viewfile/" + fid, function (data) {
+        $.get(basePath + "/Component/PreviewFile/" + fid, function (data) {
             if (data.success) {
                 if (data.id === 'img') {
                     openNewWindow(basePath + "/UploadFiles/View/" + data.msg);
-                } else if (data.id === "0"||data.id===0) {
+                } else if (data.id === "0" || data.id === 0) {
                     $.msg("无法预览");
                 } else {
                     openNewWindow(basePath + "/Content/Pdf/web/viewer.html?file=/UploadFiles/View/" + data.msg);
@@ -321,55 +321,34 @@ var loadFileMessageBox = function (ctrlid, frmid, initFileEvent) {
     dialog.init(function () {
         dialog.find('.bootbox-body').html("<div class=\"row\">  <div  class=\"col-lg-12\"> <input type=\"file\" class=\"file-loading\"  id=\"" + frmid + ctrlid + "-FILE\" name=\"" + frmid + ctrlid + "-FILE\" multiple   /></div></div>");
         //初始化file控件
-        initFileEvent();      
+        initFileEvent();
 
         //这里写加载已有的附件列表
     });
 
 };
 //附件列表
-var loadFileList = function (frmid,ctrlName, bid,isFreeform) {
-    var filter = { "groupOp": "AND" };
-    var rules = [];
-    rules.push({ "field": "Bid", "op": "eq", "data": bid});
-    filter.rules = rules;
-    $.post(basePath + "/Api/Core/querydata", { EntityName: "FapAttachment", QueryCols: "Id,Fid,FileName,FileType", filters: JSON.stringify(filter) }, function (rv) {
-        if (rv.success) {
-            $("#frm-" + frmid + " #file" + frmid + ctrlName).parent().parent().parent().find(".filelist").remove();
-            var data = rv.data;
-            var child = ' <div class=\'filelist\'>';
-            if (!isFreeform) {
-                child += '<div class=\'col-sm-2\'></div> <div class="col-xs-10 col-sm-10">';
-            } else {
-                child += '<div class="col-xs-12">';
-            }
-            child+= '        <ul class="attachment-list pull-left list-inline list-unstyled">';
-            $.each(data, function (i, d) {             
-                child+= [ '        <li>',
-                    '            <a href="#" class="formctrl attached-file" data-filefid="'+d.Fid+'" data-rel="tooltip" title="'+d.FileName+'">',
-                    '                <i class="ace-icon fa fa-paperclip bigger-110 "></i>',
-                    '                <span class="attached-name">' + d.FileName +'</span> </a>',
-                    '            <span class="action-buttons">',
-                    '                <a href="' + basePath +'/Component/DownloadFile/'+d.Fid+'">',
-                    '                    <i class="ace-icon fa fa-download bigger-125 blue"></i>',
-                    '                </a>',
-                    '                <a href="#" data-filefid="'+d.Fid+'" class="formctrl deletefile">',
-                    '                    <i class="ace-icon fa fa-trash-o bigger-125 red"></i>',
-                    '                </a>',
-                    '            </span>',
-                       '        </li>'].join("");
-                  
-            });
-            child +=['    </ul>',
-                '    </div></div>'].join("");
-            if (!isFreeform) {
-                $("#frm-" + frmid + " #file" + frmid + ctrlName).parent().parent().parent().append(child);
-            } else {
-                $("#frm-" + frmid + " #file" + frmid + ctrlName).parent().append(child);
-            }
+var loadFileList = function (frmid, ctrlName, bid, isFreeform) {
+    $.get(basePath + "/Component/AttachmentList/" + bid, function (rv) {
+        $("#frm-" + frmid + " #file" + frmid + ctrlName).parent().parent().parent().find(".filelist").remove();
+        var child = ' <div class=\'filelist\'>';
+        if (!isFreeform) {
+            child += '<div class=\'col-sm-2\'></div> <div class="col-xs-10 col-sm-10">';
+        } else {
+            child += '<div class="col-xs-12">';
         }
+        child += '        <ul class="attachment-list pull-left list-inline list-unstyled">';
+        child += rv;
+        child += ['    </ul>',
+            '    </div></div>'].join("");
+        if (!isFreeform) {
+            $("#frm-" + frmid + " #file" + frmid + ctrlName).parent().parent().parent().append(child);
+        } else {
+            $("#frm-" + frmid + " #file" + frmid + ctrlName).parent().append(child);
+        }
+
     });
-  
+
 };
 //加载图片头像
 var loadImageControl = function (ctrlid) {
@@ -422,7 +401,7 @@ var loadImageControl = function (ctrlid) {
                 // ***UPDATE AVATAR HERE*** //
                 //for a working upload example you can replace the contents of this function with
                 //examples/profile-avatar-update.js
-                var submit_url = basePath + "/Api/Core/uploadfile/";//please modify submit_url accordingly
+                var submit_url = basePath + "/Component/UploadFile/";//please modify submit_url accordingly
                 var deferred = null;
                 var avatar = '#' + ctrlid;
                 //if value is empty (""), it means no valid files were selected
@@ -510,7 +489,7 @@ var loadImageControl = function (ctrlid) {
                         if (result.success) {
                             var avatar = '#' + ctrlid;
                             var pk = $(avatar).attr('data-pk');
-                            $(avatar).get(0).src = $.randomUrl(basePath + "/Home/UserPhoto/" + pk);
+                            $(avatar).get(0).src = $.randomUrl(basePath + "/Component/Photo/" + pk);
                             if (last_gritter) $.gritter.remove(last_gritter);
                             last_gritter = $.gritter.add({
                                 title: MultiLangHelper.getResName("global_file_photo_updated", "照片已更新") + '!',
@@ -540,5 +519,5 @@ var loadImageControl = function (ctrlid) {
                 //$(avatar).get(0).src = "@Url.Content("~/Home/UserPhoto")";
             }
         });
-    } catch (e) { throw e;}
+    } catch (e) { throw e; }
 };

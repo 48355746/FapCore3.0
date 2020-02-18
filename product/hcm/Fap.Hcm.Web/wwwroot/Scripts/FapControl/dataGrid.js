@@ -116,29 +116,7 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid, menuid, fro
             }
         };
     } else {
-        var grid = $("#" + gid);
-        buttons.NextBtn = {
-            label: "下一条",
-            className: "btn-primary btn-link",
-            callback: function () {  
-                var rows = grid.jqGrid('getRowData');
-                var fids = $.map(rows, function (d) {
-                    return d.Fid;
-                });
-                var ids = $.map(rows, function (d) {
-                    return d.Id;
-                });
-                var index = $.inArray(fid, fids);
-                grid.jqGrid('setSelection', ids[index+1]);
-                if (index === fids.length - 1) {
-                    $.msg("已到达最后一条");
-                } else {
-                    fid = fids[index + 1];
-                    initDialog();
-                }
-                return false;
-            }
-        };
+        var grid = $("#" + gid);        
         buttons.PreBtn = {
             label: "上一条",
             className: "btn-primary btn-link",
@@ -158,6 +136,28 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid, menuid, fro
                     fid = fids[index - 1];
                     initDialog();
                 }     
+                return false;
+            }
+        };
+        buttons.NextBtn = {
+            label: "下一条",
+            className: "btn-primary btn-link",
+            callback: function () {
+                var rows = grid.jqGrid('getRowData');
+                var fids = $.map(rows, function (d) {
+                    return d.Fid;
+                });
+                var ids = $.map(rows, function (d) {
+                    return d.Id;
+                });
+                var index = $.inArray(fid, fids);
+                grid.jqGrid('setSelection', ids[index + 1]);
+                if (index === fids.length - 1) {
+                    $.msg("已到达最后一条");
+                } else {
+                    fid = fids[index + 1];
+                    initDialog();
+                }
                 return false;
             }
         };
@@ -651,7 +651,7 @@ var unattachmentInfo = function (cellvalue, options, rowObject) {
 //   options.colModel - colModel of the column
 // rowData - array of cell data for the row, so you can access other cells in the row if needed
 var formatImage = function (cellValue, options, rowObject) {
-    var imageHtml = "<img src='/Home/UserPhoto/" + cellValue + "'  style='width:60px' originalValue='" + cellValue + "' />";
+    var imageHtml = "<img src='/Component/Photo/" + cellValue + "'  style='width:60px' originalValue='" + cellValue + "' />";
     return imageHtml;
 };
 

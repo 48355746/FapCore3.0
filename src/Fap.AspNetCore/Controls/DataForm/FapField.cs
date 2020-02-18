@@ -11,6 +11,7 @@ using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Domain;
 using Ardalis.GuardClauses;
 using System.Text.Encodings.Web;
+using Fap.Core.Utility;
 
 namespace Fap.AspNetCore.Controls.DataForm
 {
@@ -233,7 +234,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 sbFormGroup.AppendFormat(_fapColumn.AsEmail(editAble, FieldValue.ToString()));
             }
             else if (_fapColumn.CtrlType == FapColumn.CTRL_TYPE_FILE)
-            {
+            {               
                 sbFormGroup.AppendLine(_fapColumn.AsFile(editAble, frmid, FieldValue.ToString(), lableName));
 
             }
@@ -387,7 +388,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             {
                 StringBuilder img = new StringBuilder();
                 //img.AppendLine("<span class=\"profile-picture\">");
-                img.AppendFormat("       <img   class=\"img-responsive\"  src=\"{0}\" />", "/Home/UserPhoto/" + FieldValue).AppendLine();
+                img.AppendFormat("       <img   class=\"img-responsive\"  src=\"{0}\" />", "/Component/Photo/" + FieldValue).AppendLine();
                 //img.AppendLine("   </span>");
                 return img.ToString();
             }
@@ -678,7 +679,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 //sbFormGroup.AppendFormat("<input type=\"text\" class=\"form-control attachment hidden\"  id=\"{0}\" name=\"{0}\" ng-model=\"{1}\"  value=\"{2}\" data-text=\"{3}\" data-nullable={4} data-editable={5} />", ctrlName, ngModel, FieldValue, FieldComment, _fapColumn.NullAble, _fapColumn.EditAble).AppendLine();
                 //sbFormGroup.AppendFormat("<label class=\"text-muted\">支持文件格式({0})</label>", _fapColumn.FileSuffix.IsNullOrEmpty() ? "*.*" : _fapColumn.FileSuffix).AppendLine();
                 sbFormGroup.AppendLine("<span class=\"profile-picture\">");
-                sbFormGroup.AppendFormat("       <img id=\"avatar{0}\" data-pk=\"{1}\" style=\"width:160px;\" class=\"editable img-responsive\"  src=\"{2}\" />", ctrlName, FieldValue, "/Home/UserPhoto/" + FieldValue).AppendLine();
+                sbFormGroup.AppendFormat("       <img id=\"avatar{0}\" data-pk=\"{1}\" style=\"width:160px;\" class=\"editable img-responsive\"  src=\"{2}\" />", ctrlName, FieldValue, "/Component/Photo/" + FieldValue).AppendLine();
                 sbFormGroup.AppendLine("   </span>");
                 sbFormGroup.AppendFormat("    <input type=\"text\" id=\"{0}\" name=\"{0}\" ng-model=\"{1}\"  value=\"{2}\"  class=\"form-control hidden\" />", ctrlName, ngModel, FieldValue).AppendLine();
             }

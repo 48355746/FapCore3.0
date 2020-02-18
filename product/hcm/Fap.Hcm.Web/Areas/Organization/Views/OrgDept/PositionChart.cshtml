@@ -225,7 +225,7 @@
                             var pnode = _.find(nodes, { key: '@fid' });
                             var photoKey = pnode.managerUid == '' ? '111' : pnode.managerUid
                             var v1 = graph.insertVertex(parent, 'treeRoot',
-                                pnode.deptName, w / 2 - 30, 20, 140, 60, 'image=/Home/UserPhotoByFid/' + photoKey+';');
+                                pnode.deptName, w / 2 - 30, 20, 140, 60, 'image=/Component/Photo/' + photoKey+';');
                             graph.updateCellSize(v1);
                             addOverlays(graph, v1,pnode, false);
                             //添加子节点
@@ -299,9 +299,9 @@
                     geometry.height = size.height;
                     var photoKey = node.managerUid == '' ? '111' : node.managerUid
                     if (node.orgType == 'dept') {
-                        vertex.style = 'image=/Home/UserPhotoByFid/' + photoKey + ';';
+                        vertex.style = 'image=/Component/Photo/' + photoKey + ';';
                     } else {
-                        vertex.style = 'image=/Home/UserPhotoByFid/' + photoKey + ';gradientColor=#FF66FF;';
+                        vertex.style = 'image=/Component/Photo/' + photoKey + ';gradientColor=#FF66FF;';
                     }
                     // Adds the edge between the existing cell
                     // and the new vertex and executes the

@@ -20,15 +20,20 @@ using Dapper;
 using System.Web;
 using Fap.AspNetCore.Controls.DataForm;
 using Fap.Hcm.Web.Models;
+using Ardalis.GuardClauses;
+using Microsoft.Extensions.Logging;
+using NPOI.XWPF.UserModel;
 
 namespace Fap.Hcm.Web.Controllers
 {
     public class ComponentController : FapController
     {
         private readonly IFapFileService _fapFileService;
+        private readonly ILogger _logger;
         public ComponentController(IServiceProvider serviceProvider, IFapFileService fapFileService) : base(serviceProvider)
         {
             _fapFileService = fapFileService;
+            _logger = _loggerFactory.CreateLogger<ComponentController>();
         }
         public FileResult Photo(string fid)
         {
@@ -742,6 +747,131 @@ namespace Fap.Hcm.Web.Controllers
             param.Add("Bid", fid);
             IEnumerable<FapAttachment> atts = _dbContext.QueryWhere<FapAttachment>("Bid=@Bid", param);
             return PartialView(atts);
+        }
+        public PartialViewResult AttachmentList(string fid)
+        {
+            DynamicParameters param = new DynamicParameters();
+            param.Add("Bid", fid);
+            IEnumerable<FapAttachment> atts = _dbContext.Query<FapAttachment>("select Id,Fid,FileName,FileType from FapAttachment where Bid=@Bid", param);
+            return PartialView(atts);
+        }
+        /// <summary>
+        /// 上传附件
+        /// UploadExtraData传来的参数会采用Request.Form["param"]接收
+        /// </summary>
+        /// <param name="id">用户的ID</param>
+        /// <returns></returns>               
+        public JsonResult UploadFile(string fid)
+        {
+            Guard.Against.NullOrWhiteSpace(fid, nameof(fid));
+            try
+            {
+                var files = Request.Form.Files;
+                if (files != null && files.Count > 0)
+                {
+                    foreach (var file in files)
+                    {
+                        FapAttachment attachment = new FapAttachment();
+                        attachment.Bid = fid;
+                        attachment.FileName = file.FileName;
+                        attachment.FileType = file.ContentType;
+                        string attFid = _fapFileService.UploadFile(file.OpenReadStream(), attachment);
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return Json(ResponseViewModelUtils.Failure("出现错误"));
+            }
+
+            return Json(ResponseViewModelUtils.Sueecss());
+
+        }
+        public JsonResult DeleteFile(string fid)
+        {
+            Guard.Against.NullOrWhiteSpace(fid, nameof(fid));
+            _fapFileService.DeleteFileByFid(fid);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+        public JsonResult PreviewFile(string fid)
+        {
+            //转pdf预览
+            //ResponseViewModel model = new ResponseViewModel();
+            //System.IO.Stream strm = null;
+            //FapAttachment attachment = _fapFileService.DownloadFileByFid(fid, out strm);
+            //if (attachment == null || strm == null)
+            //{
+            //    model.success = false;
+            //    model.msg = "服务器未找到文件";
+            //    //throw new FileNotFoundException("服务器未找到文件");
+            //}
+            //else
+            //{
+            //    string viewDir = PublicUtils.GetViewDirectory();
+            //    string fileName = fid + ".pdf";
+            //    string pdfFile = Path.Combine(viewDir, fileName);
+            //    if (attachment.FileExtension.EqualsWithIgnoreCase(".doc") || attachment.FileExtension.EqualsWithIgnoreCase(".docx")
+            //        || attachment.FileExtension.EqualsWithIgnoreCase(".rtf") || attachment.FileExtension.EqualsWithIgnoreCase(".odt")
+            //        || attachment.FileExtension.EqualsWithIgnoreCase(".html") || attachment.FileExtension.EqualsWithIgnoreCase(".txt"))
+            //    {
+            //        Document doc = new Document(strm);
+            //        doc.Save(pdfFile, Aspose.Words.SaveFormat.Pdf);
+            //    }
+            //    else if (attachment.FileExtension.EqualsWithIgnoreCase(".xls") || attachment.FileExtension.EqualsWithIgnoreCase(".xlsx"))
+            //    {
+            //        Workbook workbook = new IWorkbook(strm);
+
+            //        workbook.Save(pdfFile, Aspose.Cells.SaveFormat.Pdf);
+            //    }
+            //    else if (attachment.FileExtension.EqualsWithIgnoreCase(".pdf"))
+            //    {
+            //        using (var outStream = new FileStream(pdfFile, FileMode.Create, FileAccess.Write))
+            //        {
+            //            using (var inStream = strm)
+            //            {
+            //                inStream.CopyTo(outStream);
+            //            }
+            //        }
+            //    }
+            //    else if (attachment.FileType.Contains("image"))
+            //    {
+            //        fileName = fid + attachment.FileExtension;
+            //        string imgFile = Path.Combine(viewDir, fileName);
+            //        using (var outStream = new FileStream(imgFile, FileMode.Create, FileAccess.Write))
+            //        {
+            //            using (var inStream = strm)
+            //            {
+            //                inStream.CopyTo(outStream);
+            //            }
+            //        }
+            //        model.id = "img";
+            //    }
+            //    else
+            //    {
+            //        model.id = "0";
+            //    }
+            //    model.msg = fileName;
+            //    model.success = true;
+            //}
+            //return Json(model);
+            return Json("");
+        }
+        public JsonResult ExistFile(string fid)
+        {
+            Guard.Against.NullOrWhiteSpace(fid, nameof(fid));
+            DynamicParameters param = new DynamicParameters();
+            param.Add("Bid", fid);
+            int c = _dbContext.Count<FapAttachment>("Bid=@Bid", param);
+            if (c > 0)
+            {
+                return Json(ResponseViewModelUtils.Sueecss());
+            }
+            else
+            {
+                return Json(ResponseViewModelUtils.Failure());
+            }
         }
         /// <summary>
         /// 查看附件图片

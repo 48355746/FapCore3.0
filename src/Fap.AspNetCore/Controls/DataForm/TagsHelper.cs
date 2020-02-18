@@ -6,6 +6,7 @@ using System.Text;
 using Fap.Core.Extensions;
 using Fap.Core.MultiLanguage;
 using System.Text.Encodings.Web;
+using Fap.Core.Utility;
 
 namespace Fap.AspNetCore.Controls.DataForm
 {
@@ -260,7 +261,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             return $"<input type=\"email\" class=\"form-control\" id=\"{ctrlName}\"  {editAble} name=\"{ctrlName}\" ng-model=\"{ngModel}\" value=\"{fieldValue}\"/>";
         }
         public static string AsFile(this FapColumn fapColumn, string editAble, string frmid, string fieldValue, string lableName)
-        {
+        {            
             string ngModel = "formData." + fapColumn.ColName;
             string ctrlName = fapColumn.ColName;
             StringBuilder sbFile = new StringBuilder();
@@ -275,7 +276,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             string ctrlName = fapColumn.ColName;
             StringBuilder sbImage = new StringBuilder();
             sbImage.AppendLine("<span class=\"profile-picture\">");
-            sbImage.AppendFormat("       <img id=\"avatar{0}\" data-pk=\"{1}\" style=\"width:160px;\" class=\"editable img-responsive\"  src=\"{2}\" />", ctrlName, fieldValue, $"/Home/UserPhoto/{fieldValue}?v={DateTime.Now.Ticks}").AppendLine();
+            sbImage.AppendFormat("       <img id=\"avatar{0}\" data-pk=\"{1}\" style=\"width:160px;\" class=\"editable img-responsive\"  src=\"{2}\" />", ctrlName, fieldValue, $"/Component/Photo/{fieldValue}?v={DateTime.Now.Ticks}").AppendLine();
             sbImage.AppendLine("   </span>");
             sbImage.AppendFormat("    <input type=\"text\" id=\"{0}\" name=\"{0}\" ng-model=\"{1}\"  value=\"{2}\"  class=\"form-control hidden\" />", ctrlName, ngModel, fieldValue).AppendLine();
             return sbImage.ToString();

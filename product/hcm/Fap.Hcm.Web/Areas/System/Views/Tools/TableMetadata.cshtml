@@ -48,12 +48,13 @@
                     <fap-button id="btnColumnMetadata" btn-tag="link" content="列元数据" icon-before="glyphicon glyphicon-th blue" class-name="info"></fap-button>
                     <fap-button id="btnForceSync" btn-tag="link" content="强制同步" icon-before="fa fa-bolt blue" class-name="info"></fap-button>
                     <fap-button id="btnRefreshMetadata" btn-tag="link" content="刷新元数据" icon-before="fa fa-refresh blue" class-name="info"></fap-button>
+                    <fap-button id="btnExportSql" btn-tag="link" content="导出脚本" icon-before="fa fa-code blue" class-name="info"></fap-button>
                 </div>
             </div>
             <div class="widget-body">
                 <!-- #section:custom/widget-box.toolbox -->
                 <div class="widget-main">
-                    <fap-grid id="faptable" grid-model="Model"  source-type="Local" auto-width="true" ></fap-grid>
+                    <fap-grid id="faptable" grid-model="Model" source-type="Local" auto-width="true"></fap-grid>
                 </div>
             </div>
         </div>
@@ -128,7 +129,29 @@
                     }
                 })
             })
-
+            $("#btnExportSql").on(ace.click_event, function () {
+                bootbox.prompt({
+                    title: "导出数据库脚本!",
+                    value: ['1', '3'],
+                    centerVertical: true,
+                    inputType: 'checkbox',
+                    inputOptions: [{
+                        text: '当前选中的表元数据',
+                        value: '1',
+                    },
+                    {
+                        text: '当前分类中所有表元数据',
+                        value: '2',
+                    },
+                    {
+                        text: '包含表中数据',
+                        value: '3',
+                    }],
+                    callback: function (result) {
+                        alert(result);
+                    }
+                });
+            });
         })
     });
 

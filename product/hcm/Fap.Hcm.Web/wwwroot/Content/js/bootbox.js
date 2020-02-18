@@ -45,7 +45,8 @@
         footer:
           "<div class='modal-footer'></div>",
         closeButton:
-            "<button type='button' class='btn btn-white btn-danger btn-sm' data-dismiss='modal' aria-hidden='true'><i class='ace-icon fa fa-times icon-only'></i></button>",
+           "<button type='button' class='bootbox-close-button close' aria-hidden='true'>×</button>",
+            //"<button type='button' class='btn btn-white btn-danger btn-sm' data-dismiss='modal' aria-hidden='true'><i class='ace-icon fa fa-times icon-only'></i></button>",
         form:
           "<form class='bootbox-form'></form>",
         inputs: {

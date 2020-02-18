@@ -528,7 +528,7 @@ namespace Fap.Hcm.Service.System
                             {
                                 TreeDataView toper = new TreeDataView()
                                 {
-                                    Id = button.ButtonID,
+                                    Id = button.Fid,
                                     Data = new { IsBtn = false, IsMenu = false },
                                     Pid = menuNode.Id,
                                     Text = button.Description,
@@ -574,7 +574,7 @@ namespace Fap.Hcm.Service.System
                         {
                             TreeDataView toper = new TreeDataView()
                             {
-                                Id = button.ButtonID,
+                                Id = button.Fid,
                                 Data = new { IsBtn = false, IsMenu = false },
                                 Pid = menuNode.Id,
                                 Text = button.Description,
