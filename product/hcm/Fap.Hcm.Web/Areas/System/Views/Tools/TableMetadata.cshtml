@@ -132,23 +132,50 @@
             $("#btnExportSql").on(ace.click_event, function () {
                 bootbox.prompt({
                     title: "导出数据库脚本!",
-                    value: ['1', '3'],
+                    value: ['1', '4'],
                     centerVertical: true,
                     inputType: 'checkbox',
                     inputOptions: [{
-                        text: '当前选中的表元数据',
+                        text: '当前选中表的元数据',
                         value: '1',
                     },
                     {
-                        text: '当前分类中所有表元数据',
+                        text: '当前选中表分类的元数据',
                         value: '2',
                     },
                     {
-                        text: '包含表中数据',
+                        text: '包含table CREATE 语句',
                         value: '3',
+                    },
+                    {
+                        text: '包含table INSERT 语句',
+                        value: '4',
                     }],
                     callback: function (result) {
-                        alert(result);
+                        if (result != null) {
+                            var data = {};
+                            $.each(result, function (i, d) {
+                                if (d === "1") {
+                                    var rowData = getSelectedRow("grid-faptable");
+                                    if (rowData != null) {
+                                        data.tableName = rowData.TableName;
+                                    }
+                                }
+                                if (d === "2") {
+                                    data.tableCategory = $("#selTableCategory").val();
+                                }
+                                if (d === "3") {
+                                    data.includCreate = true;
+                                }
+                                if (d === "4") {
+                                    data.includInsert = true;
+                                }
+                            });
+                            $.post(basePath + "/System/Api/Tools/ExportSql", data, function (rv) {
+
+                            });
+                        }
+                        
                     }
                 });
             });

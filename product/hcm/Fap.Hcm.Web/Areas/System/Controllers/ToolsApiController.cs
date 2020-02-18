@@ -146,5 +146,11 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             _platformDomain.TableSet.Refresh();
             return Json(ResponseViewModelUtils.Sueecss());
         }
+        [HttpPost("ExportSql")]
+        public string ExportSql(string tableName, string tableCategory, bool includCreate, bool includInsert)
+        {
+            string sql= _dbMetadataContext.ExportSql(tableName, tableCategory, includCreate, includInsert);
+            return sql;
+        }
     }
 }

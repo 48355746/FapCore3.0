@@ -138,9 +138,9 @@ namespace Fap.Core.DataAccess.SqlParser
             return false;
         }
 
-        public string GetPhysicalTableColumnSql()
+        public string PhysicalTableColumnSql(string tableName)
         {
-            return "select a.name as TableName,b.name as ColumnName,c.name as ColumnType,b.length as ColumnLength from sysobjects a,syscolumns b, systypes c where a.id = b.id and a.name =@TableName and a.xtype = 'U' and b.xtype = c.xtype ";
+            return "select a.name as TableName,b.name as ColName,c.name as ColType,b.length as ColLength from sysobjects a,syscolumns b, systypes c where a.id = b.id and a.name ='"+tableName+"' and a.xtype = 'U' and b.xtype = c.xtype ";
 
         }
 
@@ -307,6 +307,40 @@ namespace Fap.Core.DataAccess.SqlParser
             }
 
             return sqlBuilder.ToString();
+        }
+
+        public string InsertSql(IDictionary<string, object> data, IEnumerable<FapColumn> columns)
+        {
+            string tableName = columns.First().TableName;
+            StringBuilder sql = new StringBuilder($"INSERT INTO [{tableName}](");
+            StringBuilder sqlCol = new StringBuilder();
+            StringBuilder sqlValue = new StringBuilder();
+            foreach (var column in columns)
+            {
+                if (column.ColName.EqualsWithIgnoreCase("Id"))
+                {
+                    continue;
+                }
+                sqlCol.Append($"[{column.ColName}],");
+                if (data[column.ColName] == null)
+                {
+                    sqlValue.Append("NULL,");
+                }
+                else
+                {
+                    if (column.ColType.EqualsWithIgnoreCase("varchar"))
+                    {
+                        sqlValue.Append($"'{data[column.ColName]}',");
+                    }
+                    else
+                    {
+                        sqlValue.Append($"{data[column.ColName]},");
+                    }
+                }
+            }
+            sql.Append(sqlCol.ToString().TrimEnd(',')).Append(") VALUES(")
+                .Append(sqlValue.ToString().TrimEnd(',')).Append(");");
+            return sql.ToString();
         }
     }
 }

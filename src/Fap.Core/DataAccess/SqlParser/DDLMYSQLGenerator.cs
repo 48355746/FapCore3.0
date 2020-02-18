@@ -181,9 +181,9 @@ namespace Fap.Core.DataAccess.SqlParser
             return $"drop table {fapTable.TableName}";
         }
 
-        public string GetPhysicalTableColumnSql()
+        public string PhysicalTableColumnSql(string tableName)
         {
-            return "select  Table_name as TableName,COLUMN_NAME as ColumnName,DATA_TYPE as ColumnType,CHARACTER_MAXIMUM_LENGTH as ColumnLength  from Information_schema.columns  where table_Name =@TableName";
+            return "select  Table_name as TableName,COLUMN_NAME as ColName,DATA_TYPE as ColType,CHARACTER_MAXIMUM_LENGTH as ColLength  from Information_schema.columns  where table_Name ='"+tableName+"'";
         }
 
         public string RenameColumnSql(FapColumn newColumn, string oldName)
@@ -216,6 +216,40 @@ namespace Fap.Core.DataAccess.SqlParser
                 builder.AppendLine($"alter table {fapColumn.TableName} drop column {colName};");
             }
             return builder.ToString();
+        }
+
+        public string InsertSql(IDictionary<string, object> data, IEnumerable<FapColumn> columns)
+        {
+            string tableName = columns.First().TableName;
+            StringBuilder sql = new StringBuilder($"INSERT INTO `{tableName}`(");
+            StringBuilder sqlCol = new StringBuilder();
+            StringBuilder sqlValue = new StringBuilder();
+            foreach (var column in columns)
+            {
+                if (column.ColName.EqualsWithIgnoreCase("Id"))
+                {
+                    continue;
+                }
+                sqlCol.Append($"`{column.ColName}`,");
+                if (data[column.ColName] == null)
+                {
+                    sqlValue.Append("NULL,");
+                }
+                else
+                {
+                    if (column.ColType.EqualsWithIgnoreCase("varchar"))
+                    {
+                        sqlValue.Append($"'{data[column.ColName]}',");
+                    }
+                    else
+                    {
+                        sqlValue.Append($"{data[column.ColName]},");
+                    }
+                }
+            }
+            sql.Append(sqlCol.ToString().TrimEnd(',')).Append(") VALUES(")
+                .Append(sqlValue.ToString().TrimEnd(',')).Append(");");
+            return sql.ToString();
         }
     }
 }
