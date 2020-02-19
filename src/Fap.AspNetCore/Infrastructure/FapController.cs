@@ -78,7 +78,8 @@ namespace Fap.AspNetCore.Infrastructure
             //当排序没有设置的时候，设置创建时间倒序排列
             if (!qs.OrderByList.Any())
             {
-                qs.AddOrderBy("CreateDate", "desc");
+                //qs.AddOrderBy("CreateDate", "desc");
+                qs.AddOrderBy("Id", "desc");
             }
             qs.InitWhere = qs.InitWhere.IsPresent() ? ReplaceSafeSql(qs.InitWhere) : "";
             qs.GlobalWhere = qs.GlobalWhere.IsPresent() ? ReplaceSafeSql(qs.GlobalWhere) : "";

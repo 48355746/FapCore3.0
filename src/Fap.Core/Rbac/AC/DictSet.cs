@@ -35,7 +35,7 @@ namespace Fap.Core.Rbac.AC
             {
                 _allDicts = _dbSession.Query<FapDict>("select * from FapDict");
                 //增加本身分类为字典
-                var listCat = _dbSession.Query<FapDict>("select Category Code ,CategoryName [Name],'FapDict' Category,'字典分类' CategoryName from FapDict group by Category,CategoryName");
+                var listCat = _dbSession.Query<FapDict>("select Category Code ,CategoryName Name,'FapDict' Category,'字典分类' CategoryName from FapDict group by Category,CategoryName");
                 _allDicts = _allDicts.Union(listCat);
                 _initialized = true;
             }

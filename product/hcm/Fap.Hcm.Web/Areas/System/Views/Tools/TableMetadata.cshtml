@@ -130,54 +130,126 @@
                 })
             })
             $("#btnExportSql").on(ace.click_event, function () {
-                bootbox.prompt({
-                    title: "导出数据库脚本!",
-                    value: ['1', '4'],
-                    centerVertical: true,
-                    inputType: 'checkbox',
-                    inputOptions: [{
-                        text: '当前选中表的元数据',
-                        value: '1',
-                    },
-                    {
-                        text: '当前选中表分类的元数据',
-                        value: '2',
-                    },
-                    {
-                        text: '包含table CREATE 语句',
-                        value: '3',
-                    },
-                    {
-                        text: '包含table INSERT 语句',
-                        value: '4',
-                    }],
-                    callback: function (result) {
-                        if (result != null) {
-                            var data = {};
-                            $.each(result, function (i, d) {
-                                if (d === "1") {
-                                    var rowData = getSelectedRow("grid-faptable");
-                                    if (rowData != null) {
-                                        data.tableName = rowData.TableName;
-                                    }
-                                }
-                                if (d === "2") {
-                                    data.tableCategory = $("#selTableCategory").val();
-                                }
-                                if (d === "3") {
-                                    data.includCreate = true;
-                                }
-                                if (d === "4") {
-                                    data.includInsert = true;
-                                }
-                            });
-                            $.post(basePath + "/System/Api/Tools/ExportSql", data, function (rv) {
+                var $html =$(`<div class="row">
+    <div class="col-xs-12 col-sm-5">
+        <div class="control-group">
+            <label class="control-label bolder blue">选项</label>
 
-                            });
-                        }
-                        
-                    }
+            <!-- #section:custom/checkbox -->
+            <div class="checkbox">
+                <label>
+                    <input name="form-field-option" type="checkbox" value="1" checked class="ace" />
+                    <span class="lbl">当前选中表的元数据</span>
+                </label>
+            </div>
+
+            <div class="checkbox">
+                <label>
+                    <input name="form-field-option" type="checkbox" value="2" class="ace" />
+                    <span class="lbl"> 当前选中表分类的元数据</span>
+                </label>
+            </div>
+
+            <div class="checkbox">
+                <label>
+                    <input name="form-field-option" class="ace ace-checkbox-2" value="3" type="checkbox" />
+                    <span class="lbl"> 包含table CREATE 语句</span>
+                </label>
+            </div>
+
+            <div class="checkbox">
+                <label class="block">
+                    <input name="form-field-option"  type="checkbox" value="4" checked class="ace" />
+                    <span class="lbl"> 包含table INSERT 语句</span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-12 col-sm-6">
+        <div class="control-group">
+            <label class="control-label bolder blue">数据库</label>
+            <div class="radio">
+                <label>
+                    <input name="form-field-database" type="radio" value="MSSQL" checked class="ace" />
+                    <span class="lbl">MSSQL</span>
+                </label>
+            </div>
+
+            <div class="radio">
+                <label>
+                    <input name="form-field-database" type="radio" value="MYSQL" class="ace" />
+                    <span class="lbl"> MYSQL</span>
+                </label>
+            </div>
+        </div>
+    </div>
+</div>`);
+
+
+                 var dialog = bootbox.dialog({
+                    title: '导出数据库脚本',
+                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                     buttons: {
+                         ok: {
+                             label: '确定',
+                             className: 'btn-primary',
+                             callback: function () {
+                             
+                                 var checkedItems = $html.find("input[name='form-field-option']:checked");
+                                 var result = [];
+                                 $.each(checkedItems, function (_, item) {
+                                     result.push($(item).val());
+                                 });
+                                 var data = {};
+                                 $.each(result, function (i, d) {
+                                     if (d === "1") {
+                                         var rowData = getSelectedRow("grid-faptable");
+                                         if (rowData != null) {
+                                             data.tableName = rowData.TableName;
+                                         }
+                                     }
+                                     if (d === "2") {
+                                         data.tableCategory = $("#selTableCategory").val();
+                                     }
+                                     if (d === "3") {
+                                         data.includCreate = true;
+                                     }
+                                     if (d === "4") {
+                                         data.includInsert = true;
+                                     }
+                                 });
+                                 var database = $html.find("input[name='form-field-database']:checked").val();
+                                 data.database = database;
+                                 var index=layer.msg('脚本生成中...', {
+                                     icon: 16,
+                                     shade: 0.01
+                                 });
+                                 $.post(basePath + "/System/Api/Tools/ExportSql", data, function (rv) {
+                                     if (rv.success) {
+                                         window.location.href = basePath + "/" + rv.data;
+                                     } else {
+                                         $.msg(rv.msg);
+                                     }
+                                     layer.close(index);
+                                 });
+                             }
+                            
+                         },
+                         cancel: {
+                             label: '取消',
+                             className: 'btn-info',
+                             callback: function () {
+
+                             }
+                         }
+                     }
                 });
+                dialog.init(function () {
+                    dialog.find('.bootbox-body').html("");
+                    dialog.find('.bootbox-body').append($html);
+                });
+          
             });
         })
     });

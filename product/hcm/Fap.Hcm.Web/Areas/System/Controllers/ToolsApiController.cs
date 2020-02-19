@@ -15,6 +15,9 @@ using Fap.Core.Utility;
 using Fap.Core.Infrastructure.Model;
 using Fap.Core.DataAccess;
 using System.Net.Mime;
+using System.IO;
+using Fap.Core.Infrastructure.Domain;
+using Fap.Core.Annex.Utility.Zip;
 
 namespace Fap.Hcm.Web.Areas.System.Controllers
 {
@@ -147,10 +150,20 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             return Json(ResponseViewModelUtils.Sueecss());
         }
         [HttpPost("ExportSql")]
-        public string ExportSql(string tableName, string tableCategory, bool includCreate, bool includInsert)
+        public JsonResult ExportSql(string database,string tableName, string tableCategory, bool includCreate, bool includInsert)
         {
-            string sql= _dbMetadataContext.ExportSql(tableName, tableCategory, includCreate, includInsert);
-            return sql;
+            if (tableName.IsMissing() && tableCategory.IsMissing())
+            {
+                return Json(ResponseViewModelUtils.Failure("请选择导出的表获分类"));
+            }
+            DatabaseDialectEnum dialect= (DatabaseDialectEnum)Enum.Parse(typeof(DatabaseDialectEnum), database);
+            string sql= _dbMetadataContext.ExportSql(dialect, tableName, tableCategory, includCreate, includInsert);
+            string fileName =tableName.IsPresent()?tableName:tableCategory+$"{database}.sql";
+            string filePath = Path.Combine(Environment.CurrentDirectory, FapPlatformConstants.TemporaryFolder, fileName);
+            SysIO.File.WriteAllText(filePath, sql);
+            ZipHelper zipHelper = new ZipHelper();
+            zipHelper.ZipMultiFiles(new[] { filePath}, filePath.Replace(".sql",".zip"));
+            return Json(new ResponseViewModel { success = true, data = $"{FapPlatformConstants.TemporaryFolder}/{fileName.Replace(".sql", ".zip")}" } );
         }
     }
 }

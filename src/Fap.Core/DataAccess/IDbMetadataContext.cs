@@ -15,6 +15,6 @@ namespace Fap.Core.DataAccess
         void RenameColumn(FapColumn newColumn, string oldName);
         void AlterColumn(FapColumn fapColumn);
         void DropColumn(FapColumn fapColumn);
-        string ExportSql(string tableName, string tableCategory, bool includCreate, bool includInsert);
+        string ExportSql(DatabaseDialectEnum databaseDialect,string tableName, string tableCategory, bool includCreate, bool includInsert);
     }
 }

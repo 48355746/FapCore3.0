@@ -100,7 +100,7 @@ namespace Fap.Core.DataAccess.SqlParser
                 sqlBuilder.Append(MakeColumnCommentSql(mf)).AppendLine();
             }
 
-            return sqlBuilder.ToString();
+            return sqlBuilder.AppendLine("GO").ToString();
         }
 
         private string MakeColumnCommentSql(FapColumn fapColumn)
@@ -116,7 +116,7 @@ namespace Fap.Core.DataAccess.SqlParser
                 sqlBuilder.Append(fapColumn.ColName);
                 sqlBuilder.Append("';").Append(Environment.NewLine);
             }
-            return sqlBuilder.ToString();
+            return sqlBuilder.AppendLine("GO").ToString();
 
         }
 
@@ -269,7 +269,11 @@ namespace Fap.Core.DataAccess.SqlParser
 
         public string DropTableSql(FapTable fapTable)
         {
-            return $"drop table {fapTable.TableName}";
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine("-- 删除表");
+            builder.AppendLine($"if exists(select * from sysobjects where id = object_id(N'[{fapTable.TableName}]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)");
+            builder.AppendLine($"drop table {fapTable.TableName}");            
+            return builder.ToString();
         }
 
         public string RenameColumnSql(FapColumn newColumn, string oldName)
@@ -328,9 +332,9 @@ namespace Fap.Core.DataAccess.SqlParser
                 }
                 else
                 {
-                    if (column.ColType.EqualsWithIgnoreCase("varchar"))
+                    if (column.ColType.EqualsWithIgnoreCase("varchar") || column.ColType.EqualsWithIgnoreCase("text"))
                     {
-                        sqlValue.Append($"'{data[column.ColName]}',");
+                        sqlValue.Append($"'{data[column.ColName].ToString().Replace("'","''")}',");
                     }
                     else
                     {

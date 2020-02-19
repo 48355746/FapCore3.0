@@ -662,3 +662,15 @@ UPDATE [FapTableFeature]
 SET [Data]='[{"TableName":"","ColName":"SortBy","ColComment":"排序","ColDefault":"0","DefaultValueClass":null,"ColType":"INT","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":80,"ColOrder":996,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"INT","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":"","RemoteChkMsg":"","CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null}]'
 WHERE [Fid]='642211e6a82a54fc5c9c'
 GO
+UPDATE [FapColumn]
+SET [ColLength]=128
+WHERE [TableName]='FapColumn' AND [ColName]='RefTable'
+GO
+UPDATE [FapColumn]
+SET [ColLength]=50
+WHERE [TableName]='FapColumn' AND [ColName]='RefName'
+GO
+UPDATE [FapColumn]
+SET [ColLength]=128
+WHERE [TableName]='FapColumn' AND [ColName]='ComboxSource'
+GO

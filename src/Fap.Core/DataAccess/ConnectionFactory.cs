@@ -12,6 +12,7 @@ using System.Threading;
 using Dapper.Contrib.Extensions;
 using StackExchange.Profiling.Data;
 using StackExchange.Profiling;
+using System.Data.Common;
 
 namespace Fap.Core.DataAccess
 {
@@ -23,7 +24,15 @@ namespace Fap.Core.DataAccess
         {
             //设置dapper的tableName取值
             SqlMapperExtensions.TableNameMapper = (type) => type.Name;
-        } 
+            SqlMapperExtensions.GetDatabaseType = (connection) =>
+            {
+                if (connection is ProfiledDbConnection)
+                {
+                    return (connection as ProfiledDbConnection).WrappedConnection.GetType().Name.ToLower();
+                }
+                return connection.GetType().Name.ToLower();
+            };
+        }
 
         /// <summary>
         /// 当前线程数据源 
@@ -81,7 +90,7 @@ namespace Fap.Core.DataAccess
 
         private IDbConnection GetConnection(string connectionString) => DatabaseDialect switch
         {
-            DatabaseDialectEnum.MSSQL =>new ProfiledDbConnection(new SqlConnection(connectionString),MiniProfiler.Current),
+            DatabaseDialectEnum.MSSQL => new ProfiledDbConnection(new SqlConnection(connectionString), MiniProfiler.Current),
             DatabaseDialectEnum.MYSQL => new ProfiledDbConnection(new MySqlConnection(connectionString), MiniProfiler.Current),
             _ => throw new NotImplementedException()
         };
@@ -114,7 +123,7 @@ namespace Fap.Core.DataAccess
                 _logger.LogInformation("没有设置从库，将从建立主库连接");
                 return GetMasterConnection();
             }
-        }    
+        }
     }
 
     public enum DataSourceEnum

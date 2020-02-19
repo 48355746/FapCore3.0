@@ -28,6 +28,15 @@ namespace Fap.Core.DataAccess
                 _ => throw new NotImplementedException()
             };
         }
+        private IDDLSqlGenerator GetSqlGenerator(DatabaseDialectEnum specifyDialect)
+        {
+            return specifyDialect switch
+            {
+                DatabaseDialectEnum.MSSQL => new DDLMSSQLGenerator(),
+                DatabaseDialectEnum.MYSQL => new DDLMYSQLGenerator(),
+                _ => throw new NotImplementedException()
+            };
+        }
         public void CreateTable(int id)
         {
             _dbSession.TransactionProxy((connection, transaction) =>
@@ -79,10 +88,10 @@ namespace Fap.Core.DataAccess
             string sql = GetSqlGenerator().DropMultiLangColumnSql(fapColumn);
             _dbSession.Execute(sql);
         }
-        public string ExportSql(string tableName, string tableCategory, bool includCreate, bool includInsert)
+        public string ExportSql(DatabaseDialectEnum databaseDialect, string tableName, string tableCategory, bool includCreate, bool includInsert)
         {
             StringBuilder sql = new StringBuilder();
-            var generator = GetSqlGenerator();
+            var generator = GetSqlGenerator(databaseDialect);
             if (tableName.IsPresent())
             {
                 ExportSingleTableSql(tableName);
@@ -98,52 +107,50 @@ namespace Fap.Core.DataAccess
             return sql.ToString();
             void ExportSingleTableSql(string tn)
             {
-                sql.AppendLine(ExportMetadataSql(tn));
                 if (includCreate)
                 {
-                    sql.AppendLine(ExportCreateSql(tn));
+                    sql.AppendLine(ExportCreateSql(generator,tn));
                 }
+                sql.AppendLine(ExportMetadataSql(generator,tn));
                 if (includInsert)
                 {
-                    sql.AppendLine(ExportInsertSql(tn));
+                    sql.AppendLine(ExportInsertSql(generator,tn));
                 }
             }
         }
-        private string ExportCreateSql(string tableName)
+        private string ExportCreateSql(IDDLSqlGenerator generator, string tableName)
         {
             FapTable table = _dbSession.QueryFirstOrDefault<FapTable>("select * from FapTable where TableName=@TableName", new DynamicParameters(new { TableName = tableName }));
             var columns = _dbSession.Query<FapColumn>("select * from FapColumn where TableName=@TableName", new DynamicParameters(new { TableName = tableName }));
-            return GetSqlGenerator().CreateTableSql(table, columns);
+            return new StringBuilder(generator.DropTableSql(table)).AppendLine().AppendLine("GO").AppendLine(generator.CreateTableSql(table, columns)).AppendLine("GO").ToString();
         }
-        private string ExportInsertSql(string tableName)
+        private string ExportInsertSql(IDDLSqlGenerator generator,string tableName)
         {
-            var generator = GetSqlGenerator();
             string sql = generator.PhysicalTableColumnSql(tableName);
             var fapColumns = _dbSession.Query<FapColumn>(sql);
             var datas = _dbSession.Query($"select * from {tableName}");
             StringBuilder tableSql = new StringBuilder();
             foreach (var d in datas)
             {
-                tableSql.AppendLine(generator.InsertSql(d as IDictionary<string, object>, fapColumns));
+                tableSql.AppendLine(generator.InsertSql(d as IDictionary<string, object>, fapColumns)).AppendLine("GO");
             }
             return tableSql.ToString();
         }
-        private string ExportMetadataSql(string tableName)
+        private string ExportMetadataSql(IDDLSqlGenerator generator,string tableName)
         {
-            var generator = GetSqlGenerator();
             var data = _dbSession.QueryFirstOrDefault("select * from FapTable where tableName=@TableName", new DynamicParameters(new { TableName = tableName }));
             var dataList = _dbSession.Query("select * from FapColumn where TableName=@TableName", new DynamicParameters(new { TableName = tableName }));
             string sql = generator.PhysicalTableColumnSql(nameof(FapTable));
             var fapColumns = _dbSession.Query<FapColumn>(sql);
             StringBuilder metaSql = new StringBuilder();
             metaSql.AppendLine("--FapTable元数据");
-            metaSql.AppendLine(generator.InsertSql(data as IDictionary<string, object>, fapColumns));
+            metaSql.AppendLine(generator.InsertSql(data as IDictionary<string, object>, fapColumns)).AppendLine("GO");
             metaSql.AppendLine("--FapColumn元数据");
             sql = generator.PhysicalTableColumnSql(nameof(FapColumn));
             fapColumns = _dbSession.Query<FapColumn>(sql);
             foreach (var d in dataList)
             {
-                metaSql.AppendLine(generator.InsertSql(d as IDictionary<string, object>, fapColumns));
+                metaSql.AppendLine(generator.InsertSql(d as IDictionary<string, object>, fapColumns)).AppendLine("GO");
             }
             return metaSql.ToString();
         }
