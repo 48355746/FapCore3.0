@@ -4,6 +4,7 @@ using Dapper.Contrib.Extensions;
 using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.Utility;
+using StackExchange.Profiling.Data;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -36,7 +37,13 @@ namespace Fap.Core.DataAccess
             var name = tableName;
 
             var adapter = GetFormatter(connection);
-
+            StringBuilder builderColumn = new StringBuilder();
+            foreach (var colName in sbColumnList.SplitComma())
+            {
+                adapter.AppendColumnName(builderColumn, colName);
+                builderColumn.Append(",");
+            }
+            string columnList = builderColumn.ToString().TrimEnd(',');
             int returnVal;
             var wasClosed = connection.State == ConnectionState.Closed;
             if (wasClosed) connection.Open();
@@ -44,13 +51,13 @@ namespace Fap.Core.DataAccess
             if (!isList)    //single entity
             {
                 var keyProperties = new List<PropertyInfo>();
-                returnVal = adapter.Insert(connection, transaction, commandTimeout, name, sbColumnList,
+                returnVal = adapter.Insert(connection, transaction, commandTimeout, name, columnList,
                     sbParameterList, keyProperties, entityToInsert);
             }
             else
             {
                 //insert list of entities
-                var cmd = $"insert into {name} ({sbColumnList}) values ({sbParameterList})";
+                var cmd = $"insert into {name} ({columnList}) values ({sbParameterList})";
                 returnVal = connection.Execute(cmd, entityToInsert, transaction, commandTimeout);
             }
             if (wasClosed) connection.Close();
@@ -157,6 +164,10 @@ namespace Fap.Core.DataAccess
         private static ISqlAdapter GetFormatter(IDbConnection connection)
         {
             var name = connection.GetType().Name.ToLower();
+            if (connection is ProfiledDbConnection)
+            {
+                name= (connection as ProfiledDbConnection).WrappedConnection.GetType().Name.ToLower();
+            }
 
             return !AdapterDictionary.ContainsKey(name)
                 ? new SqlServerAdapter()

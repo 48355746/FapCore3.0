@@ -674,3 +674,26 @@ UPDATE [FapColumn]
 SET [ColLength]=128
 WHERE [TableName]='FapColumn' AND [ColName]='ComboxSource'
 GO
+--加一个表分类【元数据】
+INSERT INTO [fapdict]( [Fid], [Code], [Name], [Pid], [IsEndLevel], [CPath], [Category], [CategoryName], [OrgUid], [GroupUid], [EnableDate], [DisableDate], [Dr], [Ts], [CreateBy], [CreateName], [CreateDate], [UpdateBy], [UpdateName], [UpdateDate], [IsSystem], [SortBy])
+  VALUES('679651904816414720', 'Metadata', '元数据', '', 1, '', 'TableCategory', '表分类', '', '', '2020-02-19 19:28:09', '9999-12-31 23:59:59', 0, 637177372909429909, '3521928112763830273', '王燕飞', '2020-02-19 19:28:10', NULL, NULL, NULL, 1, 0)
+GO
+
+UPDATE [faptable]
+SET [TableCategory]='Metadata'
+WHERE [TableName]='FapTable' AND [TableComment]='实体表'
+GO
+UPDATE [faptable]
+SET [TableCategory]='Metadata'
+WHERE [TableName]='FapColumn' AND [TableComment]='实体属性表'
+GO
+update FapColumn set ColDefault=0 where ColType='INT' and ColDefault is null
+update FapColumn set ColDefault=0.0 where ColType='DOUBLE'   and ColDefault is null
+UPDATE [FapColumn]
+SET [CtrlType]='INT'
+WHERE [TableName]='FapColumn' AND [ColName]='FileSize'
+GO
+UPDATE [FapColumn]
+SET [CtrlType]='INT'
+WHERE [TableName]='FapColumn' AND [ColName]='FileCount'
+GO

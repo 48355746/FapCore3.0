@@ -221,6 +221,10 @@
                                  });
                                  var database = $html.find("input[name='form-field-database']:checked").val();
                                  data.database = database;
+                                 if (data.tableName == null && data.tableCategory == null) {
+                                     $.msg("至少选择一张表或一种表分类元数据");
+                                     return false;
+                                 }
                                  var index=layer.msg('脚本生成中...', {
                                      icon: 16,
                                      shade: 0.01

@@ -9,6 +9,7 @@ namespace Fap.Core.DataAccess.SqlParser
     {
         string CreateTableSql(FapTable table, IEnumerable<FapColumn> columns);
         string AddMultiLangColumnSql(FapColumn fapColumn);
+        string AlterMultiLangColumnSql(FapColumn fapColumn);
         string DropMultiLangColumnSql(FapColumn fapColumn);
         string CreateColumnSql(FapColumn fapColumn);
         string PhysicalTableColumnSql(string tableName);

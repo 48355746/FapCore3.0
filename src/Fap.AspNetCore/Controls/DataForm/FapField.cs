@@ -248,6 +248,10 @@ namespace Fap.AspNetCore.Controls.DataForm
             }
             else if (_fapColumn.CtrlType == FapColumn.CTRL_TYPE_INT || _fapColumn.CtrlType == FapColumn.CTRL_TYPE_DOUBLE || _fapColumn.CtrlType == FapColumn.CTRL_TYPE_MONEY)
             {
+                if (FieldValue.ToString().IsMissing()&&_fapColumn.ColDefault.IsPresent())
+                {
+                    FieldValue = _fapColumn.ColDefault;
+                }
                 sbFormGroup.AppendLine(_fapColumn.AsTextBox(editAble, FieldValue.ToString()));
             }
             else if (_fapColumn.CtrlType == FapColumn.CTRL_TYPE_PHONE)

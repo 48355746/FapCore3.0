@@ -41,13 +41,13 @@ namespace Fap.Core.DataAccess.SqlParser
             sqlBuilder.Remove(sqlBuilder.Length - 1, 1);
             sqlBuilder.Append(");").Append(Environment.NewLine);
             //默认值
-            foreach (var field in columns)
-            {
-                if (HasDefaultValueConstraint(field))
-                {
-                    sqlBuilder.AppendLine(string.Format("ALTER TABLE {0} ADD CONSTRAINT DF_{0}_{1} DEFAULT ('{2}') FOR {1};", field.TableName, field.ColName, field.ColDefault));
-                }
-            }
+            //foreach (var field in columns)
+            //{
+            //    if (HasDefaultValueConstraint(field))
+            //    {
+            //        sqlBuilder.AppendLine(string.Format("ALTER TABLE {0} ADD CONSTRAINT DF_{0}_{1} DEFAULT ('{2}') FOR {1};", field.TableName, field.ColName, field.ColDefault));
+            //    }
+            //}
             //表注释
             MakeTableCommentSql(table, sqlBuilder);
             foreach (var field in columns.OrderBy(c => c.ColOrder))
@@ -92,15 +92,15 @@ namespace Fap.Core.DataAccess.SqlParser
                 mf.ColName = fapColumn.ColName + item.Value;
                 mf.ColComment = fapColumn.ColComment + item.Description;
                 mf.IsMultiLang = 0;
-                sqlBuilder.Append($"alter table {mf.TableName} add {CreateColumnSql(mf)} ").AppendLine(";");
-                if (HasDefaultValueConstraint(mf))
-                {
-                    sqlBuilder.AppendLine(string.Format("ALTER TABLE {0} ADD CONSTRAINT DF_{0}_{1} DEFAULT ('{2}') FOR {1};", mf.TableName, mf.ColName, mf.ColDefault));
-                }
-                sqlBuilder.Append(MakeColumnCommentSql(mf)).AppendLine();
+                sqlBuilder.AppendLine($"alter table {mf.TableName} add {CreateColumnSql(mf)} ;");
+                //if (HasDefaultValueConstraint(mf))
+                //{
+                //    sqlBuilder.AppendLine(string.Format("ALTER TABLE {0} ADD CONSTRAINT DF_{0}_{1} DEFAULT ('{2}') FOR {1};", mf.TableName, mf.ColName, mf.ColDefault));
+                //}
+                sqlBuilder.AppendLine(MakeColumnCommentSql(mf));
             }
 
-            return sqlBuilder.AppendLine("GO").ToString();
+            return sqlBuilder.ToString();
         }
 
         private string MakeColumnCommentSql(FapColumn fapColumn)
@@ -116,7 +116,7 @@ namespace Fap.Core.DataAccess.SqlParser
                 sqlBuilder.Append(fapColumn.ColName);
                 sqlBuilder.Append("';").Append(Environment.NewLine);
             }
-            return sqlBuilder.AppendLine("GO").ToString();
+            return sqlBuilder.ToString();
 
         }
 
@@ -125,18 +125,18 @@ namespace Fap.Core.DataAccess.SqlParser
         /// </summary>
         /// <param name="field"></param>
         /// <returns></returns>
-        private bool HasDefaultValueConstraint(FapColumn field)
-        {
-            if (field.ColType == FapColumn.COL_TYPE_INT || field.ColType == FapColumn.COL_TYPE_DOUBLE || field.ColType == FapColumn.COL_TYPE_LONG || field.ColType == FapColumn.COL_TYPE_BOOL)
-            {
-                if (field.ColDefault.IsMissing())
-                {
-                    field.ColDefault = "0";
-                }
-                return true;                
-            }
-            return false;
-        }
+        //private bool HasDefaultValueConstraint(FapColumn field)
+        //{
+        //    if (field.ColType == FapColumn.COL_TYPE_INT || field.ColType == FapColumn.COL_TYPE_DOUBLE || field.ColType == FapColumn.COL_TYPE_LONG || field.ColType == FapColumn.COL_TYPE_BOOL)
+        //    {
+        //        if (field.ColDefault.IsMissing())
+        //        {
+        //            field.ColDefault = "0";
+        //        }
+        //        return true;                
+        //    }
+        //    return false;
+        //}
 
         public string PhysicalTableColumnSql(string tableName)
         {
@@ -206,11 +206,11 @@ namespace Fap.Core.DataAccess.SqlParser
         {
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.AppendLine($"alter table {fapColumn.TableName} add {CreateColumnSql(fapColumn)} ;");
-            if (HasDefaultValueConstraint(fapColumn))
-            {
-                stringBuilder.AppendLine(string.Format("ALTER TABLE {0} ADD CONSTRAINT DF_{0}_{1} DEFAULT ('{2}') FOR {1};", fapColumn.TableName, fapColumn.ColName, fapColumn.ColDefault));
-            }
-            stringBuilder.Append(MakeColumnCommentSql(fapColumn)).AppendLine();
+            //if (HasDefaultValueConstraint(fapColumn))
+            //{
+            //    stringBuilder.AppendLine(string.Format("ALTER TABLE {0} ADD CONSTRAINT DF_{0}_{1} DEFAULT ('{2}') FOR {1};", fapColumn.TableName, fapColumn.ColName, fapColumn.ColDefault));
+            //}
+            stringBuilder.AppendLine(MakeColumnCommentSql(fapColumn));
             if (fapColumn.IsMultiLang == 1) //多语
             {
                 var languageList = typeof(MultiLanguage.MultiLanguageEnum).EnumItems();
@@ -220,7 +220,7 @@ namespace Fap.Core.DataAccess.SqlParser
                     mf.ColName = fapColumn.ColName + item.Value;
                     mf.ColComment = fapColumn.ColComment + item.Description;
                     mf.IsMultiLang = 0;
-                    stringBuilder.Append($"alter table {mf.TableName} add {CreateColumnSql(mf)} ").AppendLine(";");                   
+                    stringBuilder.AppendLine($"alter table {mf.TableName} add {CreateColumnSql(mf)} ;");                   
                     stringBuilder.Append(MakeColumnCommentSql(mf)).AppendLine();
                 }
             }
@@ -231,18 +231,25 @@ namespace Fap.Core.DataAccess.SqlParser
         public string AlterColumnSql(FapColumn fapColumn)
         {
             StringBuilder builder = new StringBuilder();
+            //if (HasDefaultValueConstraint(fapColumn))
+            //{
+            //    builder.AppendLine($"ALTER TABLE {fapColumn.TableName} DROP CONSTRAINT  DF_{fapColumn.TableName}_{fapColumn.ColName};");
+            //}
             builder.AppendLine($"alter table {fapColumn.TableName} alter column {CreateColumnSql(fapColumn)};");
-            if (fapColumn.IsMultiLang == 1) //多语
+          
+            return builder.ToString();
+        }
+        public string AlterMultiLangColumnSql(FapColumn fapColumn)
+        {
+            StringBuilder builder = new StringBuilder();
+            var languageList = typeof(MultiLanguage.MultiLanguageEnum).EnumItems();
+            foreach (var lang in languageList)
             {
-                var languageList = typeof(MultiLanguage.MultiLanguageEnum).EnumItems();
-                foreach (var lang in languageList)
-                {
-                    FapColumn column = (FapColumn)fapColumn.Clone();
-                    column.ColName = fapColumn.ColName + lang.Value;
-                    column.ColComment = fapColumn.ColComment + lang.Description;
-                    column.IsMultiLang = 0;
-                    builder.AppendLine($"alter table {fapColumn.TableName} alter column {CreateColumnSql(column)};");
-                }
+                FapColumn column = (FapColumn)fapColumn.Clone();
+                column.ColName = fapColumn.ColName + lang.Value;
+                column.ColComment = fapColumn.ColComment + lang.Description;
+                column.IsMultiLang = 0;
+                builder.AppendLine($"alter table {fapColumn.TableName} alter column {CreateColumnSql(column)};");
             }
             return builder.ToString();
         }
@@ -250,10 +257,10 @@ namespace Fap.Core.DataAccess.SqlParser
         public string DropColumnSql(FapColumn fapColumn)
         {
             StringBuilder builder = new StringBuilder();
-            if (HasDefaultValueConstraint(fapColumn))
-            {
-                builder.AppendLine($"ALTER TABLE {fapColumn.TableName} DROP CONSTRAINT  DF_{fapColumn.TableName}_{fapColumn.ColName};");
-            }
+            //if (HasDefaultValueConstraint(fapColumn))
+            //{
+            //    builder.AppendLine($"ALTER TABLE {fapColumn.TableName} DROP CONSTRAINT  DF_{fapColumn.TableName}_{fapColumn.ColName};");
+            //}
             builder.AppendLine($"alter table {fapColumn.TableName} drop column {fapColumn.ColName};");
             if (fapColumn.IsMultiLang == 1) //多语
             {

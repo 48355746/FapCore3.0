@@ -12,7 +12,7 @@ namespace Fap.Core.DataAccess.SqlParser
         public string AddColumnSql(FapColumn fapColumn)
         {
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.Append($"alter table {fapColumn.TableName} add column {CreateColumnSql(fapColumn)}").AppendLine("GO");
+            stringBuilder.AppendLine($"alter table {fapColumn.TableName} add column {CreateColumnSql(fapColumn)};");
             if (fapColumn.IsMultiLang == 1) //多语
             {
                 var languageList = typeof(MultiLanguage.MultiLanguageEnum).EnumItems();
@@ -22,7 +22,7 @@ namespace Fap.Core.DataAccess.SqlParser
                     column.ColName = fapColumn.ColName + lang.Value;
                     column.ColComment = fapColumn.ColComment + lang.Description;
                     column.IsMultiLang = 0;
-                    stringBuilder.Append($"alter table {column.TableName} add column {CreateColumnSql(column)}").AppendLine("GO");
+                    stringBuilder.AppendLine($"alter table {column.TableName} add column {CreateColumnSql(column)}");
                 }
             }
             return stringBuilder.ToString();
@@ -31,22 +31,24 @@ namespace Fap.Core.DataAccess.SqlParser
         public string AlterColumnSql(FapColumn fapColumn)
         {
             StringBuilder builder = new StringBuilder();
-            builder.AppendLine($"alter table {fapColumn.TableName} alter column {CreateColumnSql(fapColumn)}").AppendLine("GO");
-            if (fapColumn.IsMultiLang == 1) //多语
+            builder.AppendLine($"alter table {fapColumn.TableName} modify  column {CreateColumnSql(fapColumn)};");
+         
+            return builder.ToString();
+        }
+        public string AlterMultiLangColumnSql(FapColumn fapColumn)
+        {
+            StringBuilder builder = new StringBuilder();
+            var languageList = typeof(MultiLanguage.MultiLanguageEnum).EnumItems();
+            foreach (var lang in languageList)
             {
-                var languageList = typeof(MultiLanguage.MultiLanguageEnum).EnumItems();
-                foreach (var lang in languageList)
-                {
-                    FapColumn column = (FapColumn)fapColumn.Clone();
-                    column.ColName = fapColumn.ColName + lang.Value;
-                    column.ColComment = fapColumn.ColComment + lang.Description;
-                    column.IsMultiLang = 0;
-                    builder.AppendLine($"alter table {fapColumn.TableName} alter column {CreateColumnSql(column)}").AppendLine("GO");
-                }
+                FapColumn column = (FapColumn)fapColumn.Clone();
+                column.ColName = fapColumn.ColName + lang.Value;
+                column.ColComment = fapColumn.ColComment + lang.Description;
+                column.IsMultiLang = 0;
+                builder.AppendLine($"alter table {fapColumn.TableName} alter column {CreateColumnSql(column)}");
             }
             return builder.ToString();
         }
-
         public string CreateColumnSql(FapColumn fapColumn)
         {
             StringBuilder sql = new StringBuilder();
@@ -120,7 +122,7 @@ namespace Fap.Core.DataAccess.SqlParser
                 column.ColName = fapColumn.ColName + lang.Value;
                 column.ColComment = fapColumn.ColComment + lang.Description;
                 column.IsMultiLang = 0;
-                sqlBuilder.Append($"alter table {column.TableName} add column {CreateColumnSql(column)}").AppendLine("GO");
+                sqlBuilder.Append($"alter table {column.TableName} add column {CreateColumnSql(column)};");
             }
             return sqlBuilder.ToString();
         }
@@ -164,14 +166,14 @@ namespace Fap.Core.DataAccess.SqlParser
         public string DropColumnSql(FapColumn fapColumn)
         {
             StringBuilder builder = new StringBuilder();
-            builder.AppendLine($"alter table {fapColumn.TableName} drop column {fapColumn.ColName}").AppendLine("GO");
+            builder.AppendLine($"alter table {fapColumn.TableName} drop column {fapColumn.ColName};");
             if (fapColumn.IsMultiLang == 1) //多语
             {
                 var languageList = typeof(MultiLanguage.MultiLanguageEnum).EnumItems();
                 foreach (var lang in languageList)
                 {
                     string colName = fapColumn.ColName + lang.Value;
-                    builder.AppendLine($"alter table {fapColumn.TableName} drop column {colName}").AppendLine("GO");
+                    builder.AppendLine($"alter table {fapColumn.TableName} drop column {colName};");
                 }
             }
             return builder.ToString();
@@ -193,7 +195,7 @@ namespace Fap.Core.DataAccess.SqlParser
         public string RenameColumnSql(FapColumn newColumn, string oldName)
         {
             StringBuilder builder = new StringBuilder();
-            builder.AppendLine($"alter table {newColumn.TableName} change  column {oldName} {CreateColumnSql(newColumn)}").AppendLine("GO");
+            builder.AppendLine($"alter table {newColumn.TableName} change  column {oldName} {CreateColumnSql(newColumn)};");
             if (newColumn.IsMultiLang == 1) //多语
             {
                 var languageList = typeof(MultiLanguage.MultiLanguageEnum).EnumItems();
@@ -204,7 +206,7 @@ namespace Fap.Core.DataAccess.SqlParser
                     column.ColComment = newColumn.ColComment + lang.Description;
                     column.IsMultiLang = 0;
                     string oldLangName = oldName + lang.Value;
-                    builder.AppendLine($"alter table {newColumn.TableName} change  column {oldLangName} {CreateColumnSql(column)}").AppendLine("GO");
+                    builder.AppendLine($"alter table {newColumn.TableName} change  column {oldLangName} {CreateColumnSql(column)};");
                 }
             }
             return builder.ToString();
@@ -217,7 +219,7 @@ namespace Fap.Core.DataAccess.SqlParser
             foreach (var lang in languageList)
             {
                 string colName = fapColumn.ColName + lang.Value;
-                builder.AppendLine($"alter table {fapColumn.TableName} drop column {colName}").AppendLine("GO");
+                builder.AppendLine($"alter table {fapColumn.TableName} drop column {colName};");
             }
             return builder.ToString();
         }

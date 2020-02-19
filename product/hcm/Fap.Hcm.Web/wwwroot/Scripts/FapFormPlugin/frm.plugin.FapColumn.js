@@ -38,8 +38,8 @@ $("#frm-grid-columnmetadata #CtrlType").on("change", function () {
     $("#ComboxSource").rules("remove");
     //$("#ColType").val('');
     $("#FileSuffix").val('');
-    $("#FileCount").val('');
-    $("#FileSize").val('');
+    $("#FileCount").val('0');
+    $("#FileSize").val('0');
     $("#RefID").val("");
     //$("#frm-grid-columnmetadata #ColLength").val(20);
     $("#frm-grid-columnmetadata #ColDefault").val('');

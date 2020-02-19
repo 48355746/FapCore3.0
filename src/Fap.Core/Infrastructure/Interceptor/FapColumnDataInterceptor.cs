@@ -54,6 +54,9 @@ namespace Fap.Core.Infrastructure.Interceptor
             FapColumn oriColumn = _dbContext.Get<FapColumn>(fid);
             try
             {
+                //先处理多语字段，之前是多语，现在也是多语
+                //之前不是多语现在是多语
+                //之前是多语现在不是
                 if (!newColumn.ColName.EqualsWithIgnoreCase(oriColumn.ColName))
                 {
                     _metadataContext.RenameColumn(newColumn, oriColumn.ColName);

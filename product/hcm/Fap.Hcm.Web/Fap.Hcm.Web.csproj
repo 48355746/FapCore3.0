@@ -79,4 +79,6 @@
     <Folder Include="Temporary\679175051240538112\" />
   </ItemGroup>
 
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
+
 </Project>
