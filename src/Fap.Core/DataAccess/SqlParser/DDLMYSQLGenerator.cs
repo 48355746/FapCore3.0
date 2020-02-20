@@ -32,7 +32,7 @@ namespace Fap.Core.DataAccess.SqlParser
         {
             StringBuilder builder = new StringBuilder();
             builder.AppendLine($"alter table {fapColumn.TableName} modify  column {CreateColumnSql(fapColumn)};");
-         
+
             return builder.ToString();
         }
         public string AlterMultiLangColumnSql(FapColumn fapColumn)
@@ -145,7 +145,7 @@ namespace Fap.Core.DataAccess.SqlParser
                         fapColumn.ColName = fname + lang.Value;
                         fapColumn.ColComment = description + lang.Description;
                         fapColumn.IsMultiLang = 0;
-                        sqlBuilder.Append(CreateColumnSql(fapColumn)).Append(",").AppendLine(); 
+                        sqlBuilder.Append(CreateColumnSql(fapColumn)).Append(",").AppendLine();
                     }
                 }
             }
@@ -196,22 +196,24 @@ namespace Fap.Core.DataAccess.SqlParser
         {
             StringBuilder builder = new StringBuilder();
             builder.AppendLine($"alter table {newColumn.TableName} change  column {oldName} {CreateColumnSql(newColumn)};");
-            if (newColumn.IsMultiLang == 1) //多语
+
+            return builder.ToString();
+        }
+        public string RenameMultilangColumnSql(FapColumn newColumn, string oldName)
+        {
+            StringBuilder builder = new StringBuilder();
+            var languageList = typeof(MultiLanguage.MultiLanguageEnum).EnumItems();
+            foreach (var lang in languageList)
             {
-                var languageList = typeof(MultiLanguage.MultiLanguageEnum).EnumItems();
-                foreach (var lang in languageList)
-                {
-                    FapColumn column = (FapColumn)newColumn.Clone();
-                    column.ColName = newColumn.ColName + lang.Value;
-                    column.ColComment = newColumn.ColComment + lang.Description;
-                    column.IsMultiLang = 0;
-                    string oldLangName = oldName + lang.Value;
-                    builder.AppendLine($"alter table {newColumn.TableName} change  column {oldLangName} {CreateColumnSql(column)};");
-                }
+                FapColumn column = (FapColumn)newColumn.Clone();
+                column.ColName = newColumn.ColName + lang.Value;
+                column.ColComment = newColumn.ColComment + lang.Description;
+                column.IsMultiLang = 0;
+                string oldLangName = oldName + lang.Value;
+                builder.AppendLine($"alter table {newColumn.TableName} change  column {oldLangName} {CreateColumnSql(column)};");
             }
             return builder.ToString();
         }
-
         public string DropMultiLangColumnSql(FapColumn fapColumn)
         {
             StringBuilder builder = new StringBuilder();
@@ -243,9 +245,9 @@ namespace Fap.Core.DataAccess.SqlParser
                 }
                 else
                 {
-                    if (column.ColType.EqualsWithIgnoreCase("varchar")||column.ColType.EqualsWithIgnoreCase("text"))
+                    if (column.ColType.EqualsWithIgnoreCase("varchar") || column.ColType.EqualsWithIgnoreCase("text"))
                     {
-                        sqlValue.Append($"'{data[column.ColName].ToString().Replace("'","''")}',");
+                        sqlValue.Append($"'{data[column.ColName].ToString().Replace("'", "''")}',");
                     }
                     else
                     {

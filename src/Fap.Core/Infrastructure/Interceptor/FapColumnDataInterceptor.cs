@@ -54,24 +54,35 @@ namespace Fap.Core.Infrastructure.Interceptor
             FapColumn oriColumn = _dbContext.Get<FapColumn>(fid);
             try
             {
-                //先处理多语字段，之前是多语，现在也是多语
-                //之前不是多语现在是多语
-                //之前是多语现在不是
                 if (!newColumn.ColName.EqualsWithIgnoreCase(oriColumn.ColName))
                 {
+                    //修改名称，同时alter type
                     _metadataContext.RenameColumn(newColumn, oriColumn.ColName);
                 }
                 else if (!newColumn.ColType.EqualsWithIgnoreCase(oriColumn.ColType) || newColumn.ColLength != oriColumn.ColLength || newColumn.ColPrecision != oriColumn.ColPrecision)
                 {
                     _metadataContext.AlterColumn(newColumn);
                 }
-                if (oriColumn.IsMultiLang == 0 && newColumn.IsMultiLang == 1)
+                //先处理多语字段，之前是多语，现在也是多语
+                if (oriColumn.IsMultiLang == 1 && newColumn.IsMultiLang == 1)
                 {
-                    //新增多语字段
+                    if (!newColumn.ColName.EqualsWithIgnoreCase(oriColumn.ColName))
+                    {
+                        _metadataContext.RenameMultiLangColumn(newColumn, oriColumn.ColName);
+                    }
+                    else if (!newColumn.ColType.EqualsWithIgnoreCase(oriColumn.ColType) || newColumn.ColLength != oriColumn.ColLength || newColumn.ColPrecision != oriColumn.ColPrecision)
+                    {
+                        _metadataContext.AlterMultiLangColumn(newColumn);
+                    }
+                }
+                else if (oriColumn.IsMultiLang == 0 && newColumn.IsMultiLang == 1)
+                {
+                    //之前不是多语现在是多语
                     _metadataContext.AddMultiLangColumn(newColumn);
                 }
                 if (oriColumn.IsMultiLang == 1 && newColumn.IsMultiLang == 0)
                 {
+                    //之前是多语现在不是
                     _metadataContext.DropMultiLangColumn(newColumn);
                 }
 
@@ -98,6 +109,6 @@ namespace Fap.Core.Infrastructure.Interceptor
                 }
             }
         }
-       
+
     }
 }

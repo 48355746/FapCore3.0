@@ -12,7 +12,7 @@ namespace Fap.Core.DataAccess.SqlParser
         public string CreateTableSql(FapTable table, IEnumerable<FapColumn> columns)
         {
             StringBuilder sqlBuilder = new StringBuilder();
-            sqlBuilder.Append($"CREATE TABLE {table.TableName}(").AppendLine();
+            sqlBuilder.Append($"CREATE TABLE [{table.TableName}](").AppendLine();
 
             foreach (var fapColumn in columns.OrderBy(c => c.ColOrder))
             {
@@ -63,7 +63,7 @@ namespace Fap.Core.DataAccess.SqlParser
                         column.ColName = field.ColName + lang.Value;
                         column.ColComment = field.ColComment + lang.Description;
                         //多余字段注释
-                        sqlBuilder.Append(MakeColumnCommentSql(field)).AppendLine();
+                        sqlBuilder.Append(MakeColumnCommentSql(column)).AppendLine();
                     }
                 }
             }
@@ -147,44 +147,45 @@ namespace Fap.Core.DataAccess.SqlParser
         public string CreateColumnSql(FapColumn fapColumn)
         {
             StringBuilder sqlBuilder = new StringBuilder();
+            sqlBuilder.AppendFormat("[{0}] ", fapColumn.ColName);
             if (FapColumn.COL_TYPE_STRING.Equals(fapColumn.ColType)) //字符串字段需要处理多语情况
             {
                 if (fapColumn.ColLength > 4000)
                 {
-                    sqlBuilder.Append(fapColumn.ColName).Append(" VARCHAR(MAX)");
+                    sqlBuilder.Append(" VARCHAR(MAX)");
                 }
                 else
                 {
-                    sqlBuilder.Append(fapColumn.ColName).Append(" VARCHAR(" + (fapColumn.ColLength > 0 ? fapColumn.ColLength : 32) + ")");
+                    sqlBuilder.Append(" VARCHAR(" + (fapColumn.ColLength > 0 ? fapColumn.ColLength : 32) + ")");
                 }
             }
             else if (FapColumn.COL_TYPE_PK.Equals(fapColumn.ColType))
             {
-                sqlBuilder.Append(fapColumn.ColName).Append(" INT NOT NULL IDENTITY(1,1)");
+                sqlBuilder.Append(" INT NOT NULL IDENTITY(1,1)");
             }
             else if (FapColumn.COL_TYPE_INT.Equals(fapColumn.ColType))
             {
-                sqlBuilder.Append(fapColumn.ColName).Append(" INT");
+                sqlBuilder.Append(" INT");
             }
             else if (FapColumn.COL_TYPE_LONG.Equals(fapColumn.ColType))
             {
-                sqlBuilder.Append(fapColumn.ColName).Append(" BIGINT");
+                sqlBuilder.Append(" BIGINT");
             }
             else if (FapColumn.COL_TYPE_DATETIME.Equals(fapColumn.ColType))
             {
-                sqlBuilder.Append(fapColumn.ColName).Append(" VARCHAR(19)");
+                sqlBuilder.Append(" VARCHAR(19)");
             }
             else if (FapColumn.COL_TYPE_DOUBLE.Equals(fapColumn.ColType))
             {
-                sqlBuilder.Append(fapColumn.ColName).Append(" DECIMAL(20," + (fapColumn.ColPrecision > 0 ? fapColumn.ColPrecision : 1) + ")");
+                sqlBuilder.Append(" DECIMAL(20," + (fapColumn.ColPrecision > 0 ? fapColumn.ColPrecision : 1) + ")");
             }
             else if (FapColumn.COL_TYPE_BOOL.Equals(fapColumn.ColType))
             {
-                sqlBuilder.Append(fapColumn.ColName).Append(" INT");
+                sqlBuilder.Append(" INT");
             }
             else if (FapColumn.COL_TYPE_UID.Equals(fapColumn.ColType))
             {
-                sqlBuilder.Append(fapColumn.ColName).Append(" VARCHAR(20)");
+                sqlBuilder.Append(" VARCHAR(20)");
             }
             else if (FapColumn.COL_TYPE_BLOB.Equals(fapColumn.ColType))
             {
@@ -193,11 +194,11 @@ namespace Fap.Core.DataAccess.SqlParser
             }
             else if (FapColumn.COL_TYPE_CLOB.Equals(fapColumn.ColType))
             {
-                sqlBuilder.Append(fapColumn.ColName).Append(" TEXT");
+                sqlBuilder.Append(" TEXT");
             }
             else
             {
-                sqlBuilder.Append(fapColumn.ColName).Append(" VARCHAR(" + (fapColumn.ColLength > 0 ? fapColumn.ColLength : 32) + ")");
+                sqlBuilder.Append(" VARCHAR(" + (fapColumn.ColLength > 0 ? fapColumn.ColLength : 32) + ")");
             }
             return sqlBuilder.ToString();
         }
@@ -288,25 +289,24 @@ namespace Fap.Core.DataAccess.SqlParser
             StringBuilder builder = new StringBuilder();
             builder.AppendLine($"EXEC sp_rename '{newColumn.TableName}.{oldName}', '{newColumn.ColName}' , 'COLUMN';");
             builder.AppendLine(AlterColumnSql(newColumn));
-
-            if (newColumn.IsMultiLang == 1) //多语
-            {
-                var languageList = typeof(MultiLanguage.MultiLanguageEnum).EnumItems();
-                foreach (var lang in languageList)
-                {
-                    FapColumn column = (FapColumn)newColumn.Clone();
-                    column.ColName = newColumn.ColName + lang.Value;
-                    column.ColComment = newColumn.ColComment + lang.Description;
-                    column.IsMultiLang = 0;
-                    string oldLangName = oldName + lang.Value;
-                    builder.AppendLine($"EXEC sp_rename '{column.TableName}.{oldLangName}', '{column.ColName}' , 'COLUMN';");
-                    builder.AppendLine(AlterColumnSql(column));
-                }
-            }
-
             return builder.ToString();
         }
-
+        public string RenameMultilangColumnSql(FapColumn newColumn, string oldName)
+        {
+            StringBuilder builder = new StringBuilder();
+            var languageList = typeof(MultiLanguage.MultiLanguageEnum).EnumItems();
+            foreach (var lang in languageList)
+            {
+                FapColumn column = (FapColumn)newColumn.Clone();
+                column.ColName = newColumn.ColName + lang.Value;
+                column.ColComment = newColumn.ColComment + lang.Description;
+                column.IsMultiLang = 0;
+                string oldLangName = oldName + lang.Value;
+                builder.AppendLine($"EXEC sp_rename '{column.TableName}.{oldLangName}', '{column.ColName}' , 'COLUMN';");
+                builder.AppendLine(AlterColumnSql(column));
+            }
+            return builder.ToString();
+        }
         public string DropMultiLangColumnSql(FapColumn fapColumn)
         {
             StringBuilder sqlBuilder = new StringBuilder();

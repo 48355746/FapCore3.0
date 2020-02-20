@@ -116,9 +116,15 @@
                 if (rowData == null) {
                     return;
                 }
+                if (rowData.IsSync == 1) {
+                    $.msg("已存在数据表，不能再同步了");
+                    return;
+                }
                 $.get(basePath + "/System/Api/Tools/ForceSync/" + rowData.Id, function (rv) {
                     if (rv.success) {
                         $.msg("同步成功");
+                    } else {
+                        bootbox.alert(rv.msg);
                     }
                 })
             });
@@ -138,21 +144,21 @@
             <!-- #section:custom/checkbox -->
             <div class="checkbox">
                 <label>
-                    <input name="form-field-option" type="checkbox" value="1" checked class="ace" />
+                    <input name="form-field-option" type="checkbox" value="1"  class="ace" />
                     <span class="lbl">当前选中表的元数据</span>
                 </label>
             </div>
 
             <div class="checkbox">
                 <label>
-                    <input name="form-field-option" type="checkbox" value="2" class="ace" />
+                    <input name="form-field-option" type="checkbox" value="2" checked class="ace" />
                     <span class="lbl"> 当前选中表分类的元数据</span>
                 </label>
             </div>
 
             <div class="checkbox">
                 <label>
-                    <input name="form-field-option" class="ace ace-checkbox-2" value="3" type="checkbox" />
+                    <input name="form-field-option" class="ace ace-checkbox-2" value="3" checked type="checkbox" />
                     <span class="lbl"> 包含table CREATE 语句</span>
                 </label>
             </div>
@@ -233,7 +239,7 @@
                                      if (rv.success) {
                                          window.location.href = basePath + "/" + rv.data;
                                      } else {
-                                         $.msg(rv.msg);
+                                         bootbox.alert(rv.msg);
                                      }
                                      layer.close(index);
                                  });

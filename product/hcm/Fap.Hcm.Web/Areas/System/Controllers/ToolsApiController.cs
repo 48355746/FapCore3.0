@@ -18,6 +18,7 @@ using System.Net.Mime;
 using System.IO;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Annex.Utility.Zip;
+using System.Text;
 
 namespace Fap.Hcm.Web.Areas.System.Controllers
 {
@@ -158,9 +159,9 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             }
             DatabaseDialectEnum dialect= (DatabaseDialectEnum)Enum.Parse(typeof(DatabaseDialectEnum), database);
             string sql= _dbMetadataContext.ExportSql(dialect, tableName, tableCategory, includCreate, includInsert);
-            string fileName =tableName.IsPresent()?tableName:tableCategory+$"{database}.sql";
+            string fileName =(tableName.IsPresent()?tableName:tableCategory)+$"{database}.sql";
             string filePath = Path.Combine(Environment.CurrentDirectory, FapPlatformConstants.TemporaryFolder, fileName);
-            SysIO.File.WriteAllText(filePath, sql);
+            SysIO.File.WriteAllText(filePath, sql,Encoding.UTF8);
             ZipHelper zipHelper = new ZipHelper();
             zipHelper.ZipMultiFiles(new[] { filePath}, filePath.Replace(".sql",".zip"));
             return Json(new ResponseViewModel { success = true, data = $"{FapPlatformConstants.TemporaryFolder}/{fileName.Replace(".sql", ".zip")}" } );

@@ -13,7 +13,9 @@ namespace Fap.Core.DataAccess
         void DropMultiLangColumn(FapColumn fapColumn);
         void AddColumn(FapColumn fapColumn);
         void RenameColumn(FapColumn newColumn, string oldName);
+        void RenameMultiLangColumn(FapColumn newColumn, string oldName);
         void AlterColumn(FapColumn fapColumn);
+        void AlterMultiLangColumn(FapColumn fapColumn);
         void DropColumn(FapColumn fapColumn);
         string ExportSql(DatabaseDialectEnum databaseDialect,string tableName, string tableCategory, bool includCreate, bool includInsert);
     }

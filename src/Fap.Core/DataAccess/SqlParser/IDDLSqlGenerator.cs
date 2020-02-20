@@ -11,6 +11,7 @@ namespace Fap.Core.DataAccess.SqlParser
         string AddMultiLangColumnSql(FapColumn fapColumn);
         string AlterMultiLangColumnSql(FapColumn fapColumn);
         string DropMultiLangColumnSql(FapColumn fapColumn);
+        string RenameMultilangColumnSql(FapColumn newColumn, string oldName);
         string CreateColumnSql(FapColumn fapColumn);
         string PhysicalTableColumnSql(string tableName);
         string AddColumnSql(FapColumn fapColumn);

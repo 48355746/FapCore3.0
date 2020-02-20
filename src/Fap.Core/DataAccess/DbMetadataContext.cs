@@ -94,6 +94,10 @@ namespace Fap.Core.DataAccess
             var generator = GetSqlGenerator(databaseDialect);
             if (tableName.IsPresent())
             {
+                if (includCreate)
+                {
+                    sql.AppendLine(ExportCreateSql(generator,tableName));
+                }
                 ExportSingleTableSql(tableName);
             }
             else if (tableCategory.IsPresent())
@@ -135,7 +139,7 @@ namespace Fap.Core.DataAccess
             {
                 return string.Empty;
             }
-            string sql = generator.PhysicalTableColumnSql(tableName);
+            string sql = GetSqlGenerator().PhysicalTableColumnSql(tableName);
             var fapColumns = _dbSession.Query<FapColumn>(sql);
             sql = $"select * from {tableName}";
             var datas = _dbSession.Query(sql);
@@ -150,19 +154,34 @@ namespace Fap.Core.DataAccess
         {
             var data = _dbSession.QueryFirstOrDefault("select * from FapTable where TableName=@TableName and Dr=0", new DynamicParameters(new { TableName = tableName }));
             var dataList = _dbSession.Query("select * from FapColumn where TableName=@TableName and Dr=0", new DynamicParameters(new { TableName = tableName }));
-            string sql = generator.PhysicalTableColumnSql(nameof(FapTable));
+            //根据当前连接获取物理表语句
+            string sql = GetSqlGenerator().PhysicalTableColumnSql(nameof(FapTable));
             var fapColumns = _dbSession.Query<FapColumn>(sql);
             StringBuilder metaSql = new StringBuilder();
             metaSql.AppendLine("--FapTable元数据");
+            metaSql.AppendLine($"delete from FapTable where TableName='{tableName}'");
             metaSql.AppendLine(generator.InsertSql(data as IDictionary<string, object>, fapColumns)).AppendLine("GO");
             metaSql.AppendLine("--FapColumn元数据");
-            sql = generator.PhysicalTableColumnSql(nameof(FapColumn));
+            metaSql.AppendLine($"delete from FapColumn where TableName='{tableName}'");
+            sql = GetSqlGenerator().PhysicalTableColumnSql(nameof(FapColumn));
             fapColumns = _dbSession.Query<FapColumn>(sql);
             foreach (var d in dataList)
             {
                 metaSql.AppendLine(generator.InsertSql(d as IDictionary<string, object>, fapColumns)).AppendLine("GO");
             }
             return metaSql.ToString();
+        }
+
+        public void RenameMultiLangColumn(FapColumn newColumn, string oldName)
+        {
+            string sql = GetSqlGenerator().RenameMultilangColumnSql(newColumn, oldName);
+            _dbSession.Execute(sql);
+        }
+
+        public void AlterMultiLangColumn(FapColumn fapColumn)
+        {
+            string sql = GetSqlGenerator().AlterMultiLangColumnSql(fapColumn);
+            _dbSession.Execute(sql);
         }
     }
 }

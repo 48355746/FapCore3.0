@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Newtonsoft.Json;
 using Fap.Hcm.Web.Models;
+using Fap.AspNetCore.Infrastructure.Filter;
 
 namespace Fap.Hcm.Web
 {
@@ -65,7 +66,9 @@ namespace Fap.Hcm.Web
                 options.PopupShowTimeWithChildren = true;
                 options.RouteBasePath = "/profiler";
             });
-            services.AddControllersWithViews().AddNewtonsoftJson().AddRazorRuntimeCompilation();
+            services.AddControllersWithViews(options=> {
+                options.Filters.Add(typeof(FapExceptionFilter));
+            }).AddNewtonsoftJson().AddRazorRuntimeCompilation();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
