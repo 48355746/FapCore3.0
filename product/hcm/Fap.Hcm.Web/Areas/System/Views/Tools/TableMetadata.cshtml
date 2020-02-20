@@ -32,8 +32,8 @@
                     <fap-button id="btnColumnMetadata" btn-tag="link" content="列元数据" icon-before="glyphicon glyphicon-th blue" class-name="info"></fap-button>
                     <fap-button id="btnForceSync" btn-tag="link" content="强制同步" icon-before="fa fa-bolt blue" class-name="info"></fap-button>
                     <fap-button id="btnRefreshMetadata" btn-tag="link" content="刷新元数据" icon-before="fa fa-refresh blue" class-name="info"></fap-button>
-                    <fap-button id="btnExportSql" btn-tag="link" content="导出脚本" icon-before="fa fa-code blue" class-name="info"></fap-button>
-                    <fap-button id="btnExportModel" btn-tag="link" content="导出Model类" icon-before="fa fa-code blue" class-name="info"></fap-button>
+                    <fap-button id="btnExportSql" btn-tag="link" content="导出Sql" icon-before="fa fa-code blue" class-name="info"></fap-button>
+                    <fap-button id="btnExportModel" btn-tag="link" content="导出Class" icon-before="fa fa-code blue" class-name="info"></fap-button>
                 </div>
             </div>
             <div class="widget-body">
@@ -49,7 +49,7 @@
 
 <script>
     //导出数据需要的js
-    var scripts = [null, "/Content/js/chosen.jquery.js","/Content/js/codemirror/codemirror.js","/Content/js/codemirror/mode/sql/sql.js","/Content/js/codemirror/mode/click/clike.js", null]
+    var scripts = [null, "/Content/js/chosen.jquery.js","/Content/js/codemirror/codemirror.js","/Content/js/codemirror/mode/sql/sql.js","/Content/js/codemirror/mode/clike/clike.js", null]
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
             $(document).one('ajaxloadstart.page', function (e) {
@@ -124,12 +124,12 @@
                          var $ta = $("<textarea class=\"form-control\"></textarea>");
                         dialog.on('shown.bs.modal', function (e) {
                             var editor = CodeMirror.fromTextArea($ta.get(0), {
-                                mode:  "text/x-csrc",
+                                mode:  "text/x-java",
                                 theme: 'xq-light',
-                                //indentWithTabs: true,
-                                //smartIndent: true,
+                                indentWithTabs: true,
+                                smartIndent: true,
                                 lineNumbers: true,
-                                //matchBrackets: true,
+                                matchBrackets: true,
                                 autofocus: true
 
                             });
@@ -262,10 +262,10 @@
                                                   var editor =  CodeMirror.fromTextArea($ta.get(0), {
                                                      mode: 'text/x-mssql',
                                                      theme: 'xq-light',
-                                                     //indentWithTabs: true,
-                                                     //smartIndent: true,
-                                                     //lineNumbers: true,
-                                                     //matchBrackets: true,
+                                                     indentWithTabs: true,
+                                                     smartIndent: true,
+                                                     lineNumbers: true,
+                                                     matchBrackets: true,
                                                     autofocus: true
 
                                                 });
