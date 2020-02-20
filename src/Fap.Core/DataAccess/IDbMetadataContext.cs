@@ -18,5 +18,6 @@ namespace Fap.Core.DataAccess
         void AlterMultiLangColumn(FapColumn fapColumn);
         void DropColumn(FapColumn fapColumn);
         string ExportSql(DatabaseDialectEnum databaseDialect,string tableName, string tableCategory, bool includCreate, bool includInsert);
+        string GeneraterModelClass(FapTable table, IEnumerable<FapColumn> columns);
     }
 }

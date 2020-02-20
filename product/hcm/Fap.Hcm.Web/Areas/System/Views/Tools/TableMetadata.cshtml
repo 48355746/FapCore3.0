@@ -3,26 +3,10 @@
     _platformDomain.DictSet.TryGetValueByCategory("TableCategory", out IEnumerable<Fap.Core.Infrastructure.Metadata.FapDict> tableCategorys);
 }
 <title><fap-multilang lang-key="system_tools_tablemetadata_title" default-content="表元数据"></fap-multilang>    </title>
-<link href="~/Content//css/chosen.css" rel="stylesheet" />
-<script>
-      //加载历史版本
-    function showColumnMetadataGrid(parentRowID, parentRowKey) {
-        var url = "@Url.Content("~/System/Tools/ColumnMetadata")?id=" + parentRowKey;
-        //$('#' + parentRowID).load($.randomUrl("@Url.Content("~/System/Tools/ColumnMetadata")?id=" + parentRowKey), function (rv) {
-        $.get(url, function (rv) {
-        var index = layer.open({
-            type: 1,
-            skin: 'layui-layer-rim', //加上边框
-            area: ['100%','100%'], //宽高
-            content:rv
-        });
-        layer.full(index);
+<link href="~/Content/css/chosen.css" rel="stylesheet" />
+<link href="~/Content/css/codemirror/codemirror.css" rel="stylesheet" />
+<link href="~/Content/css/codemirror/theme/xq-light.css" rel="stylesheet" />
 
-        });
-
-    }
-
-</script>
 <div class="row">
     <div class="col-xs-12">
         <div id="widget-box-orgdept" class="widget-box">
@@ -49,6 +33,7 @@
                     <fap-button id="btnForceSync" btn-tag="link" content="强制同步" icon-before="fa fa-bolt blue" class-name="info"></fap-button>
                     <fap-button id="btnRefreshMetadata" btn-tag="link" content="刷新元数据" icon-before="fa fa-refresh blue" class-name="info"></fap-button>
                     <fap-button id="btnExportSql" btn-tag="link" content="导出脚本" icon-before="fa fa-code blue" class-name="info"></fap-button>
+                    <fap-button id="btnExportModel" btn-tag="link" content="导出Model类" icon-before="fa fa-code blue" class-name="info"></fap-button>
                 </div>
             </div>
             <div class="widget-body">
@@ -63,9 +48,8 @@
 </div>
 
 <script>
-
     //导出数据需要的js
-    var scripts = [null, "/Content/js/chosen.jquery.js", null]
+    var scripts = [null, "/Content/js/chosen.jquery.js","/Content/js/codemirror/codemirror.js","/Content/js/codemirror/mode/sql/sql.js","/Content/js/codemirror/mode/click/clike.js", null]
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
             $(document).one('ajaxloadstart.page', function (e) {
@@ -99,17 +83,6 @@
 
                     });
                 });
-                //$.get(url, function (rv) {
-                //    var index = layer.open({
-                //        type: 1,
-                //        zIndex:500,
-                //        skin: 'layui-layer-rim', //加上边框
-                //        area: ['100%', '100%'], //宽高
-                //        content: rv
-                //    });
-                //    layer.full(index);
-
-                //});
             });
             $("#btnForceSync").on(ace.click_event, function () {
                 var rowData = getSelectedRow("grid-faptable");
@@ -135,6 +108,47 @@
                     }
                 })
             })
+            $("#btnExportModel").on(ace.click_event, function () {
+
+                var rowData = getSelectedRow("grid-faptable");
+                if (rowData == null) {
+                    return;
+                }
+                $.get(basePath + "/System/Api/Tools/ExportModelClass/" + rowData.Fid, function (rv) {
+                    if (rv.success) {
+                        var dialog = bootbox.dialog({
+                            title: rowData.TableName + "Model类!",
+                            size: "fullscreen",
+                            message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>'
+                        });
+                         var $ta = $("<textarea class=\"form-control\"></textarea>");
+                        dialog.on('shown.bs.modal', function (e) {
+                            var editor = CodeMirror.fromTextArea($ta.get(0), {
+                                mode:  "text/x-csrc",
+                                theme: 'xq-light',
+                                //indentWithTabs: true,
+                                //smartIndent: true,
+                                lineNumbers: true,
+                                //matchBrackets: true,
+                                autofocus: true
+
+                            });
+                            editor.setSize('100%', '650px');
+                        });
+                        dialog.init(function () {
+                            $ta.val(rv.data);
+                            dialog.find('.bootbox-body').html("");
+                            dialog.find('.bootbox-body').append($ta);
+
+                            //editor.setValue(rv.data);
+                            //editor.onFocus();
+                        });
+                    }else {
+                        bootbox.alert(rv.msg);
+                    }
+                })
+                
+            });
             $("#btnExportSql").on(ace.click_event, function () {
                 var $html =$(`<div class="row">
     <div class="col-xs-12 col-sm-5">
@@ -201,7 +215,7 @@
                              label: '确定',
                              className: 'btn-primary',
                              callback: function () {
-                             
+
                                  var checkedItems = $html.find("input[name='form-field-option']:checked");
                                  var result = [];
                                  $.each(checkedItems, function (_, item) {
@@ -237,14 +251,44 @@
                                  });
                                  $.post(basePath + "/System/Api/Tools/ExportSql", data, function (rv) {
                                      if (rv.success) {
-                                         window.location.href = basePath + "/" + rv.data;
+                                         if (data.tableName != null) {
+                                             var $ta = $("<textarea class=\"form-control\"></textarea>");
+                                             var sqldialog = bootbox.dialog({
+                                                 title: data.tableName + "脚本!",
+                                                 size: "fullscreen",
+                                                 message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>'
+                                             });
+                                             sqldialog.on('shown.bs.modal', function (e) {
+                                                  var editor =  CodeMirror.fromTextArea($ta.get(0), {
+                                                     mode: 'text/x-mssql',
+                                                     theme: 'xq-light',
+                                                     //indentWithTabs: true,
+                                                     //smartIndent: true,
+                                                     //lineNumbers: true,
+                                                     //matchBrackets: true,
+                                                    autofocus: true
+
+                                                });
+                                                 editor.setSize('100%', '650px');
+                                             });
+                                             sqldialog.init(function () {
+                                                 $ta.val(rv.data);
+                                                 sqldialog.find('.bootbox-body').html("");
+                                                 sqldialog.find('.bootbox-body').append($ta);
+
+                                                 //editor.setValue(rv.data);
+                                                 //editor.onFocus();
+                                             });
+                                         } else {
+                                             window.location.href = basePath + "/" + rv.data;
+                                         }
                                      } else {
                                          bootbox.alert(rv.msg);
                                      }
                                      layer.close(index);
                                  });
                              }
-                            
+
                          },
                          cancel: {
                              label: '取消',
@@ -259,7 +303,7 @@
                     dialog.find('.bootbox-body').html("");
                     dialog.find('.bootbox-body').append($html);
                 });
-          
+
             });
         })
     });

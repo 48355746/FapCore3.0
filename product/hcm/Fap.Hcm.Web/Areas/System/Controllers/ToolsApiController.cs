@@ -161,10 +161,22 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             string sql= _dbMetadataContext.ExportSql(dialect, tableName, tableCategory, includCreate, includInsert);
             string fileName =(tableName.IsPresent()?tableName:tableCategory)+$"{database}.sql";
             string filePath = Path.Combine(Environment.CurrentDirectory, FapPlatformConstants.TemporaryFolder, fileName);
+            if (tableName.IsPresent())
+            {
+                return Json(new ResponseViewModel { success = true, data = sql });
+            }
             SysIO.File.WriteAllText(filePath, sql,Encoding.UTF8);
             ZipHelper zipHelper = new ZipHelper();
             zipHelper.ZipMultiFiles(new[] { filePath}, filePath.Replace(".sql",".zip"));
             return Json(new ResponseViewModel { success = true, data = $"{FapPlatformConstants.TemporaryFolder}/{fileName.Replace(".sql", ".zip")}" } );
+        }
+        [HttpGet("ExportModelClass/{fid}")]
+        public JsonResult ExportModeClass(string fid)
+        {
+            FapTable table= _dbContext.Get<FapTable>(fid);
+            var columns = _dbContext.QueryWhere<FapColumn>($"TableName='{table.TableName}'").Where(c => c.IsDefaultCol == 0);
+            string modelClass= _dbMetadataContext.GeneraterModelClass(table, columns);
+            return Json(new ResponseViewModel { success = true, data = modelClass });
         }
     }
 }

@@ -183,5 +183,76 @@ namespace Fap.Core.DataAccess
             string sql = GetSqlGenerator().AlterMultiLangColumnSql(fapColumn);
             _dbSession.Execute(sql);
         }
+        public string GeneraterModelClass(FapTable table, IEnumerable<FapColumn> columns)
+        {
+            string code = @"
+using System;
+using Dapper.Contrib.Extensions;
+namespace Fap.Model.Infrastructure
+{
+    /// <summary>
+    /// {ClassTitle}
+    /// </summary>
+	[Serializable]
+    public class {ClassName} : Fap.Model.BaseModel
+    {
+{FieldGetSet}
+    }
+}";
+            code = code.Replace("{ClassTitle}", table.TableComment);
+            code = code.Replace("{ClassName}", table.TableName);
+            StringBuilder builder = new StringBuilder();
+            foreach (var column in columns)
+            {
+                    //PK, UID, STRING,INT、DOUBLE、DATETIME、BLOB、CLOB、BOOL、LONG
+                    builder.Append("\t").Append("/// <summary>").Append(Environment.NewLine);
+                    builder.Append("\t").Append("/// ").Append(column.ColComment).Append(Environment.NewLine);
+                    builder.Append("\t").Append("/// </summary>").Append(Environment.NewLine);
+                    builder.Append("\t").Append("public");
+                    if (FapColumn.COL_TYPE_PK.EqualsWithIgnoreCase(column.ColType)
+                        || FapColumn.COL_TYPE_INT.EqualsWithIgnoreCase(column.ColType)
+                        || FapColumn.COL_TYPE_BOOL.EqualsWithIgnoreCase(column.ColType))
+                    {
+                        builder.Append(" int ");
+                    }
+                    else if (FapColumn.COL_TYPE_UID.EqualsWithIgnoreCase(column.ColType)
+                        || FapColumn.COL_TYPE_STRING.EqualsWithIgnoreCase(column.ColType)
+                        || FapColumn.COL_TYPE_DATETIME.EqualsWithIgnoreCase(column.ColType)
+                        || FapColumn.COL_TYPE_CLOB.EqualsWithIgnoreCase(column.ColType))
+                    {
+                        builder.Append(" string ");
+                    }
+                    else if (FapColumn.COL_TYPE_LONG.EqualsWithIgnoreCase(column.ColType))
+                    {
+                        builder.Append(" long ");
+                    }
+                    else if (FapColumn.COL_TYPE_DOUBLE.EqualsWithIgnoreCase(column.ColType))
+                    {
+                        builder.Append(" double ");
+                    }
+                    else if (FapColumn.COL_TYPE_BLOB.EqualsWithIgnoreCase(column.ColType))
+                    {
+                        builder.Append(" byte[] ");
+                    }
+                    builder.Append(column.ColName).Append(" { get; set; }").Append(Environment.NewLine);
+
+                    //生成显性字段
+                    if (FapColumn.CTRL_TYPE_COMBOBOX == column.CtrlType
+                        || FapColumn.CTRL_TYPE_REFERENCE == column.CtrlType)
+                    {
+                        builder.Append("\t").Append("/// <summary>").Append(Environment.NewLine);
+                        builder.Append("\t").Append("/// ").Append(column.ColComment).Append(" 的显性字段MC").Append(Environment.NewLine);
+                        builder.Append("\t").Append("/// </summary>").Append(Environment.NewLine);
+                        builder.Append("\t").Append("[Computed]").Append(Environment.NewLine);
+                        builder.Append("\t").Append("public");
+                        builder.Append(" string ");
+                        builder.Append(column.ColName).Append("MC { get; set; }").Append(Environment.NewLine);
+                    }
+                }
+
+            code = code.Replace("{FieldGetSet}", builder.ToString());
+
+            return code;
+        }
     }
 }
