@@ -9,18 +9,9 @@ namespace Fap.Core.MultiLanguage
     {
         MultiLanguageEnum CurrentLanguage { get; }
         string CurrentLanguageName { get; }
-
         IEnumerable<string> GetAllLanguage();
-        IEnumerable<string> GetAllLanguageSuffix();
-        IEnumerable<FapResMultiLang> GetAllResMultiLang();
-        string GetFieldMultiLangName(string fieldName);
-        string GetLangColumnComent(FapColumn column);
-        string GetLangMenuName(FapMenu menu);
-        string GetLangModuleName(FapModule module);
-        string GetLangTableComment(FapTable table);
-        string GetResName(string resCode, string defaultName = "", string multiLang = "");
-        string GetResNameByLang(string resCode, string defaultName = "", MultiLanguageEnum multiLanguage = MultiLanguageEnum.ZhCn);
+        string GetOrAndMultiLangValue(MultiLanguageOriginEnum qualifer, string langkey, string langValue);
+        string GetMultiLangValue(MultiLanguageOriginEnum qualifer, string langkey);
         void InitMultiLangResJS();
-        bool IsMultiLanguageField(string fieldName);
     }
 }

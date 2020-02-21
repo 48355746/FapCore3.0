@@ -1,6 +1,7 @@
 ﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
 
-<title>@_multiLangService.GetResName("orgdept_orghistory_page_title", "历史架构")</title>
+<title><fap-multilang lang-key="orgdept_orghistory_page_title" default-content="历史架构"></fap-multilang>
+  </title>
 <div class="row">
     <div class="col-xs-12">
         <div id="orgposition" class="col-xs-12">
@@ -9,7 +10,9 @@
                 <div class="col-xs-12 col-sm-12">
                     <div class="widget-box">
                         <div class="widget-header widget-header-flat">
-                            <h4 class="widget-title">@_multiLangService.GetResName("orgdept_orghistory_page_historyjob", "历史岗位")</h4>
+                            <h4 class="widget-title">
+                            <fap-multilang lang-key="orgdept_orghistory_page_historyjob" default-content="历史岗位"></fap-multilang>
+                     </h4>
 
                             <div class="widget-toolbar">
                                 <a href="#" data-action="fullscreen" class="orange2">
@@ -19,19 +22,9 @@
 
                             <div class="widget-toolbar">
                                 <div class="inline ">
-                                    <button id="btnSynPositionNum" class="btn btn-xs btn-success bigger">
-                                        <i class="ace-icon fa fa-refresh"></i>
-                                        @_multiLangService.GetResName("orgdept_orgjob_page_synchrohistoryjobingnums", "同步历史在岗人数")
-                                    </button>
-
-                                    <button id="btnJobChart" class="btn btn-xs btn-pink bigger">
-                                        <i class="ace-icon fa fa-sitemap"></i>
-                                        @_multiLangService.GetResName("orgdept_orgjob_page_historypostdrawing", "历史机构岗位图")
-                                    </button>
-                                    <button id="btnRestoreDept" class="btn btn-xs btn-purple bigger">
-                                        <i class="ace-icon fa fa-undo"></i>
-                                        恢复部门
-                                    </button>
+                                    <fap-button id="btnJobChart" icon-before="fa fa-sitemap" content="历史机构岗位图"></fap-button>
+                                    <fap-button id="btnRestoreDept" icon-before="fa fa-undo" content="恢复部门"></fap-button>
+                             
                                 </div>
                             </div>
                         </div>
@@ -65,9 +58,10 @@
 
                             <input type="text" id="dateHistroy" class="form-control search-query" placeholder="历史时间点" />
                             <span class="input-group-btn">
-                                <button type="button" data-action="search" id="btnSearchHistory" title="@_multiLangService.GetResName("global_oper_viewer", "查看")" class="btn btn-default btn-sm">
+                              
+                                @*<button type="button" data-action="search" id="btnSearchHistory" title="@_multiLangService.GetResName("global_oper_viewer", "查看")" class="btn btn-default btn-sm">
                                     <span class="ace-icon fa fa-search icon-on-right bigger-110"></span>
-                                </button>
+                                </button>*@
                             </span>
                         </div>
                         <div id="treeDeptDiv" class="widget-main ">

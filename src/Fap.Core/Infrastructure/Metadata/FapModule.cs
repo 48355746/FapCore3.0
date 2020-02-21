@@ -8,7 +8,6 @@ namespace Fap.Core.Infrastructure.Metadata
     /// <summary>
     /// 系统模块表
     /// </summary>
-    [Serializable]
     public class FapModule : BaseModel
     {
         /// <summary>
@@ -35,18 +34,7 @@ namespace Fap.Core.Infrastructure.Metadata
         /// 图标
         /// </summary>
         public string Icon { get; set; }
-        /// <summary>
-        /// 繁体中文
-        /// </summary>
-        public string LangZhTW { get; set; }
-        /// <summary>
-        /// 英文
-        /// </summary>
-        public string LangEn { get; set; }
-        /// <summary>
-        /// 日本语
-        /// </summary>
-        public string LangJa { get; set; }
+        
         /// <summary>
         /// 所属产品
         /// </summary>

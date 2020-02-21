@@ -1,6 +1,7 @@
 ﻿using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Infrastructure.Enums;
+using Fap.Core.MultiLanguage;
 using Fap.Core.Rbac;
 using Fap.Core.Rbac.Model;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -25,9 +26,11 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         public bool RegisterButton { get; set; } = true;
         private readonly IRbacService _rbacService;
         private readonly IFapApplicationContext _applicationContext;
-        public FapTreeButtonTagHelper(IRbacService rbacService,IFapApplicationContext applicationContext)
+        private readonly IMultiLangService _multiLangService;
+        public FapTreeButtonTagHelper(IRbacService rbacService,IFapApplicationContext applicationContext,IMultiLangService multiLangService)
         {
             _rbacService = rbacService;
+            _multiLangService = multiLangService;
             _applicationContext = applicationContext;
         }
         public override Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
@@ -45,20 +48,20 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             output.Attributes.Add("class", "widget-toolbar");
             output.Content.AppendHtml(AddJavaScript(TreeId));
             if ((OperType & OperEnum.Add) > 0)
-            {
-                output.Content.AppendHtml(AddOper("add","新增", "fa fa-plus-circle purple"));
+            {                
+                output.Content.AppendHtml(AddOper("add", OperEnum.Add.Description(_multiLangService), "fa fa-plus-circle purple"));
             }
             if ((OperType & OperEnum.Update) > 0)
             {
-                output.Content.AppendHtml(AddOper("edit","修改", " fa fa-pencil blue"));
+                output.Content.AppendHtml(AddOper("edit", OperEnum.Update.Description(_multiLangService), " fa fa-pencil blue"));
             }
             if ((OperType & OperEnum.Delete) > 0)
             {
-                output.Content.AppendHtml(AddOper("delete","删除", " fa fa-trash-o red"));
+                output.Content.AppendHtml(AddOper("delete", OperEnum.Delete.Description(_multiLangService), " fa fa-trash-o red")) ;
             }
             if ((OperType & OperEnum.Refresh) > 0)
             {
-                output.Content.AppendHtml(AddOper("refresh", "刷新", " fa fa-refresh"));
+                output.Content.AppendHtml(AddOper("refresh", OperEnum.Refresh.Description(_multiLangService), " fa fa-refresh"));
             }
 
             return Task.CompletedTask; //base.ProcessAsync(context, output);

@@ -18,6 +18,10 @@ namespace Fap.Core.Infrastructure.Metadata
         /// 名称
         /// </summary>
         public string Name { get; set; }
+        public string NameZhCn { get; set; }
+        public string NameZhTW { get; set; }
+        public string NameEn { get; set; }
+        public string NameJa { get; set; }
         /// <summary>
         /// 父级编码
         /// </summary>

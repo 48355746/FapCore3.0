@@ -461,7 +461,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                     Description = _dbContext.Table(querySet.TableName).TableComment
                 };
 
-                //注册按钮
+                //获取列权限
                 return _rbacService.GetMenuColumnAuthority(_applicationContext.CurrentRoleUid, menuColumn);
             }
             return string.Empty;

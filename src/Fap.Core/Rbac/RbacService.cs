@@ -310,6 +310,7 @@ namespace Fap.Core.Rbac
                         return "1";
                     }
                 }
+                
             }
             return string.Empty;
         }

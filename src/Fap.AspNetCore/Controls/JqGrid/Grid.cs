@@ -2261,43 +2261,46 @@ namespace Fap.AspNetCore.Controls.JqGrid
         /// <param name="script"></param>
         private void BatchUpdateToolbar(StringBuilder script)
         {
+            string title= OperEnum.BatchUpdate.Description(_multiLang);
             script.AppendLine(@" 
                     jQuery('###gridid##').jqGrid('navButtonAdd', '###pager##',{
                       caption:'',
-                      title:'批量编辑',
+                      title:'"+ title + @"',
                       position:'first',  
                       buttonicon:'ace-icon fa fa-pencil-square-o',
                       onClickButton : function() {                      
-                        loadBatchUpdateMessageBox('批量编辑','##gridid##','" + HttpUtility.UrlEncode(_querySet.QueryCols) + "','" + TableName + "','" + GetCurrentMenuUid() + @"');
+                        loadBatchUpdateMessageBox('"+title+@"','##gridid##','" + HttpUtility.UrlEncode(_querySet.QueryCols) + "','" + TableName + "','" + GetCurrentMenuUid() + @"');
                     }
                   });");
         }
 
         private void ExportExcelToolbar(StringBuilder script)
         {
+            string title = OperEnum.ExportExcel.Description(_multiLang);
             script.AppendLine(@" 
                     jQuery('###gridid##').jqGrid('navButtonAdd', '###pager##',{
                       caption:'',
-                      title:'导出',
+                      title:'"+title+@"',
                       position:'last',  
                       buttonicon:'ace-icon fa fa-file-excel-o green',
                       onClickButton : function() {
                       
-                        loadExportExcelMessageBox('导出Excel','##gridid##','" + HttpUtility.UrlEncode(_querySet.QueryCols) + "','" + TableName + @"',0);
+                        loadExportExcelMessageBox('"+title+@"','##gridid##','" + HttpUtility.UrlEncode(_querySet.QueryCols) + "','" + TableName + @"',0);
                     }
                   });");
         }
         private void ExportWordToolbar(StringBuilder script)
         {
+            string title = OperEnum.ExportWord.Description(_multiLang);
             script.AppendLine(@" 
                     jQuery('###gridid##').jqGrid('navButtonAdd', '###pager##',{
                       caption:'',
-                      title:'导出',
+                      title:'"+title+@"',
                       position:'last',  
                       buttonicon:'ace-icon fa fa-file-word-o',
                       onClickButton : function() {
                       
-                        loadExportWordMessageBox('导出Word','##gridid##','" + HttpUtility.UrlEncode(_querySet.QueryCols) + "','" + TableName + @"',0);
+                        loadExportWordMessageBox('"+title+@"','##gridid##','" + HttpUtility.UrlEncode(_querySet.QueryCols) + "','" + TableName + @"',0);
                     }
                   });");
         }
@@ -2305,15 +2308,16 @@ namespace Fap.AspNetCore.Controls.JqGrid
         private void ImportToolbar(StringBuilder script)
         {
             #region 导入
+            string title = OperEnum.Import.Description(_multiLang);
             script.AppendLine(@" 
                     jQuery('###gridid##').jqGrid('navButtonAdd', '###pager##',{
                       caption:'',
-                      title:'导入',
+                      title:'"+title+@"',
                       position:'last',  
                       buttonicon:'ace-icon fa fa-cloud-upload',
                       onClickButton : function() {
                       
-                        loadImportDataMessageBox('导入','##gridid##','" + _querySet.QueryCols + "','" + TableName + @"',0);
+                        loadImportDataMessageBox('"+title+@"','##gridid##','" + _querySet.QueryCols + "','" + TableName + @"',0);
                     }
                   });");
 
@@ -2322,24 +2326,25 @@ namespace Fap.AspNetCore.Controls.JqGrid
 
         private void EditToolbar(StringBuilder script)
         {
+            string title = OperEnum.Update.Description(_multiLang);
             script.AppendLine(@" 
                     jQuery('###gridid##').jqGrid('navButtonAdd', '###pager##',{
                       caption:'',
-                      title:'编辑',
+                      title:'"+title+@"',
                       position:'first',
                       buttonicon:'ace-icon fa fa-pencil blue',
                       onClickButton : function() {
                       var gsr = jQuery('###gridid##').jqGrid('getGridParam', 'selrow');
                       if (gsr) {
                         var ret = jQuery('###gridid##').jqGrid('getRowData', gsr);
-                        loadFormMessageBox('编辑','##gridid##','fa fa-pencil','" + TableName + @"',ret.Fid,'" + GetCurrentMenuUid() + "',function(){");
+                        loadFormMessageBox('"+title+@"','##gridid##','fa fa-pencil','" + TableName + @"',ret.Fid,'" + GetCurrentMenuUid() + "',function(){");
             if (_onEditAfterInitDataForm.IsPresent())
             {
                 script.AppendLine(_onEditAfterInitDataForm);
             }
-            script.AppendLine(@"      });
+            script.Append(@"      });
                       } else {
-                        bootbox.alert('请选择一条数据');
+                        $.mag('"+ _multiLang.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page, "general_select_row", "请选择一条数据") + @"');
                       }
                     }
                   });");
@@ -2350,14 +2355,15 @@ namespace Fap.AspNetCore.Controls.JqGrid
         }
         private void AddToolbar(StringBuilder script)
         {
+            string title = OperEnum.Add.Description(_multiLang);
             script.AppendLine(@" 
                     jQuery('###gridid##').jqGrid('navButtonAdd', '###pager##',{
                       caption:'',
-                      title:'新增',
+                      title:'"+title+@"',
                       position:'first',  
                       buttonicon:'ace-icon fa fa-plus-circle purple',
                       onClickButton : function() {
-                      loadFormMessageBox('新增','##gridid##','fa fa-plus-circle','" + TableName + @"',0,'" + GetCurrentMenuUid() + "',function(){");
+                      loadFormMessageBox('"+title+@"','##gridid##','fa fa-plus-circle','" + TableName + @"',0,'" + GetCurrentMenuUid() + "',function(){");
             if (_onAddAfterInitDataForm.IsPresent())
             {
                 script.AppendLine(_onAddAfterInitDataForm);
@@ -2376,11 +2382,12 @@ namespace Fap.AspNetCore.Controls.JqGrid
         }
         private void DeleteToolbar(StringBuilder script)
         {
+            string title = OperEnum.Delete.Description(_multiLang);
             //保存的时候校验此值 (加上表名，避免连续打开连个表单，session就不同了)
             script.AppendLine(@" 
                     jQuery('###gridid##').jqGrid('navButtonAdd', '###pager##',{
                       caption:'',
-                      title:'删除',
+                      title:'"+title+@"',
                       position:'first',  
                       buttonicon:'ace-icon fa fa-trash-o red',
                       onClickButton : function() {
@@ -2390,10 +2397,11 @@ namespace Fap.AspNetCore.Controls.JqGrid
         }
         private void ViewToolbar(StringBuilder script)
         {
+            string title = OperEnum.View.Description(_multiLang);
             script.AppendLine(@" 
                     jQuery('###gridid##').jqGrid('navButtonAdd', '###pager##',{
                       caption:'',
-                      title:'查看', 
+                      title:'"+title+@"', 
                       position:'first',  
                       buttonicon:'ace-icon fa fa-search-plus grey',
                       onClickButton : function() {
@@ -2402,7 +2410,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                         var ret = jQuery('###gridid##').jqGrid('getRowData', gsr);
                         viewFormMessageBox(ret.Fid,'##gridid##','" + GetCurrentMenuUid() + "'" + @");
                         }else{
-                            $.msg('请选择一条数据查看')
+                            $.msg('"+ _multiLang.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page, "general_select_row", "请选择一条数据") + @"')
                         }
                     }
                     

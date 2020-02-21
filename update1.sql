@@ -674,6 +674,10 @@ UPDATE [FapColumn]
 SET [ColLength]=128
 WHERE [TableName]='FapColumn' AND [ColName]='ComboxSource'
 GO
+UPDATE FapColumn
+SET [ColDefault]='3', [NullAble]=0
+WHERE [TableName]='FapColumn' AND [ColName]='ColProperty'
+GO
 --加一个表分类【元数据】
 INSERT INTO [fapdict]( [Fid], [Code], [Name], [Pid], [IsEndLevel], [CPath], [Category], [CategoryName], [OrgUid], [GroupUid], [EnableDate], [DisableDate], [Dr], [Ts], [CreateBy], [CreateName], [CreateDate], [UpdateBy], [UpdateName], [UpdateDate], [IsSystem], [SortBy])
   VALUES('679651904816414720', 'Metadata', '元数据', '', 1, '', 'TableCategory', '表分类', '', '', '2020-02-19 19:28:09', '9999-12-31 23:59:59', 0, 637177372909429909, '3521928112763830273', '王燕飞', '2020-02-19 19:28:10', NULL, NULL, NULL, 1, 0)

@@ -444,11 +444,11 @@ namespace Fap.AspNetCore.Controls.DataForm
                         dateFormat = "yyyy";
                         model = "2";
                     }
-                    if (column.MinValue.HasValue)
+                    if (column.MinValue!=0)
                     {
                         minDate = DateTimeUtils.DateFormat(DateTime.Now.AddDays((double)column.MinValue));
                     }
-                    if (column.MaxValue.HasValue)
+                    if (column.MaxValue!=0)
                     {
                         maxDate= DateTimeUtils.DateFormat(DateTime.Now.AddDays((double)column.MaxValue));
                     }
@@ -494,11 +494,11 @@ namespace Fap.AspNetCore.Controls.DataForm
                     string startDate = "1900-1-1";
                     string endDate = "2999-12-12";
 
-                    if (column.MinValue.HasValue)
+                    if (column.MinValue!=0)
                     {
                         startDate = DateTimeUtils.DateFormat(DateTime.Now.AddDays((double)column.MinValue));
                     }
-                    if (column.MaxValue.HasValue)
+                    if (column.MaxValue!=0)
                     {
                         endDate = DateTimeUtils.DateFormat(DateTime.Now.AddDays((double)column.MaxValue));
                     }
@@ -537,7 +537,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     //{
                     //    refUrl = "TreeGridReference";
                     //}
-                    string dispalyName = _multiLangService.GetLangColumnComent(column);
+                    string dispalyName = _multiLangService.GetMultiLangValue( MultiLanguageOriginEnum.FapColumn,$"{column.TableName}_{column.ColName}");
                     script.AppendLine("$(\"###formid## #" + column.ColName + "\"+\"MC\").next().on(ace.click_event, function(){");
                     //script.AppendLine("//不可编辑字段不能弹出");
                     script.AppendLine(" if($(this).prev().attr(\"disabled\")==\"disabled\"){return;}");
@@ -562,7 +562,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                             FapColumn col = _fapColumns.Find(f => f.ColName.EqualsWithIgnoreCase(fieldName));
                             if (col != null)
                             {
-                                script.AppendLine("var conv=$('#" + fieldName + "').val();if(conv==''){bootbox.alert('【" + _multiLangService.GetLangColumnComent(col) + "】为空，请先设置。');return;}");
+                                script.AppendLine("var conv=$('#" + fieldName + "').val();if(conv==''){bootbox.alert('【" + _multiLangService.GetMultiLangValue(MultiLanguageOriginEnum.FapColumn, $"{col.TableName}_{col.ColName}") + "】为空，请先设置。');return;}");
                                 script.AppendLine("extra.push('" + fieldName + "='+conv)");
                             }
                         }
@@ -763,15 +763,12 @@ namespace Fap.AspNetCore.Controls.DataForm
                 {
                     if (column.EditAble != 1)
                         continue;
-                    int min = -1000000000;
-                    int max = 1000000000;
-                    if (column.MinValue.HasValue)
+                    int min = column.MinValue;
+                    int max = column.MaxValue;
+                    if (column.MinValue==0&&column.MaxValue==0)
                     {
-                        min = column.MinValue.Value;
-                    }
-                    if (column.MaxValue.HasValue)
-                    {
-                        max = column.MaxValue.Value;
+                        min = int.MinValue;
+                        max = int.MaxValue;
                     }
                     string unit = "";
                     if (column.CtrlType == FapColumn.CTRL_TYPE_MONEY)

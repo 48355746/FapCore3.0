@@ -11,7 +11,6 @@ namespace Fap.Model.Infrastructure
     /// <summary>
     /// 系统菜单表
     /// </summary>
-    [Serializable]
     public class FapMenu :BaseModel
     {
         /// <summary>
@@ -37,7 +36,7 @@ namespace Fap.Model.Infrastructure
         /// <summary>
         /// 所属模块 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string ModuleUidMC { get; set; }
         /// <summary>
         /// 排序
@@ -55,18 +54,7 @@ namespace Fap.Model.Infrastructure
         /// 徽章插件，实现IMenuBadge
         /// </summary>
         public string BadgePlusClass { get; set; }
-        /// <summary>
-        /// 繁体中文
-        /// </summary>
-        public string LangZhTW { get; set; }
-        /// <summary>
-        /// 英文
-        /// </summary>
-        public string LangEn { get; set; }
-        /// <summary>
-        /// 日本语
-        /// </summary>
-        public string LangJa { get; set; }
+       
         /// <summary>
         /// 所属产品
         /// </summary>
@@ -74,7 +62,7 @@ namespace Fap.Model.Infrastructure
         /// <summary>
         /// 所属产品 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string ProductUidMC { get; set; }
 
 

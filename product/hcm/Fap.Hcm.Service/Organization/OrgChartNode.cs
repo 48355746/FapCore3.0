@@ -33,7 +33,7 @@ namespace Fap.Hcm.Service.Organization
         /// <summary>
         /// 钻取 Url链接
         /// </summary>
-        public string Url { get; set; }
+        public string NavigationUrl { get; set; }
         public string Cline { get; set; }
         public string Cfill { get; set; }
         public string Ctext { get; set; }

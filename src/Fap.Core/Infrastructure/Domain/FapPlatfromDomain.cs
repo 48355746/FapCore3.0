@@ -61,7 +61,7 @@ namespace Fap.Core.Infrastructure.Domain
         /// <summary>
         /// 多语集
         /// </summary>
-        public  IMultiLang MultiLangSet
+        public  IMultiLanguage MultiLangSet
         {
             get;
             protected set;

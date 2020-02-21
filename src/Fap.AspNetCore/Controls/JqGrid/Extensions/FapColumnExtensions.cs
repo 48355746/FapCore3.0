@@ -72,7 +72,7 @@ namespace Fap.AspNetCore.Controls.JqGrid.Extensions
             }
             //fapColumn.CtrlType
             Column col = new Column(columnName);
-            string label = multiLang.GetLangColumnComent(fapColumn);
+            string label = multiLang.GetMultiLangValue(MultiLanguageOriginEnum.FapColumn, $"{fapColumn.TableName}_{fapColumn.ColName}");
             col.SetLabel(label);
             col.SetKey(fapColumn.ColType == FapColumn.COL_TYPE_PK);
             col.SetWidth(fapColumn.DisplayWidth);
@@ -326,12 +326,9 @@ namespace Fap.AspNetCore.Controls.JqGrid.Extensions
         private static void SetEditRulesNumber(FapColumn fapColumn, EditRules editRules)
         {
             editRules.Number = true;
-            if (fapColumn.MaxValue != null)
+            if (fapColumn.MaxValue != 0|| fapColumn.MinValue!=0)
             {
                 editRules.MaxValue = fapColumn.MaxValue;
-            }
-            if (fapColumn.MinValue != null)
-            {
                 fapColumn.MinValue = fapColumn.MinValue;
             }
         }

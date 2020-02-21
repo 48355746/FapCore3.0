@@ -65,7 +65,7 @@ namespace Fap.AspNetCore.Controls.DataForm
         /// <returns></returns>
         public string BuilderForm(string frmid, int _colCount, bool isColspan, FormStatus formStatus = FormStatus.Add)
         {
-            string lableName = _multiLangService.GetLangColumnComent(_fapColumn);
+            string lableName = _multiLangService.GetMultiLangValue(MultiLanguageOriginEnum.FapColumn,$"{_fapColumn.TableName}_{_fapColumn.ColName}");
             string ctrlName = _fapColumn.ColName;
 
             //是否可编辑
@@ -285,7 +285,6 @@ namespace Fap.AspNetCore.Controls.DataForm
                     foreach (var langField in langList)
                     {                        
                         string cname = ctrlName + langField.Value;
-
                         var value = FormData.Get(cname);
                         dicLangValue.Add(cname, value?.ToString()??"");
                     }
@@ -327,7 +326,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             }
             else
             {
-                string lableName = _multiLangService.GetLangColumnComent(_fapColumn);
+                string lableName = _multiLangService.GetMultiLangValue(MultiLanguageOriginEnum.FapColumn, $"{_fapColumn.TableName}_{_fapColumn.ColName}");
                 string ctrlName = _fapColumn.ColName;
                 //angularjs的时候使用，目前没用
                 string ngModel = "formData." + _fapColumn.ColName;
@@ -740,7 +739,6 @@ namespace Fap.AspNetCore.Controls.DataForm
                             continue;
                         }
                         string cname = ctrlName + langField.Value;
-
                         string value = FormData.Get(cname).ToString();
                         sbFormGroup.AppendFormat("<input type=\"text\" id=\"{0}\" placeholder=\"{1}\" class=\"form-control col-xs-12 col-sm-12\" value=\"{2}\" style=\"margin:1px\" {3}/>", cname, langField.Description, value, editAble);
                     }

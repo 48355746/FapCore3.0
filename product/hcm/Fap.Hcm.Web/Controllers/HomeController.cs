@@ -19,6 +19,7 @@ using System.Security.Claims;
 using Fap.Core.Infrastructure.Model;
 using System.IO;
 using Fap.AspNetCore.ViewModel;
+using Fap.Core.MultiLanguage;
 
 namespace Fap.Hcm.Web.Controllers
 {
@@ -284,13 +285,13 @@ namespace Fap.Hcm.Web.Controllers
             FapUser user = _dbContext.Get<FapUser>(_applicationContext.UserUid);
             if (!pwdHasher.VerifyHashedPassword(user.UserPassword, oriPwd))
             {
-                errorMsg = _multiLangService.GetResName("EssApi_Key1", "原始密码错误");
+                errorMsg = _multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page,"login_page_password_error", "原始密码错误");
             }
             else
             {
                 if (newPwd != confirmPwd)
                 {
-                    errorMsg = _multiLangService.GetResName("EssApi_Key2", "两次输入密码不一致");
+                    errorMsg = _multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page, "login_page_password_confirm_error", "两次输入密码不一致");
                 }
                 else
                 {

@@ -39,24 +39,24 @@ namespace Fap.Core.Infrastructure.Metadata
         /// <summary>
         /// 类型 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string ColTypeMC { get; set; }
         /// <summary>
         /// 类型为数字的时候 控制最小值
         /// </summary>
-        public int? MinValue { get; set; }
+        public int MinValue { get; set; }
         /// <summary>
         /// 类型为数字的时候 控制最大值
         /// </summary>
-        public int? MaxValue { get; set; }
+        public int MaxValue { get; set; }
         /// <summary>
         /// 字段属性（标识主键0，固定字段1，扩展字段2，特性字段3）
         /// </summary>
-        public int ColProperty { get; set; }
+        public string ColProperty { get; set; }
         /// <summary>
         /// 属性 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string ColPropertyMC { get; set; }
         /// <summary>
         /// 字段长度
@@ -97,7 +97,7 @@ namespace Fap.Core.Infrastructure.Metadata
         /// <summary>
         /// 控件类型 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string CtrlTypeMC { get; set; }
         /// <summary>
         /// 附件个数[1个或多个]
@@ -179,7 +179,7 @@ namespace Fap.Core.Infrastructure.Metadata
         /// <summary>
         /// 组件 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string ComponentUidMC { get; set; }
         /// <summary>
         /// 作废：1表示作废，0表示非作废
@@ -197,18 +197,7 @@ namespace Fap.Core.Infrastructure.Metadata
         /// 远程校验提醒信息
         /// </summary>
         public string RemoteChkMsg { get; set; }
-        /// <summary>
-        /// 多语-中文繁体
-        /// </summary>
-        public string LangZhTW { get; set; }
-        /// <summary>
-        /// 多语-英文
-        /// </summary>
-        public string LangEn { get; set; }
-        /// <summary>
-        /// 多语-日文
-        /// </summary>
-        public string LangJa { get; set; }
+       
         /// <summary>
         /// 排序方向
         /// </summary>

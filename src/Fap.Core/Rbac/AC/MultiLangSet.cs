@@ -13,9 +13,9 @@ using System.Linq;
 
 namespace Fap.Core.Rbac.AC
 {
-    public class MultiLangSet : IMultiLang
+    public class MultiLangSet : IMultiLanguage
     {
-        private IEnumerable<FapResMultiLang> _allMultiLangs = new List<FapResMultiLang>();
+        private IEnumerable<FapMultiLanguage> _allMultiLangs;
         private static readonly object Locker = new object();
         private bool _initialized;
         private IDbSession _dbSession;
@@ -36,12 +36,12 @@ namespace Fap.Core.Rbac.AC
             if (_initialized) return;
             lock (Locker)
             {
-                _allMultiLangs = _dbSession.Query<FapResMultiLang>("select * from FapResMultiLang");
+                _allMultiLangs = _dbSession.Query<FapMultiLanguage>("select * from FapMultiLanguage");
 
                 _initialized = true;
             }
         }
-        public IEnumerator<Fap.Core.Rbac.Model.FapResMultiLang> GetEnumerator()
+        public IEnumerator<FapMultiLanguage> GetEnumerator()
         {
             if (!_initialized)
             {
@@ -59,13 +59,15 @@ namespace Fap.Core.Rbac.AC
             return _allMultiLangs.GetEnumerator();
         }
 
-        public bool TryGetValue(string fid, out Fap.Core.Rbac.Model.FapResMultiLang fapMultiLang)
+        public bool TryGetValue(string qualifier, string langKey, out FapMultiLanguage fapMultiLang)
         {
             if (!_initialized)
             {
                 Init();
             }
-            var result = _allMultiLangs.FirstOrDefault<FapResMultiLang>(f => f.Fid == fid);
+            var result = _allMultiLangs.FirstOrDefault<FapMultiLanguage>(f =>
+            f.Qualifier.Equals(qualifier, StringComparison.CurrentCultureIgnoreCase) &&
+            f.LangKey.Equals(langKey, StringComparison.CurrentCultureIgnoreCase));
             if (result != null)
             {
                 fapMultiLang = result;
@@ -75,20 +77,20 @@ namespace Fap.Core.Rbac.AC
             return false;
         }
 
-
-        public bool TryGetValueByCode(string code, out FapResMultiLang fapMultiLang)
+        public bool TryGetValue(string qualifier, out IEnumerable<FapMultiLanguage> multiLanguages)
         {
             if (!_initialized)
             {
                 Init();
             }
-            var result = _allMultiLangs.FirstOrDefault<FapResMultiLang>(f => f.ResCode.Equals(code, StringComparison.CurrentCultureIgnoreCase));
+            var result = _allMultiLangs.Where<FapMultiLanguage>(f =>
+            f.Qualifier.Equals(qualifier, StringComparison.CurrentCultureIgnoreCase));
             if (result != null)
             {
-                fapMultiLang = result;
+                multiLanguages = result;
                 return true;
             }
-            fapMultiLang = null;
+            multiLanguages = null;
             return false;
         }
     }

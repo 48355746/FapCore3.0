@@ -15,11 +15,10 @@ namespace Fap.Core.Rbac.AC
     /// <summary>
     /// 多语集
     /// </summary>
-    public interface IMultiLang : IEnumerable<FapResMultiLang>
+    public interface IMultiLanguage : IEnumerable<FapMultiLanguage>
     {
         void Refresh();
-        bool TryGetValue(string fid, out FapResMultiLang fapMultiLang);
-
-        bool TryGetValueByCode(string code, out FapResMultiLang fapMultiLang);
+        bool TryGetValue(string qualifier, out IEnumerable<FapMultiLanguage> multiLanguages);
+        bool TryGetValue(string qualifier,string langKey, out FapMultiLanguage fapMultiLang);
     }
 }

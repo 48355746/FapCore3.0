@@ -9,7 +9,6 @@ namespace Fap.Core.Infrastructure.Metadata
     /// 表的元数据定义
     /// by sunchangtan
     /// </summary>
-    [Serializable]
     [Table("FapTable")]
     public class FapTable : BaseModel
     {
@@ -32,7 +31,7 @@ namespace Fap.Core.Infrastructure.Metadata
         /// <summary>
         /// 类型 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string TableTypeMC { get; set; }
         /// <summary>
         /// 表分类
@@ -41,7 +40,7 @@ namespace Fap.Core.Infrastructure.Metadata
         /// <summary>
         /// 分类 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string TableCategoryMC { get; set; }
         /// <summary>
         /// 表模式，single单表、 primary主表,child 子表, extension 扩展表
@@ -50,7 +49,7 @@ namespace Fap.Core.Infrastructure.Metadata
         /// <summary>
         /// 表模式 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string TableModeMC { get; set; }
         /// <summary>
         /// 子表， 以分号为分隔符
@@ -96,18 +95,7 @@ namespace Fap.Core.Infrastructure.Metadata
         /// 所属产品
         /// </summary>
         public string ProductUid { get; set; }
-        /// <summary>
-        /// 多语-中文繁体
-        /// </summary>
-        public string LangZhTW { get; set; }
-        /// <summary>
-        /// 多语-英文
-        /// </summary>
-        public string LangEn { get; set; }
-        /// <summary>
-        /// 多语-日文
-        /// </summary>
-        public string LangJa { get; set; }
+        
 
         public override object Clone()
         {

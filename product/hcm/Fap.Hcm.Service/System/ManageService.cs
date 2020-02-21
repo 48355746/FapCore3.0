@@ -18,6 +18,7 @@ using Newtonsoft.Json.Linq;
 using Fap.Model.Infrastructure;
 using Fap.Core.Infrastructure.Metadata;
 using Ardalis.GuardClauses;
+using Fap.Core.MultiLanguage;
 
 namespace Fap.Hcm.Service.System
 {
@@ -29,13 +30,15 @@ namespace Fap.Hcm.Service.System
         private readonly IFapConfigService _configService;
         private readonly IFapApplicationContext _applicationContext;
         private readonly IFapPlatformDomain _platformDomain;
-        public ManageService(IRbacService rbacService, IDbContext dbContext, IFapConfigService configService, IFapApplicationContext applicationContext, IFapPlatformDomain platformDomain)
+        private readonly IMultiLangService _multiLangService;
+        public ManageService(IRbacService rbacService, IDbContext dbContext, IFapConfigService configService, IFapApplicationContext applicationContext, IFapPlatformDomain platformDomain,IMultiLangService multiLangService)
         {
             _rbacService = rbacService;
             _dbContext = dbContext;
             _configService = configService;
             _applicationContext = applicationContext;
             _platformDomain = platformDomain;
+            _multiLangService = multiLangService;
         }
 
 
@@ -373,13 +376,13 @@ namespace Fap.Hcm.Service.System
 
         public IEnumerable<TreeDataView> GetModuleTree()
         {
-            List<TreeDataView> moList = _platformDomain.ModuleSet.Select(t => new TreeDataView { Id = t.Fid.ToString(), Pid = t.Pid, Text = t.ModuleName, Icon = (t.Icon.IsMissing() ? "icon-folder green ace-icon fa fa-leaf" : "icon-folder green ace-icon " + t.Icon) }).ToList<TreeDataView>();
+            List<TreeDataView> moList = _platformDomain.ModuleSet.Select(t => new TreeDataView { Id = t.Fid.ToString(), Pid = t.Pid, Text =_multiLangService.GetMultiLangValue(MultiLanguageOriginEnum.Module, t.Fid), Icon = (t.Icon.IsMissing() ? "icon-folder green ace-icon fa fa-leaf" : "icon-folder green ace-icon " + t.Icon) }).ToList<TreeDataView>();
 
             List<TreeDataView> tree = new List<TreeDataView>();
             TreeDataView treeRoot = new TreeDataView()
             {
                 Id = "0",
-                Text = "系统模块",
+                Text =_multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page,"page_module_rootname", "系统模块"),
                 State = new NodeState { Opened = true },
                 Icon = "icon-folder purple ace-icon fa fa-home bigger-160",
             };
@@ -403,10 +406,10 @@ namespace Fap.Hcm.Service.System
 
             List<TreeDataView> moduleList = _platformDomain.ModuleSet
                 .Where(m => menus.Select(m => m.ModuleUid).Distinct().Contains(m.Fid))
-                .Select(t => new TreeDataView { Id = t.Fid.ToString(), Data = new { IsMenu = false }, Pid = t.Pid.ToString(), Text = t.ModuleName, State = new NodeState { Opened = false }, Icon = (t.Icon.IsMissing() ? "icon-folder green ace-icon fa fa-leaf" : "icon-folder green ace-icon " + t.Icon) }).ToList<TreeDataView>();
+                .Select(t => new TreeDataView { Id = t.Fid.ToString(), Data = new { IsMenu = false }, Pid = t.Pid.ToString(), Text =_multiLangService.GetMultiLangValue(MultiLanguageOriginEnum.Module, t.Fid), State = new NodeState { Opened = false }, Icon = (t.Icon.IsMissing() ? "icon-folder green ace-icon fa fa-leaf" : "icon-folder green ace-icon " + t.Icon) }).ToList<TreeDataView>();
             //授权 仅仅授予到二级菜单
-            List<TreeDataView> menuList = menus.Where(m => m.MenuCode.Length == 5).Select(r => new TreeDataView { Id = r.Fid.ToString(), Data = new { IsMenu = true }, Pid = r.ModuleUid, Text = r.MenuName, State = new NodeState { Opened = false }, Icon = "icon-folder orange ace-icon fa fa-leaf" }).ToList<TreeDataView>();
-            List<TreeDataView> threeLevels = menus.Where(m => m.MenuCode.Length == 7).Select(r => new TreeDataView { Id = r.Fid.ToString(), Data = new { IsMenu = true }, Pid = r.Pid, Text = r.MenuName, State = new NodeState { Opened = false }, Icon = "icon-folder orange ace-icon fa fa-leaf" }).ToList<TreeDataView>();
+            List<TreeDataView> menuList = menus.Where(m => m.MenuCode.Length == 5).Select(r => new TreeDataView { Id = r.Fid.ToString(), Data = new { IsMenu = true }, Pid = r.ModuleUid, Text =_multiLangService.GetMultiLangValue(MultiLanguageOriginEnum.Menu, r.Fid), State = new NodeState { Opened = false }, Icon = "icon-folder orange ace-icon fa fa-leaf" }).ToList<TreeDataView>();
+            List<TreeDataView> threeLevels = menus.Where(m => m.MenuCode.Length == 7).Select(r => new TreeDataView { Id = r.Fid.ToString(), Data = new { IsMenu = true }, Pid = r.Pid, Text = _multiLangService.GetMultiLangValue(MultiLanguageOriginEnum.Menu, r.Fid), State = new NodeState { Opened = false }, Icon = "icon-folder orange ace-icon fa fa-leaf" }).ToList<TreeDataView>();
             List<TreeDataView> tree = new List<TreeDataView>();
             List<TreeDataView> treeRoots = moduleList.Where(g => g.Pid == "0").ToList();
 
@@ -512,7 +515,7 @@ namespace Fap.Hcm.Service.System
             }
             IEnumerable<TreeDataView> AddOperNode(TreeDataView menuNode)
             {
-                var opers = typeof(OperEnum).EnumItems();
+                var opers = typeof(OperEnum).EnumItems(_multiLangService);
                 string menuUid = menuNode.Id;
                 if (!_applicationContext.IsAdministrator)
                 {
@@ -576,8 +579,7 @@ namespace Fap.Hcm.Service.System
                             {
                                 Id = button.Fid,
                                 Data = new { IsBtn = false, IsMenu = false },
-                                Pid = menuNode.Id,
-                                Text = button.Description,
+                                Pid = menuNode.Id                                
                             };
                             if (button.ButtonType == FapMenuButtonType.Grid)
                             {
@@ -615,6 +617,8 @@ namespace Fap.Hcm.Service.System
                             }
                             else if (button.ButtonType == FapMenuButtonType.Link || button.ButtonType == FapMenuButtonType.Button)
                             {
+                                string langkey = $"{menuUid}_{button.ButtonID}";
+                                toper.Text =_multiLangService.GetMultiLangValue(MultiLanguageOriginEnum.ButtonTag,langkey);
                                 toper.Id = $"{menuNode.Id}|button|{ button.ButtonID }|1";
                                 toper.Icon = "fa  fa-bolt";
                                 toper.Data = new { IsBtn = true, IsMenu = false };
@@ -644,6 +648,7 @@ namespace Fap.Hcm.Service.System
                 _ => "fa fa-bolt"
             };
         }
+   
         public IEnumerable<TreeDataView> GetMenuEntityTree()
         {
             var tree = GetModuleAndMenuTree();

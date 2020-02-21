@@ -9,11 +9,11 @@
     string showName = "";
     if (type == "directorName")
     {
-        showName = _multiLangService.GetResName("orgdept_index_director", "负责人");
+        showName = _multiLangService.GetOrAndMultiLangValue(Fap.Core.MultiLanguage.MultiLanguageOriginEnum.Page,"orgdept_index_director", "负责人");
     }
     else if (type == "managerName")
     {
-        showName = _multiLangService.GetResName("orgdept_index_manager", "经理");
+        showName = _multiLangService.GetOrAndMultiLangValue(Fap.Core.MultiLanguage.MultiLanguageOriginEnum.Page,"orgdept_index_manager", "经理");
     }
 }
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Fap.Core.MultiLanguage;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -9,12 +10,17 @@ namespace Fap.Core.Extensions
 {
     public static class EnumExtensions
     {
-        public static string Description(this Enum value)
+        public static string Description(this Enum value, IMultiLangService multiLangService=null)
         {
             FieldInfo field = value.GetType().GetField(value.ToString());
             DescriptionAttribute attribute = Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute)) as DescriptionAttribute;
 
-            return attribute == null ? value.ToString() : attribute.Description;
+            string desc = attribute == null ? value.ToString() : attribute.Description;
+            if (multiLangService != null)
+            {
+                desc = multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Enum, $"enum_{value.ToString()}", desc);
+            }
+            return desc;
         }
 
         public static T ParseEnum<T>(this string value)
@@ -22,7 +28,7 @@ namespace Fap.Core.Extensions
             return (T)Enum.Parse(typeof(T), value, true);
         }
 
-        public static IEnumerable<EnumItem> EnumItems(this Type tEnum)
+        public static IEnumerable<EnumItem> EnumItems(this Type tEnum, IMultiLangService multiLangService = null)
         {
             if (tEnum.IsEnum)
             {
@@ -31,7 +37,8 @@ namespace Fap.Core.Extensions
                     {
                         Key = Convert.ToInt32(x),
                         Value = x.ToString(),
-                        Description = x.Description()
+                        Description = x.Description(multiLangService)
+
                     });
             }
             else

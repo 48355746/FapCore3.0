@@ -247,7 +247,7 @@ namespace Fap.AspNetCore.Controls.DataForm
 
 
                         //title始终放最后
-                        script.AppendLine("title: '" +_multiLangService.GetLangColumnComent(column) + "',");
+                        script.AppendLine("title: '" +_multiLangService.GetMultiLangValue(MultiLanguageOriginEnum.FapColumn, $"{column.TableName}_{column.ColName}") + "',");
                     }
 
                     //成功返回

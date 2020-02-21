@@ -16,7 +16,7 @@ using Fap.Core.Infrastructure.Metadata;
 
 namespace Fap.Hcm.Web.ViewComponents
 {
-    public  class MenusViewComponent : ViewComponent
+    public class MenusViewComponent : ViewComponent
     {
 
         protected readonly IDbContext _dataAccessor;
@@ -53,11 +53,11 @@ namespace Fap.Hcm.Web.ViewComponents
             List<FapModule> modules = new List<FapModule>();
             //判断是否为部门负责人或者经理
             DynamicParameters param = new DynamicParameters();
-            param.Add("EmpUid",_applicationContext.EmpUid);
+            param.Add("EmpUid", _applicationContext.EmpUid);
             int mi = _dataAccessor.Count("OrgDept", "Director=@EmpUid or DeptManager=@EmpUid", param);
 
             //获取权限菜单
-            IEnumerable<FapRoleMenu> roleMenuUids =_rbacService.GetRoleMenuList(_applicationContext.CurrentRoleUid);
+            IEnumerable<FapRoleMenu> roleMenuUids = _rbacService.GetRoleMenuList(_applicationContext.CurrentRoleUid);
             if (roleMenuUids.Any())
             {
                 List<FapMenu> roleMenus = new List<FapMenu>();
@@ -107,30 +107,32 @@ namespace Fap.Hcm.Web.ViewComponents
                         threeLevel.Add(fm);
                         continue;
                     }
-                    MenuItem fmm = new MenuItem { Text = _multiLangService.GetLangMenuName(fm), Value = fm.MenuCode, NavigateUrl = Url.Content(fm.MenuUrl), ToolTip = fm.BadgePlusClass };
+                    string menuText = _multiLangService.GetMultiLangValue(MultiLanguageOriginEnum.Menu, fm.Fid);
+                    MenuItem fmm = new MenuItem { Text = menuText, Value = fm.MenuCode, NavigateUrl = Url.Content(fm.MenuUrl), ToolTip = fm.BadgePlusClass };
 
                     FapModule fmd;
                     //是模块的时候
                     if (_appDomain.ModuleSet.TryGetValue(fm.ModuleUid, out fmd))
                     {
                         MenuItem mmd = null;
+                        menuText = _multiLangService.GetMultiLangValue(MultiLanguageOriginEnum.Module, fmd.Fid);
                         if (!modules.Contains(fmd))
                         {
                             modules.Add(fmd);
-                            mmd = new MenuItem { Text = _multiLangService.GetLangModuleName(fmd), NavigateUrl = "", Value = fmd.ModuleCode, ImageUrl = fmd.Icon, Target = fmd.ModuleOrder.ToString() };
+                            mmd = new MenuItem { Text = menuText, NavigateUrl = "", Value = fmd.ModuleCode, ImageUrl = fmd.Icon, Target = fmd.ModuleOrder.ToString() };
                             mmd.ChildItems.Add(fmm);
                             menus.Add(mmd);
                         }
                         else
                         {
-                            mmd = menus.Find(m => m.Text == _multiLangService.GetLangModuleName(fmd));
+                            mmd = menus.Find(m => m.Text == menuText);
                             mmd.ChildItems.Add(fmm);
                         }
                     }
                 }
             }
             //管理员账号 增加系统管理菜单
-            if (_applicationContext.UserName==FapPlatformConstants.Administrator)
+            if (_applicationContext.UserName == FapPlatformConstants.Administrator)
             {
                 //检查系统菜单，如果有就移除
                 var sysModule = _appDomain.ModuleSet.FirstOrDefault(m => m.ModuleCode == "099");
@@ -160,25 +162,26 @@ namespace Fap.Hcm.Web.ViewComponents
                         threeLevel.Add(fm);
                         continue;
                     }
-
+                    string mx = _multiLangService.GetMultiLangValue(MultiLanguageOriginEnum.Menu, fm.Fid);
                     //菜单
-                    MenuItem fmm = new MenuItem { Text = _multiLangService.GetLangMenuName(fm), NavigateUrl = Url.Content(fm.MenuUrl), Value = fm.MenuCode, ToolTip = fm.BadgePlusClass };
+                    MenuItem fmm = new MenuItem { Text =mx , NavigateUrl = Url.Content(fm.MenuUrl), Value = fm.MenuCode, ToolTip = fm.BadgePlusClass };
 
                     FapModule fmd;
                     if (_appDomain.ModuleSet.TryGetValue(fm.ModuleUid, out fmd))
                     {
+                        mx = _multiLangService.GetMultiLangValue(MultiLanguageOriginEnum.Module, fmd.Fid);
                         if (!modules.Contains(fmd))
                         {
                             modules.Add(fmd);
                             //模块
-                            MenuItem mmd = new MenuItem { Text = _multiLangService.GetLangModuleName(fmd), NavigateUrl = "", ImageUrl = fmd.Icon, Value = fmd.ModuleCode, Target = fmd.ModuleOrder.ToString() };
+                            MenuItem mmd = new MenuItem { Text =mx, NavigateUrl = "", ImageUrl = fmd.Icon, Value = fmd.ModuleCode, Target = fmd.ModuleOrder.ToString() };
 
                             mmd.ChildItems.Add(fmm);
                             menus.Add(mmd);
                         }
                         else
                         {
-                            menus.Find(m => m.Text == _multiLangService.GetLangModuleName(fmd)).ChildItems.Add(fmm);
+                            menus.Find(m => m.Text == mx).ChildItems.Add(fmm);
                         }
                     }
                 }
@@ -197,7 +200,8 @@ namespace Fap.Hcm.Web.ViewComponents
                         {
                             if (menu.MenuCode.StartsWith(item.Value) && item.Value.Length == 5)
                             {
-                                MenuItem fmm = new MenuItem { Text = _multiLangService.GetLangMenuName(menu), Value = menu.MenuCode, NavigateUrl = Url.Content(menu.MenuUrl), ToolTip = menu.BadgePlusClass };
+                                string mx= _multiLangService.GetMultiLangValue(MultiLanguageOriginEnum.Menu, menu.Fid);
+                                MenuItem fmm = new MenuItem { Text = mx, Value = menu.MenuCode, NavigateUrl = Url.Content(menu.MenuUrl), ToolTip = menu.BadgePlusClass };
 
                                 item.ChildItems.Add(fmm);
                                 break;

@@ -32,7 +32,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             {
                 require = "<span class=\"text-danger\">*</span>";
             }
-            sb.AppendFormat("		<div class=\"profile-info-name\"> {0} {1}</div>", _multiLang.GetLangColumnComent(CurrFapColumn), require).AppendLine();
+            sb.AppendFormat("		<div class=\"profile-info-name\"> {0} {1}</div>", _multiLang.GetMultiLangValue(MultiLanguageOriginEnum.FapColumn, $"{CurrFapColumn.TableName}_{CurrFapColumn.ColName}"), require).AppendLine();
             sb.AppendLine("		<div class=\"profile-info-value\">");
             if (CurrFapColumn.EditAble == 1)
             {

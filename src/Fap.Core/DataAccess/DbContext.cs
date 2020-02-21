@@ -2356,11 +2356,29 @@ namespace Fap.Core.DataAccess
             {
                 Guard.Against.Null(fapDictionarys, nameof(fapDictionarys));
             }
+            foreach (var dict in fapDictionarys)
+            {
+                dict.Name = GetDictName(dict);
+            }
             return fapDictionarys;
         }
+        private string GetDictName(FapDict dict) => _applicationContext.Language switch
+        {
+            MultiLanguageEnum.En => dict.NameEn,
+            MultiLanguageEnum.Ja => dict.NameJa,
+            MultiLanguageEnum.ZhCn => dict.NameZhCn,
+            MultiLanguageEnum.ZhTW => dict.NameZhTW,
+            _=>dict.Name
+        };
+       
         public FapDict Dictionary(string category, string code)
         {
-            return Dictionarys(category).FirstOrDefault(d => d.Code.EqualsWithIgnoreCase(code));
+            var dict= Dictionarys(category).FirstOrDefault(d => d.Code.EqualsWithIgnoreCase(code));
+            if (dict != null)
+            {
+                GetDictName(dict);
+            }
+            return dict;
         }
         #endregion
 

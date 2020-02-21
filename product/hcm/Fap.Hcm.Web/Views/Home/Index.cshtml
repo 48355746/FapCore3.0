@@ -318,14 +318,14 @@
                                                     <span class="block input-icon input-icon-right">
                                                         <input name="returnUrl" class="hidden" value='@ViewBag.ReturnUrl' />
 
-                                                        <input type="text" class="form-control" id="username" value="" name="username" placeholder="@_multiLangService.GetResName("logion_username", "用户名", currentLang)" />
+                                                        <input type="text" class="form-control" id="username" value="" name="username" placeholder="@_multiLangService.GetOrAndMultiLangValue( Fap.Core.MultiLanguage.MultiLanguageOriginEnum.Page,"logion_username", "用户名")" />
                                                         <i class="ace-icon fa fa-user"></i>
                                                     </span>
                                                 </label>
 
                                                 <label class="block clearfix form-group">
                                                     <span class="block input-icon input-icon-right">
-                                                        <input type="password" class="form-control" id="userpwd" name="userpwd" value="" placeholder="@_multiLangService.GetResName("login_password", "密码", currentLang)" />
+                                                        <input type="password" class="form-control" id="userpwd" name="userpwd" value="" placeholder="@_multiLangService.GetOrAndMultiLangValue( Fap.Core.MultiLanguage.MultiLanguageOriginEnum.Page,"login_password", "密码")" />
                                                         <i class="ace-icon fa fa-lock"></i>
                                                     </span>
                                                 </label>

@@ -23,8 +23,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         {
             output.TagName = "";
             output.Content.Clear();
-
-            string content = _multiLangService.GetResName(LangKey, DefaultContent);
+            string content = _multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.MultiLangTag, LangKey, DefaultContent);
             output.Content.Append(content);
 
         }

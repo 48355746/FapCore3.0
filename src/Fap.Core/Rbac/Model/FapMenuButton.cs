@@ -8,25 +8,36 @@ using System.Threading.Tasks;
 
 namespace Fap.Core.Rbac.Model
 {
+
 	/// <summary>
 	/// 菜单按钮
 	/// </summary>
-	public class FapMenuButton :BaseModel
+	public class FapMenuButton : BaseModel
 	{
 		/// <summary>
-		/// 菜单
+		/// 按钮标记
 		/// </summary>
-		public string MenuUid { get; set; }
+		public string ButtonID { get; set; }
 		/// <summary>
-		/// 菜单 的显性字段MC
+		/// 按钮名称
 		/// </summary>
-		[Computed]
-		public string MenuUidMC { get; set; }
+		public string ButtonName { get; set; }
 		/// <summary>
-		/// 描述
+		/// 按钮名称英文
 		/// </summary>
-		public string Description { get; set; }
-		
+		public string ButtonNameEn { get; set; }
+		/// <summary>
+		/// 按钮名称日本语
+		/// </summary>
+		public string ButtonNameJa { get; set; }
+		/// <summary>
+		/// 按钮名称中文
+		/// </summary>
+		public string ButtonNameZhCn { get; set; }
+		/// <summary>
+		/// 按钮名称繁体
+		/// </summary>
+		public string ButtonNameZhTw { get; set; }
 		/// <summary>
 		/// 按钮类型
 		/// </summary>
@@ -37,17 +48,22 @@ namespace Fap.Core.Rbac.Model
 		[Computed]
 		public string ButtonTypeMC { get; set; }
 		/// <summary>
-		/// 按钮标记
+		/// 描述
 		/// </summary>
-		public string ButtonID { get; set; }
-		/// <summary>
-		/// 按钮名称
-		/// </summary>
-		public string ButtonName { get; set; }
+		public string Description { get; set; }
 		/// <summary>
 		/// 启用
 		/// </summary>
 		public int Enabled { get; set; }
+		/// <summary>
+		/// 菜单
+		/// </summary>
+		public string MenuUid { get; set; }
+		/// <summary>
+		/// 菜单 的显性字段MC
+		/// </summary>
+		[Computed]
+		public string MenuUidMC { get; set; }
 
 	}
 

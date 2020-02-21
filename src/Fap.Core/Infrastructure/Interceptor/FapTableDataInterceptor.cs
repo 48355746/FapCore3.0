@@ -10,6 +10,9 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Linq;
 using Fap.Core.Exceptions;
+using Fap.Core.Rbac.Model;
+using Fap.Core.Infrastructure.Enums;
+using Fap.Core.MultiLanguage;
 
 namespace Fap.Core.Infrastructure.Interceptor
 {
@@ -32,7 +35,7 @@ namespace Fap.Core.Infrastructure.Interceptor
                 var features = tbFeature.SplitSemicolon();
                 foreach (var feature in features)
                 {
-                    var featureColumns = getColumnsByFeature(feature.Split(':')[0].Trim());
+                    var featureColumns = GetColumnsByFeature(feature.Split(':')[0].Trim());
                     if (featureColumns.Any())
                     {
                         var fcs = featureColumns.ToList();
@@ -41,6 +44,9 @@ namespace Fap.Core.Infrastructure.Interceptor
                     }
                 }
             }
+            //多语
+            string tableLabel = fapDynamicData.Get(nameof(FapTable.TableComment)).ToString();
+            _dbContext.Insert(new FapMultiLanguage { Qualifier = MultiLanguageOriginEnum.FapTable.ToString(), LangKey = tableName, LangValue = tableLabel });
             _dbContext.InsertBatch(columns);
         }
         public override void BeforeDynamicObjectDelete(FapDynamicObject fapDynamicData)
@@ -51,6 +57,7 @@ namespace Fap.Core.Infrastructure.Interceptor
             {
                 throw new FapException("表已经建立，不能再删除！");
             }
+            _dbContext.DeleteExec(nameof(FapMultiLanguage), "Qualifier=@Qualifier and LangKey=@LangKey", new Dapper.DynamicParameters(new { Qualifier = MultiLanguageOriginEnum.FapTable.ToString(), LangKey = fapTable.TableName }));
             _dbContext.DeleteExec(nameof(FapTable), "TableName=@TableName", new Dapper.DynamicParameters(new { TableName = fapTable.TableName }));
             _dbContext.DeleteExec(nameof(FapColumn), "TableName=@TableName", new Dapper.DynamicParameters(new { TableName = fapTable.TableName }));
 
@@ -66,7 +73,7 @@ namespace Fap.Core.Infrastructure.Interceptor
                 var features = fapTable.TableFeature.SplitSemicolon();
                 foreach (var feature in features)
                 {
-                    var featureColumns = getColumnsByFeature(feature.Split(':')[0].Trim());
+                    var featureColumns = GetColumnsByFeature(feature.Split(':')[0].Trim());
                     if (featureColumns.Any())
                     {
                         var fcs = featureColumns.ToList();
@@ -92,12 +99,21 @@ namespace Fap.Core.Infrastructure.Interceptor
                     }
                 }
             }
+            //更新多语
+            string tableLabel = fapDynamicData.Get(nameof(FapTable.TableComment)).ToString();
+            if (!fapTable.TableComment.EqualsWithIgnoreCase(tableLabel))
+            {
+                string updateMultisql = $"Update {nameof(FapMultiLanguage)} set {nameof(FapMultiLanguage.LangValue)}=@LangValue where Qualifier=@Qualifier and LangKey=@LangKey";
+                var param = new Dapper.DynamicParameters(new { Qualifier = MultiLanguageOriginEnum.FapTable.ToString(), LangKey = fapTable.TableName, LangValue = tableLabel });
+                _dbContext.Execute(updateMultisql, param);
+            }
+            
             if (tbFeature.IsPresent())
             {
                 var features = tbFeature.SplitSemicolon();
                 foreach (var feature in features)
                 {
-                    var featureColumns = getColumnsByFeature(feature.Split(':')[0].Trim());
+                    var featureColumns = GetColumnsByFeature(feature.Split(':')[0].Trim());
                     if (featureColumns.Any())
                     {
                         var fcs = featureColumns.ToList();
@@ -114,7 +130,7 @@ namespace Fap.Core.Infrastructure.Interceptor
                 }
             }
         }
-        private IEnumerable<FapColumn> getColumnsByFeature(string featureCode)
+        private IEnumerable<FapColumn> GetColumnsByFeature(string featureCode)
         {
             var feature = _dbContext.QueryFirstOrDefault<FapTableFeature>("select Data from FapTableFeature where Code=@Code", new Dapper.DynamicParameters(new { Code = featureCode }));
             if (feature != null && feature.Data.IsPresent())
@@ -134,7 +150,7 @@ namespace Fap.Core.Infrastructure.Interceptor
             field.IsDefaultCol = 1;
             field.ColComment = "主键";
             field.ShowAble = 0;
-            field.ColProperty = 0;
+            field.ColProperty = "0";
             field.ColOrder = 0;
             field.ColLength = 20;
             field.DisplayWidth = 10;
@@ -150,7 +166,7 @@ namespace Fap.Core.Infrastructure.Interceptor
             field.ColComment = "唯一标识";
             field.ColLength = 20;
             field.ShowAble = 0;
-            field.ColProperty = 1;
+            field.ColProperty = "1";
             field.ColOrder = 1;
             field.DisplayWidth = 20;
             field.CtrlType = FapColumn.CTRL_TYPE_TEXT;
@@ -165,7 +181,7 @@ namespace Fap.Core.Infrastructure.Interceptor
             field.ColComment = "组织";
             field.ColLength = 20;
             field.ShowAble = 0;
-            field.ColProperty = 1;
+            field.ColProperty = "1";
             field.ColOrder = 980;
             field.DisplayWidth = 10;
             field.CtrlType = FapColumn.CTRL_TYPE_TEXT;
@@ -180,7 +196,7 @@ namespace Fap.Core.Infrastructure.Interceptor
             field.ColComment = "集团";
             field.ColLength = 20;
             field.ShowAble = 0;
-            field.ColProperty = 1;
+            field.ColProperty = "1";
             field.ColOrder = 981;
             field.DisplayWidth = 10;
             field.CtrlType = FapColumn.CTRL_TYPE_TEXT;
@@ -195,7 +211,7 @@ namespace Fap.Core.Infrastructure.Interceptor
             field.ColComment = "有效开始时间";
             field.ColLength = 20;
             field.ShowAble = 0;
-            field.ColProperty = 1;
+            field.ColProperty = "1";
             field.ColOrder = 982;
             field.DisplayWidth = 19;
             field.CtrlType = FapColumn.CTRL_TYPE_DATETIME;
@@ -210,7 +226,7 @@ namespace Fap.Core.Infrastructure.Interceptor
             field.ColComment = "有效截止时间";
             field.ColLength = 20;
             field.ShowAble = 0;
-            field.ColProperty = 1;
+            field.ColProperty = "1";
             field.ColOrder = 983;
             field.DisplayWidth = 19;
             field.CtrlType = FapColumn.CTRL_TYPE_DATETIME;
@@ -224,7 +240,7 @@ namespace Fap.Core.Infrastructure.Interceptor
             field.IsDefaultCol = 1;
             field.ColComment = "删除标记";
             field.ShowAble = 0;
-            field.ColProperty = 1;
+            field.ColProperty = "1";
             field.ColOrder = 984;
             field.ColLength = 10;
             field.DisplayWidth = 10;
@@ -239,7 +255,7 @@ namespace Fap.Core.Infrastructure.Interceptor
             field.IsDefaultCol = 1;
             field.ColComment = "时间戳";
             field.ShowAble = 0;
-            field.ColProperty = 1;
+            field.ColProperty = "1";
             field.ColOrder = 985;
             field.ColLength = 20;
             field.DisplayWidth = 10;
@@ -254,7 +270,7 @@ namespace Fap.Core.Infrastructure.Interceptor
             field.IsDefaultCol = 1;
             field.ColComment = "创建人";
             field.ShowAble = 0;
-            field.ColProperty = 1;
+            field.ColProperty = "1";
             field.ColOrder = 986;
             field.ColLength = 20;
             field.DisplayWidth = 10;
@@ -269,7 +285,7 @@ namespace Fap.Core.Infrastructure.Interceptor
             field.IsDefaultCol = 1;
             field.ColComment = "创建人名称";
             field.ShowAble = 0;
-            field.ColProperty = 1;
+            field.ColProperty = "1";
             field.ColOrder = 987;
             field.ColLength = 100;
             field.DisplayWidth = 10;
@@ -284,7 +300,7 @@ namespace Fap.Core.Infrastructure.Interceptor
             field.IsDefaultCol = 1;
             field.ColComment = "创建时间";
             field.ShowAble = 0;
-            field.ColProperty = 1;
+            field.ColProperty = "1";
             field.ColOrder = 988;
             field.ColLength = 20;
             field.DisplayWidth = 10;
@@ -299,7 +315,7 @@ namespace Fap.Core.Infrastructure.Interceptor
             field.IsDefaultCol = 1;
             field.ColComment = "更新人";
             field.ShowAble = 0;
-            field.ColProperty = 1;
+            field.ColProperty = "1";
             field.ColOrder = 989;
             field.ColLength = 20;
             field.DisplayWidth = 10;
@@ -314,7 +330,7 @@ namespace Fap.Core.Infrastructure.Interceptor
             field.IsDefaultCol = 1;
             field.ColComment = "更新人名称";
             field.ShowAble = 0;
-            field.ColProperty = 1;
+            field.ColProperty = "1";
             field.ColOrder = 990;
             field.ColLength = 100;
             field.DisplayWidth = 10;
@@ -329,7 +345,7 @@ namespace Fap.Core.Infrastructure.Interceptor
             field.IsDefaultCol = 1;
             field.ColComment = "更新时间";
             field.ShowAble = 0;
-            field.ColProperty = 1;
+            field.ColProperty = "1";
             field.ColOrder = 991;
             field.ColLength = 20;
             field.DisplayWidth = 10;

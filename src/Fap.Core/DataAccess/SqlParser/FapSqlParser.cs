@@ -272,7 +272,7 @@ namespace Fap.Core.DataAccess.SqlParser
             //string tableAlias = column.Source.Alias;
             string tableName = column.Source.Source.GetSourceName();
             FapColumn fCol = GetSingleColumnOfTable(tableName, colName);
-            if (fCol.IsMultiLang == 1)
+            if (fCol.IsMultiLang == 1 && IsGridQuery)
             {
                 select.RemoveProjection(currProjection);
                 select.AddProjection(column.Source.Column($"{colName}{CurrentLang}"), colName);
@@ -324,8 +324,15 @@ namespace Fap.Core.DataAccess.SqlParser
                 //AliasedSource table = select.AddTable(new Table($"{column.TableName}"), tableAlias);
                 if (column.IsMultiLang == 1)
                 {
-                    select.AddProjection(aliaseSource.Column($"{column.ColName}{CurrentLang}"), column.ColName);
-                    var langs= typeof(MultiLanguageEnum).EnumItems();
+                    if (IsGridQuery)
+                    {
+                        select.AddProjection(aliaseSource.Column($"{column.ColName}{CurrentLang}"), column.ColName);
+                    }
+                    else
+                    {
+                        select.AddProjection(aliaseSource.Column(column.ColName));
+                    }
+                    var langs = typeof(MultiLanguageEnum).EnumItems();
                     foreach (var lang in langs)
                     {
                         select.AddProjection(aliaseSource.Column($"{column.ColName}{lang.Value}"), $"{column.ColName}{lang.Value}");
