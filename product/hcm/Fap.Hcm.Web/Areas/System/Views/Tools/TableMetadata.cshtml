@@ -1,6 +1,6 @@
 ﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
 @{
-    _platformDomain.DictSet.TryGetValueByCategory("TableCategory", out IEnumerable<Fap.Core.Infrastructure.Metadata.FapDict> tableCategorys);
+    IEnumerable<Fap.Core.Infrastructure.Metadata.FapDict> tableCategorys= _dbContext.Dictionarys("TableCategory");
 }
 <title><fap-multilang lang-key="system_tools_tablemetadata_title" default-content="表元数据"></fap-multilang>    </title>
 <link href="~/Content/css/chosen.css" rel="stylesheet" />
@@ -20,7 +20,7 @@
                     </a>
                 </div>
                 <div class="widget-toolbar">
-                    <select class="chosen-select form-control" style="width:300px" id="selTableCategory" data-placeholder="表分类...">
+                    <select class="chosen-select form-control" style="width:300px" id="selTableCategory"  multi-placeholder="表分类...">
                         <option value="">  </option>
                         @foreach (var category in tableCategorys)
                         {

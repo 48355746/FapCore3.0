@@ -23,28 +23,28 @@
         <link rel="stylesheet" href="~/css/acefont.min.css" asp-append-version="true" />
     </environment>
     @*fap control css*@
-    <environment include="Development">
-        <link rel="stylesheet" href="~/Content/css/jquery-ui.css" />
-        <link rel="stylesheet" href="~/Content/JqGrid/css/ui.jqgrid.css" />
-        <link rel="stylesheet" href="~/Content/css/jquery-ui.custom.css" />
-        <link rel="stylesheet" href="~/Content/Handsontable/css/handsontable.full.min.css" />
-        <link rel="stylesheet" href="~/Content/css/jquery.gritter.css" />
-        <link rel="stylesheet" href="~/Content/css/bootstrap-editable.css" />
-        <link rel="stylesheet" href="~/Content/css/jquery.bootstrap-touchspin.css" />
-        <link rel="stylesheet" href="~/Content/css/bootstrap-datetimepicker.css" />
-        <link rel="stylesheet" href="~/Content/date-time-h5/css/mobiscroll.core-2.6.2.css" />
-        <link rel="stylesheet" href="~/Content/date-time-h5/css/mobiscroll.animation-2.6.2.css" />
-        <link rel="stylesheet" href="~/Content/date-time-h5/css/mobiscroll.android-ics-2.6.2.css" />
-        <link rel="stylesheet" href="~/Content/css/chosen.css" />
-        <link rel="stylesheet" href="~/Content/css/bootstrap-duallistbox.css" />
-        <link rel="stylesheet" href="~/Content/css/fileinput.css" />
-        <link rel="stylesheet" href="~/Content/Select2/css/select2.css" />
-        <link rel="stylesheet" href="~/Content/js/JsTree/themes/default/style.css" />
-        <link rel="stylesheet" href="~/Content/css/colorpicker.css" />
-        <link rel="stylesheet" href="~/Content/citypicker/city-picker.css" />
-        <link rel="stylesheet" href="~/Content/css/colorbox.css" />
-        <link rel="stylesheet" href="~/Content/js/jRange/jquery.range.css" asp-append-version="true" />
-    </environment>
+<environment include="Development">
+    <link rel="stylesheet" href="~/Content/css/jquery-ui.css" />
+    <link rel="stylesheet" href="~/Content/JqGrid/css/ui.jqgrid.css" />
+    <link rel="stylesheet" href="~/Content/css/jquery-ui.custom.css" />
+    <link rel="stylesheet" href="~/Content/Handsontable/css/handsontable.full.min.css" />
+    <link rel="stylesheet" href="~/Content/css/jquery.gritter.css" />
+    <link rel="stylesheet" href="~/Content/css/bootstrap-editable.css" />
+    <link rel="stylesheet" href="~/Content/css/jquery.bootstrap-touchspin.css" />
+    <link rel="stylesheet" href="~/Content/css/bootstrap-datetimepicker.css" />
+    <link rel="stylesheet" href="~/Content/date-time-h5/css/mobiscroll.core-2.6.2.css" />
+    <link rel="stylesheet" href="~/Content/date-time-h5/css/mobiscroll.animation-2.6.2.css" />
+    <link rel="stylesheet" href="~/Content/date-time-h5/css/mobiscroll.android-ics-2.6.2.css" />
+    <link rel="stylesheet" href="~/Content/css/chosen.css" />
+    <link rel="stylesheet" href="~/Content/css/bootstrap-duallistbox.css" />   
+    <link href="~/Content/fileinput/css/fileinput.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/Content/Select2/css/select2.css" />
+    <link rel="stylesheet" href="~/Content/js/JsTree/themes/default/style.css" />
+    <link rel="stylesheet" href="~/Content/css/colorpicker.css" />
+    <link rel="stylesheet" href="~/Content/citypicker/city-picker.css" />
+    <link rel="stylesheet" href="~/Content/css/colorbox.css" />
+    <link rel="stylesheet" href="~/Content/js/jRange/jquery.range.css" asp-append-version="true" />
+</environment>
     <environment exclude="Development">
         <link rel="stylesheet" href="~/css/control.min.css" asp-append-version="true" />
     </environment>
@@ -365,7 +365,6 @@
         <!-- ace scripts -->
         <script src="~/Content/js/ace/elements.scroller.js" asp-append-version="true"></script>
         <script src="~/Content/js/ace/elements.colorpicker.js" asp-append-version="true"></script>
-        <script src="~/Content/js/ace/elements.fileinput.js" asp-append-version="true"></script>
         <script src="~/Content/js/ace/elements.typeahead.js" asp-append-version="true"></script>
         <script src="~/Content/js/ace/elements.wysiwyg.js" asp-append-version="true"></script>
         <script src="~/Content/js/ace/elements.spinner.js" asp-append-version="true"></script>
@@ -402,8 +401,8 @@
         <script src="~/Content/date-time-h5/js/mobiscroll.android-ics-2.6.2.js" asp-append-version="true"></script>
         <script src="~/Content/date-time-h5/js/mobiscroll.datetime-2.6.2.js" asp-append-version="true"></script>
         <script src="~/Content/date-time-h5/js/mobiscroll.core-2.6.2-zh.js" asp-append-version="true"></script>
-        <script src="~/Content/js/fileinput/fileinput.js" asp-append-version="true"></script>
-        <script src="~/Content/js/fileinput/fileinput_locale_zh.js" asp-append-version="true"></script>
+        <script src="~/Content/fileinput/fileinput.js" asp-append-version="true"></script>
+
         <script src="~/Content/js/chosen.jquery.js" asp-append-version="true"></script>
         <script src="~/Content/js/jquery.bootstrap-touchspin.js" asp-append-version="true"></script>
         <script src="~/Content/js/jquery.inputlimiter.1.3.1.js" asp-append-version="true"></script>
@@ -434,18 +433,22 @@
     {
         //多语
         <script src="~/Content/JqGrid/i18n/grid.locale-en.js" asp-append-version="true"></script>
-    }else if(currLanguage== Fap.Core.MultiLanguage.MultiLanguageEnum.ZhCn)
+        <script src="~/Content/fileinput/locales/LANG.js" asp-append-version="true"></script>
+    }
+    else if (currLanguage == Fap.Core.MultiLanguage.MultiLanguageEnum.ZhCn)
     {
         <script src="~/Content/JqGrid/i18n/grid.locale-cn.js" asp-append-version="true"></script>
-
-    }else if(currLanguage== Fap.Core.MultiLanguage.MultiLanguageEnum.ZhTW)
+        <script src="~/Content/fileinput/locales/zh.js" asp-append-version="true"></script>
+    }
+    else if (currLanguage == Fap.Core.MultiLanguage.MultiLanguageEnum.ZhTW)
     {
         <script src="~/Content/JqGrid/i18n/grid.locale-tw.js" asp-append-version="true"></script>
-
-    }else if(currLanguage== Fap.Core.MultiLanguage.MultiLanguageEnum.Ja)
+        <script src="~/Content/fileinput/locales/zh-TW.js" asp-append-version="true"></script>
+    }
+    else if (currLanguage == Fap.Core.MultiLanguage.MultiLanguageEnum.Ja)
     {
         <script src="~/Content/JqGrid/i18n/grid.locale-ja.js" asp-append-version="true"></script>
-
+        <script src="~/Content/fileinput/locales/ja.js" asp-append-version="true"></script>
     }
     <environment exclude="Development">
         <script src="~/lib/bootstrap/dist/js/bootstrap.min.js" asp-append-version="true"></script>

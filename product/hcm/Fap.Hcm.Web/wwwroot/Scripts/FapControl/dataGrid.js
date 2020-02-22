@@ -515,7 +515,7 @@ var loadExportWordMessageBox = function (title, gid, qryCols, tablename, callbac
                 var $file = $("<input id=\"file-import\" type=\"file\"  class=\"file-loading\">");
                 dialog.find('.bootbox-body').empty().append(title).append($file);
                 $file.fileinput({
-                    language: 'zh',
+                    language: language,
                     uploadUrl: basePath + '/Api/Core/ImportWordTemplate/' + tablename,
                     showCaption: false,
                     allowedFileExtensions: ["docx"],
@@ -591,7 +591,7 @@ var loadImportDataMessageBox = function (title, gid, qryCols, tablename, callbac
             loadExportExcelTemplData(qryCols, gid);
         });
         $file.fileinput({
-            language: 'zh',
+            language: language,
             uploadUrl: basePath + '/Api/Core/ImportExcelData/' + tablename,
             showCaption: false,
             allowedFileExtensions: ["xls", "xlsx"],

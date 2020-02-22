@@ -307,7 +307,7 @@
 
                             <div class="col-sm-9">
                                 <label>
-                                    <input name="form-msgtopayroll-checkbox" id="form-msgtopayroll-checkbox" type="checkbox" @(cfg.IsNotifyPayroll == 0 ? "" : "checked='checked'") class="ace" />
+                                    <input name="form-msgtopayroll-checkbox" id="form-msgtopayroll-checkbox" type="checkbox" fap-checked="cfg.IsNotifyPayroll != 0"  class="ace" />
                                     <span class="lbl"></span>
                                 </label>
                             </div>
@@ -318,10 +318,10 @@
                             <div class="col-sm-9">
                                 @foreach (var item in empCategory)
                                 {
-                                    string chk = "";
+                                    bool chk = false;
                                     if (string.IsNullOrWhiteSpace(cfg.EmpCategoryFilter))
                                     {
-                                        chk = "checked='checked'";
+                                        chk = true;
                                     }
                                     else
                                     {
@@ -332,14 +332,14 @@
                                             {
                                                 if (c.Split(':').Contains(item.Code))
                                                 {
-                                                    chk = "checked='checked'";
+                                                    chk = true;
                                                     break;
                                                 }
                                             }
                                         }
                                     }
                                     <label>
-                                        <input data-ctrl="empcategory" name="form-field-checkbox-empcategory" value="@item.Code" data-text="@item.Name" type="checkbox" @chk class="ace" />
+                                        <input data-ctrl="empcategory" name="form-field-checkbox-empcategory" value="@item.Code" data-text="@item.Name" type="checkbox"  fap-checked="chk" class="ace" />
                                         <span class="lbl"> @item.Name</span>
                                     </label>
 

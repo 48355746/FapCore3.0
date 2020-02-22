@@ -569,7 +569,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     //建立初始化附件控件js函数
                     script.AppendLine("var initFile" + Id.Replace('-', '_') + tempFid + "=function(){");
                     script.AppendLine("$(\"###formid##" + tempFid + "-FILE\").fileinput({");
-                    script.AppendLine("language: 'zh',");
+                    script.AppendLine("language: language,");
                     script.AppendLine("uploadUrl:\"" + _applicationContext.BaseUrl + "/Component/UploadFile/" + field.FieldValue + "\",");
                     //script.AppendLine("deleteUrl:\"http://" + HttpContext.Current.Request.Url.Authority + HttpContext.Current.Request.ApplicationPath  + "/Api/Core/deletefile\",");
                     if (allowExt.IsPresent())

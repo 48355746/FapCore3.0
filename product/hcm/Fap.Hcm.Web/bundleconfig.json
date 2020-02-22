@@ -35,7 +35,7 @@
       "wwwroot/Content/date-time-h5/css/mobiscroll.android-ics-2.6.2.css",
       "wwwroot/Content/css/chosen.css",
       "wwwroot/Content/css/bootstrap-duallistbox.css",
-      "wwwroot/Content/css/fileinput.css",
+      "wwwroot/Content/fileinput/css/fileinput.css",
       "wwwroot/Content/Select2/css/select2.css",
       "wwwroot/Content/js/JsTree/themes/default/style.css",
       "wwwroot/Content/css/colorpicker.css",
@@ -53,7 +53,6 @@
     "inputFiles": [
       "wwwroot/Content/js/ace/elements.scroller.js",
       "wwwroot/Content/js/ace/elements.colorpicker.js",
-      "wwwroot/Content/js/ace/elements.fileinput.js",
       "wwwroot/Content/js/ace/elements.typeahead.js",
       "wwwroot/Content/js/ace/elements.wysiwyg.js",
       "wwwroot/Content/js/ace/elements.spinner.js",
@@ -101,8 +100,8 @@
       "wwwroot/Content/date-time-h5/js/mobiscroll.android-ics-2.6.2.js",
       "wwwroot/Content/date-time-h5/js/mobiscroll.datetime-2.6.2.js",
       "wwwroot/Content/date-time-h5/js/mobiscroll.core-2.6.2-zh.js",
-      "wwwroot/Content/js/fileinput/fileinput.js", //文件上传
-      "wwwroot/Content/js/fileinput/fileinput_locale_zh.js",
+      "wwwroot/Content/fileinput/fileinput.js", //文件上传
+      //"wwwroot/Content/js/fileinput/fileinput_locale_zh.js",
       "wwwroot/Content/js/chosen.jquery.js", //下拉框美化
       "wwwroot/Content/js/jquery.bootstrap-touchspin.js", //数值控件
       "wwwroot/Content/js/jquery.inputlimiter.1.3.1.js", //字符限制

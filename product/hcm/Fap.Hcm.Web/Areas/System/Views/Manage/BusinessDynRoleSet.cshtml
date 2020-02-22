@@ -121,7 +121,7 @@
                 <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> 动态角色名称 </label>
 
                 <div class="col-sm-9">
-                    <input type="text" class="form-control" id="roleName" placeholder="动态角色名称" value="@dynRole.RoleName">
+                    <input type="text" class="form-control" id="roleName" placeholder="动态角色名称" value="@dynRole.RoleName"/>
                 </div>
             </div>
 
@@ -133,7 +133,7 @@
                 <div class="col-sm-9">
                     <span class="help-inline col-xs-12 col-sm-7">
                         <label class="middle">
-                            <input type="checkbox" id="state" @(dynRole.State == 1 ? "checked" : "") class="ace">
+                            <input type="checkbox" id="state" fap-checked="dynRole.State == 1" class="ace"/>
                             <span class="lbl"> 启用 </span>
                         </label>
                     </span>

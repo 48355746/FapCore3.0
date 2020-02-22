@@ -102,8 +102,9 @@
 
                                     @foreach (var item in empStatus)
                                     {
+                                        bool chk = item.Code == "Current";
                                         <label>
-                                            <input data-ctrl="empstatus" name="form-field-checkbox-empstatus" value="@item.Code" type="checkbox" @(item.Code == "Current" ? "checked='checked'" : "") class="ace" />
+                                            <input data-ctrl="empstatus" name="form-field-checkbox-empstatus" value="@item.Code" type="checkbox" fap-checked="chk" class="ace" />
                                             <span class="lbl"> @item.Name</span>
                                         </label>
                                     }

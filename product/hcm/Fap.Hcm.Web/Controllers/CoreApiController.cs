@@ -152,7 +152,7 @@ namespace Fap.Hcm.Web.Controllers
         public JsonResult GetFieldListByTbName(string tableName, string qryCols = "*")
         {
             Guard.Against.NullOrWhiteSpace(tableName, nameof(tableName));
-            var colCacheList = _dbContext.Columns(tableName).ExcludeAuditColumns();
+            var colCacheList = _multiLangService.GetMultiLanguageColumns(tableName).ExcludeAuditColumns();
             if (!qryCols.Equals("*"))
             {
                 var queryColList = HttpUtility.UrlDecode(qryCols).ToLower().SplitComma();

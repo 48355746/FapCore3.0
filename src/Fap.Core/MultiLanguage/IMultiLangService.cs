@@ -13,5 +13,6 @@ namespace Fap.Core.MultiLanguage
         string GetOrAndMultiLangValue(MultiLanguageOriginEnum qualifer, string langkey, string langValue);
         string GetMultiLangValue(MultiLanguageOriginEnum qualifer, string langkey);
         void CreateMultilanguageJsFile();
+        IEnumerable<FapColumn> GetMultiLanguageColumns(string tableName);
     }
 }

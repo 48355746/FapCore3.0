@@ -283,7 +283,7 @@ var loadRefMessageBox = function (title, frmid, colfid, ctrlid, refurl, extra) {
             },
 
             cancel: {
-                label: MultiLangHelper.getResName("global_oper_cancel", "取消"), className: "btn-default"
+                label: MultiLangHelper.getResName("cancel", "取消"), className: "btn-default"
             }
         }
 

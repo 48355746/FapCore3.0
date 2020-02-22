@@ -55,7 +55,15 @@ namespace Fap.Core.MultiLanguage
             }
 
         }
-
+        public IEnumerable<FapColumn> GetMultiLanguageColumns(string tableName)
+        {
+            var fapColumns = _dbContext.Columns(tableName);
+            foreach (var column in fapColumns)
+            {
+                column.ColComment = GetMultiLangValue(MultiLanguageOriginEnum.FapColumn, $"{column.TableName}_{column.ColName}");
+            }
+            return fapColumns;
+        }
 
         /// <summary>
         /// 获取所有资源多语
@@ -78,7 +86,7 @@ namespace Fap.Core.MultiLanguage
             }
             else
             {
-                _dbContext.Insert(new FapMultiLanguage { Qualifier = qualifer.ToString(), LangKey = langkey, LangValue = langValue,LangValueZhCn=langValue });
+                _dbContext.Insert(new FapMultiLanguage { Qualifier = qualifer.ToString(), LangKey = langkey, LangValue = langValue, LangValueZhCn = langValue });
                 _appDomain.MultiLangSet.Refresh();
                 return langValue;
             }

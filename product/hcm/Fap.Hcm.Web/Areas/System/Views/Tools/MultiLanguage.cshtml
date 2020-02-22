@@ -1,6 +1,6 @@
 ﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
 @{
-    _platformDomain.DictSet.TryGetValueByCategory("MultiLanguageOrigin", out IEnumerable<Fap.Core.Infrastructure.Metadata.FapDict> langOrigins);
+   IEnumerable<Fap.Core.Infrastructure.Metadata.FapDict> langOrigins= _dbContext.Dictionarys("MultiLanguageOrigin");
 }
 <title><fap-multilang lang-key="system_tools_multilanguage_title" default-content="多语言"></fap-multilang>    </title>
 <link href="~/Content/css/chosen.css" rel="stylesheet" />
@@ -16,8 +16,9 @@
                         <i class="ace-icon fa fa-expand"></i>
                     </a>
                 </div>
+                
                 <div class="widget-toolbar">
-                    <select class="chosen-select form-control" style="width:300px" id="selmultilanguage" data-placeholder="多语分类...">
+                    <select class="chosen-select form-control" style="width:300px" id="selmultilanguage" multi-placeholder="多语分类...">
                         <option value="">  </option>
                         @foreach (var origin in langOrigins)
                         {
