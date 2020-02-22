@@ -160,6 +160,12 @@ namespace Fap.Hcm.Web.Controllers
             }
             return Json(colCacheList);
         }
+        [HttpPost("MultiLanguage")]
+        public JsonResult RegisterMultiLanguage(string langKey,string langValue)
+        {
+           string rv= _multiLangService.GetOrAndMultiLangValue(Core.MultiLanguage.MultiLanguageOriginEnum.Javascript, langKey, langValue);
+            return Json(new ResponseViewModel { success = true, data = rv });
+        }
         #region QueryProgram
         [HttpPost("QueryProgram")]
         public JsonResult QueryProgram(CfgQueryProgram model)

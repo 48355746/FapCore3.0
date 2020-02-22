@@ -1,0 +1,71 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+    _platformDomain.DictSet.TryGetValueByCategory("MultiLanguageOrigin", out IEnumerable<Fap.Core.Infrastructure.Metadata.FapDict> langOrigins);
+}
+<title><fap-multilang lang-key="system_tools_multilanguage_title" default-content="多语言"></fap-multilang>    </title>
+<link href="~/Content/css/chosen.css" rel="stylesheet" />
+<div class="row">
+    <div class="col-xs-12">
+        <div id="widget-box-orgdept" class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">
+                    <fap-multilang lang-key="system_tools_multilanguage_title" default-content="多语言"></fap-multilang>
+                </h4>
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar">
+                    <select class="chosen-select form-control" style="width:300px" id="selmultilanguage" data-placeholder="多语分类...">
+                        <option value="">  </option>
+                        @foreach (var origin in langOrigins)
+                        {
+                            <option value="@origin.Code">@origin.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="widget-toolbar no-border">
+                    <fap-button id="btnRefreshMultiLanguage" btn-tag="link" content="刷新多语" icon-before="fa fa-refresh blue" class-name="info"></fap-button>
+                </div>
+            </div>
+            <div class="widget-body">
+                <!-- #section:custom/widget-box.toolbox -->
+                <div class="widget-main">
+                    <fap-grid id="fapmultilanguage" grid-model="Model" source-type="Local" multi-box-only="true" multi-select="true" auto-width="true"></fap-grid>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    //导出数据需要的js
+    var scripts = [null, "/Content/js/chosen.jquery.js", null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+            })
+        })
+        $('.chosen-select').chosen({ allow_single_deselect: true }).on("change", function () {
+            var c = $(this).val();
+            if (c === "") {
+                return;
+            }
+            var filter = '{"groupOp":"AND","rules":[{"field":"Qualifier","op":"eq","data":"' + c + '"}]}'
+
+            reloadGrid("grid-fapmultilanguage", { filters: filter })
+        });
+        $("#btnRefreshMultiLanguage").on(ace.click_event, function () {
+            $.get(basePath + "/System/Api/Tools/RefreshMultiLanguage", function (rv) {
+                 if (rv.success) {
+                    $.msg(rv.msg);
+                } else {
+                    bootbox.alert(rv.msg);
+                }
+            })
+        }); 
+        
+    })
+</script>

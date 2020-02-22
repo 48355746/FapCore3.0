@@ -23,7 +23,7 @@ namespace Fap.Core.MultiLanguage
         private IFapPlatformDomain _appDomain;
         private IFapApplicationContext _applicationContext;
         private IDbContext _dbContext;
-        public MultiLangService(IFapPlatformDomain appDomain, IFapApplicationContext applicationContext,IDbContext dbContext)
+        public MultiLangService(IFapPlatformDomain appDomain, IFapApplicationContext applicationContext, IDbContext dbContext)
         {
             _appDomain = appDomain;
             _applicationContext = applicationContext;
@@ -65,7 +65,7 @@ namespace Fap.Core.MultiLanguage
         {
             return _appDomain.MultiLangSet;
         }
-        public string GetOrAndMultiLangValue(MultiLanguageOriginEnum qualifer,string langkey,string langValue)
+        public string GetOrAndMultiLangValue(MultiLanguageOriginEnum qualifer, string langkey, string langValue)
         {
             if (_appDomain.MultiLangSet.TryGetValue(qualifer.ToString(), langkey, out FapMultiLanguage language))
             {
@@ -78,7 +78,7 @@ namespace Fap.Core.MultiLanguage
             }
             else
             {
-                _dbContext.Insert(new FapMultiLanguage { Qualifier = qualifer.ToString(), LangKey = langkey, LangValue = langValue });
+                _dbContext.Insert(new FapMultiLanguage { Qualifier = qualifer.ToString(), LangKey = langkey, LangValue = langValue,LangValueZhCn=langValue });
                 _appDomain.MultiLangSet.Refresh();
                 return langValue;
             }
@@ -87,7 +87,7 @@ namespace Fap.Core.MultiLanguage
         {
             if (_appDomain.MultiLangSet.TryGetValue(qualifer.ToString(), langkey, out FapMultiLanguage language))
             {
-                string v= GetLangValue(language);
+                string v = GetLangValue(language);
                 if (v.IsMissing())
                 {
                     return language.LangValue;
@@ -109,50 +109,45 @@ namespace Fap.Core.MultiLanguage
         /// <summary>
         /// 初始化资源多语JS文件内容
         /// </summary>
-        public void InitMultiLangResJS()
+        public void CreateMultilanguageJsFile()
         {
-            //string jsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Scripts");
+            string jsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Scripts");
+            _appDomain.MultiLangSet.TryGetValue(MultiLanguageOriginEnum.Javascript.ToString(), out IEnumerable<FapMultiLanguage> resList);
+            string jsTemplate = @"
+//JS资源多语， 由系统自动生成， 请勿修改
+var MultiLangHelper = (function () {
+    var resLang = 'ZhCn';
+    var resArray = { 
+##keyvalues##
+    };
+    var Helper = {};
+    //初始化语种
+    Helper.initLang = function (lang) {
+        resLang = lang;
+    };
+    //获得资源多语
+    Helper.getResName = function (code, defaultName) {
+        if (resArray[code] === undefined) {
+            $.post(basePath +'/Api/Core/MultiLanguage',{ langKey: code, langValue: defaultName }, function (rv) {
 
-            //IEnumerable<FapMultiLanguage> resList = GetAllResMultiLang();
+            });
+            return defaultName;
+        }
+        return resArray[code][resLang] || defaultName;
+    };
 
-            //StringBuilder builder = new StringBuilder();
-            //builder.AppendLine("//JS资源多语， 由系统自动生成， 请勿修改");
-            //builder.AppendLine(@"var MultiLangHelper = (function () {
-            // var resLang = 'ZhCn';");
-            //builder.AppendLine("var resArray = {");
-            //if (resList != null && resList.Count() > 0)
-            //{
-            //    foreach (var res in resList)
-            //    {
-            //        builder.Append(res.ResCode.RemoveSpace()).Append(": {").AppendFormat("'ZhCn': '{0}', 'ZhTW': '{1}', 'En': '{2}', 'Ja': '{3}'", FormateName(res.ResZhCn), FormateName(res.ResZhTW), FormateName(res.ResEn), FormateName(res.ResJa)).AppendLine("}");
-            //        builder.Append(",");
-            //    }
-            //    builder.Remove(builder.Length - 1, 1);
-            //    builder.AppendLine("");
-            //}
-
-            //builder.AppendLine("}");
-            //builder.AppendLine(@"var Helper = {};
-            //    //初始化语种
-            //    Helper.initLang = function(lang) {
-            //  resLang = lang;
-            // };
-            // //获得资源多语
-            //    Helper.getResName = function (code, defaultName) {
-            //        return resArray[code][resLang] || defaultName;
-            //    };
-            //    return Helper;");
-            //builder.AppendLine("})();");
-            //if (Directory.Exists(jsPath))
-            //{
-            //    using (FileStream fs = new FileStream(Path.Combine(jsPath, "MultiLang.js"), FileMode.Create, FileAccess.Write))
-            //    {
-            //        using (StreamWriter sw = new StreamWriter(fs, Encoding.UTF8))
-            //        {
-            //            sw.Write(builder.ToString());
-            //        }
-            //    }
-            //}
+    return Helper;
+})();";
+            StringBuilder builder = new StringBuilder();
+            foreach (var res in resList)
+            {
+                builder.Append("      ").AppendLine($"'{res.LangKey.Trim()}': {{ 'ZhCn': '{FormateName(res.LangValueZhCn)}', 'ZhTW': '{FormateName(res.LangValueZhTW)}', 'En': '{FormateName(res.LangValueEn)}', 'Ja': '{FormateName(res.LangValueJa)}' }},");
+            }
+            jsTemplate = jsTemplate.Replace("##keyvalues##", builder.ToString().TrimEnd('\n').TrimEnd('\r').TrimEnd(','));
+            if (Directory.Exists(jsPath))
+            {
+                File.WriteAllText(Path.Combine(jsPath, "MultiLang.js"), jsTemplate, Encoding.UTF8);
+            }
 
         }
 

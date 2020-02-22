@@ -48,7 +48,7 @@ namespace Fap.Core.Office.Excel.Export
             }
 
             //字典表
-            foreach (var column in columnList.Where(c => c.RefTable.IsPresent()))
+            foreach (var column in columnList.Where(c => c.RefTable.IsPresent()||c.ComboxSource.IsPresent()))
             {
                 if (column.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX)
                 {

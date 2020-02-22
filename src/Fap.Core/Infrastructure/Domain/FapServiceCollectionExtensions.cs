@@ -115,7 +115,7 @@ namespace Fap.Core.Infrastructure.Domain
         {
             //初始化多语言js文件
             IMultiLangService multiLang = app.ApplicationServices.GetService<IMultiLangService>();
-            multiLang.InitMultiLangResJS();
+            multiLang.CreateMultilanguageJsFile();
         }
 
 

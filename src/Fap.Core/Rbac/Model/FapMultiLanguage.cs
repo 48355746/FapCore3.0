@@ -35,14 +35,10 @@ namespace Fap.Core.Rbac.Model
 		/// </summary>
 		public string LangValueZhTW { get; set; }
 		/// <summary>
-		/// 来源
-		/// </summary>
-		public string Origin { get; set; }
-		/// <summary>
-		/// 来源 的显性字段MC
+		/// 限定 的显性字段MC
 		/// </summary>
 		[Computed]
-		public string OriginMC { get; set; }
+		public string QualifierMC { get; set; }
 		/// <summary>
 		/// 限定
 		/// </summary>

@@ -36,7 +36,7 @@ namespace Fap.Core.Rbac.AC
             if (_initialized) return;
             lock (Locker)
             {
-                _allMultiLangs = _dbSession.Query<FapMultiLanguage>("select * from FapMultiLanguage");
+                _allMultiLangs = _dbSession.Query<FapMultiLanguage>("select * from FapMultiLanguage where Dr=0");
 
                 _initialized = true;
             }

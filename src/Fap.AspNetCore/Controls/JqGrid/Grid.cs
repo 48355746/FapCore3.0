@@ -2076,8 +2076,10 @@ namespace Fap.AspNetCore.Controls.JqGrid
                         del: false,
                         search: " + hasSearch + @",
                         searchicon: 'ace-icon fa fa-search orange',
+                        searchtitle:'"+ OperEnum.Search.Description(_multiLang) + @"',
                         refresh:  " + hasRefresh + @",
                         refreshicon : 'ace-icon fa fa-refresh green',
+                        refreshtitle:'"+ OperEnum.Refresh.Description(_multiLang) + @"',   
                         view: false  
                     },{},{},{},
                     {

@@ -2358,7 +2358,10 @@ namespace Fap.Core.DataAccess
             }
             foreach (var dict in fapDictionarys)
             {
-                dict.Name = GetDictName(dict);
+                string name= GetDictName(dict);
+                if (name.IsPresent()) {
+                    dict.Name =name ;
+                }
             }
             return fapDictionarys;
         }
@@ -2376,7 +2379,11 @@ namespace Fap.Core.DataAccess
             var dict= Dictionarys(category).FirstOrDefault(d => d.Code.EqualsWithIgnoreCase(code));
             if (dict != null)
             {
-                GetDictName(dict);
+                string name = GetDictName(dict);
+                if (name.IsPresent())
+                {
+                    dict.Name = name;
+                }
             }
             return dict;
         }

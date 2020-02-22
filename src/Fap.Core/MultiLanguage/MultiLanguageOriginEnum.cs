@@ -26,11 +26,11 @@ namespace Fap.Core.MultiLanguage
         /// </summary>
         Javascript,
         /// <summary>
-        /// key:menucode
+        /// key:menu.Fid
         /// </summary>
         Menu,
         /// <summary>
-        /// 模块
+        /// 模块 module.Fid
         /// </summary>
         Module,
         /// <summary>

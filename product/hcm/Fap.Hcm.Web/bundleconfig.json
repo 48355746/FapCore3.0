@@ -129,7 +129,7 @@
     "outputFileName": "wwwroot/js/fapcontrol.min.js",
     "inputFiles": [
       "wwwroot/Content/JqGrid/jquery.jqGrid.src.js",
-      "wwwroot/Content/JqGrid/i18n/grid.locale-cn.js",
+      //"wwwroot/Content/JqGrid/i18n/grid.locale-cn.js",
       "wwwroot/Content/js/x-editable/bootstrap-editable.js", //x-editable
       "wwwroot/Content/js/x-editable/ace-editable.js",
       "wwwroot/Content/js/x-editable/fap-editable.js",

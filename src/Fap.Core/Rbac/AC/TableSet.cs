@@ -31,7 +31,7 @@ namespace Fap.Core.Rbac.AC
             lock (Locker)
             {
 
-                _allTables = _dbSession.Query<FapTable>($"select * from FapTable where ProductUid in('FAP','HCM')").ToList();
+                _allTables = _dbSession.Query<FapTable>($"select * from FapTable where Dr=0 and ProductUid in('FAP','HCM')").ToList();
 
                 _initialized = true;
             }

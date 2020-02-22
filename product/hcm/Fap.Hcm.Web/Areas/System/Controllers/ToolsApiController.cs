@@ -150,6 +150,14 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             _platformDomain.TableSet.Refresh();
             return Json(ResponseViewModelUtils.Sueecss());
         }
+        [HttpGet("RefreshMultiLanguage")]
+        public JsonResult RefreshMultiLanguage()
+        {
+            _platformDomain.MultiLangSet.Refresh();
+            _multiLangService.CreateMultilanguageJsFile();
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+       
         [HttpPost("ExportSql")]
         public JsonResult ExportSql(string database,string tableName, string tableCategory, bool includCreate, bool includInsert)
         {

@@ -9,6 +9,7 @@ using Fap.Core.Rbac.Model;
 using Microsoft.AspNetCore.Authorization;
 using Fap.AspNetCore.Model;
 using Fap.Core.Utility;
+using Fap.Core.MultiLanguage;
 
 namespace Fap.AspNetCore.Infrastructure
 {
@@ -21,7 +22,10 @@ namespace Fap.AspNetCore.Infrastructure
         public FapController(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
-
+        protected string GetOrAddPageMultiLanguageContent(string langkey,string langContent)
+        {
+            return _multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page, langkey, langContent);
+        }
         protected FormViewModel GetFormViewModel(string tableName,string formId, string fid, Action<QuerySet> handler = null)
         {
             FormViewModel model = new FormViewModel();

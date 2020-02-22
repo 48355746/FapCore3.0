@@ -31,8 +31,8 @@
     }
     public class ResponseViewModelUtils
     {
-        public static ResponseViewModel Sueecss(object data,string msg="响应成功")
-        {
+        public static ResponseViewModel Sueecss(object data,string msg= "操作成功")
+        {            
             ResponseViewModel rvm = new ResponseViewModel()
             {
                 code=200,
@@ -42,7 +42,7 @@
             };
             return rvm;
         }
-        public static ResponseViewModel Sueecss(string msg = "响应成功")
+        public static ResponseViewModel Sueecss(string msg = "操作成功")
         {
             ResponseViewModel rvm = new ResponseViewModel()
             {

@@ -85,25 +85,25 @@ namespace Fap.Hcm.Web.Controllers
                 PasswordHasher passwordHasher = new PasswordHasher();
                 if (loginUser == null)
                 {
-                    errorMsg = "不存在此用户";
+                    errorMsg = GetOrAddPageMultiLanguageContent("login_page_no_exist_user","不存在此用户");
                 }
                 else if (loginUser.EnableState == 0)
                 {
-                    errorMsg = "该账户已被禁用";
+                    errorMsg =GetOrAddPageMultiLanguageContent("login_page_forbidden_user", "该账户已被禁用");
                 }
                 else if (loginUser.IsLocked == 1)
                 {
-                    errorMsg = "该账户暂被锁定";
+                    errorMsg =GetOrAddPageMultiLanguageContent("login_page_lock_user", "该账户暂被锁定");
                 }
                 else if (!passwordHasher.VerifyHashedPassword(loginUser.UserPassword, userpwd))
                 {
-                    errorMsg = "密码不正确";
+                    errorMsg =GetOrAddPageMultiLanguageContent("login_page_password_error", "密码不正确");
                     //增加尝试次数，超过5次冻结
                     _loginService.AddTryTimes(loginUser);
                 }
                 else if (loginUser.UserIdentity.IsMissing() && loginUser.UserName != developer)
                 {
-                    errorMsg = "此用户没有关联人员信息";
+                    errorMsg =GetOrAddPageMultiLanguageContent("login_page_no_mapping_employee", "此用户没有关联人员信息");
                 }
                 else
                 {
@@ -115,7 +115,7 @@ namespace Fap.Hcm.Web.Controllers
                         }
                         else
                         {
-                            errorMsg = "用户关联的人员不存在";
+                            errorMsg =GetOrAddPageMultiLanguageContent("login_page_no_find_mapping_employee", "用户关联的人员不存在");
                         }
                     }
                     else
@@ -123,7 +123,7 @@ namespace Fap.Hcm.Web.Controllers
                         emp = _dbContext.Get<Employee>(loginUser.UserIdentity, true);
                         if (emp == null)
                         {
-                            errorMsg = "用户关联的人员不存在";
+                            errorMsg = GetOrAddPageMultiLanguageContent("login_page_no_find_mapping_employee", "用户关联的人员不存在"); ;
                         }
                     }
                 }
@@ -278,29 +278,30 @@ namespace Fap.Hcm.Web.Controllers
         public JsonResult ResetPassword(string op, string np, string cp)
         {
             PasswordHasher pwdHasher = new PasswordHasher();
-            string errorMsg = string.Empty;
+            string msg = string.Empty;
             string oriPwd = op;
             string newPwd = np;
             string confirmPwd = cp;
             FapUser user = _dbContext.Get<FapUser>(_applicationContext.UserUid);
             if (!pwdHasher.VerifyHashedPassword(user.UserPassword, oriPwd))
             {
-                errorMsg = _multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page,"login_page_password_error", "原始密码错误");
+                msg = GetOrAddPageMultiLanguageContent("login_page_ori_password_error", "原始密码错误");
             }
             else
             {
                 if (newPwd != confirmPwd)
                 {
-                    errorMsg = _multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page, "login_page_password_confirm_error", "两次输入密码不一致");
+                    msg = GetOrAddPageMultiLanguageContent("login_page_password_confirm_error", "两次输入密码不一致");
                 }
                 else
                 {
                     user.UserPassword = pwdHasher.HashPassword(newPwd);
                     user.PasswordTryTimes = 0;
                     _dbContext.Update<FapUser>(user);
+                    msg = GetOrAddPageMultiLanguageContent("login_page_password_modifysuccess", "修改密码成功");
                 }
             }
-            return Json(new ResponseViewModel { msg = errorMsg });
+            return Json(ResponseViewModelUtils.Sueecss(msg));
         }
         /// <summary>
         /// 切换角色

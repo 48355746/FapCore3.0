@@ -12,6 +12,6 @@ namespace Fap.Core.MultiLanguage
         IEnumerable<string> GetAllLanguage();
         string GetOrAndMultiLangValue(MultiLanguageOriginEnum qualifer, string langkey, string langValue);
         string GetMultiLangValue(MultiLanguageOriginEnum qualifer, string langkey);
-        void InitMultiLangResJS();
+        void CreateMultilanguageJsFile();
     }
 }

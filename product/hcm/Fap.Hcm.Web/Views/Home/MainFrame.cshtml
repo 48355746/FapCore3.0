@@ -1,5 +1,5 @@
 ﻿@{
-    string currentLanguangeName = _multiLangService.CurrentLanguageName; //当前语种
+    var currLanguage = _multiLangService.CurrentLanguage; //当前语种
     string systemName = _configService.GetSysParamValue("sys.web.name");//系统名称
 }
 <!DOCTYPE html>
@@ -95,11 +95,11 @@
       <![endif]-->
     <!-- page specific plugin scripts -->
     <!--多语资源-->
-    <script src="/Scripts/MultiLang.js"></script>
+    <script src="/Scripts/MultiLang.js" asp-append-version="true"></script>
     <script>
         //全局根路径
         var basePath = window.location.protocol+ "//" + window.location.host;
-        var language = '@currentLanguangeName'; //当前语种
+        var language = '@currLanguage'; //当前语种
         MultiLangHelper.initLang(language);
         NProgress.configure({ parent:".page-content"})
     </script>
@@ -418,7 +418,8 @@
         <script src="~/Scripts/Fap/mainframe.js" asp-append-version="true"></script>
         <!-- control scripts -->
         <script src="~/Content/JqGrid/jquery.jqGrid.src.js" asp-append-version="true"></script>
-        <script src="~/Content/JqGrid/i18n/grid.locale-cn.js" asp-append-version="true"></script>
+
+
         <script src="~/Content/js/x-editable/bootstrap-editable.js" asp-append-version="true"></script>
         <script src="~/Content/js/x-editable/ace-editable.js" asp-append-version="true"></script>
         <script src="~/Content/js/x-editable/fap-editable.js" asp-append-version="true"></script>
@@ -429,6 +430,23 @@
         <script src="~/Content/js/jRange/jquery.range.js" asp-append-version="true"></script>
 
     </environment>
+    @if (currLanguage == Fap.Core.MultiLanguage.MultiLanguageEnum.En)
+    {
+        //多语
+        <script src="~/Content/JqGrid/i18n/grid.locale-en.js" asp-append-version="true"></script>
+    }else if(currLanguage== Fap.Core.MultiLanguage.MultiLanguageEnum.ZhCn)
+    {
+        <script src="~/Content/JqGrid/i18n/grid.locale-cn.js" asp-append-version="true"></script>
+
+    }else if(currLanguage== Fap.Core.MultiLanguage.MultiLanguageEnum.ZhTW)
+    {
+        <script src="~/Content/JqGrid/i18n/grid.locale-tw.js" asp-append-version="true"></script>
+
+    }else if(currLanguage== Fap.Core.MultiLanguage.MultiLanguageEnum.Ja)
+    {
+        <script src="~/Content/JqGrid/i18n/grid.locale-ja.js" asp-append-version="true"></script>
+
+    }
     <environment exclude="Development">
         <script src="~/lib/bootstrap/dist/js/bootstrap.min.js" asp-append-version="true"></script>
         <script src="~/js/ace.min.js" asp-append-version="true"></script>

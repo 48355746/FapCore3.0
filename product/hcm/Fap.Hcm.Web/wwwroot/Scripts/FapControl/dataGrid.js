@@ -16,7 +16,7 @@ function getSelectedRows(grdid) {
     var grid = $("#" + grdid);
     var rowKey = grid.getGridParam("selrow");
     if (!rowKey) {
-        $.msg("没有行被选中！");
+        $.msg(MultiLangHelper.getResName("select_row","请选中数据操作"));
         return null;
     }
     else {
@@ -34,7 +34,7 @@ function getSelectedRow(grdid) {
     var grid = $("#" + grdid);
     var rowKey = grid.getGridParam("selrow");
     if (!rowKey) {
-        $.msg("没有行被选中！");
+        $.msg(MultiLangHelper.getResName("select_row", "请选中数据操作"));
         return null;
     }
     else {
@@ -64,7 +64,7 @@ function reloadGrid(grdid, postData) {
 var loadFormMessageBox = function (title, gid, icon, tablename, fid, menuid, fromInitCallback, saveCompletedCallback) {
     var buttons = {
         success: {
-            label: MultiLangHelper.getResName("global_oper_save", "保存"),
+            label: MultiLangHelper.getResName("save", "保存"),
             className: "btn-primary btn-link",
             callback: function () {
                 var formid = 'frm-' + gid;
@@ -90,7 +90,7 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid, menuid, fro
     };
     if (fid === 0) {
         buttons.SaveAndAdd = {
-            label: "保存并新增",
+            label: MultiLangHelper.getResName("save_add", "保存并新增"),
             className: "btn-primary btn-link",
             callback: function () {
                 var formid = 'frm-' + gid;
@@ -118,7 +118,7 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid, menuid, fro
     } else {
         var grid = $("#" + gid);        
         buttons.PreBtn = {
-            label: "上一条",
+            label: MultiLangHelper.getResName("previous", "上一条"),
             className: "btn-primary btn-link",
             callback: function () {                
                 var rows = grid.jqGrid('getRowData');
@@ -131,7 +131,7 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid, menuid, fro
                 var index = $.inArray(fid, fids);
                 grid.jqGrid('setSelection', ids[index - 1]);               
                 if (index ===0) {
-                    $.msg("已到达第一条");
+                    $.msg(MultiLangHelper.getResName("first_row", "已到达第一条数据"));
                 } else {
                     fid = fids[index - 1];
                     initDialog();
@@ -140,7 +140,7 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid, menuid, fro
             }
         };
         buttons.NextBtn = {
-            label: "下一条",
+            label: MultiLangHelper.getResName("next", "下一条"),
             className: "btn-primary btn-link",
             callback: function () {
                 var rows = grid.jqGrid('getRowData');
@@ -153,7 +153,7 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid, menuid, fro
                 var index = $.inArray(fid, fids);
                 grid.jqGrid('setSelection', ids[index + 1]);
                 if (index === fids.length - 1) {
-                    $.msg("已到达最后一条");
+                    $.msg(MultiLangHelper.getResName("end_row", "已到达最后一条数据"));
                 } else {
                     fid = fids[index + 1];
                     initDialog();
@@ -188,7 +188,7 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid, menuid, fro
 //查看数据
 var viewFormMessageBox = function (fid, gid, menuid) {
     var dialog = bootbox.dialog({
-        title: '<i class="ace-icon fa fa-search-plus"></i> 查看',
+        title: '<i class="ace-icon fa fa-search-plus"></i> ' + MultiLangHelper.getResName("view", "查看"),
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
         size: "large",
         footer: false
@@ -222,9 +222,9 @@ var deleteGridRow = function (gid, tableName, onCompletedCallback) {
         dr = rd.Fid;
     }
     if (dr) {
-        bootbox.confirm('确定要删除选中的吗?', function (result) {
+        bootbox.confirm(MultiLangHelper.getResName("confirm_delete", "确定要删除选中的数据吗?"), function (result) {
             if (result) {
-                $.post(basePath + "/Api/Core/Persistence/",
+                $.post(basePath + "/Api/Core/Persistence",
                     { "oper": "del", "tableName": tableName, maindata: { "Fid": dr } }, function (rv) {
                         if (rv.success) {
                             if ($.isFunction(onCompletedCallback)) {
@@ -243,7 +243,7 @@ var deleteGridRow = function (gid, tableName, onCompletedCallback) {
             }
         });
     } else {
-        bootbox.alert('请选择一条数据');
+        $.msg(MultiLangHelper.getResName("select_row", "请选中数据操作"));
     }
 };
 var openRefrenceWindow = function (title, colfid, refurl, selectcallback, clearcallback) {
@@ -252,17 +252,17 @@ var openRefrenceWindow = function (title, colfid, refurl, selectcallback, clearc
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
         buttons: {
             success: {
-                label: MultiLangHelper.getResName("global_oper_enter", "确定"),
+                label: MultiLangHelper.getResName("ok", "确定"),
                 className: "btn-primary",
                 callback: function () {
                     var res = GetRefResult();
                     if (res) {
                         selectcallback && selectcallback(res.code, res.name);
-                    } else { $.msg("请选择一条数据！"); return; }
+                    } else { $.msg(MultiLangHelper.getResName("select_row", "请选中数据操作")); return; }
                 }
             },
             danger: {
-                label: "清空!",
+                label: MultiLangHelper.getResName("clear", "清空"),
                 className: "btn-sm btn-danger",
                 callback: function () {
                     clearcallback && clearcallback();
@@ -270,7 +270,7 @@ var openRefrenceWindow = function (title, colfid, refurl, selectcallback, clearc
             },
 
             cancel: {
-                label: MultiLangHelper.getResName("global_oper_cancel", "取消"), className: "btn-default"
+                label: MultiLangHelper.getResName("cancel", "取消"), className: "btn-default"
             }
         }
 
@@ -292,7 +292,7 @@ var openRefrenceWindow = function (title, colfid, refurl, selectcallback, clearc
 var loadBatchUpdateMessageBox = function (title, gid, qryCols, tablename, menuUid, callback) {
     var rowDatas = getSelectedRows(gid);    
     if (rowDatas === null || rowDatas.length === 0) {
-        $.msg('请选择要修改的多条数据');
+        $.msg(MultiLangHelper.getResName("select_row", "请选中数据操作"));
         return;
     }
     var dialog = bootbox.dialog({ 
@@ -300,7 +300,7 @@ var loadBatchUpdateMessageBox = function (title, gid, qryCols, tablename, menuUi
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
         buttons: {
             cancel: {
-                label: MultiLangHelper.getResName("global_oper_cancel", "取消"), className: "btn-default"
+                label: MultiLangHelper.getResName("cancel", "取消"), className: "btn-default"
             }
         }
     });
@@ -308,8 +308,8 @@ var loadBatchUpdateMessageBox = function (title, gid, qryCols, tablename, menuUi
         dialog.find('.bootbox-body').html(`  <div id="modal-wizard-container"> 
                                                <div> 
                                                 <ul class="steps"> 
-                                                 <li data-step="1" class="active"> <span class="step">1</span> <span class="title">选择编辑属性</span> </li> 
-                                                 <li data-step="2"> <span class="step">2</span> <span class="title">设置属性值</span> </li> 
+                                                 <li data-step="1" class="active"> <span class="step">1</span> <span class="title">`+ MultiLangHelper.getResName("select_property", "选择编辑属性")+`</span> </li> 
+                                                 <li data-step="2"> <span class="step">2</span> <span class="title">`+ MultiLangHelper.getResName("set_property", "设置属性值")+`</span> </li> 
                                                 </ul> 
                                                </div> 
                                                 <hr/>
@@ -329,16 +329,16 @@ var loadBatchUpdateMessageBox = function (title, gid, qryCols, tablename, menuUi
 												<!-- #section:plugins/fuelux.wizard.buttons -->
 												<a class="btn btn-prev">
 													<i class="ace-icon fa fa-arrow-left"></i>
-													上一步
+													`+ MultiLangHelper.getResName("previous_step", "上一步")+`
 												</a>
 
-												<a class="btn btn-success btn-next" data-last="完成">
-													下一步
+												<a class="btn btn-success btn-next" data-last="`+ MultiLangHelper.getResName("finish", "完成")+`">
+													`+ MultiLangHelper.getResName("next_step", "下一步")+`
 													<i class="ace-icon fa fa-arrow-right icon-on-right"></i>
 												</a>
                                                 <button class="btn btn-danger btn-sm pull-left">
 													<i class="ace-icon fa fa-times"></i>
-													取消
+													`+ MultiLangHelper.getResName("cancel", "取消")+`
 												</button>
 												<!-- /section:plugins/fuelux.wizard.buttons -->
 											</div>`);
@@ -365,7 +365,7 @@ var loadBatchUpdateMessageBox = function (title, gid, qryCols, tablename, menuUi
             if (info.step === 1) {
                 var fields = $fieldList.val();
                 if (fields === null) {
-                    $.msg("请选择要批量更新的属性！");
+                    $.msg(MultiLangHelper.getResName("select_row", "请选中数据操作"));
                     e.preventDefault();
                     return;
                 }
@@ -433,12 +433,12 @@ var loadExportExcelMessageBox = function (title, gid, qryCols, tablename, callba
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
         buttons: {
             success: {
-                label: MultiLangHelper.getResName("global_oper_enter", "确定"),
+                label: MultiLangHelper.getResName("ok", "确定"),
                 className: "btn-primary",
                 callback: function () {
                     var fields = $fieldList.val();
                     if (fields === null) {
-                        $.msg("请选择导出字段！");
+                        $.msg(MultiLangHelper.getResName("select_row", "请选中数据操作"));
                         return;
                     }
                     var postData = $('#' + gid).jqGrid("getGridParam", "postData");
@@ -448,13 +448,13 @@ var loadExportExcelMessageBox = function (title, gid, qryCols, tablename, callba
                             window.location.href = basePath + "/" + data.data;
                             //bootbox.alert("生成成功");
                         } else {
-                            $.msg("生成文件异常！");
+                            $.msg(MultiLangHelper.getResName("error", "错误"));
                         }
                     });
                 }
             },
             cancel: {
-                label: MultiLangHelper.getResName("global_oper_cancel", "取消"), className: "btn-default"
+                label: MultiLangHelper.getResName("cancel", "取消"), className: "btn-default"
             }
         }
 
@@ -474,8 +474,8 @@ var loadExportExcelMessageBox = function (title, gid, qryCols, tablename, callba
 
             });
             $fieldList.bootstrapDualListbox({
-                nonSelectedListLabel: '<span class="text-primary h4">待选项</span> ',
-                selectedListLabel: '<span class="text-primary h4">导出项</span> ',
+                nonSelectedListLabel: '<span class="text-primary h4">' + MultiLangHelper.getResName("pending_item", "待选项")+'</span> ',
+                selectedListLabel: '<span class="text-primary h4">'+MultiLangHelper.getResName("export_item", "导出项")+'</span> ',
                 preserveSelectionOnMove: 'moved',
                 moveOnSelect: false,
                 showFilterInputs: false
@@ -494,11 +494,11 @@ var loadExportWordMessageBox = function (title, gid, qryCols, tablename, callbac
             window.location.href = basePath + "/" + rv.data;
         } else {
             var dialog = bootbox.dialog({
-                title: '<i class="ace-icon fa fa-file-word-o"></i> 上传打印模板' ,
+                title: '<i class="ace-icon fa fa-file-word-o"></i> ' + MultiLangHelper.getResName("upload_template", "上传模板") ,
                 message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
                 buttons: {
                     cancel: {
-                        label: MultiLangHelper.getResName("global_oper_close", "关闭"), className: "btn-default"
+                        label: MultiLangHelper.getResName("close", "关闭"), className: "btn-default"
                     }
                 }
 
@@ -537,7 +537,7 @@ var loadExportExcelTmpl = function (qryCols, tableName) {
             window.location.href = basePath + "/" + data.data;
             //bootbox.alert("生成成功");
         } else {
-            $.msg("模板生成失败！");
+            $.msg(MultiLangHelper.getResName("error", "错误"));
         }
     });
 };
@@ -549,7 +549,7 @@ var loadExportExcelTemplData = function (qryCols, gid) {
             window.location.href = basePath + "/" + data.data;
             //bootbox.alert("生成成功");
         } else {
-            bootbox.alert("生成文件异常！");
+            bootbox.alert(MultiLangHelper.getResName("error", "错误"));
         }
     });
 };
@@ -560,7 +560,7 @@ var loadImportDataMessageBox = function (title, gid, qryCols, tablename, callbac
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
         buttons: {
             success: {
-                label: MultiLangHelper.getResName("global_oper_enter", "确定"),
+                label: MultiLangHelper.getResName("ok", "确定"),
                 className: "btn-primary",
                 callback: function () {
                     $('#' + gid).jqGrid('setGridParam', {
@@ -569,17 +569,17 @@ var loadImportDataMessageBox = function (title, gid, qryCols, tablename, callbac
                 }
             },
             cancel: {
-                label: MultiLangHelper.getResName("global_oper_cancel", "取消"), className: "btn-default"
+                label: MultiLangHelper.getResName("cancel", "取消"), className: "btn-default"
             }
         }
 
     });
     dialog.init(function () {
-        var title1 = $("<h3 class=\"header smaller lighter blue\">1、下载模板</h3>");
+        var title1 = $("<h3 class=\"header smaller lighter blue\">1、" + MultiLangHelper.getResName("dowload_template", "下载模板")+"</h3>");
         //下载链接
-        var $linkDown = $("<button class=\"btn btn-info btn-sm\"><i class=\"ace-icon fa fa-download\"></i>下载空模板</button>");
-        var $linkDownData = $("<button class=\"btn btn-success btn-sm\"><i class=\"ace-icon fa fa-download\"></i>下载带数据模板</button>");
-        var title2 = "<h3 class=\"header smaller lighter blue\">2、导入数据</h3>";
+        var $linkDown = $("<button class=\"btn btn-info btn-sm\"><i class=\"ace-icon fa fa-download\"></i>" + MultiLangHelper.getResName("download_empty_template", "下载空模板")+"</button>");
+        var $linkDownData = $("<button class=\"btn btn-success btn-sm\"><i class=\"ace-icon fa fa-download\"></i>" + MultiLangHelper.getResName("download_data_template", "下载数据模板")+"</button>");
+        var title2 = "<h3 class=\"header smaller lighter blue\">2、" + MultiLangHelper.getResName("import_data", "导入数据")+"</h3>";
         var $file = $("<input id=\"file-import\" type=\"file\"  class=\"file-loading\">");
         var $p = $("<p>").append($linkDown).append($linkDownData);
         dialog.find('.bootbox-body').empty().append(title1).append($p).append(title2).append($file);
@@ -613,12 +613,12 @@ var registAttachmentFuntion = function (grdid) {
 //显示附件框
 var showAttachmentWin = function (fid, grdid) {
     var dialog = bootbox.dialog({
-        title: "附件查看",
+        title: MultiLangHelper.getResName("view_annex", "查看附件"),
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
         buttons: {
 
             cancel: {
-                label: "关闭", className: "btn-default"
+                label: MultiLangHelper.getResName("close", "关闭"), className: "btn-default"
             }
         }
 
@@ -638,7 +638,7 @@ var showAttachmentWin = function (fid, grdid) {
 };
 var attachmentInfo = function (cellvalue, options, rowObject) {
     var tempHtml = "<button class=\"btn  btn-link btn-attachment\" data-value=\"" + cellvalue + "\">";
-    tempHtml += "         <i class=\"ace-icon fa  fa-paperclip bigger-120 blue\"></i>附件</button>";
+    tempHtml += "         <i class=\"ace-icon fa  fa-paperclip bigger-120 blue\"></i>" + MultiLangHelper.getResName("annex", "附件")+"</button>";
     return tempHtml;
 };
 var unattachmentInfo = function (cellvalue, options, rowObject) {
@@ -767,7 +767,7 @@ function style_search_form(form) {
 function loadQueryProgram(form, gridid, tn) {
     var dialog = form.closest('.ui-jqdialog');
     var buttons = dialog.find('.EditTable');
-    var $selQryPrm = $(`<select id=fbox_"` + gridid + `_selectqry"><option value=''>---常用查询---</option></select>`);
+    var $selQryPrm = $(`<select id=fbox_"` + gridid + `_selectqry"><option value=''>---` + MultiLangHelper.getResName("common_query", "常用查询")+`---</option></select>`);
 
     if (buttons.find('.EditButton select[id*="_selectqry"]')[0] === undefined) {
         $.get(basePath + "/Api/Core/QueryProgram/" + tn, function (rvm) {
@@ -792,7 +792,7 @@ function loadQueryProgram(form, gridid, tn) {
 }
 //重绘后执行
 function addQueryProgram(form, gridid, tn) {
-    var $qryProgram = $(`<a id="fbox_` + gridid + `_queryprogram" class="fm-button ui-state-default ui-corner-all fm-button-icon-left btn btn-sm btn-default pull-right"><span class="ace-icon fa fa-save"></span>保存为常用查询</a>`);
+    var $qryProgram = $(`<a id="fbox_` + gridid + `_queryprogram" class="fm-button ui-state-default ui-corner-all fm-button-icon-left btn btn-sm btn-default pull-right"><span class="ace-icon fa fa-save"></span>` + MultiLangHelper.getResName("saveas_common_query", "保存为常用查询")+`</a>`);
     form.find('.add-rule').first().after($qryProgram.eq(0));
     $qryProgram.on(ace.click_event, function () {
         var dialog = form.closest('.ui-jqdialog');
@@ -800,18 +800,18 @@ function addQueryProgram(form, gridid, tn) {
         buttons.find('.EditButton a[id*="_search"]').trigger('click');
         var jqPostData = $('#' + gridid).jqGrid("getGridParam", "postData");
         if (jqPostData.filters === undefined) {
-            $.msg("请先设置查询方案，然后再保存为常用查询！");
+            $.msg(MultiLangHelper.getResName("first_query", "请先查询"));
             return;
         }
         //var sqlRv = JSON.stringify(jqPostData.filters );
-        bootbox.prompt("常用查询名称？", function (result) {
+        bootbox.prompt(MultiLangHelper.getResName("common_query", "常用查询"), function (result) {
             if (result === null) {
                 //alert(1);
             } else {
                 if (result !== "") {
                     $.post(basePath + "/Api/Core/QueryProgram", { ProgramName: result, TableName: tn, QueryCondition: jqPostData.filters }, function (rvm) {
                         if (rvm.success) {
-                            $.msg("保存成功！");
+                            $.msg(MultiLangHelper.getResName("success", "成功"));
                             //添加新的查询方案
                             var qryData = $("#" + gridid).data("queryprogram");
                             let d = rvm.data;
@@ -820,11 +820,11 @@ function addQueryProgram(form, gridid, tn) {
                             buttons.find('.EditButton select[id*="_selectqry"]').append(`<option value="` + d.fid + `">` + d.programName + `</option>`);
 
                         } else {
-                            bootbox.alert("保存失败！");
+                            bootbox.alert(MultiLangHelper.getResName("failure", "失败"));
                         }
                     });
                 } else {
-                    bootbox.alert("常用查询名称不能为空！");
+                    bootbox.alert(MultiLangHelper.getResName("common_query_required", "常用查询名称必填"));
                 }
 
             }
@@ -837,7 +837,7 @@ function beforeDeleteCallback(e) {
     var form = $(e[0]);
     if (form.data('styled')) return false;
 
-    form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
+    form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />');
     style_delete_form(form);
 
     form.data('styled', true);

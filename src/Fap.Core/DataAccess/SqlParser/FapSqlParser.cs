@@ -433,7 +433,7 @@ namespace Fap.Core.DataAccess.SqlParser
             }
             FilterGroup joinFilter = new FilterGroup(Conjunction.And,
                 new EqualToFilter(innerTable.Column("Code"), table.Column(column.ColName)),
-                new EqualToFilter(innerTable.Column("Category"), new StringLiteral(column.RefTable)),
+                new EqualToFilter(innerTable.Column("Category"), new StringLiteral(column.ComboxSource)),
                 new LessThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
                 new GreaterThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
                 new EqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_Dr)));

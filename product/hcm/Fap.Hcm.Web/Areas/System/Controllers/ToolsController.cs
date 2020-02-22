@@ -8,6 +8,7 @@ using Fap.AspNetCore.ViewModel;
 using System;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Infrastructure.Metadata;
+using Fap.Core.Rbac.Model;
 
 namespace Fap.Hcm.Web.Areas.System.Controllers
 {
@@ -60,6 +61,15 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             return View(model);
         }
         /// <summary>
+        /// 多语言
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult MultiLanguage()
+        {
+            var model = GetJqGridModel(nameof(FapMultiLanguage));
+            return View(model);
+        }
+        /// <summary>
         /// 字典表
         /// </summary>
         /// <returns></returns>
@@ -68,6 +78,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             JqGridViewModel model = GetJqGridModel("FapDict");
             return View(model);
         }
+
         /// <summary>
         /// 员工照片批量导入导出
         /// </summary>
