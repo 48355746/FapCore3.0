@@ -2332,14 +2332,13 @@ namespace Fap.AspNetCore.Controls.JqGrid
             script.AppendLine(@" 
                     jQuery('###gridid##').jqGrid('navButtonAdd', '###pager##',{
                       caption:'',
-                      title:'"+title+@"',
+                      title:'"+title+ @"',
                       position:'first',
                       buttonicon:'ace-icon fa fa-pencil blue',
                       onClickButton : function() {
-                      var gsr = jQuery('###gridid##').jqGrid('getGridParam', 'selrow');
-                      if (gsr) {
-                        var ret = jQuery('###gridid##').jqGrid('getRowData', gsr);
-                        loadFormMessageBox('"+title+@"','##gridid##','fa fa-pencil','" + TableName + @"',ret.Fid,'" + GetCurrentMenuUid() + "',function(){");
+                      var rd = getSelectedRow('##gridid##');
+                      if (rd!=null) {
+                        loadFormMessageBox('" + title+@"','##gridid##','fa fa-pencil','" + TableName + @"',rd.Fid,'" + GetCurrentMenuUid() + "',function(){");
             if (_onEditAfterInitDataForm.IsPresent())
             {
                 script.AppendLine(_onEditAfterInitDataForm);

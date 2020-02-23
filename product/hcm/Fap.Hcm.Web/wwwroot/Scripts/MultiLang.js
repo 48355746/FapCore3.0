@@ -41,7 +41,8 @@ var MultiLangHelper = (function () {
       'move_selected': { 'ZhCn': '移动选中', 'ZhTW': '', 'En': 'move selected', 'Ja': '' },
       'from': { 'ZhCn': '从', 'ZhTW': '', 'En': 'from', 'Ja': '' },
       'empty_list': { 'ZhCn': '空列表', 'ZhTW': '', 'En': 'Empty list', 'Ja': '' },
-      'view_annex': { 'ZhCn': '查看附件', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'view_annex': { 'ZhCn': '查看附件', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'information': { 'ZhCn': '提示信息', 'ZhTW': '', 'En': 'Information', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

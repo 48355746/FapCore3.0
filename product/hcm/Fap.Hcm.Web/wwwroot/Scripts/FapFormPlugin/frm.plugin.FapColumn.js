@@ -1,12 +1,6 @@
 ﻿$("#frm-grid-columnmetadata #ColType").on("change", function () {
-    var id = $("#frm-grid-columnmetadata #Id").val();
-    if (id !== '') {
-        return;
-    }
     var tv = $(this).val();
-    if (tv === 'STRING') {
-        $("#frm-grid-columnmetadata #ColLength").val(40);
-    } else if (tv === 'INT') {
+    if (tv === 'INT') {
         $("#frm-grid-columnmetadata #ColLength").val(4);
         $("#frm-grid-columnmetadata #ColDefault").val(0);
     } else if (tv === 'LONG') {
@@ -15,9 +9,9 @@
     } else if (tv === 'DOUBLE') {
         $("#frm-grid-columnmetadata #ColLength").val(18);
         $("#frm-grid-columnmetadata #ColPrecision").val(2);
-        $("#frm-grid-columnmetadata #ColDefault").val(0.0);
+        $("#frm-grid-columnmetadata #ColDefault").val('0.0');
     } else if (tv === 'DATETIME') {
-        $("#frm-grid-columnmetadata #ColLength").val(20);
+        $("#frm-grid-columnmetadata #ColLength").val(23);
     } else if (tv === 'BOOL') {
         $("#frm-grid-columnmetadata #ColLength").val(1);
         $("#frm-grid-columnmetadata #ColDefault").val(1);
@@ -26,7 +20,6 @@
         $("#frm-grid-columnmetadata #ColDefault").val('${FAP::UUID}');
     }
 });
-
 $("#frm-grid-columnmetadata #CtrlType").on("change", function () {
     $("#frm-grid-columnmetadata").find('label').removeClass("red");
     $("#RefType").rules("remove");
@@ -36,16 +29,49 @@ $("#frm-grid-columnmetadata #CtrlType").on("change", function () {
     $("#MinValue").rules("remove");
     $("#MaxValue").rules("remove");
     $("#ComboxSource").rules("remove");
-    //$("#ColType").val('');
     $("#FileSuffix").val('');
     $("#FileCount").val('0');
     $("#FileSize").val('0');
     $("#RefID").val("");
-    //$("#frm-grid-columnmetadata #ColLength").val(20);
-    $("#frm-grid-columnmetadata #ColDefault").val('');
     var tv = $(this).val();
-    if (tv === 'COMBOBOX') {
-        //$("#ColLength").val(40);
+    if (tv === 'TEXT' || tv === 'EMAIL' || tv === 'CITY' || tv === 'NATIVE') {
+        $("#frm-grid-columnmetadata #ColType").val('STRING');
+        $("#frm-grid-columnmetadata #ColLength").val('128');
+    } else if (tv === 'PASSWORD' || tv === 'PHONE' || tv === 'STAR') {
+        $("#frm-grid-columnmetadata #ColType").val('STRING');
+        $("#frm-grid-columnmetadata #ColLength").val('20');
+    }
+    else if (tv === 'DOUBLE' || tv === 'MONEY') {
+        $("#frm-grid-columnmetadata #ColType").val('DOUBLE');
+        $("#frm-grid-columnmetadata #ColLength").val('20');
+        $("#frm-grid-columnmetadata #ColPrecision").val('2');
+        $("#frm-grid-columnmetadata #ColDefault").val('0.0');
+    } else if (tv === 'INT') {
+        $("#frm-grid-columnmetadata #ColType").val('INT');
+        $("#frm-grid-columnmetadata #ColLength").val('4');
+        $("#frm-grid-columnmetadata #ColDefault").val('0');
+    } else if (tv === 'DATETIME') {
+        $("#frm-grid-columnmetadata #ColType").val('STRING');
+        $("#frm-grid-columnmetadata #ColLength").val('23');
+    } else if (tv === 'DATE') {
+        $("#frm-grid-columnmetadata #ColType").val('STRING');
+        $("#frm-grid-columnmetadata #ColLength").val('10');
+    } else if (tv === 'CHECKBOX') {
+        $("#frm-grid-columnmetadata #ColType").val('BOOL');
+        $("#frm-grid-columnmetadata #ColLength").val('4');
+        $("#frm-grid-columnmetadata #ColDefault").val('1');
+    } else if (tv === 'RADIO') {
+        $("#frm-grid-columnmetadata #ColType").val('STRING');
+        $("#frm-grid-columnmetadata #ColLength").val('32');
+    } else if (tv === 'MEMO') {
+        $("#frm-grid-columnmetadata #ColType").val('STRING');
+        $("#frm-grid-columnmetadata #ColLength").val('512');
+    } else if (tv === 'RICHTEXTBOX') {
+        $("#frm-grid-columnmetadata #ColType").val('CLOB');
+        $("#frm-grid-columnmetadata #ColLength").val('5000');
+    } else if (tv === 'COMBOBOX') {
+        $("#frm-grid-columnmetadata #ColType").val('STRING');
+        $("#frm-grid-columnmetadata #ColLength").val('64');
         $("#ComboxSource").closest('.ctrlcontainer').prev('label').addClass("red");
         $("#ComboxSource").rules("add", {
             required: true,
@@ -54,6 +80,8 @@ $("#frm-grid-columnmetadata #CtrlType").on("change", function () {
             }
         });
     } else if (tv === 'REFERENCE') {
+        $("#frm-grid-columnmetadata #ColType").val('STRING');
+        $("#frm-grid-columnmetadata #ColLength").val('64');
         $("#RefID").val("Fid");
         $("#RefType").closest('.ctrlcontainer').prev('label').addClass("red");
         $("#RefTableMC").closest('.ctrlcontainer').prev('label').addClass("red");
@@ -77,8 +105,10 @@ $("#frm-grid-columnmetadata #CtrlType").on("change", function () {
                 required: "参照名称列必须填写"
             }
         });
-    } 
+    }
     else if (tv === 'CHECKBOXLIST') {
+        $("#frm-grid-columnmetadata #ColType").val('STRING');
+        $("#frm-grid-columnmetadata #ColLength").val('128');
         $("#RefType").closest('.ctrlcontainer').prev('label').addClass("red");
         $("#RefTableMC").closest('.ctrlcontainer').prev('label').addClass("red");
         $("#RefCodeMC").closest('.ctrlcontainer').prev('label').addClass("red");
@@ -108,6 +138,8 @@ $("#frm-grid-columnmetadata #CtrlType").on("change", function () {
             }
         });
     } else if (tv === 'RANGE') {
+        $("#frm-grid-columnmetadata #ColType").val('STRING');
+        $("#frm-grid-columnmetadata #ColLength").val('32');
         $("#MinValue").closest('.ctrlcontainer').prev('label').addClass("red");
         $("#MaxValue").closest('.ctrlcontainer').prev('label').addClass("red");
         $("#MinValue").rules("add", {
@@ -123,19 +155,19 @@ $("#frm-grid-columnmetadata #CtrlType").on("change", function () {
             }
         });
     } else if (tv === "FILE") {
+        $("#frm-grid-columnmetadata #ColType").val('UID');
+        $("#frm-grid-columnmetadata #ColLength").val('20');
+        $("#frm-grid-columnmetadata #ColDefault").val('${FAP::UUID}');
         $("#FileSuffix").val('txt,doc,jpg,gif,png');
         $("#FileCount").val(10);
         $("#FileSize").val(10240);
-        $("#ColType").val("UID");
-        $("#frm-grid-columnmetadata #ColLength").val(20);
-        $("#frm-grid-columnmetadata #ColDefault").val('${FAP::UUID}');
     } else if (tv === 'IMAGE') {
+        $("#frm-grid-columnmetadata #ColType").val('UID');
+        $("#frm-grid-columnmetadata #ColLength").val('20');
+        $("#frm-grid-columnmetadata #ColDefault").val('${FAP::UUID}');
         $("#FileSuffix").val('jpg,gif,png');
         $("#FileCount").val(10);
         $("#FileSize").val(10240);
-        $("#ColType").val("UID");
-        $("#frm-grid-columnmetadata #ColLength").val(20);
-        $("#frm-grid-columnmetadata #ColDefault").val('${FAP::UUID}');
     }
 });
 
@@ -333,7 +365,7 @@ $("#frm-grid-columnmetadata #ColDefault").on("focus", function () {
             success: {
                 label: MultiLangHelper.getResName("ok", "确定"),
                 className: "btn-primary",
-                callback: function () {                 
+                callback: function () {
                     $("#frm-grid-columnmetadata #ColDefault").val($("#form-field-default").val());
                 }
             },
@@ -350,7 +382,7 @@ $("#frm-grid-columnmetadata #ColDefault").on("focus", function () {
         }
 
     });
-    
+
     dialog.init(function () {
         dialog.find('.bootbox-body').html(strConstant + strDefault);
         $("#form-field-default").val($("#frm-grid-columnmetadata #ColDefault").val());
@@ -393,7 +425,7 @@ $("#frm-grid-columnmetadata #RefCondition").on("focus", function () {
         dialog.find('.bootbox-body').html(strConstant + strDefault);
         $("#form-field-default").val($("#frm-grid-columnmetadata #RefCondition").val());
         $("input[name=form-field-radio]").on(ace.click_event, function () {
-            $("#form-field-default").val($("#form-field-default").val()+$(this).val());
+            $("#form-field-default").val($("#form-field-default").val() + $(this).val());
         });
     });
 });

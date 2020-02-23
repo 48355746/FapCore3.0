@@ -570,60 +570,33 @@ namespace Fap.AspNetCore.Controls.DataForm
                     script.AppendLine("var initFile" + Id.Replace('-', '_') + tempFid + "=function(){");
                     script.AppendLine("$(\"###formid##" + tempFid + "-FILE\").fileinput({");
                     script.AppendLine("language: language,");
-                    script.AppendLine("uploadUrl:\"" + _applicationContext.BaseUrl + "/Component/UploadFile/" + field.FieldValue + "\",");
+                    script.AppendLine($"uploadUrl:\"{ _applicationContext.BaseUrl }/Component/UploadFile/{ field.FieldValue }\",");
                     //script.AppendLine("deleteUrl:\"http://" + HttpContext.Current.Request.Url.Authority + HttpContext.Current.Request.ApplicationPath  + "/Api/Core/deletefile\",");
                     if (allowExt.IsPresent())
                     {
-                        script.AppendLine("allowedFileExtensions : [" + allowExt + "],");
+                        script.AppendLine($"allowedFileExtensions : [{ allowExt }],");
                     }
-                    else
+                    if (column.FileSize > 0)
                     {
-                        script.AppendLine("fileType: \"any\",");
+                        script.AppendLine($"maxFileSize: {column.FileSize},");
                     }
                     script.AppendLine("uploadExtraData:{fid:'" + field.FieldValue + "'},");
                     script.AppendLine("allowedPreviewTypes: ['image', 'text'],");
-                    script.AppendLine(@"");
+                    script.AppendLine($"maxFileCount:{(column.FileCount==0?1:column.FileCount)},");
                     script.AppendLine("showUpload: true,");
-                    script.AppendLine("showCaption: false,");
-                    script.AppendLine("overwriteInitial: false,");
-                    //List<FapAttachment> attList = null;
-                    //预览
-                    //if (_formStatus == FormStatus.Edit)
-                    //{
-                    //    string bid = field.FieldValue.ToString();
-                    //    DynamicParameters parameters = new DynamicParameters();
-                    //    parameters.Add("Bid", bid);
-                    //    attList = _dbContext.QueryEntityByWhere<FapAttachment>("Bid=@Bid", parameters);
-                    //    if (attList.Any())
-                    //    {
-                    //        StringBuilder initPre = new StringBuilder();
-                    //        StringBuilder initPreC = new StringBuilder();
-                    //        initPre.AppendLine("initialPreview: [");
-                    //        initPreC.AppendLine("initialPreviewConfig: [");
-                    //        attList.ForEach(a =>
-                    //        {
-                    //            initPre.AppendLine(" \"<img style='height:160px' src='" + _session.BaseURL + "/PublicCtrl/AttachmentImg/" + a.Fid + "'>\",");
-                    //            initPreC.AppendLine("{caption: \"" + a.FileName + "\", width: \"120px\", url: \"" + _session.BaseURL + "/Api/Core/deletefile\", key: \"" + a.Fid + "\"},");
-                    //        });
-                    //        initPreC.AppendLine("],");
-                    //        initPre.AppendLine(" ],");
-                    //        script.AppendLine(initPre.ToString());
-                    //        script.AppendLine(initPreC.ToString());
-                    //    }
-                    //}                  
+                    //script.AppendLine("showCaption: false,");
+                    //script.AppendLine("overwriteInitial: false,");                                 
                     script.AppendLine("slugCallback: function(filename) {");
                     script.AppendLine(" return filename.replace('(', '_').replace(']', '_');");
                     script.AppendLine("},");
                     //浏览按钮样式
-                    script.AppendLine("browseClass: \"btn btn-primary\",");
+                    //script.AppendLine("browseClass: \"btn btn-primary btn-block\",");
                     //浏览按钮图标
-                    script.AppendLine("previewFileIcon: \"<i class='glyphicon glyphicon-king'></i>\"");
-                    script.AppendLine(@"}).on('fileloaded', function(event, file, previewId, index, reader) {
-                       //$(this).fileinput('upload');
-                       // alert(index);
-                        var files =$(this).fileinput('getFileStack');
-                        $(this).fileinput('uploadSingle',index,files,false);
-                    }).on('fileuploaded', function (event, data, previewId, index) {  if(data.response.success==false){bootbox.alert('上传失败：'+data.response.msg);}else{loadFileList('" + Id + "', '" + column.ColName + "', '" + field.FieldValue.ToString() + "');                } });       ");
+                    script.AppendLine("previewFileIcon: \"<i class='glyphicon glyphicon-king'></i>\"})");
+                    //script.AppendLine(@".on('fileloaded', function(event, file, previewId, index, reader) {
+                    //    var files =$(this).fileinput('getFileStack');
+                    //    $(this).fileinput('uploadSingle',index,files,false);})");
+                    script.AppendLine(@".on('fileuploaded', function (event, data, previewId, index) {  if(data.response.success==false){bootbox.alert(data.response.msg);}else{loadFileList('" + Id + "', '" + column.ColName + "', '" + field.FieldValue.ToString() + "');                } });       ");
                     script.AppendLine("}");
                     if (_formStatus == FormStatus.Edit)
                     {

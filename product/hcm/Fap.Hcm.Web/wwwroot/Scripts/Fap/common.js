@@ -173,7 +173,7 @@ jQuery.randomUrl = function (url) {
 };
 $.msg = function (message, posotion) {
     $.gritter.add({
-        title: '提示信息',
+        title: MultiLangHelper.getResName('information', '提示信息'),
         text: message,
         sticky: false,
         time: 1000,
