@@ -5,9 +5,8 @@
     {
         bgimg = "/Content/images/hcmbg.jpg";
     }
-    string systemName = _configService.GetSysParamValue("sys.web.name");
-
-    string currentLang =_applicationContext.Language.ToString(); //当前语种   
+   string systemName =_configService.GetSysParamValue("sys.web.name");
+  string currentLang =_applicationContext.Language.ToString(); //当前语种   
 }
 <!DOCTYPE html>
 <html lang="zh-cn">
@@ -273,7 +272,7 @@
                     <small>
                         @*<img src="~/Content/images/logo32.png" />*@
                         &nbsp;<i class="fa fa-globe"></i>&nbsp;
-                        @systemName <span class="smaller-75">(v1.0.0)</span>
+                      <fap-multilang lang-key="system_name" default-content="@systemName"></fap-multilang> <span class="smaller-75">(v1.0.0)</span>
                     </small>
                 </a><!-- /.brand -->
             </div>
@@ -318,14 +317,14 @@
                                                     <span class="block input-icon input-icon-right">
                                                         <input name="returnUrl" class="hidden" value='@ViewBag.ReturnUrl' />
 
-                                                        <input type="text" class="form-control" id="username" value="" name="username" placeholder="@_multiLangService.GetOrAndMultiLangValue( Fap.Core.MultiLanguage.MultiLanguageOriginEnum.Page,"login_username", "用户名")" />
+                                                        <input type="text" class="form-control" id="username" value="" name="username" multi-placeholder="用户名" />
                                                         <i class="ace-icon fa fa-user"></i>
                                                     </span>
                                                 </label>
 
                                                 <label class="block clearfix form-group">
                                                     <span class="block input-icon input-icon-right">
-                                                        <input type="password" class="form-control" id="userpwd" name="userpwd" value="" placeholder="@_multiLangService.GetOrAndMultiLangValue( Fap.Core.MultiLanguage.MultiLanguageOriginEnum.Page,"login_password", "密码")" />
+                                                        <input type="password" class="form-control" id="userpwd" name="userpwd" value="" multi-placeholder="密码" />
                                                         <i class="ace-icon fa fa-lock"></i>
                                                     </span>
                                                 </label>
@@ -362,9 +361,8 @@
                                             </div>
 
                                             <div>
-                                                <a href="#" data-target="#signup-box" class="user-signup-link">
-                                                    注册 register
-                                                    @*<i class="ace-icon fa fa-arrow-right"></i>*@
+                                                <a href="#" data-target="#signup-box" class="user-signup-link">                                                   
+                                                  <fap-multilang lang-key="register" default-content="注册"></fap-multilang>
                                                 </a>
                                             </div>
                                         </div>

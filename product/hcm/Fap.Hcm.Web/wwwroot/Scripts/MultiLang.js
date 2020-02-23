@@ -32,7 +32,6 @@ var MultiLangHelper = (function () {
       'select_property': { 'ZhCn': '选择编辑属性', 'ZhTW': '', 'En': 'select property', 'Ja': '' },
       'annex': { 'ZhCn': '附件', 'ZhTW': '', 'En': 'annex', 'Ja': '' },
       'remove_all': { 'ZhCn': '移除所有', 'ZhTW': '', 'En': 'remove all', 'Ja': '' },
-      'show_all': { 'ZhCn': '显示全部', 'ZhTW': '', 'En': 'show all', 'Ja': '' },
       'filter': { 'ZhCn': '过滤', 'ZhTW': '', 'En': 'filter', 'Ja': '' },
       'remove_selected': { 'ZhCn': '移除选中', 'ZhTW': '', 'En': 'remove selected', 'Ja': '' },
       'move_all': { 'ZhCn': '移动所有', 'ZhTW': '', 'En': 'Move all', 'Ja': '' },
@@ -41,8 +40,9 @@ var MultiLangHelper = (function () {
       'move_selected': { 'ZhCn': '移动选中', 'ZhTW': '', 'En': 'move selected', 'Ja': '' },
       'from': { 'ZhCn': '从', 'ZhTW': '', 'En': 'from', 'Ja': '' },
       'empty_list': { 'ZhCn': '空列表', 'ZhTW': '', 'En': 'Empty list', 'Ja': '' },
-      'view_annex': { 'ZhCn': '查看附件', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'information': { 'ZhCn': '提示信息', 'ZhTW': '', 'En': 'Information', 'Ja': '' }
+      'view_annex': { 'ZhCn': '查看附件', 'ZhTW': '', 'En': 'View annex', 'Ja': '' },
+      'information': { 'ZhCn': '提示信息', 'ZhTW': '', 'En': 'Information', 'Ja': '' },
+      'add_user': { 'ZhCn': '添加用户', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

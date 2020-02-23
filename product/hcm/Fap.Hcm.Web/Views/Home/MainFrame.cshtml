@@ -1,6 +1,6 @@
 ﻿@{
     var currLanguage = _multiLangService.CurrentLanguage; //当前语种
-    string systemName = _configService.GetSysParamValue("sys.web.name");//系统名称
+    //string systemName = _configService.GetSysParamValue("sys.web.name");//系统名称
 }
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -8,7 +8,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     @*<meta charset="utf-8" />*@
-    <title>欢迎使用 - HCM</title>
+    <title></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
     @*bootstrap css*@
     <environment include="Development">
@@ -131,7 +131,7 @@
                     <small>
                         @*<img class="pull-left" style="height:23px" src="~/Content/images/logo32.png" />*@
                         <i class="fa fa-globe"></i>
-                        @systemName
+                        <fap-multilang lang-key="system_name" default-content=""></fap-multilang>
                     </small>
                 </a>
 

@@ -5,6 +5,7 @@ using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Infrastructure.Enums;
 using Fap.Core.Infrastructure.Metadata;
+using Fap.Core.MultiLanguage;
 using Fap.Core.Rbac.Model;
 using Fap.Model.Infrastructure;
 using System.Collections.Generic;
@@ -22,11 +23,13 @@ namespace Fap.Core.Rbac
         private readonly IDbContext _dbContext;
         private readonly IFapPlatformDomain _platformDomain;
         private readonly IFapApplicationContext _applicationContext;
-        public RbacService(IDbContext dbContext, IFapPlatformDomain platformDomain, IFapApplicationContext applicationContext)
+        private readonly IMultiLangService _multiLangService;
+        public RbacService(IDbContext dbContext, IFapPlatformDomain platformDomain, IFapApplicationContext applicationContext, IMultiLangService multiLangService)
         {
             _dbContext = dbContext;
             _platformDomain = platformDomain;
             _applicationContext = applicationContext;
+            _multiLangService = multiLangService;
         }
         /// <summary>
         /// 用户组
@@ -268,6 +271,10 @@ namespace Fap.Core.Rbac
         {
             bool isAdministrator = _applicationContext.IsAdministrator;
             var menu = GetCurrentMenu();
+            //注册多语
+            string multilangKey = $"{menu?.Fid}_{menuButton.ButtonID}";
+           
+            menuButton.Description = _multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.ButtonTag, multilangKey, menuButton.Description);
             if (menu != null)
             {
                 if (_platformDomain.MenuButtonSet.TryGetValue(menu.Fid, out IEnumerable<FapMenuButton> list))

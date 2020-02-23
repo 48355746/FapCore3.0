@@ -31,7 +31,7 @@
     <ul id="todotasklist" class="dropdown-menu-right dropdown-navbar dropdown-menu dropdown-caret dropdown-close">
         <li class="dropdown-header">
             <i class="ace-icon fa fa-check"></i>
-            <span class="hanglingtxt"><b>@total</b> 待处理任务</span>
+            <span class="hanglingtxt"><b>@total</b><fap-multilang lang-key="pending_tasks" default-content="待处理任务"></fap-multilang></span>
         </li>
 
         <li class="dropdown-content">
@@ -39,7 +39,7 @@
                 <li id="todocounter">
                     <a href="@Url.Content("~/Home/MainFrame#Workflow/Business/TodoTask")">
                         <div class="clearfix">
-                            <span class="pull-left">待办任务</span>
+                            <span class="pull-left"><fap-multilang lang-key="my_pending_tasks" default-content="我的待处理任务"></fap-multilang></span>
                             <span class="pull-right percent">@todoCount </span>
                         </div>
 
@@ -51,7 +51,7 @@
                 <li id="agentcounter">
                     <a href="@Url.Content("~/Home/MainFrame#Workflow/Business/AgentTask")">
                         <div class="clearfix">
-                            <span class="pull-left">代理任务</span>
+                            <span class="pull-left"><fap-multilang lang-key="my_agent_tasks" default-content="我的代理任务"></fap-multilang></span>
                             <span class="pull-right percent">@agentCount</span>
                         </div>
 
@@ -65,7 +65,7 @@
 
         <li class="dropdown-footer">
             <a href="@Url.Content("~/Home/MainFrame#Workflow/Business/DoneTask")">
-                查看所有已办理任务
+                <fap-multilang lang-key="show_all" default-content="查看所有"></fap-multilang>
                 <i class="ace-icon fa fa-arrow-right"></i>
             </a>
         </li>
@@ -92,7 +92,7 @@
             <ul class="dropdown-menu-right dropdown-navbar navbar-pink dropdown-menu dropdown-caret dropdown-close">
                 <li class="dropdown-header">
                     <i class="ace-icon fa fa-exclamation-triangle"></i>
-                    @notices.Count() 通知
+                    @notices.Count() <fap-multilang lang-key="notification" default-content="通知"></fap-multilang>
                 </li>
 
                 <li class="dropdown-content">
@@ -144,7 +144,7 @@
                 </li>
                 <li class="dropdown-footer">
                     <a href="@Url.Content("~/Home/MainFrame#SelfService/Ess/MessageAndNotice/Notice")">
-                        查看所有通知
+                        <fap-multilang lang-key="show_all" default-content="查看所有"></fap-multilang>
                         <i class="ace-icon fa fa-arrow-right"></i>
                     </a>
                 </li>
@@ -164,7 +164,7 @@
             <ul class="dropdown-menu-right dropdown-navbar dropdown-menu dropdown-caret dropdown-close">
                 <li class="dropdown-header">
                     <i class="ace-icon fa fa-envelope-o"></i>
-                    @messages.Count() 站内信
+                    @messages.Count()  <fap-multilang lang-key="message" default-content="消息"></fap-multilang>
                 </li>
 
                 <li class="dropdown-content">
@@ -196,7 +196,7 @@
 
                 <li class="dropdown-footer">
                     <a href="@Url.Content("~/Home/MainFrame#SelfService/Ess/MessageAndNotice/Message")">
-                        查看所有站内信
+                        <fap-multilang lang-key="show_all" default-content="查看所有"></fap-multilang>
                         <i class="ace-icon fa fa-arrow-right"></i>
                     </a>
                 </li>

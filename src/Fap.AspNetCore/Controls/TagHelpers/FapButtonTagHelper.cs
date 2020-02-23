@@ -37,14 +37,13 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                 ButtonID = Id,
                 ButtonName = Content,
                 Description = Content,
-                Enabled = 1
+                Enabled = 1,
+                ButtonType=BtnTag==ButtonTag.link?FapMenuButtonType.Link:FapMenuButtonType.Button
+
             };
             //注册按钮,同时获取多语名称
             string permission = _rbacService.GetMenuButtonAuthority(_applicationContext.CurrentRoleUid, button);
-            var menu = _rbacService.GetCurrentMenu();
-            //注册多语
-            string multilangKey = $"{menu.Fid}_{button.ButtonID}";
-            Content = _multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.ButtonTag, multilangKey, Content);
+
             if (permission.IsPresent() && permission.Equals("1"))
             {
                 StringBuilder builder = new StringBuilder();
@@ -55,9 +54,9 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                     output.Attributes.Add("class", ClassName);
                     output.Attributes.Add("id", Id);
                     output.Attributes.Add("href", LinkHref.IsMissing() ? "javascript:void(0)" : LinkHref);
-                    output.Attributes.Add("title", Content);
+                    output.Attributes.Add("title", button.Description);
                     builder.Append($"  <i class=\"ace-icon {IconBefore}\"></i>");
-                    builder.Append(Content);
+                    builder.Append(button.Description);
 
                 }
                 else
@@ -67,7 +66,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                     output.Attributes.Add("class", ClassName);
                     //builder.Append($" <button {Attribute} class=\"btn {ClassName}\">");
                     builder.Append($"<i class=\"ace-icon {IconBefore}\"></i>");
-                    builder.Append(Content);
+                    builder.Append(button.Description);
                     builder.Append($" <span class=\"ace-icon {IconAfter} icon-on-right\"></span>");
                     //builder.Append("</button>");
                 }

@@ -83,10 +83,10 @@
                 if (rows != null) {
                     var fids = rows.map(function (d) { return d.Fid });
                     $.post(basePath + "/System/Api/Manage/ResetPassword", { "Fids": fids }, function (rv) {
-                        if (rv) {
-                            $.msg("重置成功！");
+                        if (rv.success) {
+                            $.msg(rv.msg);
                         } else {
-                            bootbox.alert("重置失败！");
+                            bootbox.alert(rv.msg);
                         }
                     })
                 }

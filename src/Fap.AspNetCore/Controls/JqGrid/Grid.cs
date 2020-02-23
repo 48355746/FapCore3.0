@@ -49,7 +49,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
         //行编辑模式
         private EditRowModel _editRowModel = EditRowModel.Dialog;
         private DataType _dataType = DataType.Json;
-        private string _emptyRecords = "暂无数据";
+        private string? _emptyRecords;
         private bool? _footerRow;
         private bool? _userDataOnFooter;
         private bool? _forceFit;

@@ -68,9 +68,10 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         /// <param name="jobj"></param>
         /// <returns></returns>
         [HttpPost("ResetPassword")]
-        public bool ResetPassword(FidsModel model)
+        public JsonResult ResetPassword(FidsModel model)
         {
-            return _manageService.ResetPasswor(model.Fids);
+            var rv = _manageService.ResetPasswor(model.Fids);
+            return Json(rv ? ResponseViewModelUtils.Sueecss() : ResponseViewModelUtils.Failure());
         }
         #endregion
 
@@ -365,9 +366,9 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         [Route("DelRoleUser")]
         public JsonResult DeleteRoleUser(FapRoleUser roleUser)
         {
-            var sc= _rbacService.DeleteRoleUser(roleUser.RoleUid, roleUser.UserUid);
-            
-            return Json(new ResponseViewModel { success = sc });
+            var sc = _rbacService.DeleteRoleUser(roleUser.RoleUid, roleUser.UserUid);
+
+            return Json(sc ? ResponseViewModelUtils.Sueecss() : ResponseViewModelUtils.Failure());
         }
         /// <summary>
         /// 获取权限
@@ -522,7 +523,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         public JsonResult ClearPermissionsCache()
         {
             _platformDomain.Refresh();
-            return Json(new { success = "success" });
+            return Json(ResponseViewModelUtils.Sueecss());
         }
 
         [HttpPost]

@@ -529,6 +529,8 @@ namespace Fap.Hcm.Service.System
                             var button = menuButtons.FirstOrDefault(b => b.MenuUid == btn.MenuUid && b.ButtonID == btn.ButtonId);
                             if (button != null)
                             {
+                                string langkey = $"{menuUid}_{button.ButtonID}";
+                                button.Description = _multiLangService.GetMultiLangValue(MultiLanguageOriginEnum.ButtonTag, langkey);
                                 TreeDataView toper = new TreeDataView()
                                 {
                                     Id = button.Fid,
@@ -575,11 +577,14 @@ namespace Fap.Hcm.Service.System
                     {
                         foreach (var button in buttons)
                         {
+                            string langkey = $"{menuUid}_{button.ButtonID}";
+                            button.Description = _multiLangService.GetMultiLangValue(MultiLanguageOriginEnum.ButtonTag, langkey);
                             TreeDataView toper = new TreeDataView()
                             {
                                 Id = button.Fid,
                                 Data = new { IsBtn = false, IsMenu = false },
-                                Pid = menuNode.Id                                
+                                Pid = menuNode.Id,
+                                Text=button.Description
                             };
                             if (button.ButtonType == FapMenuButtonType.Grid)
                             {
@@ -617,8 +622,6 @@ namespace Fap.Hcm.Service.System
                             }
                             else if (button.ButtonType == FapMenuButtonType.Link || button.ButtonType == FapMenuButtonType.Button)
                             {
-                                string langkey = $"{menuUid}_{button.ButtonID}";
-                                toper.Text =_multiLangService.GetMultiLangValue(MultiLanguageOriginEnum.ButtonTag,langkey);
                                 toper.Id = $"{menuNode.Id}|button|{ button.ButtonID }|1";
                                 toper.Icon = "fa  fa-bolt";
                                 toper.Data = new { IsBtn = true, IsMenu = false };

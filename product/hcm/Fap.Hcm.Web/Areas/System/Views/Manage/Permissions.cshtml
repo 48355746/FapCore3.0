@@ -2,7 +2,7 @@
 @{
     Layout = null;
 }
-<title>权限管理</title>
+<title><fap-multilang lang-key="authority_management" default-content="权限管理"></fap-multilang></title>
 
 <script id="roleusers" type="text/x-jquery-tmpl">
     <!-- #section:pages/profile.feed -->
@@ -36,7 +36,7 @@
     <div class="col-xs-12 col-sm-3 widget-container-col">
         <div class="widget-box">
             <div class="widget-header widget-header-flat">
-                <h4 class="widget-title">角色</h4>
+                <h4 class="widget-title"><fap-multilang lang-key="role" default-content="角色"></fap-multilang></h4>
 
                 <div class="widget-toolbar">
                     <a href="#" data-action="fullscreen" class="orange2">
@@ -55,12 +55,12 @@
     <div class="col-xs-12 col-sm-6 widget-container-col">
         <div class="widget-box">
             <div class="widget-header widget-header-flat">
-                <h4 class="widget-title">权限</h4>
+                <h4 class="widget-title"><fap-multilang lang-key="authority" default-content="权限"></fap-multilang></h4>
                 <div class="widget-toolbar">
-                    <a href="#" id="clearcache" data-rel="tooltip" title="清理缓存" class="blue">
+                    <a href="#" id="clearcache" data-rel="tooltip" title="refresh" class="blue">
                         <i class="ace-icon fa fa-refresh"></i>
-
                     </a>
+
                     <a href="#" data-action="fullscreen" class="orange2">
                         <i class="ace-icon fa fa-expand"></i>
                     </a>
@@ -69,28 +69,28 @@
                 <div class="widget-toolbar no-border">
                     <ul class="nav nav-tabs" id="myTab">
                         <li class="active">
-                            <a data-toggle="tab" href="#pmenu">菜单</a>
+                            <a data-toggle="tab" href="#pmenu"><fap-multilang lang-key="menu" default-content="菜单"></fap-multilang></a>
                         </li>
 
                         <li>
-                            <a data-toggle="tab" href="#pdept">部门</a>
+                            <a data-toggle="tab" href="#pdept"><fap-multilang lang-key="department" default-content="部门"></fap-multilang></a>
                         </li>
 
                         <li>
-                            <a data-toggle="tab" href="#pentity">属性</a>
+                            <a data-toggle="tab" href="#pentity"><fap-multilang lang-key="property" default-content="属性"></fap-multilang></a>
                         </li>
 
                         <li>
-                            <a data-toggle="tab" href="#edata">数据</a>
+                            <a data-toggle="tab" href="#edata"><fap-multilang lang-key="data" default-content="数据"></fap-multilang></a>
                         </li>
                         <li>
-                            <a data-toggle="tab" href="#ebutton">按钮</a>
+                            <a data-toggle="tab" href="#ebutton"><fap-multilang lang-key="button" default-content="按钮"></fap-multilang></a>
                         </li>
                         <li>
-                            <a data-toggle="tab" href="#preport">报表</a>
+                            <a data-toggle="tab" href="#preport"><fap-multilang lang-key="report" default-content="报表"></fap-multilang></a>
                         </li>
                         <li>
-                            <a data-toggle="tab" href="#prole">角色</a>
+                            <a data-toggle="tab" href="#prole"><fap-multilang lang-key="role" default-content="角色"></fap-multilang></a>
                         </li>
                         @*<li>
                                 <a href="#" data-action="clearcache" title="清理缓存" class="blue">
@@ -252,7 +252,7 @@
     <div class="col-xs-12 col-sm-3 widget-container-col">
         <div id="widget-box-user" class="widget-box">
             <div class="widget-header widget-header-flat">
-                <h4 class="widget-title">用户</h4>
+                <h4 class="widget-title"><fap-multilang lang-key="user" default-content="用户"></fap-multilang></h4>
                 <div class="widget-toolbar">                   
                     <fap-button id="btnAddUser" content="添加用户" icon-before="fa fa-plus-circle purple"></fap-button>                   
                 </div>
@@ -273,19 +273,19 @@
         var treeRole = $('#tree-roleandgroup').jstree(true);
         var selRole = treeRole.get_selected();
         if (!selRole.length) {
-            $.msg("请选中角色进行设置");
+            $.msg(MultiLangHelper.getResName("selected_role","请选中角色进行设置"));
             return 0;
         }
         var node = treeRole.get_node(selRole[0]);
         if (node.data.isRole == false) {
-            $.msg("请选中角色进行设置");
+            $.msg(MultiLangHelper.getResName("selected_role","请选中角色进行设置"));
             return 0;
         }
         return selRole[0];
     }
             
     var delUser = function (fid) {
-        bootbox.confirm("确认删除此用户？", function (rv) {
+        bootbox.confirm(MultiLangHelper.getResName("confirm_delete","确认删除？"), function (rv) {
             if (!rv) {
                 return;
             }
@@ -297,10 +297,10 @@
             $.post("@Url.Content("~/System/Api/Manage/DelRoleUser")", { "RoleUid": roleUid, "UserUid": fid }, function (rv) {
                 //请求成功时处理
                 if (rv.success) {
-                    $.msg("删除成功");
+                    $.msg(rv.msg);
                     $("[data-userfid='" + fid + "']").parent().parent().remove();
                 } else {
-                    bootbox.alert("删除失败");
+                    bootbox.alert(rv.msg);
                 }
             });
 
@@ -310,12 +310,12 @@
         var treeRole = $('#tree-roleandgroup').jstree(true);
         var selRole = treeRole.get_selected();
         if (!selRole.length) {
-            $.msg("请选中角色进行设置");
+            $.msg(MultiLangHelper.getResName("selected_role","请选中角色进行设置"));
             return false;
         }
         var node = treeRole.get_node(selRole[0]);
         if (node.data.isRole == false) {
-            $.msg("请选中角色进行设置");
+             $.msg(MultiLangHelper.getResName("selected_role","请选中角色进行设置"));
             return;
         }
         //$("#frm-grid-roledata #RoleUidMC").val(node.text);
@@ -452,11 +452,11 @@
             var saveAuthority = function (data, callback, errorCallback) {
                 $.post("@Url.Content("~/System/Api/Manage/Authority")", data, function (rv) {
                     if (rv.success) {
-                        $.msg("授权成功！");
+                        $.msg(MultiLangHelper.getResName("success","授权成功！"));
                         callback && callback(rv);
                     } else {
                         errorCallback && errorCallback(rv);
-                        bootbox.alert("授权失败！");
+                        bootbox.alert(MultiLangHelper.getResName("failure","授权失败！"));
                     }
                 })
             }
@@ -596,8 +596,8 @@
             });
             $("#clearcache").on(ace.click_event, function () {
                 $.get("@Url.Content("~/System/Api/Manage/Setting/ClearPermissionsCache")", function (rv) {
-                    if (rv.success == "success") {
-                        bootbox.alert('成功清理');
+                    if (rv.success) {
+                        $.msg(rv.msg);
                     }
                 })
             });
@@ -610,15 +610,15 @@
             $("#btnAddUser").on(ace.click_event,function(){
                 //添加使用人
                 var dialog = bootbox.dialog({
-                    title: "添加用户",
+                    title: MultiLangHelper.getResName("add_user","添加用户"),
                     message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
                     buttons: {
                         success: {
-                            label: "确定", className: "btn-primary",
+                            label: MultiLangHelper.getResName("ok","确定"), className: "btn-primary",
                             callback: function () {
                                 var emp = getSelectedRows("grid-fapuser");
                                 if (emp == null) {
-                                    bootbox.alert("您没有选中人员");
+                                    bootbox.alert(MultiLangHelper.getResName("select_row","您没有选中人员"));
                                     return;
                                 };
                                 var tempUser = [];
@@ -645,11 +645,11 @@
                                     var treeRole = $('#tree-roleandgroup').jstree(true);
                                     var selRole = treeRole.get_selected();
                                     if (treeRole.get_icon(selRole[0]) == "icon-folder purple ace-icon fa fa-users") {
-                                        bootbox.alert("请选中角色进行设置");
+                                        bootbox.alert(MultiLangHelper.getResName("selected_role","请选中角色进行设置"));
                                         return;
                                     }
                                     if (!selRole.length) {
-                                        bootbox.alert("请选中角色");
+                                        bootbox.alert(MultiLangHelper.getResName("selected_role","请选中角色进行设置"));
                                         return;
                                     }
                                     saveAuthority({ "RoleUid": selRole[0], "UserUids": tempUser, "AType": 5 }, function (rv) {
@@ -660,7 +660,7 @@
                             }
                         },
                         cancel: {
-                            label: "关闭", className: "btn-default"
+                            label:MultiLangHelper.getResName("close" ,"关闭"), className: "btn-default"
                         }
                     }
 
