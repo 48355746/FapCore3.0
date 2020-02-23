@@ -21,23 +21,7 @@ namespace Fap.Core.Rbac.Model
 		/// <summary>
 		/// 按钮名称
 		/// </summary>
-		public string ButtonName { get; set; }
-		/// <summary>
-		/// 按钮名称英文
-		/// </summary>
-		public string ButtonNameEn { get; set; }
-		/// <summary>
-		/// 按钮名称日本语
-		/// </summary>
-		public string ButtonNameJa { get; set; }
-		/// <summary>
-		/// 按钮名称中文
-		/// </summary>
-		public string ButtonNameZhCn { get; set; }
-		/// <summary>
-		/// 按钮名称繁体
-		/// </summary>
-		public string ButtonNameZhTw { get; set; }
+		public string ButtonName { get; set; }		
 		/// <summary>
 		/// 按钮类型
 		/// </summary>
