@@ -520,7 +520,7 @@
                 /** @namespace document.mozCancelFullScreen */
                 /** @namespace document.webkitExitFullscreen */
                 if (doc.exitFullscreen) {
-                    doc.exitFullscreen();
+                    //doc.exitFullscreen();
                 } else {
                     if (doc.msExitFullscreen) {
                         doc.msExitFullscreen();
@@ -5518,8 +5518,8 @@
             close: '<i class="glyphicon glyphicon-remove"></i>'
         },
         previewZoomButtonClasses: {
-            prev: 'btn btn-navigate',
-            next: 'btn btn-navigate',
+            prev: 'no-border btn-navigate',
+            next: 'no-border btn-navigate',
             toggleheader: 'btn btn-sm btn-kv btn-default btn-outline-secondary',
             fullscreen: 'btn btn-sm btn-kv btn-default btn-outline-secondary',
             borderless: 'btn btn-sm btn-kv btn-default btn-outline-secondary',

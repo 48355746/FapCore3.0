@@ -42,7 +42,7 @@ var MultiLangHelper = (function () {
       'empty_list': { 'ZhCn': '空列表', 'ZhTW': '', 'En': 'Empty list', 'Ja': '' },
       'view_annex': { 'ZhCn': '查看附件', 'ZhTW': '', 'En': 'View annex', 'Ja': '' },
       'information': { 'ZhCn': '提示信息', 'ZhTW': '', 'En': 'Information', 'Ja': '' },
-      'add_user': { 'ZhCn': '添加用户', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'add_user': { 'ZhCn': '添加用户', 'ZhTW': '', 'En': 'add user', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

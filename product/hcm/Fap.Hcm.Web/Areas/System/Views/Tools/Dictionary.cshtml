@@ -1,41 +1,11 @@
 ﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
 @{
-    Layout = null;
+    IEnumerable<Fap.Core.Infrastructure.Metadata.FapDict> dictCategorys = _dbContext.Dictionarys("FapDict");
 }
-
 <title>字典管理</title>
-<div class="row">
-    <div class="col-xs-12 col-sm-3">
-        <div class="widget-box">
-            <div class="widget-header widget-header-flat">
-                <h4 class="widget-title">字典分类</h4>
-
-                <div class="widget-toolbar">
-                    <a href="#" data-ctrl="widgetAction" data-action="add" class="orange2">
-                        <i class="ace-icon fa fa-plus-circle purple"></i>
-                    </a>
-
-                    @*<a href="#" data-ctrl="widgetAction"  data-action="edit">
-                            <i class="ace-icon fa fa-pencil blue"></i>
-                        </a>*@
-
-                    <a href="#" data-ctrl="widgetAction" data-action="delete">
-                        <i class="ace-icon fa fa-trash-o red"></i>
-                    </a>
-                    @*<a href="#" data-ctrl="widgetAction"  data-action="refresh">
-                            <i class="ace-icon fa fa-refresh"></i>
-                        </a>*@
-                </div>
-            </div>
-
-            <div class="widget-body">
-                <div class="widget-main scrollable" id="divDictCategory">
-                    <fap-tree id="dictcategory" is-async="true" get-url="/System/Api/Tools/DictCategory"></fap-tree>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-xs-12 col-sm-9">
+<link href="~/Content/css/chosen.css" rel="stylesheet" />
+<div class="row"> 
+    <div class="col-xs-12">
         <div class="widget-box">
             <div class="widget-header widget-header-flat">
                 <h4 class="widget-title">字典</h4>
@@ -45,10 +15,24 @@
                         <i class="ace-icon fa fa-expand"></i>
                     </a>
                 </div>
+                <div class="widget-toolbar">
+                    <select class="chosen-select form-control" style="width:300px" id="selDictCategory" multi-placeholder="字典分类...">
+                        <option value="">  </option>
+                        @foreach (var category in dictCategorys)
+                        {
+                            <option value="@category.Code">@category.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="widget-toolbar no-border">
+                    <fap-button id="btnAddCategory" btn-tag="link" content="添加字典分类" icon-before="fa fa-plus-circle blue" class-name="info"></fap-button>
+                    <fap-button id="btnDeleteCategory" btn-tag="link" content="删除字典分类" icon-before="fa fa-trash-o blue" class-name="info"></fap-button>
+                   
+                </div>
             </div>
             <div class="widget-body">
                 <div class="widget-main">
-                    <fap-grid id="fapdict" auto-width="true" grid-model="Model" source-type="Local"  on-form-init-add="afterInitFormCallback();setDefaultValues();" on-form-init-edit="afterInitFormCallback" oper-cud="true"></fap-grid>
+                    <fap-grid id="fapdict" auto-width="true" grid-model="Model" source-type="Local" on-form-init-add="afterInitFormCallback();setDefaultValues();" on-form-init-edit="afterInitFormCallback" oper-cud="true"></fap-grid>
                 </div>
             </div>
         </div>
@@ -62,114 +46,94 @@
         $("#CategoryName").attr("disabled", "disabled");
     }
     var setDefaultValues = function () {
-        var tree = $("#tree-dictcategory").jstree(true);
-        var sel = tree.get_selected();
-        if (sel.length) {
+        let code = $("#selDictCategory").val();
+        let name = $("#selDictCategory option:selected").text();
+       
+        if (code) {
 
-            $("#Category").val(sel[0]);
-            $("#CategoryName").val(tree.get_node(sel[0]).text);
+            $("#Category").val(code);
+            $("#CategoryName").val(name);
         }
     }
-    var scripts = [null, null]
+    var scripts = [null,"/Content/js/chosen.jquery.js", null]
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
-            $("#divDictCategory").doScroll(60);
 
             $(document).one('ajaxloadstart.page', function (e) {
 
             })
-            $(document).off(ace.click_event, '[data-ctrl=widgetAction]').on(ace.click_event, '[data-ctrl=widgetAction]', function (ev) {
-                ev.preventDefault();
-                debugger
-                var $this = $(this);
-
-                var $action = $this.data('action');
-
-                if ($action == 'add') {
-                    var dialog = bootbox.dialog({
-                        title: '字典分类',
-                        message: ['<form class="form-horizontal" role="form">',
-                            '    <div class="form-group">',
-                            '        <label class="col-sm-3 control-label no-padding-right" for="form-field-CatCode"> 分类编码 </label>',
-                            '        <div class="col-sm-9">',
-                            '            <input type="text" id="form-field-CatCode" placeholder="分类编码" class="form-control" />',
-                            '        </div>',
-                            '    </div>',
-                            '    <div class="form-group">',
-                            '        <label class="col-sm-3 control-label no-padding-right" for="form-field-CatName"> 分类名称 </label>',
-                            '        <div class="col-sm-9">',
-                            '            <input type="text" id="form-field-CatName" placeholder="分类编码" class="form-control" />',
-                            '        </div>',
-                            '    </div>',
-                            '</form>'].join(""),
-                        buttons: {
-                            success: {
-                                label: MultiLangHelper.getResName("global_oper_enter", "确定"),
-                                className: "btn-primary",
-                                callback: function () {
-                                    var code = $("#form-field-CatCode").val();
-                                    var name = $("#form-field-CatName").val();
-                                    if (code == '' || name == '') {
-                                        bootbox.alert("编码和名称不能为空！");
-                                        return false;
-                                    }
-                                    $("#tree-dictcategory").jstree("create_node", "#0_anchor", {
-                                        "id": code,
-                                        "pid": "0",
-                                        "text": name,
-                                        "icon": "icon-folder orange ace-icon fa fa-leaf",
-                                        "children": []
-                                    }, "first");
-                                }
-                            },
-
-
-                            cancel: {
-                                label: MultiLangHelper.getResName("cancel", "取消"), className: "btn-default"
-                            }
-                        }
-
-                    });
-
-                } else if ($action == 'delete') {
-                    var tree = $("#tree-dictcategory").jstree(true);
-                    var sel = tree.get_selected();
-                    if (!sel.length) {
-                        $.msg("请选中字典分类删除！")
-                        return;
-                    }
-                    bootbox.confirm("删除分类会将字典一起删除,确认删除？", function (result) {
-                        if (result) {
-                            $.get(basePath + "/System/Api/Tools/DeleteDict/" + sel[0], function (rv) {
-                                if (rv.success) {
-                                    $.msg(rv.msg);
-                                    $("#tree-dictcategory").jstree("delete_node", tree.get_node(sel[0]));
-                                } else {
-                                    $.msg(rv.msg);
-                                }
-                            })
-                        }
-                    })
+            var chosen= $('.chosen-select').chosen({ allow_single_deselect: true }).on("change", function () {
+                var c = $(this).val();
+                if (c === "") {
+                    return;
                 }
-            })
-            //字典分类变化事件
-            $('#tree-dictcategory').on("changed.jstree", function (e, data) {
-                if (data && data.selected && data.selected.length) {
-                    var code = data.selected[0];
+                var filter = '{"groupOp":"AND","rules":[{"field":"Category","op":"eq","data":"' + c + '"}]}'
 
-                    var filter = { "groupOp": "AND" };
-                    var rules = [];
-                    rules.push({ "field": "Category", "op": "eq", "data": code });
-
-                    filter.rules = rules;
-                    $("#grid-fapdict").jqGrid('setGridParam', {
-                        datatype: 'json',
-                        postData: { filters: JSON.stringify(filter) }, //发送数据
-                        page: 1
-                    }).trigger("reloadGrid"); //重新载入
-                }
-                //console.log(data.selected);
+                reloadGrid("grid-fapdict", { filters: filter })
             });
+            $("#btnAddCategory").on(ace.click_event, function () {
+                var dialog = bootbox.dialog({
+                    title: '字典分类',
+                    message: ['<form class="form-horizontal" role="form">',
+                        '    <div class="form-group">',
+                        '        <label class="col-sm-3 control-label no-padding-right" for="form-field-CatCode"> '+MultiLangHelper.getResName("code","编码")+' </label>',
+                        '        <div class="col-sm-9">',
+                        '            <input type="text" id="form-field-CatCode" placeholder="" class="form-control" />',
+                        '        </div>',
+                        '    </div>',
+                        '    <div class="form-group">',
+                        '        <label class="col-sm-3 control-label no-padding-right" for="form-field-CatName"> '+MultiLangHelper.getResName("name","名称")+' </label>',
+                        '        <div class="col-sm-9">',
+                        '            <input type="text" id="form-field-CatName" placeholder="" class="form-control" />',
+                        '        </div>',
+                        '    </div>',
+                        '</form>'].join(""),
+                    buttons: {
+                        success: {
+                            label: MultiLangHelper.getResName("ok", "确定"),
+                            className: "btn-primary",
+                            callback: function () {
+                                var code = $("#form-field-CatCode").val();
+                                var name = $("#form-field-CatName").val();
+                                if (code == '' || name == '') {
+                                    $.msg(MultiLangHelper.getResName("code_name_required", "编码和名称不能为空！"));
+                                    return false;
+                                }
+                                debugger
+                                //chosen.add_option("<option  value='" + code + "' selected>'" + name + "'</option >");
+                                $("#selDictCategory").append("<option  value='" + code + "' selected>" + name + "</option >");
+                                //$("#selDictCategory").val(code);
+                                 $("#selDictCategory").trigger("chosen:updated");
+                            }
+                        },
+                        cancel: {
+                            label: MultiLangHelper.getResName("cancel", "取消"), className: "btn-default"
+                        }
+                    }
+
+                });
+            })
+
+
+            $("#btnDeleteCategory").on(ace.click_event, function () {
+                if ($("#selDictCategory").val() === "") {
+                    $.msg(MultiLangHelper.getResName("select_row", "请选中字典分类删除"));
+                    return;
+                }
+                bootbox.confirm(MultiLangHelper.getResName("confirm_delete", "确认删除字典分类吗?"), function (result) {
+                    if (result) {
+                        $.get(basePath + "/System/Api/Tools/DeleteDict/" +$("#selDictCategory").val(), function (rv) {
+                            if (rv.success) {
+                                $.msg(rv.msg);
+                                $('#selDictCategory option:selected').remove();
+                                 $("#selDictCategory").trigger("chosen:updated");
+                            } else {
+                                $.msg(rv.msg);
+                            }
+                        })
+                    }
+                })
+            })
         })
     })
 </script>
