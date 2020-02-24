@@ -21,10 +21,10 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
         {
         }
         /// <summary>
-        /// 流程模板
+        /// 流程
         /// </summary>
         /// <returns></returns>
-        public IActionResult Template()
+        public IActionResult WfProcess()
         {
             //显示有用的和禁用的
             string initCondition = $"(Status='{WfProcessState.Using}' or Status='{WfProcessState.Forbidden}')";

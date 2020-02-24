@@ -1,0 +1,229 @@
+﻿@using Fap.Workflow.Model
+@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@using Fap.AspNetCore.Controls.JqGrid
+@{
+    Layout = null;
+    string tableName = Model.JqgridId;
+    string businessUid = ViewBag.BusinessUid;
+    //增加操作列
+    Column column = new Column("oper");
+    column.SetLabel("操作");
+    column.SetSortable(false);
+    column.SetWidth(110);
+
+    WfBusiness biz = ViewBag.Business;
+}
+
+<div class="row">
+    <div class="col-xs-12">
+        <fap-grid id="@Model.JqgridId" attach-column="@column" grid-model="Model" wrapper="col-xs-12" auto-width="true" shrink-fit="false" oper-import="false" on-grid-complete="initOperMenu"></fap-grid>
+    </div>
+</div>
+<script>
+    function initOperMenu()
+    {
+        var ids = jQuery("#grid-@tableName").jqGrid('getDataIDs');
+        for (var i = 0; i < ids.length; i++) {
+            var de = '';
+            var cl = ids[i];
+            var ret = jQuery('#grid-@tableName').jqGrid('getRowData', cl);
+            var fid = ret.Fid;
+
+            de += "<a  href='javascript:void(0)' onclick='approvalBill(\"" + fid + "\")'>办理</a>  ";
+            de += "<a  href='javascript:void(0)' onclick='workflowChart(\"" + fid + "\")'>流程图</a>";
+            jQuery('#grid-@tableName').jqGrid('setRowData', ids[i], { oper: de });
+        }
+    }
+     /**
+     * 流程图
+     * */
+    function workflowChart(fid) {
+        var processUid = '@biz.WfProcessUid';//流程
+        var openUrl = $.randomUrl(basePath + "/Workflow/Business/FlowChart?processUid=" + processUid + "&bizUid=" + fid);
+        var width = parseInt($(window).innerWidth() * 0.8) + 'px';
+        var height = parseInt($(window).innerHeight() - 60) + 'px';
+        var index = layer.open({
+            type: 2,
+            title: '"@biz.BizName"流程图',
+            shadeClose: true,
+            shade: 0.8,
+            maxmin: true, //开启最大化最小化按钮
+            skin: 'billskin',
+            btnAlign: 'c',
+            area: [width, height],
+            content: openUrl,
+            btn: ['关闭'],
+            yes: function (index, layero) {
+                layer.close(index);
+            }
+            , cancel: function () {
+                //右上角关闭回调
+
+                //return false 开启该代码可禁止点击该按钮关闭
+            }
+        });
+    }
+    function approvalBill(fid)
+    {
+        var agent = '@ViewBag.Agent';
+        var businessUid = '@businessUid';
+        var openUrl = basePath + "/Workflow/Business/ApprovalBill?billUid=" + fid + "&businessUid=" + businessUid + "&agent=" + agent;
+
+        var dialog = bootbox.dialog({
+            title: '审批单',
+            message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+            size: "large",
+            footer: false,
+            buttons: {
+                disagree: {
+                    label: '不同意',
+                    className: "btn-danger",
+                    callback: function () {    
+                        layer.prompt({ title: '请填写审批意见，并确认', formType: 2 }, function (text, index) {
+                            layer.close(index);
+                            ApprovalProcess('Disagree', text, function () {
+                                //处理待审批计数
+                                counter(businessUid, agent);
+                                refreshList();
+                            });
+                        });
+                        return false;
+                    }
+                }, agree: {
+                    label: '同意',
+                    className: "btn-primary",
+                    callback: function () {
+                        if (checkBeforeProcess()) {
+                            layer.prompt({ title: '请填写审批意见，并确认', formType: 2 }, function (text, index) {
+                                layer.close(index);
+                                ApprovalProcess('Agree', text, function () {
+                                    counter(businessUid, agent);
+                                    refreshList();
+                                });
+                            });
+                        }
+                        return false;
+                    }
+                }
+            }
+
+        });
+        dialog.init(function () {
+            $.get(openUrl, function (ev) {
+                dialog.find('.bootbox-body').html(ev);
+               
+            });
+        });
+
+
+        //var index = layer.open({
+        //    type: 2,
+        //    title: '审批单',
+        //    shadeClose: true,
+        //    shade: 0.8,
+        //    maxmin: true, //开启最大化最小化按钮
+        //    skin: 'billskin',
+        //    btnAlign: 'c',
+        //    area: ['893px', '600px'],
+        //    content: openUrl,
+        //    btn: ['不同意', '同意', '关闭']
+        //    , yes: function (index, layero) {
+        //        //按钮【不同意】的回调
+        //        var iframeWin = layero.find('iframe')[0];
+
+        //            layer.prompt({ title: '请填写审批意见，并确认', formType: 2 }, function (text, index) {
+        //                layer.close(index);
+        //                iframeWin.contentWindow.ApprovalProcess('Disagree', text, function () {
+        //                    //处理待审批计数
+        //                    counter(businessUid,agent);
+        //                    refreshList();
+        //                });
+        //            });
+
+        //        return false;
+        //    }
+        //    , btn2: function (index, layero) {
+        //        //按钮【同意】的回调
+        //        var iframeWin = layero.find('iframe')[0];
+        //        if (iframeWin.contentWindow.checkBeforeProcess()) {
+        //            layer.prompt({ title: '请填写审批意见，并确认', formType: 2 }, function (text, index) {
+        //                layer.close(index);
+        //                iframeWin.contentWindow.ApprovalProcess('Agree', text, function () {
+        //                    counter(businessUid,agent);
+        //                    refreshList();
+        //                });
+        //            });
+        //        }
+        //        return false;
+        //        //return false 开启该代码可禁止点击该按钮关闭
+        //    }
+        //    , btn3: function (index, layero) {
+        //        //按钮【关闭】的回调
+
+        //        //return false 开启该代码可禁止点击该按钮关闭
+        //    }
+        //    , cancel: function () {
+        //        //右上角关闭回调
+
+        //        //return false 开启该代码可禁止点击该按钮关闭
+        //    }
+        //});
+        //layer.full(index);
+
+    }
+    /**
+     * 重新计算待处理计数
+     * @@param fid
+     * @@param agent
+     */
+    function counter(fid,agent) {
+        var countstr = $('a[data-biztype=' + fid + '] .text-danger').text();
+        if (countstr) {
+            let c = parseInt(countstr);
+            if (c > 1) {
+                $('a[data-biztype=' + fid + '] .text-danger').text('+'+(c - 1));
+
+            } else {
+
+                $('a[data-biztype=' + fid + '] .text-danger').text('');
+            }
+            let total = $('#todotasklist li span b').text();
+            let todo = $('#todocounter  a ').find('.percent').text();
+            let agent = $('#agentcounter a').find('.percent').text();
+            if (total == '1') {
+                $('#todotasklist li span b').text('0');
+                $('.handingcount').text('0');
+                $('#todocounter  a ').find('.percent').text('0')
+                $('#todocounter  a ').find('.progress-bar').css('width', '0%');
+                $('#agentcounter  a ').find('.progress-bar').css('width', '0%');
+            } else {
+                let itotal = parseInt(total)-1;
+                $('#todotasklist li span b').text(itotal);
+                $('.handingcount').text(itotal);
+                if (agent == '1') {
+                    let iagent = parseInt(agent) - 1;
+                    $('#agentcounter  a ').find('.percent').text(iagent);
+                    let agentpercent = (iagent / itotal).toFixed(2) * 100; 
+                    let todopercent = 100 - agentpercent;
+                    $('#todocounter  a ').find('.progress-bar').css('width', todopercent + '%');
+                    $('#agentcounter  a ').find('.progress-bar').css('width', agentpercent + '%');
+
+                } else {
+                    let itodo = parseInt(todo) - 1;
+                    $('#todocounter  a ').find('.percent').text(itodo);
+                    let todopercent = (itodo / itotal).toFixed(2) * 100;
+                    let agentpercent = 100 - todopercent;
+                    $('#todocounter  a ').find('.progress-bar').css('width', todopercent + '%');
+                    $('#agentcounter  a ').find('.progress-bar').css('width', agentpercent + '%');
+                }
+            }
+            
+        }
+
+    }
+    function refreshList()
+    {
+        $("#grid-@tableName").trigger("reloadGrid"); //重新载入
+
+    }
+</script>

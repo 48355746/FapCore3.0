@@ -7,19 +7,17 @@ namespace Fap.Workflow.Model
     /// <summary>
     /// 流程代理人设置
     /// </summary>
-    [Serializable]
     public class WfAgentSetting : BaseModel
     {
         /// <summary>
-        /// 流程分类
-        /// </summary>
-        public string BusinessType { get; set; }
+		/// 流程业务
+		/// </summary>
+		public string BusinessUid { get; set; }
         /// <summary>
-        /// 流程分类 的显性字段MC
+        /// 流程业务 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
-        public string BusinessTypeMC { get; set; }
-
+        [Computed]
+        public string BusinessUidMC { get; set; }
         /// <summary>
         /// 被代理人
         /// </summary>
@@ -27,7 +25,7 @@ namespace Fap.Workflow.Model
         /// <summary>
         /// 被代理人 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string PrincipalMC { get; set; }
         /// <summary>
         /// 代理人
@@ -36,7 +34,7 @@ namespace Fap.Workflow.Model
         /// <summary>
         /// 代理人 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string AgentMC { get; set; }
         /// <summary>
         /// 启用状态

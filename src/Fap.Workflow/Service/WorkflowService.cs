@@ -177,11 +177,11 @@ namespace Fap.Workflow.Service
 
                     if (runtimeManager.WfExecutedResult.Status == WfExecutedStatus.Success)
                     {
-                        if (runner.BizData.BillStatus != BillStatus.PASSED)
+                        if (runner.BillData.BillStatus != BillStatus.PASSED)
                         {
                             //改变单据状态
-                            runner.BizData.BillStatus = BillStatus.PROCESSING;
-                            string updateSql = $"update {runner.BillTableName} set SubmitTime='{DateTimeUtils.CurrentDateTimeStr}', BillStatus='{BillStatus.PROCESSING}' where id={runner.BizData.Id}";
+                            runner.BillData.BillStatus = BillStatus.PROCESSING;
+                            string updateSql = $"update {runner.BillTableName} set SubmitTime='{DateTimeUtils.CurrentDateTimeStr}', BillStatus='{BillStatus.PROCESSING}' where id={runner.BillData.Id}";
                             _dataAccessor.Execute(updateSql);
                         }
                     }
@@ -257,9 +257,9 @@ namespace Fap.Workflow.Service
         /// 获取流程的第一个可办理节点
         /// </summary>
         /// <returns></returns>
-        public ActivityEntity GetFirstActivity(string processId, string bizUid)
+        public ActivityEntity GetFirstActivity(string processId, string billUid)
         {
-            _processModel = new ProcessModel(_dataAccessor, _loggerFactory, processId, bizUid);
+            _processModel = new ProcessModel(_dataAccessor, _loggerFactory, processId, billUid);
             var firstActivity = _processModel.GetFirstActivity();
             return firstActivity;
         }
@@ -268,9 +268,9 @@ namespace Fap.Workflow.Service
         /// </summary>
         /// <param name="processId"></param>
         /// <returns></returns>
-        //public ActivityEntity GetStartActivity(string processId,string bizUid)
+        //public ActivityEntity GetStartActivity(string processId,string billUid)
         //{
-        //    _processModel = new ProcessModel(_wfProcessService,processId,bizUid);
+        //    _processModel = new ProcessModel(_wfProcessService,processId,billUid);
         //    var startActivity = _processModel.GetStartActivity();
         //    return startActivity;
         //}
@@ -280,9 +280,9 @@ namespace Fap.Workflow.Service
         /// 获取任务类型的节点列表
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<ActivityEntity> GetTaskActivityList(string processId, string bizUid)
+        public IEnumerable<ActivityEntity> GetTaskActivityList(string processId, string billUid)
         {
-            _processModel = new ProcessModel(_dataAccessor, _loggerFactory, processId, bizUid);
+            _processModel = new ProcessModel(_dataAccessor, _loggerFactory, processId, billUid);
             var activityList = _processModel.GetAllTaskActivityList();
 
             return activityList;
@@ -308,9 +308,9 @@ namespace Fap.Workflow.Service
         /// <param name="nodeId"></param>
         /// <returns></returns>
         public ActivityEntity GetNextActivity(string processId,
-            string nodeId, string bizUid)
+            string nodeId, string billUid)
         {
-            _processModel = new ProcessModel(_dataAccessor, _loggerFactory, processId, bizUid);
+            _processModel = new ProcessModel(_dataAccessor, _loggerFactory, processId, billUid);
             var nextActivity = _processModel.GetNextActivity(nodeId);
             return nextActivity;
         }
@@ -320,9 +320,9 @@ namespace Fap.Workflow.Service
         /// </summary>
         /// <param name="processId"></param>
         /// <returns></returns>
-        public IList<Participant> GetFirstActivityParticipants(string processId, string bizUid)
+        public IList<Participant> GetFirstActivityParticipants(string processId, string billUid)
         {
-            _processModel = new ProcessModel(_dataAccessor, _loggerFactory, processId, bizUid);
+            _processModel = new ProcessModel(_dataAccessor, _loggerFactory, processId, billUid);
             var firstActivity = _processModel.GetFirstActivity();
             return _processModel.GetActivityParticipants(firstActivity.ActivityID);
         }
@@ -334,9 +334,9 @@ namespace Fap.Workflow.Service
         /// <param name="nodeId"></param>
         /// <param name="condition"></param>
         /// <returns></returns>
-        public IList<NodeView> GetNextNodeList(string processId, string nodeId, string bizUid)
+        public IList<NodeView> GetNextNodeList(string processId, string nodeId, string billUid)
         {
-            _processModel = new ProcessModel(_dataAccessor, _loggerFactory, processId, bizUid);
+            _processModel = new ProcessModel(_dataAccessor, _loggerFactory, processId, billUid);
             var nextSteps = _processModel.GetNextActivityTree(nodeId);
             return nextSteps;
         }
@@ -345,9 +345,9 @@ namespace Fap.Workflow.Service
         /// </summary>
         /// <returns></returns>
 
-        public PerformerList GetPerformerOfNextStep(string processId, string nodeId, string bizUid)
+        public PerformerList GetPerformerOfNextStep(string processId, string nodeId, string billUid)
         {
-            _processModel = new ProcessModel(_dataAccessor, _loggerFactory, processId, bizUid);
+            _processModel = new ProcessModel(_dataAccessor, _loggerFactory, processId, billUid);
             return _processModel.GetActivityPerformers(nodeId);
         }
 
@@ -759,7 +759,7 @@ namespace Fap.Workflow.Service
             tim.Update(task);
 
             TaskAdviceManager tam = new TaskAdviceManager(_dataAccessor, _applicationContext, _loggerFactory);
-            tam.RecordWhenTurnTask(runner.ProcessId, runner.CurrNodeId, runner.Comment, turner.UserId, turner.UserName);
+            tam.RecordWhenTurnTask(runner.ProcessUid, runner.CurrNodeId, runner.Comment, turner.UserId, turner.UserName);
 
 
             return true;
@@ -784,7 +784,7 @@ namespace Fap.Workflow.Service
             Performer agent = runner.Agents[0];
 
             TaskAdviceManager tam = new TaskAdviceManager(_dataAccessor, _applicationContext, _loggerFactory);
-            tam.RecordWhenAssignAgentTask(runner.ProcessId, runner.CurrNodeId, runner.Comment, agent.UserId, agent.UserName);
+            tam.RecordWhenAssignAgentTask(runner.ProcessUid, runner.CurrNodeId, runner.Comment, agent.UserId, agent.UserName);
 
             task.AgentEmpUid = agent.UserId;
             task.AgentEmpName = agent.UserName;
@@ -857,7 +857,7 @@ namespace Fap.Workflow.Service
                 IWriteBackRule writeBackRule = new BillWriteBack(_dataAccessor);
                 foreach (var process in processes)
                 {
-                    writeBackRule.WriteBackToBusiness(process.BillTable, process.BizUid);
+                    writeBackRule.WriteBackToBusiness(process.BillTable, process.BillUid);
                 }
             }
         }
@@ -1014,13 +1014,13 @@ namespace Fap.Workflow.Service
         /// <summary>
         /// 发送催办消息
         /// </summary>
-        /// <param name="bizUid">业务数据ID</param>
-        /// <param name="bizTypeUid">业务类型Uid</param>
+        /// <param name="billUid">业务数据ID</param>
+        /// <param name="businessUid">业务类型Uid</param>
         /// <returns></returns>
-        public string UrgeFlow(string bizUid, string bizTypeUid)
+        public string UrgeFlow(string billUid, string businessUid)
         {
             MessageManager messageManager = new MessageManager(_dataAccessor, _loggerFactory);
-            return messageManager.SendUrgeMessage(bizUid, bizTypeUid);
+            return messageManager.SendUrgeMessage(billUid, businessUid);
         }
     }
 }

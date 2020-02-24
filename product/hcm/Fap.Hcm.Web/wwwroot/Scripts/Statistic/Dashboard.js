@@ -147,7 +147,7 @@ var DashboardDatatableWidget = function (options) {
                 message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
                 buttons: {
                     success: {
-                        label: MultiLangHelper.getResName("global_oper_enter", "确定"),
+                        label: $.lang("global_oper_enter", "确定"),
                         className: "btn-primary",
                         callback: function () {
                             var csmodel = getResult();
@@ -267,7 +267,7 @@ var DashboardEChartsWidget = function (options) {
                 message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
                 buttons: {
                     success: {
-                        label: MultiLangHelper.getResName("global_oper_enter", "确定"),
+                        label: $.lang("global_oper_enter", "确定"),
                         className: "btn-primary",
                         callback: function () {
                             var csmodel = getResult();

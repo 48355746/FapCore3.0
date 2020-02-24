@@ -42,7 +42,7 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
             TreeDataView treeRoot = new TreeDataView()
             {
                 Id = "0",
-                Text = "模板分类",
+                Text =_multiLangService.GetOrAndMultiLangValue(Core.MultiLanguage.MultiLanguageOriginEnum.MultiLangTag, "workflow_category", "流程分类"),
                 State = new NodeState { Opened = true },
                 Icon = "icon-folder blue ace-icon fa fa-sitemap",
             };
@@ -143,15 +143,75 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
             return Json(list);
         }
         /// <summary>
-        /// 获取所有的流程模板
+        /// 获取所有的流程
         /// </summary>
         /// <returns></returns>
-        [HttpGet("WfTemplate")]
+        [HttpGet("WfProcess")]
         public JsonResult GetWfTemplate()
         {
             string sql = $"select Fid,ProcessName from WfProcess";
             var list = _dbContext.Query(sql);
             return Json(list);
         }
+        [HttpGet("BusinessType")]
+        public JsonResult GetBusinessType()
+        {
+             var businessTypes = _dbContext.Query<WfBusinessType>("select * from WfBusinessType");
+             
+             var oriList = businessTypes.Select(t => new TreeDataView { Id = t.Fid.ToString(), Pid = t.Pid, Data = new { group = "1",  typecode = t.TypeCode, typename = t.TypeName }, Text = t.TypeName , Icon = "icon-folder purple ace-icon fa fa-share-alt" });
+                
+           
+            List<TreeDataView> tree = new List<TreeDataView>();
+            TreeDataView treeRoot = new TreeDataView()
+            {
+                Id = "0",
+                Text =_multiLangService.GetOrAndMultiLangValue(Core.MultiLanguage.MultiLanguageOriginEnum.MultiLangTag, "business_category", "业务分类"),
+                Data = new { group = "0"},
+                State = new NodeState { Opened = true },
+                Icon = "icon-folder blue ace-icon fa fa-sitemap",
+            };
+            tree.Add(treeRoot);
+            TreeViewHelper.MakeTree(treeRoot.Children, oriList, treeRoot.Id);
+            return Json(tree);
+        }
+        [HttpPost("OperBusinessType")]
+        public JsonResult OperBusinessType(TreePostData postData)
+        {
+            ResponseViewModel vm = new ResponseViewModel();
+            if (postData.Operation == TreeNodeOper.DELETE_NODE)
+            {
+                int c = _dbContext.DeleteExec(nameof(WfBusinessType), " Fid=@Fid", new DynamicParameters(new { Fid = postData.Id }));
+                vm.success = c > 0 ? true : false;
+            }
+            else if (postData.Operation == TreeNodeOper.CREATE_NODE)
+            {
+                WfBusinessType bizType = new WfBusinessType()
+                {
+                    Pid = postData.Id,
+                    TypeName = postData.Text
+                };
+                _dbContext.Insert(bizType);
+                vm.success = true;
+                vm.data = bizType.Fid;
+            }
+            else if (postData.Operation == TreeNodeOper.RENAME_NODE)
+            {
+                var bizType = _dbContext.Get<WfBusinessType>(postData.Id);
+                bizType.TypeName = postData.Text;
+                vm.success = _dbContext.Update(bizType);
+            }
+            else if (postData.Operation == "move_node")
+            {
+                var bizType = _dbContext.Get<WfBusinessType>(postData.Id);
+                bizType.Pid = postData.Parent;
+                vm.success = _dbContext.Update(bizType);
+            }
+            else if (postData.Operation == TreeNodeOper.COPY_NODE)
+            {
+                throw new NotImplementedException();
+            }
+            return Json(vm);
+        }
+
     }
 }

@@ -59,7 +59,7 @@
                     if (data.id == 'img') {
                         openNewWindow("@Url.Content("~/UploadFiles/View/")" + data.msg);
                     } else if (data.id == "0") {
-                        $.msg(MultiLangHelper.getResName("not_support_view","不支持预览"));
+                        $.msg($.lang("not_support_view","不支持预览"));
                     } else {
                         openNewWindow("@Url.Content("~/Content/Pdf/web/viewer.html")?file=/UploadFiles/View/" + data.msg);
                     }

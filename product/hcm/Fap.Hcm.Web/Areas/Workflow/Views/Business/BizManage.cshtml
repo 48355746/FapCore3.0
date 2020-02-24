@@ -1,0 +1,62 @@
+﻿@model IEnumerable<Fap.Workflow.Model.WfBusinessType>
+@{
+    Layout = null;
+}
+<title>我的申请</title>
+<link href="~/Content/bootstrap-layer.css" rel="stylesheet" />
+<link href="~/Content/waiting/waiting.css" rel="stylesheet" />
+<link href="~/Content/css/bootstrap-timeline.css" rel="stylesheet" />
+<link href="~/Content/bootstrap-layer.css" rel="stylesheet" />
+
+<style>
+    .billskin .layui-layer-btn0 {
+        background-color: #d15b47 !important;
+        border-color: #428bca;
+    }
+</style>
+<div class="row">
+    <div class="col-xs-12">
+        <h4 class="smaller lighter green">业务信息</h4>
+        <ul class="list-inline bizprocess">
+            @foreach (var item in Model)
+            {
+                <li>
+                    <a href="javascript:void(0)" data-biztype="@item.Fid" data-bill="@item.BillTable">
+                        <i class="ace-icon fa fa-suitcase green bigger-110"></i>
+                        @item.TypeName
+                    </a>
+                </li>
+            }
+        </ul>
+    </div>
+</div>
+<hr />
+<div class="row">
+    <div class="col-xs-12" id="myApplyContent">
+        @*动态加载我的申请列表*@
+    </div>
+</div>
+<script>
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+                //$(document).off(ace.click_event, '.dropdown-menu>li');
+            })
+            $(".bizprocess li>a").on(ace.click_event, function () {
+                var $this = $(this);
+                var bizTypeUid = $this.data("biztype");
+                var billTable = $this.data("bill");
+                $("#myApplyContent").empty();
+                layer.load();
+                $.get(basePath + "/Workflow/Business/Manage/" + bizTypeUid, function (content) {
+                    $("#myApplyContent").html(content);
+                    //完毕重新设置jqgrid宽度
+                    $(window).triggerHandler('resize.jqGrid');
+                    layer.closeAll('loading');
+                })
+
+            })
+        })
+    });
+</script>

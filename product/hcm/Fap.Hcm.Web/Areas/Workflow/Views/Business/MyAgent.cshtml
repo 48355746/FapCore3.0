@@ -1,0 +1,23 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+    Layout = null;
+}
+<title>代理人</title>
+
+<div class="row">
+    <div class="col-xs-12 col-sm-12">
+        <fap-grid id="agentsetting" query-option="Model.QueryOption" post-data="Model.PostData" auto-width="true" oper-cud="true" view-records="true" on-form-init-add="onFormInit" on-form-init-edit="onFormInit"></fap-grid>
+    </div>
+</div>
+<script>
+    function onFormInit() {
+        $("#WfAgentSettingPrincipalMC").attr('disabled', true);
+    }
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+            })
+        })
+    })
+</script>

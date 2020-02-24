@@ -1,0 +1,73 @@
+﻿@model IEnumerable<Fap.Workflow.Model.WfBusinessType>
+@{
+    Layout = null;
+}
+<title>已办任务</title>
+<link href="~/Content/bootstrap-layer.css" rel="stylesheet" />
+<style>
+    .billskin .layui-layer-btn0 {
+        background-color: #d15b47 !important;
+        border-color: #428bca;
+    }
+</style>
+<div class="row">
+    <div class="col-xs-12">
+        <h4 class="smaller lighter green">业务信息</h4>
+        <ul class="list-inline bizprocess nav nav-pills">
+            @foreach (var item in Model)
+            {
+                <li>
+                    <a href="javascript:void(0)" data-biztype="@item.Fid" data-bill="@item.BillTable">
+                        <i class="ace-icon fa fa-suitcase green bigger-110"></i>
+                        @item.TypeName 
+
+                    </a>
+                </li>
+            }
+        </ul>
+    </div>
+</div>
+<hr />
+<div class="row">
+    <div class="col-xs-12" id="bizContent">
+        @*动态加载待处理列表*@
+        <div class="col-xs-1"></div>
+        <div class="col-xs-11">
+            <h3>操作说明</h3>
+            <p>
+                1.这里显示你已经审批过的任务列表。
+            </p>
+            <p>
+                2.点击需要处理的业务，进入列表。
+            </p>
+            <p>
+                3.你可以在此查看业务详情以及流程状态。
+            </p>
+
+        </div>
+    </div>
+</div>
+<script>
+    var scripts = [null, null];
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+                //$(document).off(ace.click_event, '.dropdown-menu>li');
+            });
+            $(".bizprocess li>a").on(ace.click_event, function () {
+                var $this = $(this);
+                var bizTypeUid = $this.data("biztype");
+                var billTable = $this.data("bill");
+                $("#bizContent").empty();
+                layer.load();
+                $.get(basePath + "/Workflow/Business/Approvaled?bizTypeUid=" + bizTypeUid + "&billTable=" + billTable, function (content) {
+                    $("#bizContent").html(content);
+                    //完毕重新设置jqgrid宽度
+                    $(window).triggerHandler('resize.jqGrid');
+                    layer.closeAll('loading');
+                });
+
+            });
+        });
+    });
+</script>

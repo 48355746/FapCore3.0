@@ -1,7 +1,7 @@
 ﻿@using Fap.AspNetCore.Controls.JqGrid
 @model Fap.AspNetCore.ViewModel.JqGridViewModel
 
-<title>流程模板管理</title>
+<title><fap-multilang lang-key="workflow" default-content="流程"></fap-multilang></title>
 <style>
     .tablediv .ui-jqgrid .ui-jqgrid-pager {
         line-height: 15px;
@@ -28,8 +28,8 @@
             <div class="col-xs-12 col-sm-3">
                 <div class="widget-box">
                     <div class="widget-header widget-header-flat">
-                        <h4 class="widget-title">模板分类</h4>
-                        <fap-tree-button id="processgroup" description="模板分类" tree-id="tree-processgroup"></fap-tree-button>
+                        <h4 class="widget-title"><fap-multilang lang-key="workflow_category" default-content="流程分类"></fap-multilang></h4>
+                        <fap-tree-button id="processgroup" description="流程分类" tree-id="tree-processgroup"></fap-tree-button>
 
                     </div>
 
@@ -44,7 +44,7 @@
             <div class="col-xs-12 col-sm-9">
                 <div class="widget-box">
                     <div class="widget-header widget-header-flat">
-                        <h4 class="widget-title">流程模板</h4>
+                        <h4 class="widget-title"><fap-multilang lang-key="workflow" default-content="流程"></fap-multilang></h4>
 
                         <div class="widget-toolbar">
                             <a href="#" data-action="fullscreen" class="orange2">
@@ -78,18 +78,15 @@
 <script>
     function initForm()
     {
-        if (!wfProcessGroupUid)
-        {
-            bootbox.alert('模板分类必填，请选择模板分类后再添加模板');
-            return;
+        if (wfProcessGroupUid) {
+            $("#frm-grid-process #ProcessGroupUid").val(wfProcessGroupUid).next().val(wfProcessGroupName);
         }
-        $("#frm-grid-process #ProcessGroupUid").val(wfProcessGroupUid).next().val(wfProcessGroupName);
     }
         //流程设计
     function workflowDesigner(fid) {
         var index = layer.open({
             type: 2,
-            title: '流程设计器 V1.0',
+            title: $.lang('workflow_designer','流程设计器')+ 'V1.0',
             shadeClose: true,
             shade: 0.8,
             maxmin: true, //开启最大化最小化按钮
@@ -115,7 +112,7 @@
                         return;
                     }
                     wfProcessGroupName = data.node.text;
-                    wfProcessGroupUid = groupid; //选择的模板分类Id
+                    wfProcessGroupUid = groupid; //选择的流程分类Id
                     var jsonc = { 'ProcessGroupUid': wfProcessGroupUid, 'ProcessGroupUidMC': wfProcessGroupName };
                     var filter = '{"groupOp":"AND","rules":[{"field":"ProcessGroupUid","op":"eq","data":"' + wfProcessGroupUid + '"}]}'
                     reloadGrid("grid-process",{ pageCondition: filter })
@@ -132,7 +129,7 @@
             });
 
 
-            //按钮：启用模板
+            //按钮：启用流程
             $("#btnEnableTemplate").on(ace.click_event,function () {
                 let selectRow = getSelectedRow("grid-process");
                 if (selectRow == null)
@@ -140,16 +137,16 @@
                     return;
                 }
                 //var rowData = $("#gridTable").jqGrid('getRowData', rowId);
-                bootbox.confirm("是否要启用该流程模板？", function (result) {
+                bootbox.confirm($.lang("is_enabled_workflow","是否要启用该流程")+'?', function (result) {
                     if (result) {
-                        $.post(basePath + "/Workflow/Api/Process", { Status: "Using", Fid: selectRow.Fid}, function (rv) {
-                                if (rv.success) {
-                                    $.msg("已成功启动流程模板！");
-                                    $("#grid-process").trigger("reloadGrid");
-                                } else {
-                                    bootbox.alert("启动失败");
-                                }
-                            })
+                        $.post(basePath + "/Workflow/Api/Process", { Status: "Using", Fid: selectRow.Fid }, function (rv) {
+                            if (rv.success) {
+                                $.msg(rv.msg);
+                                $("#grid-process").trigger("reloadGrid");
+                            } else {
+                                bootbox.alert(rv.msg);
+                            }
+                        })
                     }
                 })
 
@@ -161,16 +158,16 @@
                 if (selectRow == null) {
                     return;
                 }
-                bootbox.confirm("是否要禁用该流程模板？", function (result) {
+                bootbox.confirm($.lang("is_disabled_workflow","是否要禁用该流程")+'?', function (result) {
                     if (result) {
                         $.post(basePath + "/Workflow/Api/Process", { Status: "Forbidden", Fid: selectRow.Fid }, function (rv) {
                             if (rv.success) {
-                                    $.msg("已成功禁用流程模板！");
-                                    $("#grid-process").trigger("reloadGrid");
-                                } else {
-                                    bootbox.alert("禁用失败");
-                                }
-                            })
+                                $.msg(rv.msg);
+                                $("#grid-process").trigger("reloadGrid");
+                            } else {
+                                bootbox.alert(rv.msg);
+                            }
+                        })
                     }
                 })
             });
@@ -181,7 +178,7 @@
                 if (selectRow == null) {
                     return;
                 }
-                bootbox.confirm("是否要升级该流程模板，升级后原有流程模板将成为历史记录？", function (result) {
+                bootbox.confirm($.lang("is_upgrade_workflow","是否要升级该流程")+'?', function (result) {
                     if (result) {
                         $.post('@Url.Content("/Workflow/Api/UpgradeFlowTemplate")', { id: selectRow.Id }
                             ,function (data) {

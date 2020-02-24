@@ -83,9 +83,9 @@ namespace Fap.Workflow.Engine.Message
                 }
                 if (sendMail)
                 {
-                    var bizType = _dataAccessor.Get<WfBusinessType>(activityIns.BizTypeId, false);
+                    var biz = _dataAccessor.Get<WfBusiness>(activityIns.BizTypeId, false);
                     string title = $"有一份\"{activityIns.AppName}\"的待处理任务需要您处理！";
-                    string where = "TableName='" + bizType.BillTable + "' and Enabled=1 and ModuleUid='BillMailTmpl'";
+                    string where = "TableName='" + biz.BillEntity + "' and Enabled=1 and ModuleUid='BillMailTmpl'";
                     var emailTemplates = _dataAccessor.QueryWhere<CfgEmailTemplate>(where, null, false);
                     //流程中通知业务处理人模板
                     CfgEmailTemplate emailTemplate = emailTemplates.Where(t => t.Code == "NoticeApprover").FirstOrDefault();
@@ -338,13 +338,13 @@ namespace Fap.Workflow.Engine.Message
                 receipantNames.Add(receipant.EmpName);
                 receipantMailboxes.Add($"{receipant.EmpName}<{receipant.Mailbox}>");
             }
-            WfBusinessType bizType = _dataAccessor.Get<WfBusinessType>(bizTypeUid);
-            if (bizType == null)
+            WfBusiness biz = _dataAccessor.Get<WfBusiness>(bizTypeUid);
+            if (biz == null)
                 return "未找到业务，催办失败！";
-            string tableName = bizType.BillTable;
+            string tableName = biz.BillEntity;
             dynamic bizData = _dataAccessor.QueryFirstOrDefault($"select * from {tableName} where Fid=@BizUid", param, true);
-            string content = string.Format("您有一条：{0}的催办任务，制单人:{1},任务到达时间为:{2},请及时处理。", bizType.TypeName, bizData.BillEmpUidMC, receiver.First().TaskStartTime);
-            string title = string.Format("{0}的催办任务", bizType.TypeName);
+            string content = string.Format("您有一条：{0}的催办任务，制单人:{1},任务到达时间为:{2},请及时处理。", biz.BizName, bizData.BillEmpUidMC, receiver.First().TaskStartTime);
+            string title = string.Format("{0}的催办任务", biz.BizName);
             try
             {
                 //邮件

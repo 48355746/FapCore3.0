@@ -64,7 +64,7 @@
                     '</div>'].join(""),
                 buttons: {
                     success: {
-                        label: MultiLangHelper.getResName("global_oper_enter", "确定"),
+                        label: $.lang("global_oper_enter", "确定"),
                         className: "btn-primary",
                         callback: function () {
                             var tempStart = $('.bootbox-body #startDatepicker').val();
@@ -84,7 +84,7 @@
                         }
                     },
                     cancel: {
-                        label: MultiLangHelper.getResName("cancel", "取消"), className: "btn-default"
+                        label: $.lang("cancel", "取消"), className: "btn-default"
                     }
                 }
 

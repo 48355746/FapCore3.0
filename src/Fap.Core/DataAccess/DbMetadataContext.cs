@@ -196,7 +196,7 @@ namespace Fap.Core.DataAccess
             code = code.Replace("{ClassTitle}", table.TableComment);
             code = code.Replace("{ClassName}", table.TableName);
             StringBuilder builder = new StringBuilder();
-            foreach (var column in columns)
+            foreach (var column in columns.OrderBy(c=>c.ColOrder))
             {
                     //PK, UID, STRING,INT、DOUBLE、DATETIME、BLOB、CLOB、BOOL、LONG
                     builder.Append("\t\t").Append("/// <summary>").Append(Environment.NewLine);

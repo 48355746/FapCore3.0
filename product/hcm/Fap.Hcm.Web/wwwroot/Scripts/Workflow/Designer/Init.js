@@ -17,7 +17,7 @@ window.BILLTEMPLATE_URL = window.BILLTEMPLATE_URL || '/Workflow/Api/BillTemplate
 //单据字段
 window.FIELDLIST_URL = window.FIELDLIST_URL || '/Api/Core/FieldList';
 //子流程模板
-window.SUBPROCESS_URL = window.SUBPROCESS_URL || '/Workflow/Api/WfTemplate';
+window.SUBPROCESS_URL = window.SUBPROCESS_URL || '/Workflow/Api/WfProcess';
 //申请人选择
 window.APPROVER_URL = window.APPROVER_URL || '/Workflow/Process/Approver';
 window.RESOURCES_PATH = window.RESOURCES_PATH || '../../../Content/mxGraph/resources';

@@ -44,7 +44,7 @@
             $("#btnOrgChart").on(ace.click_event, function () {
                 var rowData = getSelectedRow('grid-orgdept');
                 if (rowData == null) {
-                    //bootbox.alert(MultiLangHelper.getResName("orgdept_index_page_pleaseSelshowdept", "请选择一个部门查看"));
+                    //bootbox.alert($.lang("orgdept_index_page_pleaseSelshowdept", "请选择一个部门查看"));
                     return;
                 }
                 openUrl("@Url.Content("~/Organization/OrgDept/OrgChart/")" + rowData.Fid+ "?type=directorName");
@@ -54,7 +54,7 @@
             $("#btnHistoryDept").on(ace.click_event, function () {
                 var rowData = getSelectedRow('grid-orgdept');
                 if (rowData == null) {
-                    //bootbox.alert(MultiLangHelper.getResName("orgdept_index_page_selshowhistoricaltracingdept", "请选择要历史追溯的部门"));
+                    //bootbox.alert($.lang("orgdept_index_page_selshowhistoricaltracingdept", "请选择要历史追溯的部门"));
                     return;
                 }
                 var dialog = bootbox.dialog({
@@ -79,12 +79,12 @@
             //合并
             $("#btnMergeDept").on(ace.click_event, function () {               
                 var dialog = bootbox.dialog({
-                    title: MultiLangHelper.getResName("orgdept_index_page_mergedepartment", "合并部门"),
+                    title: $.lang("orgdept_index_page_mergedepartment", "合并部门"),
                     message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
                     size: "large",
                     buttons: {                       
                         cancel: {
-                            label: MultiLangHelper.getResName("cancel", "取消"), className: "btn-default"
+                            label: $.lang("cancel", "取消"), className: "btn-default"
                         }
                     }
                 });
@@ -148,7 +148,7 @@
                     message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
                     buttons: {
                         success: {
-                            label: MultiLangHelper.getResName("global_oper_enter", "确定"),
+                            label: $.lang("global_oper_enter", "确定"),
                             className: "btn-primary",
                             callback: function () {
                                 $('#grid-orgdept').trigger('reloadGrid');

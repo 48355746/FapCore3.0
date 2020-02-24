@@ -33,7 +33,7 @@ namespace Fap.Hcm.Web.ViewComponents
             foreach (var item in listCount)
             {
                 //检查是否代理了此业务
-                var existAgents = agents.Where(a => a.BusinessType.IsMissing() || a.BusinessType == item.BizTypeUid);
+                var existAgents = agents.Where(a => a.BusinessUid.IsMissing() || a.BusinessUid == item.BizTypeUid);
                 if (existAgents.Any())
                 {
                     var cc = listCount.FirstOrDefault(b => b.BizTypeUid == item.BizTypeUid);

@@ -1,0 +1,226 @@
+﻿@using Fap.Workflow.Model;
+@model Fap.AspNetCore.ViewModel.FormViewModel
+@{
+    ViewBag.Title = "单据信息";
+    Layout = null;// "~/Views/Shared/_Layout_Empty.cshtml";
+    WfProcess process = ViewBag.Process;
+    string formType = process.FormType; //ViewBag.FormType;
+    string ffTemplate = ViewBag.FormTemplate;
+    string billPower = ViewBag.FormPower;
+    string formName = process.BillTable; //ViewBag.BillTable;
+    string appName = process.ProcessName;
+    //当前单据任务
+    WfTask wfTask = ViewBag.WfTask;
+}
+
+
+<script src="~/lib/ueditor/ueditor.parse.js"></script>
+<script>
+        $(function () {
+            setTimeout(() => {
+                debugger
+                $("#frm-@formName .form-control").attr('disabled', 'disabled')
+                var formPower =@Html.Raw(billPower);
+                if (formPower != undefined) {
+                    $.each(formPower, function (i, item) {
+                                        debugger
+                        if (item.property === 0) {
+                            //隐藏
+                            $("#frm-@formName .form-control[name$=" + item.fieldName + "]").val('');
+                                        } else if (item.property === 1) {
+                            //编辑
+                            $("#frm-@formName .form-control[name$=" + item.fieldName + "]").removeAttr('disabled');
+                            $("#frm-@formName .form-control[name$=" + item.fieldName + "]").rules("add", {
+                                                required: true,
+                                messages: {
+                                                    required: "[" + item.fieldNameMC + "]--必须填写！"
+                                }
+                                            });
+                        } else if (item.property === 3) {
+                            //必填
+                        }
+                    });
+
+                }
+            }, 0);
+
+        });
+        //校验单据是否先需要存储
+        function checkBeforeProcess()
+        {
+            debugger
+            var isEdit = '@ViewBag.IsEdit';
+            if (isEdit === '1') {
+                //需要保存
+                var rv = Persistence('frm-@formName', '@Model.TableName');
+                if (rv === false) {
+                    $.msg('数据校验失败！');
+                    return false;
+                }
+                //保存成功再提交
+                if (rv.success) {
+                    return true;
+                }
+                else {
+                    bootbox.alert('单据保存失败！');
+                    return false;
+                }
+            }else {
+                return true;
+            }
+        }
+        //审批流程
+        function ApprovalProcess(appState,appComment,callback)
+        {
+            var processUid = '@process.Fid';
+            var bizTypeUid = '@wfTask.BizTypeUid';
+            var bizUid = '@wfTask.BizUid';
+            var nodeId = '@wfTask.NodeId';
+            var wfTaskUid = '@wfTask.Fid';
+            var billTable = '@formName';
+            var appName = '@appName';
+            var currProcessInsUid = '@wfTask.ProcessInsUid';
+            var currActivityInsUid = '@wfTask.ActivityInsUid';
+            var wfvm = { AppName: appName, ProcessUid: processUid, ApproveState: appState, ApproveComment: appComment, BizTypeUid: bizTypeUid, BizUid: bizUid, CurrentNodeId: nodeId, CurrentActivityInsUid: currActivityInsUid, CurrentProcessInsUid: currProcessInsUid, CurrentWfTaskUid: wfTaskUid, BillTable: billTable };
+            if (appState === 'Agree') {
+                //获取下一个节点
+                $.get(basePath + "/api/Workflow/BusinessApi/NextAcitvity", { bizUid: bizUid, processUid: processUid, activityInsUid: currActivityInsUid, nodeId: nodeId }, function (rv) {
+                    if (rv.result == 1) {
+                        if (rv.data.isAppoint) {
+                            //下一级审批人需要指定
+                            if (rv.performers) {
+                                performerList(rv.performers, function (performers) {
+                                    wfvm.NextPerformers = performers;
+                                    //运行流程
+                                    runProcess(wfvm, callback);
+                                });
+
+                            } else {
+                                bootbox.alert('未找到下一级审批人,流程无法提交');
+                            }
+
+                        } else {
+                            wfvm.NextPerformers = rv.performers;
+                            //运行流程
+                            runProcess(wfvm, callback);
+                        }
+                    } else {
+                        //运行流程
+                        runProcess(wfvm, callback);
+                    }
+                });
+            } else if (appState === 'Disagree') {
+
+                $.post(basePath + "/api/Workflow/BusinessApi/SendBack", wfvm, function (rv) {
+                    if (rv.status === 1) {
+                        $.msg('已驳回成功！');
+                        callback && callback();
+                    } else if (rv.status === 3) {
+                        bootbox.alert(rv.message);
+                    } else if (rv.status === 2) {
+                        bootbox.alert('流程执行失败:' + rv.message);
+                    }
+
+                });
+            }
+
+        }
+        function runProcess(wfdata, callback)
+        {
+            $.post(basePath + "/api/Workflow/BusinessApi/RunProcess", wfdata, function (rv) {
+                if (rv.status === 1) {
+                    $.msg('审批成功！');
+                    callback && callback();
+                } else if (rv.status === 3) {
+                    bootbox.alert(rv.message);
+                } else if (rv.status === 2) {
+                    bootbox.alert('流程执行失败:' + rv.message);
+                }
+            });
+        }
+        function performerList(performers, callback) {
+            var htmlPerformer = [];
+            htmlPerformer.push('<ul id="tasks" class="item-list">');
+            $.each(performers, function (i, performer) {
+                htmlPerformer.push('                            <li class="item-green  clearfix">');
+                htmlPerformer.push('                                <label class="inline">');
+                htmlPerformer.push('                                    <input type="checkbox" checked data-value="' + performer.userId + '" class="ace" />');
+                htmlPerformer.push('                                    <span class="lbl"> ' + performer.userName + '</span>');
+                htmlPerformer.push('                                </label>');
+                htmlPerformer.push('                            </li>');
+            });
+            htmlPerformer.push('                           </ul>');
+            var performerHtml = htmlPerformer.join("");
+            var dialog = bootbox.dialog({
+                title: '指定审批人(拖动可排序)',
+                message: performerHtml,
+                buttons: {
+                    success: {
+                        label: MultiLangHelper.getResName("global_oper_enter", "确定"),
+                        className: "btn-primary",
+                        callback: function () {
+                            var performers = [];
+                            $("#tasks input:checkbox").each(function (i, item) {
+                                var $this = $(item);
+                                if (item.checked) {
+                                    performers.push({ userId: $this.data('value'), userName: $this.next().text() });
+                                }
+                            });
+                            if (performers.length > 0) {
+                                callback(performers);
+                            } else {
+                                bootbox.alert('请指定审批人');
+                                return false;
+                            }
+                        }
+                    },
+                    cancel: {
+                        label: MultiLangHelper.getResName("global_oper_cancel", "取消"), className: "btn-default"
+                    }
+                }
+
+            });
+            //Android's default browser somehow is confused when tapping on label which will lead to dragging the task
+            //so disable dragging when clicking on label
+            var agent = navigator.userAgent.toLowerCase();
+            if ("ontouchstart" in document && /applewebkit/.test(agent) && /android/.test(agent))
+                $('#tasks').on('touchstart', function (e) {
+                    var li = $(e.target).closest('#tasks li');
+                    if (li.length == 0) return;
+                    var label = li.find('label.inline').get(0);
+                    if (label == e.target || $.contains(label, e.target)) e.stopImmediatePropagation();
+                });
+
+            $('#tasks').sortable({
+                opacity: 0.8,
+                revert: true,
+                forceHelperSize: true,
+                placeholder: 'draggable-placeholder',
+                forcePlaceholderSize: true,
+                tolerance: 'pointer',
+                stop: function (event, ui) {
+                    //just for Chrome!!!! so that dropdowns on items don't appear below other items after being moved
+                    $(ui.item).css('z-index', 'auto');
+                }
+            }
+            );
+            $('#tasks').disableSelection();
+        }
+        uParse('#formdiv', {
+            rootPath: '../../',
+            //chartContainerHeight: 500
+        })
+</script>
+
+<div class="row">
+    <div class="col-xs-12" id="formdiv">
+        @if (formType == WfFormType.Internal)
+        {
+            <fap-form id="@formName" default-data="@Model.DefaultData" query-option="@Model.QueryOption"></fap-form>
+        }
+        else
+        {
+            <fap-freeform id="@formName" default-data="@Model.DefaultData" form-template="@ffTemplate" grid-readonly="true"  query-option="@Model.QueryOption"></fap-freeform>
+        }
+    </div>
+</div>

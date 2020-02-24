@@ -16,8 +16,8 @@ namespace Fap.Workflow.Service
         //bool CancelProcess(string processId, string comment);
         bool DeleteProcess(string processId, string comment);
         bool EndProcess(string processId, string comment);
-        ActivityEntity GetFirstActivity(string processId, string bizUid);
-        IList<Participant> GetFirstActivityParticipants(string processId, string bizUid);
+        ActivityEntity GetFirstActivity(string processId, string billUid);
+        IList<Participant> GetFirstActivityParticipants(string processId, string billUid);
         //FormEntity GetFormByProcess(string processId);
         /// <summary>
         /// 判断节点是否审批完成
@@ -25,13 +25,13 @@ namespace Fap.Workflow.Service
         /// <param name="activityInsUid"></param>
         /// <returns></returns>
         bool NodeIsComplete(string activityInsUid);
-        ActivityEntity GetNextActivity(string processId, string nodeId, string bizUid);
-        IList<NodeView> GetNextNodeList(string processId, string nodeId, string bizUid);
+        ActivityEntity GetNextActivity(string processId, string nodeId, string billUid);
+        IList<NodeView> GetNextNodeList(string processId, string nodeId, string billUid);
         //PageDataView<WfTask> GetPagedTasks(PageCriteria criteria);
-        PerformerList GetPerformerOfNextStep(string processId, string nodeId, string bizUid);
+        PerformerList GetPerformerOfNextStep(string processId, string nodeId, string billUid);
         WfProcessInstance GetProcessInstance(string processInsId);
-        //ActivityEntity GetStartActivity(string processId, string bizUid);
-        IEnumerable<ActivityEntity> GetTaskActivityList(string processId, string bizUid);
+        //ActivityEntity GetStartActivity(string processId, string billUid);
+        IEnumerable<ActivityEntity> GetTaskActivityList(string processId, string billUid);
         IEnumerable<TaskViewModel> GetTasks(TaskQueryEntity taskQueryEntity);
         IEnumerable<WfTask> GetTodoTaskList(string userId);
         //bool RecallProcess(string processId, string comment);
@@ -41,7 +41,7 @@ namespace Fap.Workflow.Service
         WfExecutedResult RunProcess(WfAppRunner runner);
         bool SuspendProcess(string processId, string comment);
         bool TurnTask(string taskId, WfAppRunner runner);
-        string UrgeFlow(string bizUid, string bizTypeUid);
+        string UrgeFlow(string billUid, string businessUid);
         /// <summary>
         /// 撤回
         /// </summary>

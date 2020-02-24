@@ -45,14 +45,14 @@ namespace Fap.Workflow.Engine.Core
             {
                 //正常流程启动
                 processInstance = pim.GetProcessInstanceLatest(
-                    runner.ProcessId,
-                    runner.BizUid);
+                    runner.ProcessUid,
+                    runner.BillUid);
             }
             else
             {
                 //子流程启动
                 processInstance = pim.GetProcessInstanceLatest(
-                    subProcessNode.SubProcessId, runner.BizUid);
+                    subProcessNode.SubProcessId, runner.BillUid);
             }
 
             //不能同时启动多个主流程
@@ -74,7 +74,7 @@ namespace Fap.Workflow.Engine.Core
                 rmins.InvokedSubProcessNode = subProcessNode;
 
                 //获取流程第一个可办理节点
-                rmins.ProcessModel = new ProcessModel(dbContext,loggerFactory, runner.ProcessId, runner.BizUid);
+                rmins.ProcessModel = new ProcessModel(dbContext,loggerFactory, runner.ProcessUid, runner.BillUid);
             }
 
             //var firstActivity = rmins.ProcessModel.GetFirstActivity();
@@ -102,8 +102,8 @@ namespace Fap.Workflow.Engine.Core
             //检查传人参数是否有效
             var rmins = new WfRuntimeManagerAppRunning(dbContext,loggerFactory);
             rmins.WfExecutedResult = result = new WfExecutedResult();
-            if (string.IsNullOrEmpty(runner.BizUid)
-                || runner.ProcessId == null || runner.CurrActivityInsUid == null || runner.CurrProcessInsUid == null || runner.CurrWfTaskUid == null || runner.CurrNodeId == null)
+            if (string.IsNullOrEmpty(runner.BillUid)
+                || runner.ProcessUid == null || runner.CurrActivityInsUid == null || runner.CurrProcessInsUid == null || runner.CurrWfTaskUid == null || runner.CurrNodeId == null)
             {
                 result.Status = WfExecutedStatus.Exception;
                 result.ExceptionType = WfExceptionType.RunApp_ErrorArguments;
@@ -123,7 +123,7 @@ namespace Fap.Workflow.Engine.Core
                 return rmins;
             }
             rmins.RunningActivityInstance = wfActivityInstance;
-            rmins.ProcessModel = new ProcessModel(dbContext,loggerFactory, runner.ProcessId, runner.BizUid);
+            rmins.ProcessModel = new ProcessModel(dbContext,loggerFactory, runner.ProcessUid, runner.BillUid);
             var tm = new TaskManager(dbContext,loggerFactory);
             rmins.TaskView = tm.GetTask(runner.CurrWfTaskUid);
             return rmins;

@@ -16,21 +16,21 @@ namespace Fap.Workflow.Engine.Common
         /// </summary>
         public string AppName { get; set; }
         /// <summary>
-        /// 应用实例数据ID
+        /// 单据数据Uid
         /// </summary>
-        public string BizUid { get; set; }
+        public string BillUid { get; set; }
         /// <summary>
-        /// 应用实例表名
+        /// 单据表名称
         /// </summary>
         public string BillTableName { get; set; }
         ///// <summary>
-        ///// 业务数据
+        ///// 单据数据
         ///// </summary>
-        public dynamic BizData { get; set; }
+        public dynamic BillData { get; set; }
         /// <summary>
-        /// 业务分类ID
+        /// 业务
         /// </summary>
-        public string BizTypeId { get; set; }
+        public string BusinessUid { get; set; }
         /// <summary>
         /// 流程模板ID
         /// </summary>
@@ -42,7 +42,7 @@ namespace Fap.Workflow.Engine.Common
         /// <summary>
         /// 流程ID
         /// </summary>
-        public string ProcessId { get; set; }
+        public string ProcessUid { get; set; }
         /// <summary>
         /// 当前流程实例
         /// </summary>

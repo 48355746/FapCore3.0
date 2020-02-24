@@ -179,7 +179,7 @@ $("#RefCols").on("focus", function () {
             message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
             buttons: {
                 success: {
-                    label: MultiLangHelper.getResName("ok", "确定"),
+                    label: $.lang("ok", "确定"),
                     className: "btn-primary",
                     callback: function () {
                         var rowDatas = getSelectedRows("grid-datagrid_FapColumn");
@@ -200,7 +200,7 @@ $("#RefCols").on("focus", function () {
                     }
                 },
                 cancel: {
-                    label: MultiLangHelper.getResName("cancel", "取消"), className: "btn-default"
+                    label: $.lang("cancel", "取消"), className: "btn-default"
                 }
             }
 
@@ -227,7 +227,7 @@ $("#RefReturnMapping").on("focus", function () {
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
         buttons: {
             success: {
-                label: MultiLangHelper.getResName("ok", "确定"),
+                label: $.lang("ok", "确定"),
                 className: "btn-primary",
                 callback: function () {
                     var rv = [];
@@ -245,7 +245,7 @@ $("#RefReturnMapping").on("focus", function () {
                 }
             },
             cancel: {
-                label: MultiLangHelper.getResName("cancel", "取消"), className: "btn-default"
+                label: $.lang("cancel", "取消"), className: "btn-default"
             }
         }
 
@@ -363,7 +363,7 @@ $("#frm-grid-columnmetadata #ColDefault").on("focus", function () {
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
         buttons: {
             success: {
-                label: MultiLangHelper.getResName("ok", "确定"),
+                label: $.lang("ok", "确定"),
                 className: "btn-primary",
                 callback: function () {
                     $("#frm-grid-columnmetadata #ColDefault").val($("#form-field-default").val());
@@ -377,7 +377,7 @@ $("#frm-grid-columnmetadata #ColDefault").on("focus", function () {
                 }
             },
             cancel: {
-                label: MultiLangHelper.getResName("cancel", "取消"), className: "btn-default"
+                label: $.lang("cancel", "取消"), className: "btn-default"
             }
         }
 
@@ -401,7 +401,7 @@ $("#frm-grid-columnmetadata #RefCondition").on("focus", function () {
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
         buttons: {
             success: {
-                label: MultiLangHelper.getResName("ok", "确定"),
+                label: $.lang("ok", "确定"),
                 className: "btn-primary",
                 callback: function () {
                     $("#frm-grid-columnmetadata #RefCondition").val($("#form-field-default").val());
@@ -415,7 +415,7 @@ $("#frm-grid-columnmetadata #RefCondition").on("focus", function () {
                 }
             },
             cancel: {
-                label: MultiLangHelper.getResName("cancel", "取消"), className: "btn-default"
+                label: $.lang("cancel", "取消"), className: "btn-default"
             }
         }
 

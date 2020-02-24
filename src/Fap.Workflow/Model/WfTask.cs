@@ -20,7 +20,7 @@ namespace Fap.Workflow.Model
         /// <summary>
         /// 任务类型 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string TaskTypeMC { get; set; }
         /// <summary>
         /// 活动节点名称
@@ -45,7 +45,7 @@ namespace Fap.Workflow.Model
         /// <summary>
         /// 执行人 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string ExecutorEmpUidMC { get; set; }
         /// <summary>
         /// 任务状态
@@ -54,7 +54,7 @@ namespace Fap.Workflow.Model
         /// <summary>
         /// 任务状态 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string TaskStateMC { get; set; }
         /// <summary>
         /// 处理时间
@@ -77,17 +77,17 @@ namespace Fap.Workflow.Model
         /// </summary>
         public string AppName { get; set; }
         /// <summary>
-        /// 业务数据ID
+        /// Bill数据ID
         /// </summary>
-        public string BizUid { get; set; }
+        public string BillUid { get; set; }
         /// <summary>
         /// 所属业务
         /// </summary>
-        public string BizTypeUid { get; set; }
+        public string BusinessUid { get; set; }
         /// <summary>
         /// 所属业务 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string BizTypeUidMC { get; set; }
         /// <summary>
         /// 流程实例
@@ -96,7 +96,7 @@ namespace Fap.Workflow.Model
         /// <summary>
         /// 流程实例 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string ProcessInsUidMC { get; set; }
         /// <summary>
         /// 流程
@@ -105,7 +105,7 @@ namespace Fap.Workflow.Model
         /// <summary>
         /// 流程 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string ProcessUidMC { get; set; }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace Fap.Workflow.Model
         /// <summary>
         /// 申请人 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string AppEmpUidMC { get; set; }
         /// <summary>
         /// 申请时间
@@ -128,7 +128,7 @@ namespace Fap.Workflow.Model
         /// <summary>
         /// 流程状态 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string ProcessStateMC { get; set; }
         /// <summary>
         /// 审批状态
@@ -137,7 +137,7 @@ namespace Fap.Workflow.Model
         /// <summary>
         /// 审批状态 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string ApproveStateMC { get; set; }
         /// <summary>
         /// 批注意见
@@ -171,13 +171,13 @@ namespace Fap.Workflow.Model
         /// <summary>
         /// 加签类型 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string SignTaskTypeMC { get; set; }
 
         /// <summary>
         /// 任务是否可以办理
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public bool IsCanHandle
         {
             get
@@ -191,7 +191,7 @@ namespace Fap.Workflow.Model
         /// <summary>
         /// 不可办理的任务的状态信息提示
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string TaskStateMessageOfOutHandle
         {
             get

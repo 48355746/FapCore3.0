@@ -3,12 +3,12 @@
     var pluginName = 'bootstrapDualListbox',
         defaults = {
             bootstrap2Compatible: false,
-            filterTextClear: MultiLangHelper.getResName("show_all", '显示全部'),
-            filterPlaceHolder: MultiLangHelper.getResName("filter", '过滤'),
-            moveSelectedLabel: MultiLangHelper.getResName("move_selected", '移动选中'),
-            moveAllLabel: MultiLangHelper.getResName("move_all", '移动所有'),
-            removeSelectedLabel: MultiLangHelper.getResName("remove_selected", '移除选中'),
-            removeAllLabel: MultiLangHelper.getResName("remove_all", '移除所有'),
+            filterTextClear: $.lang("show_all", '显示全部'),
+            filterPlaceHolder: $.lang("filter", '过滤'),
+            moveSelectedLabel: $.lang("move_selected", '移动选中'),
+            moveAllLabel: $.lang("move_all", '移动所有'),
+            removeSelectedLabel: $.lang("remove_selected", '移除选中'),
+            removeAllLabel: $.lang("remove_all", '移除所有'),
             moveOnSelect: true,                                                                 // true/false (forced true on androids, see the comment later)
             preserveSelectionOnMove: false,                                                     // 'all' / 'moved' / false
             selectedListLabel: false,                                                           // 'string', false
@@ -18,9 +18,9 @@
             showFilterInputs: true,                                                             // whether to show filter inputs
             nonSelectedFilter: '',                                                              // string, filter the non selected options
             selectedFilter: '',                                                                 // string, filter the selected options
-            infoText: MultiLangHelper.getResName("show_all", '显示全部') + '{0}',                                                        // text when all options are visible / false for no info text
-            infoTextFiltered: '<span class="label label-warning">' + MultiLangHelper.getResName("filtered", '过滤到') + '</span> {0} ' + MultiLangHelper.getResName("from", '从') + ' {1}', // when not all of the options are visible due to the filter
-            infoTextEmpty: MultiLangHelper.getResName("empty_list", '空列表'),                                                        // when there are no options present in the list
+            infoText: $.lang("show_all", '显示全部') + '{0}',                                                        // text when all options are visible / false for no info text
+            infoTextFiltered: '<span class="label label-warning">' + $.lang("filtered", '过滤到') + '</span> {0} ' + $.lang("from", '从') + ' {1}', // when not all of the options are visible due to the filter
+            infoTextEmpty: $.lang("empty_list", '空列表'),                                                        // when there are no options present in the list
             filterOnValues: false,                                                               // filter by selector's values, boolean
             buttonClass: 'btn-white btn-bold'//ACE
         },

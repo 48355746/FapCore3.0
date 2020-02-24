@@ -32,7 +32,7 @@ namespace Fap.Wrokflow.Engine.Node
 
             //设置流程完成
             ProcessInstanceManager pim = new ProcessInstanceManager(_dataAccessor,_loggerFactory);
-            pim.Complete(ActivityForwardContext.ProcessInstance.Fid,AppRunner.BizUid);
+            pim.Complete(ActivityForwardContext.ProcessInstance.Fid,AppRunner.BillUid);
         }
 
         /// <summary>

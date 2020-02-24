@@ -134,7 +134,7 @@
             var rowData = jQuery("#grid-employee").jqGrid('getRowData', rid);
             $.gritter.add({
                 title: rowData.EmpName,
-                text: MultiLangHelper.getResName("global_info_dept", "部门") + '：' + rowData.DeptUidMC,
+                text: $.lang("global_info_dept", "部门") + '：' + rowData.DeptUidMC,
                 image: $.randomUrl("@Url.Content("~/Component/Photo/")" + rowData.Fid),
                 dataimage: rowData.EmpPhoto,
                 sticky: false,
@@ -239,7 +239,7 @@
                     message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
                     buttons: {
                         success: {
-                            label: MultiLangHelper.getResName("global_oper_enter", "确定"),
+                            label: $.lang("global_oper_enter", "确定"),
                             className: "btn-primary",
                             callback: function () {
                                 //$("#grid-employee").jqGrid('setGridParam', {
@@ -267,13 +267,13 @@
             $("#btnPositionDoc").on(ace.click_event, function () {
                 var id = jQuery("#grid-employee").jqGrid('getGridParam', 'selrow');
                 if (id == null) {
-                    bootbox.alert(MultiLangHelper.getResName("empinfo_index_page_selemployeeshow", "请选择一个员工查看"));
+                    bootbox.alert($.lang("empinfo_index_page_selemployeeshow", "请选择一个员工查看"));
                     return;
                 }
                 var rowData = jQuery("#grid-employee").jqGrid('getRowData', id);
                 var uid = rowData.EmpPosition;
                 if (uid == '') {
-                    bootbox.alert(MultiLangHelper.getResName("ess_userprofile_page_staffnopost", "本员工没有岗位") + "！");
+                    bootbox.alert($.lang("ess_userprofile_page_staffnopost", "本员工没有岗位") + "！");
                     return;
                 }
 
@@ -281,7 +281,7 @@
                     if (rv.manualContent != "") {
                         var index = layer.open({
                             type: 1,
-                            title: MultiLangHelper.getResName("ess_userpropfule_page_jobdescription", "岗位说明书"),
+                            title: $.lang("ess_userpropfule_page_jobdescription", "岗位说明书"),
                             content: rv.manualContent
 
                         });
@@ -290,7 +290,7 @@
                         $.get(url, function (rv) {
                             var index = layer.open({
                                 type: 1,
-                                title: MultiLangHelper.getResName("ess_userpropfule_page_jobdescription", "岗位说明书"),
+                                title: $.lang("ess_userpropfule_page_jobdescription", "岗位说明书"),
                                 content: rv //这里content是一个普通的String
                             });
                         })
@@ -357,7 +357,7 @@
             $("#btnEmployeeDetail").on(ace.click_event, function () {
                 var id = jQuery("#grid-employee").jqGrid('getGridParam', 'selrow');
                 if (id == null) {
-                    bootbox.alert(MultiLangHelper.getResName("empinfo_index_page_selemployeeshow", "请选择一个员工查看"));
+                    bootbox.alert($.lang("empinfo_index_page_selemployeeshow", "请选择一个员工查看"));
                     return;
                 }
                 var rowData = jQuery("#grid-employee").jqGrid('getRowData', id);

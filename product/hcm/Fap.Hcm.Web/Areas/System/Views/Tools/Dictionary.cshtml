@@ -76,13 +76,13 @@
                     title: '字典分类',
                     message: ['<form class="form-horizontal" role="form">',
                         '    <div class="form-group">',
-                        '        <label class="col-sm-3 control-label no-padding-right" for="form-field-CatCode"> '+MultiLangHelper.getResName("code","编码")+' </label>',
+                        '        <label class="col-sm-3 control-label no-padding-right" for="form-field-CatCode"> '+$.lang("code","编码")+' </label>',
                         '        <div class="col-sm-9">',
                         '            <input type="text" id="form-field-CatCode" placeholder="" class="form-control" />',
                         '        </div>',
                         '    </div>',
                         '    <div class="form-group">',
-                        '        <label class="col-sm-3 control-label no-padding-right" for="form-field-CatName"> '+MultiLangHelper.getResName("name","名称")+' </label>',
+                        '        <label class="col-sm-3 control-label no-padding-right" for="form-field-CatName"> '+$.lang("name","名称")+' </label>',
                         '        <div class="col-sm-9">',
                         '            <input type="text" id="form-field-CatName" placeholder="" class="form-control" />',
                         '        </div>',
@@ -90,13 +90,13 @@
                         '</form>'].join(""),
                     buttons: {
                         success: {
-                            label: MultiLangHelper.getResName("ok", "确定"),
+                            label: $.lang("ok", "确定"),
                             className: "btn-primary",
                             callback: function () {
                                 var code = $("#form-field-CatCode").val();
                                 var name = $("#form-field-CatName").val();
                                 if (code == '' || name == '') {
-                                    $.msg(MultiLangHelper.getResName("code_name_required", "编码和名称不能为空！"));
+                                    $.msg($.lang("code_name_required", "编码和名称不能为空！"));
                                     return false;
                                 }
                                 debugger
@@ -107,7 +107,7 @@
                             }
                         },
                         cancel: {
-                            label: MultiLangHelper.getResName("cancel", "取消"), className: "btn-default"
+                            label: $.lang("cancel", "取消"), className: "btn-default"
                         }
                     }
 
@@ -117,10 +117,10 @@
 
             $("#btnDeleteCategory").on(ace.click_event, function () {
                 if ($("#selDictCategory").val() === "") {
-                    $.msg(MultiLangHelper.getResName("select_row", "请选中字典分类删除"));
+                    $.msg($.lang("select_row", "请选中字典分类删除"));
                     return;
                 }
-                bootbox.confirm(MultiLangHelper.getResName("confirm_delete", "确认删除字典分类吗?"), function (result) {
+                bootbox.confirm($.lang("confirm_delete", "确认删除字典分类吗?"), function (result) {
                     if (result) {
                         $.get(basePath + "/System/Api/Tools/DeleteDict/" +$("#selDictCategory").val(), function (rv) {
                             if (rv.success) {

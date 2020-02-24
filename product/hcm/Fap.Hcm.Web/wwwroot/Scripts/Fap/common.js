@@ -40,7 +40,7 @@ var bootboxWindow = function (title, url, buttons) {
     if (buttons === undefined) {
         buttons = {
             cancel: {
-                label: MultiLangHelper.getResName("global_oper_close", "关闭"), className: "btn-default"
+                label: $.lang("global_oper_close", "关闭"), className: "btn-default"
             }
         };
     }
@@ -171,9 +171,13 @@ jQuery.randomUrl = function (url) {
     }
     return url;
 };
+//js 多语
+$.lang = function (langkey, langValue) {
+   return MultiLangHelper.getResName(langkey, langValue);
+};
 $.msg = function (message, posotion) {
     $.gritter.add({
-        title: MultiLangHelper.getResName('information', '提示信息'),
+        title: $.lang('information', '提示信息'),
         text: message,
         sticky: false,
         time: 1000,

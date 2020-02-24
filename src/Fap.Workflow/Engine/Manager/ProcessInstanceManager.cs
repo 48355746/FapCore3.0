@@ -93,12 +93,12 @@ namespace Fap.Workflow.Engine.Manager
         internal WfProcessInstance CreateProcessInstance(WfAppRunner runner, WfProcessInstance parentProcessInstance,
             WfActivityInstance subProcessNode, Action<WfAppRunner, WfProcessInstance, WfProcess> func)
         {
-            WfProcess wfProcess = _dataAccessor.Get<WfProcess>(runner.ProcessId, false);
+            WfProcess wfProcess = _dataAccessor.Get<WfProcess>(runner.ProcessUid, false);
             WfProcessInstance wfProcessInstance = new WfProcessInstance();
             wfProcessInstance.Fid = UUIDUtils.Fid;;
             wfProcessInstance.ProcessUid = wfProcess.Fid;
-            wfProcessInstance.BizUid = runner.BizUid;
-            wfProcessInstance.BizName = runner.BizData.BillCode;//易标识
+            wfProcessInstance.BizUid = runner.BillUid;
+            wfProcessInstance.BizName = runner.BillData.BillCode;//易标识
             wfProcessInstance.AppEmpUid = runner.UserId;
             wfProcessInstance.AppEmpName = runner.UserName;
             wfProcessInstance.StartTime =DateTimeUtils.CurrentDateStr;
@@ -106,7 +106,7 @@ namespace Fap.Workflow.Engine.Manager
             wfProcessInstance.ProcessName = wfProcess.ProcessName;
             wfProcessInstance.ProcessDesc = wfProcess.Description;
             wfProcessInstance.IsHasForm = 1;
-            wfProcessInstance.BizTypeUid = runner.BizTypeId;           
+            wfProcessInstance.BizTypeUid = runner.BusinessUid;           
             wfProcessInstance.IsHandling = 0; //未处理状态
             wfProcessInstance.MessageSetting = wfProcess.MessageSetting;
             wfProcessInstance.FormTemplateUid = wfProcess.FormTemplateUid;
@@ -187,7 +187,7 @@ namespace Fap.Workflow.Engine.Manager
             //删流程实例
             _dataAccessor.DeleteExec("WfProcessInstance", "Fid=@ProcessInsUid", param);
             //更改业务数据单据状态为草稿态
-            string sql = $"update {runner.BillTableName} set BillStatus='{BillStatus.DRAFT}' where Fid='{runner.BizUid}'";
+            string sql = $"update {runner.BillTableName} set BillStatus='{BillStatus.DRAFT}' where Fid='{runner.BillUid}'";
             _dataAccessor.Execute(sql, null);
         }
         #region 流程完成（通过。驳回）

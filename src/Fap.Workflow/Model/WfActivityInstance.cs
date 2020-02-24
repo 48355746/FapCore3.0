@@ -130,13 +130,13 @@ namespace Fap.Workflow.Model
         /// </summary>
         public string AppName { get; set; }
         /// <summary>
-        /// 应用实例
+        /// bill uid
         /// </summary>
-        public string BizUid { get; set; }
+        public string BillUid { get; set; }
         /// <summary>
-        /// 所属业务
+        /// 业务
         /// </summary>
-        public string BizTypeId { get; set; }
+        public string BusinessUid { get; set; }
         /// <summary>
         /// 所属业务 的显性字段MC
         /// </summary>

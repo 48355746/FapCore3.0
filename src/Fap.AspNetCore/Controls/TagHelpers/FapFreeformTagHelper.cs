@@ -45,7 +45,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// <summary>
         /// 单据状态
         /// </summary>        
-        public FormStatus FormStatus { get; set; } = FormStatus.Add;
+        //public FormStatus FormStatus { get; set; } = FormStatus.Add;
         /// <summary>
         /// 表单模板
         /// </summary>
@@ -69,9 +69,9 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             {
                 form.SetFromTemplate(FormTemplate);
             }
-            if (this.FormStatus != FormStatus.Add)
+            if (FormModel.FormStatus != FormStatus.Add)
             {
-                form.SetFormStatus(this.FormStatus);
+                form.SetFormStatus(FormModel.FormStatus);
             }
             if (FormModel.DefaultData != null && FormModel.DefaultData.Count > 0)
             {

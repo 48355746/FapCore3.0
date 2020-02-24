@@ -3,40 +3,21 @@
 @{
     Layout = null;
 }
-<title><fap-multilang default-content="业务流程" lang-key="flow_businesspro_title"></fap-multilang> </title>
-
-
+<title><fap-multilang default-content="业务" lang-key="business"></fap-multilang> </title>
 <div class="row">
     <div class="col-xs-12">
-
-
         <div class="row">
             <div class="col-xs-12 col-sm-3">
                 <div class="widget-box">
                     <div class="widget-header widget-header-flat">
-                        <h4 class="widget-title"><fap-multilang default-content="流程业务" lang-key="flowinstance_todomgt_page_processbusiness"></fap-multilang></h4>
+                        <h4 class="widget-title"><fap-multilang default-content="业务分类" lang-key="business_category"></fap-multilang></h4>
+                        <fap-tree-button id="biztype" description="业务分类" tree-id="tree-biztype"></fap-tree-button>
 
-                        <div class="widget-toolbar">
-                            <a href="#" data-rel="widgetAction" data-action="add" class="orange2">
-                                <i class="ace-icon fa fa-plus-circle purple"></i>
-                            </a>
-
-                            <a href="#" data-rel="widgetAction" data-action="edit">
-                                <i class="ace-icon fa fa-pencil blue"></i>
-                            </a>
-
-                            <a href="#" data-rel="widgetAction" data-action="delete">
-                                <i class="ace-icon fa fa-trash-o red"></i>
-                            </a>
-                            <a href="#" data-rel="widgetAction" data-action="refresh">
-                                <i class="ace-icon fa fa-refresh"></i>
-                            </a>
-                        </div>
                     </div>
 
                     <div class="widget-body">
-                        <div class="widget-main treescrollable">
-                            <fap-tree id="biztype" is-async="true" get-url="@Url.Content("~/api/Workflow/ProcessApi/BusinessType/")"></fap-tree>
+                        <div class="widget-main">
+                            <fap-tree id="biztype" is-async="true" get-url="@Url.Content("~/Workflow/Api/BusinessType/")" edit-url="@Url.Content("~/Workflow/Api/OperBusinessType")"></fap-tree>
 
                         </div>
                     </div>
@@ -45,201 +26,47 @@
             <div class="col-xs-12 col-sm-9">
                 <div class="widget-box">
                     <div class="widget-header widget-header-flat">
-                        <h4 class="widget-title"><fap-multilang lang-key="flow_businesspro_page_relationprocess" default-content="关联流程"></fap-multilang></h4>
+                        <h4 class="widget-title"><fap-multilang lang-key="business" default-content="业务"></fap-multilang></h4>
 
                         <div class="widget-toolbar">
                             <a href="#" data-action="fullscreen" class="orange2">
                                 <i class="ace-icon fa fa-expand"></i>
                             </a>
                         </div>
-                        <div class="widget-toolbar no-border">
-
-                            <button class="btn btn-xs btn-success" id="btnBindProcess">
-                                <i class="ace-icon fa fa-link"></i>
-                                <fap-multilang lang-key="flow_businesspro_page_relationprocess" default-content="关联流程"></fap-multilang>
-                            </button>
-
-                            <button class="btn btn-danger btn-xs" id="btnUnbindProcess">
-                                <i class="ace-icon fa fa-chain-broken"></i>
-                                <fap-multilang lang-key="flow_businesspro_page_cancelrelation" default-content="取消关联"></fap-multilang>
-                            </button>
-                        </div>
                     </div>
                     <div class="widget-body">
-                   
+
                         <div class="widget-main">
-                            <fap-grid id="wfbusiness" grid-model="Model" auto-width="true"  wrapper="widget-main" multi-select="false" ></fap-grid>
-                           
+                            <fap-grid id="wfbusiness" grid-model="Model" auto-width="true" source-type="Local" on-form-init-add="initForm" wrapper="widget-main" multi-select="false"></fap-grid>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-       
+
     </div>
 </div>
 
 <script>
-    var selectedBusinessTypeId = ''; //选中的业务分类
-
-    var scripts = [null, null]
+    function initForm() {
+        if (bizTypeUid) {
+            $("#frm-grid-wfbusiness #BizTypeUid").val(bizTypeUid).next().val(bizTypeName);
+        }
+    }
+    var bizTypeUid, bizTypeName;
+    var scripts = [null, null];
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
             $(document).one('ajaxloadstart.page', function (e) {
                 $('#tree-biztype').jstree('destory');
-                selectedBusinessTypeId = null;
             })
-            $(document).off(ace.click_event, '[data-rel=widgetAction]').on(ace.click_event, '[data-rel=widgetAction]', function (ev) {
-                ev.preventDefault();
-                var $this = $(this);
-                var $action = $this.data('action');
-                var ref = $('#tree-biztype').jstree(true),
-                sel = ref.get_selected();
-                if ($action == 'refresh') {
-                    ref.refresh();
-                    return;
-                } else if ($action == 'add') {
-                    var moduleUid;
-                    var moduleName;
-                    if (sel.length) {
-                        var ismodule = ref.get_node(sel[0]).data.ismodule;
-                        if (ismodule == "1") {
-                            var moduleUid = sel;
-                            var moduleName = ref.get_node(sel[0]).text;
-                        }
-                    }
-                    var hasSave = 0;
-                    var dialog = bootbox.dialog({
-                        title: MultiLangHelper.getResName("flow_bussinespro_page_addprocessbus", "添加流程业务"),
-                        message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
-                        buttons: {
-                            success: {
-                                label: MultiLangHelper.getResName("global_oper_save", "保存"),
-                                className: "btn-primary",
-                                callback: function () {
-                                    // var formid = "frmkpitype";
-                                    if (hasSave == 1)
-                                        return;
-                                    //持久化
-                                    var res = Persistence("frm-frmwfbusinesstype", '', null, "1");
-                                    hasSave = 1;
-                                    if (res == false) {
-                                        return false;
-                                    }
-                                    if (res.success == true) {
-                                        var ref = $('#tree-biztype').jstree(true);
-                                        var d =res.data;
-                                        var n_icon = (d.IsSystem + "") == "1" ? "icon-folder blue ace-icon fa fa-laptop" : "icon-folder purple ace-icon fa fa-laptop";
-                                        var npid = d.Pid == '' ? '0' : d.Pid;
-                                        ref.create_node("0", { id: d.Fid, text: d.TypeName + "[" + d.TypeCode + "]", data: { group: "1", issystem: d.IsSystem + "", typecode: d.TypeCode, typename: d.TypeName }, pid: npid, icon: n_icon }, "last");
-                                    } else {
-                                        return false;
-                                    }
-                                }
-                            },
-                            cancel: {
-                                label: MultiLangHelper.getResName("cancel", "取消"), className: "btn-default"
-                            }
-                        }
-                    })
-                    dialog.init(function () {
-                        var url = basePath + '/PublicCtrl/Dataform/0?tn=WfBusinessType&frm=frmwfbusinesstype';
-                        $.get($.randomUrl(url), function (rv) {
-                            dialog.find('.bootbox-body').html(rv);
-                            $("#frm-frmwfbusinesstype #ModuleUid").val(moduleUid).next().val(moduleName);
-                        })
-                    });
-
-                } else if ($action == 'edit') {
-                    if (!sel.length) {
-                        bootbox.alert(MultiLangHelper.getResName("flow_businessproc_page_seldataedit", "请选择一条数据修改"));
-                        return;
-                    }
-                    var isbiz= ref.get_node(sel[0]).data.group;
-                    if (isbiz == 0) {
-                        bootbox.alert("请选择业务进行修改。");
-                        return;
-                    }
-                    var dialog = bootbox.dialog({
-                        title: MultiLangHelper.getResName("flow_businessproc_page_editprocessbus", "修改流程业务"),
-                        message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
-                        buttons: {
-                            success: {
-                                label: MultiLangHelper.getResName("global_oper_save", "保存"),
-                                className: "btn-success",
-                                callback: function () {
-                                    //var formid = "frmkpitype";
-                                    //持久化
-                                    var res = Persistence("frm-frmwfbusinesstype", '', null, "1");
-                                    if (res == false) {
-                                        return false;
-                                    }
-                                    if (res.success == true) {
-                                        var ref = $('#tree-biztype').jstree(true);
-                                        var d = res.data;
-                                        ref.rename_node(sel[0], d.TypeName + "[" + d.TypeCode + "]");
-
-                                    } else {
-                                        return false;
-                                    }
-                                }
-                            },
-                            cancel: {
-                                label: MultiLangHelper.getResName("cancel", "取消"), className: "btn-default"
-                            }
-                        }
-                    })
-                    dialog.init(function () {
-                        var url = basePath + '/PublicCtrl/Dataform/0?fid=' + sel[0] + '&tn=WfBusinessType&frm=frmwfbusinesstype';
-                        $.get($.randomUrl(url), function (rv) {
-                            dialog.find('.bootbox-body').html(rv);
-                        })
-                    });
-
-                } else if ($action == 'delete') {
-                    if (!sel.length) {
-                        bootbox.alert("请选择一条数据操作！");
-                        return;
-                    }
-                    var data = ref.get_node(sel[0]).data;
-                    if (data.group == "0")
-                    {
-                        bootbox.alert("请选择业务进行操作！");
-                        return;
-                    }
-                    if (data.issystem == '1') {
-                        bootbox.alert(MultiLangHelper.getResName("flow_businesspro_page_theprocissystembusnodel", "该业务流程是系统预置的业务，不能删除"));
-                        return;
-                    }
-                    //ref.delete_node(sel)
-                    bootbox.confirm(MultiLangHelper.getResName("global_txt_suredelete", "确定删除") + '?', function (result) {
-                        if (result) {
-                            $.post("@Url.Content("~/api/coreapi/removedata")", { tn: "WfBusinessType", fid: sel }, function (rv) {
-                                if (rv.success == true) {
-                                    ref.refresh();
-                                }
-                            })
-                        }
-                    })
-
-                }
-            });
-
             $('#tree-biztype').on("changed.jstree", function (e, data) {
                 if (data && data.selected && data.selected.length) {
-                    var biztypePid = data.selected[0];
-                    var ref = $('#tree-biztype').jstree(true);
-                    var isbiz = ref.get_node(biztypePid).data.group;
-                    var filter = '{"groupOp":"AND","rules":[{"field":"BizTypeUid","op":"eq","data":"0"}]}';
-                    if (isbiz=="1") {
-                        selectedBusinessTypeId = biztypePid;
-                        filter = '{"groupOp":"AND","rules":[{"field":"BizTypeUid","op":"eq","data":"' + biztypePid + '"}]}';
+                    bizTypeUid = data.selected[0];
+                    bizTypeName = data.node.text;
 
-                    } else {
-                        selectedBusinessTypeId = "";
-                    }
-                    //var biztypeName = data.node.text;
+                    var filter = '{"groupOp":"AND","rules":[{"field":"BizTypeUid","op":"eq","data":"' + bizTypeUid + '"}]}';
                     $("#grid-wfbusiness").jqGrid('setGridParam', {
                         datatype: 'json',
                         postData: { filters: filter }, //发送数据
@@ -248,110 +75,6 @@
                 }
             });
 
-            //按钮 -- 关联流程
-            $('#btnBindProcess').on('click', function () {
-                //var ref = $('#tree-biztype').jstree(true);
-                //var sel = ref.get_selected();
-                if (selectedBusinessTypeId=="") {
-                    bootbox.alert(MultiLangHelper.getResName("flow_businesproces_page_selbusinesrelation", "请选择一条业务关联"));
-                    return;
-                }
-                var dialog = bootbox.dialog({
-                    title: '选择业务流程',
-                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
-                    buttons: {
-                        success: {
-                            label: '提交',
-                            className: "btn-primary",
-                            callback: function () {
-                                var ret = GetCompontentResult();
-                                if (ret == false) {
-                                    bootbox.alert({ title: MultiLangHelper.getResName("global_txt_sysmessage", "系统提示"), message: MultiLangHelper.getResName("flow_business_page_selprocesstmpl", "请选择流程模板"), className: "alert-modal" });
-                                    return;
-                                };
-
-                                bindProcess(ret.Fid, ret.Version, ret.FormType);
-                            }
-                        },
-                        cancel: {
-                            label: MultiLangHelper.getResName("cancel", "取消"), className: "btn-default"
-                        }
-                    }
-
-                });
-                dialog.init(function () {
-                    var url = basePath + '/PublicCtrl/GridComponent/?fid=bdd711e5945bf76f8cdg';
-                    $.get(url, function (ev) {
-                        dialog.find('.bootbox-body').html(ev);
-                    })
-                });
-
-            });
-
-            //按钮 -- 取消关联流程
-            $('#btnUnbindProcess').on('click', function () {
-                var $grid = $("#grid-wfbusiness");
-                var selRow = getSelectedRow('grid-wfbusiness');
-                if (selRow==null) {
-                    bootbox.alert({ title: MultiLangHelper.getResName("global_txt_sysmessage", "系统提示"), message: MultiLangHelper.getResName("flow_businesspro_page_selcancelrelationprocess", "请选择要取消关联的流程"), className: "alert-modal" });
-                    return;
-                }
-
-
-                bootbox.confirm(MultiLangHelper.getResName("flow_businesspro_page_ornotcancelrelationprocess", "是否要取消关联流程") + "？", function (result) {
-                    if (result) {
-                        //取消关联流程
-                        unbindProcess(selRow.Fid);
-                    }
-                });
-            });
-        });
+        })
     })
-    //关联流程模板
-    function bindProcess(processFid, processVersion, formType) {
-        $.ajax({
-            url: '@Url.Content("/api/Workflow/ProcessApi/BindProcess")',
-            data: { businessTypeId: selectedBusinessTypeId, processFid: processFid, processVersion: processVersion, formType: formType },
-            type: 'post',
-            cache: false,
-            async: false,
-            //dataType: "json",
-            //contentType: "application/json",
-            success: function (data) {
-                if (data && data == 'yes') {
-                    $("#grid-wfbusiness").jqGrid('setGridParam', {
-                        page: 1
-                    }).trigger("reloadGrid");
-                }
-            },
-            error: function (XMLHttpRequest, textStatus, errorThrown) {
-                alert(MultiLangHelper.getResName("flow_businesspro_page_relationprcetmplerror", "关联流程模板出现异常，其原因如下") + "：" + textStatus);
-            }
-        });
-    }
-
-    //取消关联流程模板
-    function unbindProcess(fid) {
-        $.ajax({
-            url: '@Url.Content("/api/Workflow/ProcessApi/UnbindProcess")',
-            data: { fid: fid },
-            type: 'post',
-            cache: false,
-            async: false,
-            //dataType: "json",
-            //contentType: "application/json",
-            success: function (data) {
-                if (data && data == 'yes') {
-                    $("#grid-wfbusiness").jqGrid('setGridParam', {
-                        page: 1
-                    }).trigger("reloadGrid");
-                    // $("#grid-wfbusiness").trigger("reloadGrid");
-                }
-            },
-            error: function (XMLHttpRequest, textStatus, errorThrown) {
-                alert(MultiLangHelper.getResName("flow_businesspro_page_cancelrelationprcetmplerror", "取消关联流程模板出现异常，其原因如下") + "：" + textStatus);
-            }
-        });
-    }
-
 </script>

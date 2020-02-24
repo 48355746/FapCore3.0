@@ -19,13 +19,13 @@ namespace Fap.Workflow.Model
         /// </summary>
         public string ProcessUid { get; set; }
         /// <summary>
-        /// 业务类型
+        /// 业务
         /// </summary>
-        public string BizTypeUid { get; set; }
+        public string BusinessUid { get; set; }
         /// <summary>
-        /// 业务数据Uid
+        /// 单据数据Uid
         /// </summary>
-        public string BizUid { get; set; }
+        public string BillUid { get; set; }
         /// <summary>
         /// 审批节点Id
         /// </summary>

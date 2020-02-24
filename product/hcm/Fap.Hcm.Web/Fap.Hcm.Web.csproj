@@ -19,6 +19,21 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Areas\Workflow\Views\Business\AgentTask.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\Apply.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\ApplyBill.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\ApplyViewBill.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\Approval.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\ApprovalBill.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\Approvaled.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\ApprovalViewBill.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\BizManage.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\DoneTask.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\FlowChart.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\Manage.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\MyAgent.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\MyApply.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\TodoTask.cshtml" />
     <None Include="Views\Shared\Components\ConditionEditor\Default.cshtml" />
     <None Include="Views\Shared\Components\DataHistory\Default.cshtml" />
     <None Include="Views\Shared\Components\LoginInfo\Default.cshtml" />

@@ -254,7 +254,7 @@ var loadRefMessageBox = function (title, frmid, colfid, ctrlid, refurl, extra) {
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
         buttons: {
             success: {
-                label: MultiLangHelper.getResName("global_oper_enter", "确定"),
+                label: $.lang("global_oper_enter", "确定"),
                 className: "btn-primary",
                 callback: function () {
                     var res = GetRefResult();
@@ -283,7 +283,7 @@ var loadRefMessageBox = function (title, frmid, colfid, ctrlid, refurl, extra) {
             },
 
             cancel: {
-                label: MultiLangHelper.getResName("cancel", "取消"), className: "btn-default"
+                label: $.lang("cancel", "取消"), className: "btn-default"
             }
         }
 
@@ -369,7 +369,7 @@ var loadImageControl = function (ctrlid) {
             value: null,
             image: {
                 //specify ace file input plugin's options here
-                btn_choose: MultiLangHelper.getResName("ess_userprofile_page_changphoto", "更换照片"),
+                btn_choose: $.lang("ess_userprofile_page_changphoto", "更换照片"),
                 droppable: true,
                 maxSize: 11000000,//~100Kb
 
@@ -379,14 +379,14 @@ var loadImageControl = function (ctrlid) {
                     if (last_gritter) $.gritter.remove(last_gritter);
                     if (error_type === 1) {//file format error
                         last_gritter = $.gritter.add({
-                            title: MultiLangHelper.getResName("ess_userprofile_page_filenotphoto", "文件不是图片") + '!',
-                            text: MultiLangHelper.getResName("global_oper_select", "请选择") + 'jpg|gif|png image!',
+                            title: $.lang("ess_userprofile_page_filenotphoto", "文件不是图片") + '!',
+                            text: $.lang("global_oper_select", "请选择") + 'jpg|gif|png image!',
                             class_name: 'gritter-error gritter-center'
                         });
                     } else if (error_type === 2) {//file size rror
                         last_gritter = $.gritter.add({
-                            title: MultiLangHelper.getResName("global_file_filetoolarge", "文件太大") + '!',
-                            text: MultiLangHelper.getResName("global_file_sizenotexceed", "文件大小不要超过") + '10M!',
+                            title: $.lang("global_file_filetoolarge", "文件太大") + '!',
+                            text: $.lang("global_file_sizenotexceed", "文件大小不要超过") + '10M!',
                             class_name: 'gritter-error gritter-center'
                         });
                     }
@@ -492,7 +492,7 @@ var loadImageControl = function (ctrlid) {
                             $(avatar).get(0).src = $.randomUrl(basePath + "/Component/Photo/" + pk);
                             if (last_gritter) $.gritter.remove(last_gritter);
                             last_gritter = $.gritter.add({
-                                title: MultiLangHelper.getResName("global_file_photo_updated", "照片已更新") + '!',
+                                title: $.lang("global_file_photo_updated", "照片已更新") + '!',
                                 text: '',
                                 class_name: 'gritter-info gritter-center'
                             });
@@ -500,7 +500,7 @@ var loadImageControl = function (ctrlid) {
                         //else alert(res.message);
                     })
                     .fail(function (result) {//failure
-                        alert(MultiLangHelper.getResName("global_file_photo_updateerror", "更新图片遇到错误"));
+                        alert($.lang("global_file_photo_updateerror", "更新图片遇到错误"));
                     })
                     .always(function () {//called on both success and failure
                         if (ie_timeout) clearTimeout(ie_timeout);

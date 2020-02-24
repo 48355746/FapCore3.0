@@ -64,7 +64,7 @@ namespace Fap.Workflow.Model
         /// <summary>
         /// 业务ID
         /// </summary>
-        public string BizUid { get; set; }
+        public string BillUid { get; set; }
         /// <summary>
         /// 业务名称
         /// </summary>
@@ -76,7 +76,7 @@ namespace Fap.Workflow.Model
         /// <summary>
         /// 所属业务
         /// </summary>
-        public string BizTypeUid { get; set; }
+        public string BusinessUid { get; set; }
         /// <summary>
         /// 所属业务 的显性字段MC
         /// </summary>

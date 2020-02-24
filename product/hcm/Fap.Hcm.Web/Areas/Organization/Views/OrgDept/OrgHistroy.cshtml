@@ -175,7 +175,7 @@
                 var ref = $('#tree-orgdept').jstree(true),
                     sel = ref.get_selected();
                 if (!sel.length) {
-                    bootbox.alert(MultiLangHelper.getResName("orgdept_index_page_pleaseSelshowdept", "请选择一个部门查看"));
+                    bootbox.alert($.lang("orgdept_index_page_pleaseSelshowdept", "请选择一个部门查看"));
                     return;
                 }
                 var fid = sel[0];
@@ -191,7 +191,7 @@
                                     sel = ref.get_selected();
 
                 if (!sel.length) {
-                    bootbox.alert(MultiLangHelper.getResName("orgdept_index_page_pleaseSelshowdept", "请选择一个部门查看"));
+                    bootbox.alert($.lang("orgdept_index_page_pleaseSelshowdept", "请选择一个部门查看"));
                     return;
                 }
                 openUrl("@Url.Content("~/Organization/OrgDept/PositionChart/")" + sel[0] + "?date=" + $("#dateHistroy").val());

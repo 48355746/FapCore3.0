@@ -154,7 +154,7 @@ var MultiLangHelper = (function () {
             jsTemplate = jsTemplate.Replace("##keyvalues##", builder.ToString().TrimEnd('\n').TrimEnd('\r').TrimEnd(','));
             if (Directory.Exists(jsPath))
             {
-                File.WriteAllText(Path.Combine(jsPath, "MultiLang.js"), jsTemplate, Encoding.UTF8);
+                File.WriteAllText(Path.Combine(jsPath, "MultiLanguage.js"), jsTemplate, Encoding.UTF8);
             }
 
         }

@@ -273,19 +273,19 @@
         var treeRole = $('#tree-roleandgroup').jstree(true);
         var selRole = treeRole.get_selected();
         if (!selRole.length) {
-            $.msg(MultiLangHelper.getResName("selected_role","请选中角色进行设置"));
+            $.msg($.lang("selected_role","请选中角色进行设置"));
             return 0;
         }
         var node = treeRole.get_node(selRole[0]);
         if (node.data.isRole == false) {
-            $.msg(MultiLangHelper.getResName("selected_role","请选中角色进行设置"));
+            $.msg($.lang("selected_role","请选中角色进行设置"));
             return 0;
         }
         return selRole[0];
     }
             
     var delUser = function (fid) {
-        bootbox.confirm(MultiLangHelper.getResName("confirm_delete","确认删除？"), function (rv) {
+        bootbox.confirm($.lang("confirm_delete","确认删除？"), function (rv) {
             if (!rv) {
                 return;
             }
@@ -310,12 +310,12 @@
         var treeRole = $('#tree-roleandgroup').jstree(true);
         var selRole = treeRole.get_selected();
         if (!selRole.length) {
-            $.msg(MultiLangHelper.getResName("selected_role","请选中角色进行设置"));
+            $.msg($.lang("selected_role","请选中角色进行设置"));
             return false;
         }
         var node = treeRole.get_node(selRole[0]);
         if (node.data.isRole == false) {
-             $.msg(MultiLangHelper.getResName("selected_role","请选中角色进行设置"));
+             $.msg($.lang("selected_role","请选中角色进行设置"));
             return;
         }
         //$("#frm-grid-roledata #RoleUidMC").val(node.text);
@@ -452,11 +452,11 @@
             var saveAuthority = function (data, callback, errorCallback) {
                 $.post("@Url.Content("~/System/Api/Manage/Authority")", data, function (rv) {
                     if (rv.success) {
-                        $.msg(MultiLangHelper.getResName("success","授权成功！"));
+                        $.msg($.lang("success","授权成功！"));
                         callback && callback(rv);
                     } else {
                         errorCallback && errorCallback(rv);
-                        bootbox.alert(MultiLangHelper.getResName("failure","授权失败！"));
+                        bootbox.alert($.lang("failure","授权失败！"));
                     }
                 })
             }
@@ -610,15 +610,15 @@
             $("#btnAddUser").on(ace.click_event,function(){
                 //添加使用人
                 var dialog = bootbox.dialog({
-                    title: MultiLangHelper.getResName("add_user","添加用户"),
+                    title: $.lang("add_user","添加用户"),
                     message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
                     buttons: {
                         success: {
-                            label: MultiLangHelper.getResName("ok","确定"), className: "btn-primary",
+                            label: $.lang("ok","确定"), className: "btn-primary",
                             callback: function () {
                                 var emp = getSelectedRows("grid-fapuser");
                                 if (emp == null) {
-                                    bootbox.alert(MultiLangHelper.getResName("select_row","您没有选中人员"));
+                                    bootbox.alert($.lang("select_row","您没有选中人员"));
                                     return;
                                 };
                                 var tempUser = [];
@@ -645,11 +645,11 @@
                                     var treeRole = $('#tree-roleandgroup').jstree(true);
                                     var selRole = treeRole.get_selected();
                                     if (treeRole.get_icon(selRole[0]) == "icon-folder purple ace-icon fa fa-users") {
-                                        bootbox.alert(MultiLangHelper.getResName("selected_role","请选中角色进行设置"));
+                                        bootbox.alert($.lang("selected_role","请选中角色进行设置"));
                                         return;
                                     }
                                     if (!selRole.length) {
-                                        bootbox.alert(MultiLangHelper.getResName("selected_role","请选中角色进行设置"));
+                                        bootbox.alert($.lang("selected_role","请选中角色进行设置"));
                                         return;
                                     }
                                     saveAuthority({ "RoleUid": selRole[0], "UserUids": tempUser, "AType": 5 }, function (rv) {
@@ -660,7 +660,7 @@
                             }
                         },
                         cancel: {
-                            label:MultiLangHelper.getResName("close" ,"关闭"), className: "btn-default"
+                            label:$.lang("close" ,"关闭"), className: "btn-default"
                         }
                     }
 

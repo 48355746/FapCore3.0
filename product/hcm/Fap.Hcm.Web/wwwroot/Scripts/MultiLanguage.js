@@ -42,7 +42,13 @@ var MultiLangHelper = (function () {
       'empty_list': { 'ZhCn': '空列表', 'ZhTW': '', 'En': 'Empty list', 'Ja': '' },
       'view_annex': { 'ZhCn': '查看附件', 'ZhTW': '', 'En': 'View annex', 'Ja': '' },
       'information': { 'ZhCn': '提示信息', 'ZhTW': '', 'En': 'Information', 'Ja': '' },
-      'add_user': { 'ZhCn': '添加用户', 'ZhTW': '', 'En': 'add user', 'Ja': '' }
+      'add_user': { 'ZhCn': '添加用户', 'ZhTW': '', 'En': 'add user', 'Ja': '' },
+      'code': { 'ZhCn': '编码', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'name': { 'ZhCn': '名称', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'is_enabled_workflow': { 'ZhCn': '是否要启用该流程', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'is_disabled_workflow': { 'ZhCn': '是否要禁用该流程', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'is_upgrade_workflow': { 'ZhCn': '是否要升级该流程', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'workflow_designer': { 'ZhCn': '流程设计器', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

@@ -82,14 +82,14 @@ namespace Fap.Workflow.Engine.Manager
             activity.NodeId = activityEntity.ActivityID;
             activity.NodeName = activityEntity.ActivityCode;
             activity.AppName = runner.AppName;
-            activity.BizUid = runner.BizUid;
+            activity.BizUid = runner.BillUid;
             activity.TokensRequired = 1;
             activity.TokensHad = 1;
             activity.AssignedToUserIds = runner.UserId;
             activity.AssignedToUserNames = runner.UserName;
             activity.ActivityState = WfActivityInstanceState.Ready;
             activity.CanRenewInstance = 0;
-            activity.BizTypeId = runner.BizTypeId;
+            activity.BizTypeId = runner.BusinessUid;
             activity.AppEmpUid = processIns.AppEmpUid;
             activity.AppStartTime = processIns.StartTime;
             activity.ProcessState = processIns.ProcessState;

@@ -168,12 +168,12 @@ namespace Fap.Workflow.Engine.Node
             SubProcessNode subProcessNode)
         {
             WfAppRunner subRunner = new WfAppRunner();
-            subRunner.BizData = runner.BizData;
-            subRunner.BizUid = runner.BizUid;
+            subRunner.BillData = runner.BillData;
+            subRunner.BillUid = runner.BillUid;
             subRunner.AppName = runner.AppName;
             subRunner.UserId = performer.UserId;
             subRunner.UserName = performer.UserName;
-            subRunner.ProcessId = subProcessNode.SubProcessId;
+            subRunner.ProcessUid = subProcessNode.SubProcessId;
 
             return subRunner;
         }

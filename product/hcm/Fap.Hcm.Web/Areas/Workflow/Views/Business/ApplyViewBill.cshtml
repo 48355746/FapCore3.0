@@ -1,0 +1,109 @@
+﻿@using Fap.Workflow.Model;
+@model Fap.AspNetCore.ViewModel.FormViewModel
+@{
+    ViewBag.Title = "单据信息";
+    Layout = "~/Views/Shared/_Layout_Empty.cshtml";
+    WfProcess process = ViewBag.Process;
+    string formName = Model.TableName;
+    //表单类型
+    string formType = process.FormType;
+
+    //表单模板
+    string ffTemplate = process.FormTemplateUid;
+    //业务名称
+    string appName = process.ProcessName;
+
+    IEnumerable<WfTask> tasks = ViewBag.WfTasks;
+    IEnumerable<WfActivityInstance> activityIns = ViewBag.ActivityIns;
+}
+@section specificcss{
+    @{await Html.RenderPartialAsync("_ControlCssPartial");}
+    <style>
+        .item-list > li.selected label, .item-list > li.selected .lbl {
+            text-decoration: underline !important;
+            color: #8090A0;
+        }
+    </style>
+}
+@section specificscript{
+    @{await Html.RenderPartialAsync("_ControlJsPartial");}
+    <environment include="Development">
+        <script src="~/lib/ueditor/ueditor.parse.js" asp-append-version="true"></script>
+
+    </environment>
+    <environment exclude="Development">
+        <script src="~/lib/ueditor/ueditor.parse.js"></script>
+    </environment>
+    <script src="~/Content/js/printThis.js"></script>
+    <script src="~/Content/JqGrid/jszip.min.js"></script>
+    <script>
+        function printBill() {
+            $('.page-content').printThis({
+                importCSS: true,
+                importStyle: true,
+                loadCSS: "/Content/css/printplus.css?v=4"
+            });
+        }
+        $(function () {
+            $("#approverTb").appendTo(".wordpage");
+            //要放在window.load加载完事件后
+            uParse('.wordpage', {
+                rootPath: '../../'
+                //chartContainerHeight: 500
+            });
+        })
+    </script>
+}
+
+<div class="row">
+    <div class="col-xs-12" id="formdiv">
+        @if (formType == WfFormType.Internal)
+        {
+            <fap-form id="@formName" form-model="Model" ></fap-form>
+        }
+        else
+        {
+            <fap-freeform id="@formName" form-model="Model" form-template="@ffTemplate" ></fap-freeform>
+
+        }
+    </div>
+</div>
+
+<table id="approverTb" class="table table-bordered table-striped">
+    <caption>审批列表</caption>
+    <thead class="thin-border-bottom">
+        <tr>
+            <td>流程节点</td>
+            <td>处理信息</td>
+            <td>处理结果</td>
+            <td>到达时间</td>
+            <td>结束时间</td>
+        </tr>
+    </thead>
+    <tbody id="processProgress">
+        @foreach (var ains in activityIns)
+        {
+            string handlerinfo = string.Empty;
+            var ts = tasks.Where(t => t.ActivityInsUid == ains.Fid);
+            if (ts.Any())
+            {
+                handlerinfo += "<ul class=\"list-unstyled\">";
+                foreach (var t in ts)
+                {
+                    handlerinfo += $"<li><i class=\"ace-icon fa fa-caret-right blue\"></i>{t.ExecutorEmpName}:[{t.ApproveStateMC}] {t.ExecuteTime}<br/>&nbsp;&nbsp;&nbsp;&nbsp;审批意见: {t.Suggestion}</li>";
+                }
+                handlerinfo += "</ul>";
+            }
+            <tr>
+                <td>@ains.NodeName</td>
+                <td>@Html.Raw(handlerinfo)</td>
+                <td>@ains.ApproveStateMC</td>
+                <td>@ains.StartTime</td>
+                <td>@ains.EndTime</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+
