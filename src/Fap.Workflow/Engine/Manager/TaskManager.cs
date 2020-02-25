@@ -91,7 +91,7 @@ namespace Fap.Workflow.Engine.Manager
 
             WfTask task = new WfTask();
             task.AppName = activityIns.AppName;
-            task.BizUid = activityIns.BizUid;
+            task.BillUid = activityIns.BillUid;
             task.TaskName = string.Format("{0}-{1}", activityIns.AppName, activityIns.NodeName);
             task.ActivityInsUid = activityIns.Fid;
             task.ProcessUid = activityIns.ProcessUid;
@@ -111,7 +111,7 @@ namespace Fap.Workflow.Engine.Manager
             task.TaskStartTime =DateTimeUtils.CurrentDateTimeStr;
             task.ApproverSort = sort;
             task.RecordState = 1;
-            task.BizTypeUid = activityIns.BizTypeId;
+            task.BusinessUid = activityIns.BusinessUid;
             //task.BizName = activityInstance.BizName;
             task.AppEmpUid = activityIns.AppEmpUid;
             task.AppStartTime = activityIns.AppStartTime;
@@ -441,8 +441,8 @@ namespace Fap.Workflow.Engine.Manager
             string processInsUid = task.ProcessInsUid;
             WfProcessInstance process = _dataAccessor.Get<WfProcessInstance>(processInsUid, false);
             string billTable = process.BillTable;
-            string bizUid = process.BizUid;
-            string sql = $"update {billTable} set CurrApprover='{ task.ExecutorEmpUid}',ApprovalTime='{task.ExecuteTime}',ApprovalComments='{task.Suggestion}' where Fid='{bizUid}' ";
+            string billUid = process.BillUid;
+            string sql = $"update {billTable} set CurrApprover='{ task.ExecutorEmpUid}',ApprovalTime='{task.ExecuteTime}',ApprovalComments='{task.Suggestion}' where Fid='{billUid}' ";
             _dataAccessor.Execute(sql, null);
         }
         /// <summary>

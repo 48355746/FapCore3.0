@@ -10,16 +10,7 @@ namespace Fap.AspNetCore.Controls.DataForm
 {
     public static class FormHtmlHelper
     {
-        /// <summary>
-        /// Fap表单
-        /// </summary>
-        /// <param name="helper"></param>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public static FapForm DataForm(this HtmlHelper helper, IServiceProvider serviceProvider, string id, FormStatus formStatus = FormStatus.Add)
-        {
-            return new FapForm(serviceProvider, id, formStatus);
-        }
+       
         /// <summary>
         /// X-Editable表单
         /// </summary>
@@ -30,16 +21,7 @@ namespace Fap.AspNetCore.Controls.DataForm
         {
             return new XEditableForm(applicationContext,  dataAccessor, multiLangService, rbacService);
         }
-        /// <summary>
-        /// 自由表单
-        /// </summary>
-        /// <param name="helper"></param>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public static FapFreeForm FreeForm(this HtmlHelper helper, IDbContext dataAccessor,IRbacService rbacService, IFapApplicationContext applicationContext, IMultiLangService multiLangService, string id, FormStatus formStatus = FormStatus.Add)
-        {
-            return new FapFreeForm(dataAccessor, rbacService, applicationContext, multiLangService, id, formStatus);
-        }
+       
     } 
     
 }

@@ -1,7 +1,5 @@
-﻿@model IEnumerable<Fap.Workflow.Model.WfBusinessType>
-    @{
-    Layout = null;
-    }
+﻿@model IEnumerable<Fap.Workflow.Model.WfBusiness>
+
     <title>代理任务</title>
     <link href="~/Content/bootstrap-layer.css" rel="stylesheet" />
     <style>
@@ -17,9 +15,9 @@
                 @foreach (var item in Model)
             {
                 <li>
-                    <a href="javascript:void(0)" data-biztype="@item.Fid" data-bill="@item.BillTable">
+                    <a href="javascript:void(0)" data-business="@item.Fid" data-bill="@item.BillEntity">
                         <i class="ace-icon fa fa-suitcase green bigger-110"></i>
-                        @item.TypeName <i class="text-danger">@(item.Exp.ToString() == "0" ? "" : $"+{item.Exp}")</i>
+                        @item.BizName <i class="text-danger">@(item.Exp.ToString() == "0" ? "" : $"+{item.Exp}")</i>
 
                     </a>
                 </li>
@@ -56,11 +54,11 @@
             })
             $(".bizprocess li>a").on(ace.click_event, function () {
                 var $this = $(this);
-                var bizTypeUid = $this.data("biztype");
+                var business = $this.data("business");
                 var billTable = $this.data("bill");
                 $("#bizContent").empty();
                 layer.load();
-                $.get(basePath + "/Workflow/Business/Approval?businessUid=" + bizTypeUid + "&billTable=" + billTable+"&agent=1", function (content) {
+                $.get(basePath + "/Workflow/Business/Approval?businessUid=" + business + "&billTable=" + billTable+"&agent=1", function (content) {
                     $("#bizContent").html(content);
                     //完毕重新设置jqgrid宽度
                     $(window).triggerHandler('resize.jqGrid');

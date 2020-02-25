@@ -1,8 +1,6 @@
 ﻿@model IEnumerable<Fap.Workflow.Model.WfBusiness>
-@{
-    Layout = null;
-}
-<title>我的申请</title>
+
+<title><fap-multilang lang-key="my_apply" default-content="我的申请"></fap-multilang></title>
 <link href="~/Content/waiting/waiting.css" rel="stylesheet" />
 <link href="~/Content/css/bootstrap-timeline.css" rel="stylesheet" />
 <link href="~/Content/bootstrap-layer.css" rel="stylesheet" />
@@ -14,18 +12,22 @@
 </style>
 <div class="row">
     <div class="col-xs-12">
-        <h4 class="smaller lighter green">业务信息</h4>
-        <ul class="list-inline bizprocess nav nav-pills">
-            @foreach (var item in Model)
-            {
-                <li>
-                    <a href="javascript:void(0)" data-business="@item.Fid" data-bill="@item.BillEntity">
-                        <i class="ace-icon fa fa-suitcase green bigger-110"></i>
-                        @item.BizName
-                    </a>
-                </li>
+        @foreach (var bizGrp in Model.GroupBy(b => b.BizTypeUidMC))
+        {
+            <h4 class="smaller lighter green">@bizGrp.Key</h4>
+
+            <ul class="list-inline bizprocess nav nav-pills">
+                @foreach (var biz in bizGrp.AsEnumerable())
+                {
+                    <li>
+                        <a href="javascript:void(0)" data-business="@biz.Fid">
+                            <i class="ace-icon fa fa-suitcase green bigger-110"></i>
+                            @biz.BizName
+                        </a>
+                    </li>
+                }
+            </ul>
             }
-        </ul>
     </div>
 </div>
 <hr />
@@ -62,11 +64,10 @@
             })
             $(".bizprocess li>a").on(ace.click_event, function () {
                 var $this = $(this);
-                var bizUid = $this.data("business");
-                //var billTable = $this.data("bill");
+                var business = $this.data("business");               
                 $("#myApplyContent").empty();
                 layer.load();
-                $.get(basePath + "/Workflow/Business/Apply/" + bizUid, function (content) {
+                $.get(basePath + "/Workflow/Business/Apply/" + business, function (content) {
                     $("#myApplyContent").html(content);
                     //完毕重新设置jqgrid宽度
                     $(window).triggerHandler('resize.jqGrid');

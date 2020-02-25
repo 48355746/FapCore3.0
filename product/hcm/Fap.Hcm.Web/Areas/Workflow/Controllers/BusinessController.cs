@@ -12,6 +12,7 @@ using Fap.Core.Infrastructure.Query;
 using Fap.Workflow.Engine.Xpdl;
 using Newtonsoft.Json;
 using Fap.Core.Infrastructure.Metadata;
+using Ardalis.GuardClauses;
 
 namespace Fap.Hcm.Web.Areas.Workflow.Controllers
 {
@@ -29,7 +30,7 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
         public IActionResult MyApply()
         {
             //获取审批业务
-            IEnumerable<WfBusiness> bizTypes = _dbContext.QueryWhere<WfBusiness>($"{nameof(WfBusiness.BizStatus)}=1");
+            IEnumerable<WfBusiness> bizTypes = _dbContext.QueryWhere<WfBusiness>($"{nameof(WfBusiness.BizStatus)}=1",null,true);
             return View(bizTypes);
         }
         /// <summary>
@@ -40,7 +41,6 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
         public PartialViewResult Apply(string fid)
         {
             WfBusiness business = _dbContext.Get<WfBusiness>(fid);
-
             WfProcess wfProcess = _dbContext.Get<WfProcess>(business.WfProcessUid);
             ViewBag.WfProcess = wfProcess;
             ViewBag.WfBusiness = business;
@@ -57,47 +57,21 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
         /// <param name="processUid">流程</param>
         /// <param name="billUid">单据</param>
         /// <returns></returns>
-        public IActionResult ApplyBill(string processUid, string BillUid, string billUid = "")
+        public IActionResult ApplyBill(string businessUid, string billUid = "")
         {
-            if (processUid.IsMissing())
-            {
-                WfBusiness wfBiz = _dbContext.Get<WfBusiness>(BillUid);
-                if (wfBiz == null)
-                {
-                    return Content("此业务没关联流程或关联的流程已失效,请设置关联！");
-                }
-                processUid = wfBiz.WfProcessUid;
-            }
-            WfProcess process = _dbContext.Get<WfProcess>(processUid);
-            FormViewModel model = new FormViewModel();
-            string tn = process.BillTable;
-            model.FormId = "frm-" + tn;
-            QuerySet qs = new QuerySet()
-            {
-                TableName = tn
-            };
-            if (billUid.IsPresent())
-            {
-                qs.GlobalWhere = "Fid=@Fid";
-                qs.Parameters.Add(new Parameter("Fid", billUid));
-            }
-            else
-            {
-                qs.GlobalWhere = "Id=@Id";
-                qs.Parameters.Add(new Parameter("Id", 0));
-            }
-            if (tn.EqualsWithIgnoreCase("TmTravelApply"))
+            WfBusiness business = _dbContext.Get<WfBusiness>(businessUid);
+            WfProcess process = _dbContext.Get<WfProcess>(business.WfProcessUid);
+            FormViewModel model = GetFormViewModel(business.BillEntity, business.BillEntity, billUid);            
+            if (process.BillTable.EqualsWithIgnoreCase("TmTravelApply"))
             {
                 //设置子表默认值
                 SubTableDefaultValue sub = new SubTableDefaultValue() { TableName = "TmTravelBudget", Data = new Dictionary<string, string> { ["Currency"] = "fcdc11e5828cc236d2ab", ["CurrencyMC"] = "人民币" } };
                 model.SubDefaultDataList.AsList().Add(sub);
             }
             //关联的业务类型Uid
-            ViewBag.BusinessUid = BillUid;
+            ViewBag.Business = business;
             //当前流程
             ViewBag.Process = process;
-            model.QueryOption = qs;
-            model.TableName = tn;
             return View(model);
         }
         /// <summary>
@@ -400,15 +374,15 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
         public IActionResult TodoTask()
         {
             //获取审批业务
-            IEnumerable<WfBusinessType> bizTypes = _dbContext.QueryWhere<WfBusinessType>(" Fid in( select BusinessUid from WfBusiness)").AsList();
+            IEnumerable<WfBusiness> businessList = _dbContext.QueryWhere<WfBusiness>("BizStatus=1");
             //获取待办
             var listCount = _dbContext.Query($"select count(0) C,WfTask.BusinessUid from WfTask,WfActivityInstance,WfProcessInstance where WfTask.ActivityInsUid=WfActivityInstance.Fid and WfTask.ProcessInsUid= WfProcessInstance.Fid and  WfProcessInstance.ProcessState='Running' and  WfActivityInstance.ActivityState in('{WfActivityInstanceState.Running}','{WfActivityInstanceState.Ready}') and WfTask.TaskState='{WfTaskState.Handling}' and WfTask.ExecutorEmpUid='{_applicationContext.EmpUid}' group by WfTask.BusinessUid");
-            foreach (var item in bizTypes)
+            foreach (var item in businessList)
             {
                 var cc = listCount.FirstOrDefault(b => b.BusinessUid == item.Fid);
                 item.Exp = cc != null ? (cc.C == null ? 0 : cc.C) : 0;
             }
-            return View(bizTypes);
+            return View(businessList);
         }
         /// <summary>
         /// 已办任务
@@ -417,9 +391,9 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
         public IActionResult DoneTask()
         {
             //获取审批业务
-            IEnumerable<WfBusinessType> bizTypes = _dbContext.QueryWhere<WfBusinessType>(" Fid in( select BusinessUid from WfBusiness)").AsList();
+            IEnumerable<WfBusiness> businesses = _dbContext.QueryWhere<WfBusiness>("BizStatus=1");
 
-            return View(bizTypes);
+            return View(businesses);
         }
         /// <summary>
         /// 代理任务
@@ -465,13 +439,13 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
             }
             DynamicParameters param = new DynamicParameters();
             param.Add("ModuleUid", moduleUid);
-            IEnumerable<WfBusinessType> bizTypeList = _dbContext.QueryWhere<WfBusinessType>("ModuleUid=@ModuleUid", param);
-            if (bizTypeList == null || !bizTypeList.Any())
+            IEnumerable<WfBusiness> businessList = _dbContext.QueryWhere<WfBusiness>("ModuleUid=@ModuleUid and BizStatus = 1", param);
+            if (businessList == null || !businessList.Any())
             {
                 return Content("业务分类不存在");
             }
 
-            return View(bizTypeList);
+            return View(businessList);
         }
         /// <summary>
         /// 申请列表管理

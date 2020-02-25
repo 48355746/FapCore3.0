@@ -84,7 +84,7 @@
             var fid = ret.Fid;
             var status = ret.ProcessState;
             var processUid = ret.ProcessUid;
-            var bizUid = ret.BizUid;
+            var billUid = ret.BillUid;
             var title = ret.ProcessName;
             if (status === 'Running') {
                 //运行
@@ -94,7 +94,7 @@
                 de += "<a  href='javascript:void(0)' onclick='endProcess(\"" + fid + "\")'>终止</a>  ";
                 de += "<a  href='javascript:void(0)' onclick='restoreProcess(\"" + fid + "\")'>恢复</a>  ";
             }
-            de += "<a  href='javascript:void(0)' onclick='workflowChart(\""+title+"\",\"" + processUid + "\",\"" + bizUid + "\")'>流程图</a>  ";
+            de += "<a  href='javascript:void(0)' onclick='workflowChart(\""+title+"\",\"" + processUid + "\",\"" + billUid + "\")'>流程图</a>  ";
 
             //de += "<a  href='javascript:void(0)' onclick='viewBill(\"" + fid + "\",\"" + name + "\")'>查看</a> ";
 
@@ -152,8 +152,8 @@
       /**
      * 流程图
      * */
-    function workflowChart(title,processUid,bizUid) {
-        var openUrl = $.randomUrl(basePath + "/Workflow/Business/FlowChart?processUid=" + processUid + "&bizUid=" + bizUid);
+    function workflowChart(title,processUid,billUid) {
+        var openUrl = $.randomUrl(basePath + "/Workflow/Business/FlowChart?processUid=" + processUid + "&billUid=" + billUid);
         var index = layer.open({
             type: 2,
             title: '"'+title+'"申请单',

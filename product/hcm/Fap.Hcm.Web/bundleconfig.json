@@ -53,6 +53,7 @@
     "inputFiles": [
       "wwwroot/Content/js/ace/elements.scroller.js",
       "wwwroot/Content/js/ace/elements.colorpicker.js",
+      "wwwroot/Content/js/ace/elements.fileinput.js",
       "wwwroot/Content/js/ace/elements.typeahead.js",
       "wwwroot/Content/js/ace/elements.wysiwyg.js",
       "wwwroot/Content/js/ace/elements.spinner.js",

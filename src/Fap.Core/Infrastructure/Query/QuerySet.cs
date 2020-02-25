@@ -147,13 +147,14 @@ namespace Fap.Core.Infrastructure.Query
     }
     public class Parameter
     {
-        public Parameter(string key, object value)
+        public Parameter() { }
+        public Parameter(string key, string value)
         {
             ParamKey = key;
             ParamValue = value;
         }
         public string ParamKey { get; set; }
-        public object ParamValue { get; set; }
+        public string ParamValue { get; set; }
     }
     public class OrderBy
     {

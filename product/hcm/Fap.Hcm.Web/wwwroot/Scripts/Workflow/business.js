@@ -1,5 +1,5 @@
-﻿function applyBusiness(title, processUid, frmType, bizTypeUid, initData) {
-    var openUrl = $.randomUrl(basePath + '/Workflow/Business/ApplyBill?processUid=' + processUid + '&bizTypeUid=' + bizTypeUid);
+﻿function applyBusiness(title, processUid, frmType, businessUid, initData) {
+    var openUrl = $.randomUrl(basePath + '/Workflow/Business/ApplyBill?processUid=' + processUid + '&businessUid=' + businessUid);
 
     var dialog = bootbox.dialog({
         title: '"' + title + '"申请',

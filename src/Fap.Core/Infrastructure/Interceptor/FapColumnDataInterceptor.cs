@@ -100,13 +100,15 @@ namespace Fap.Core.Infrastructure.Interceptor
             }
 
             //更新多语
-            if (!oriColumn.ColComment.EqualsWithIgnoreCase(newColumn.ColComment))
+            if (!oriColumn.ColComment.EqualsWithIgnoreCase(newColumn.ColComment)||!oriColumn.ColName.EqualsWithIgnoreCase(newColumn.ColName))
             {
-                string langkey = $"{newColumn.TableName}_{newColumn.ColName}";
-                string updateMultisql = $"Update {nameof(FapMultiLanguage)} set {nameof(FapMultiLanguage.LangValue)}=@LangValue where Qualifier=@Qualifier and LangKey=@LangKey";
-                var param = new Dapper.DynamicParameters(new { Qualifier = MultiLanguageOriginEnum.FapColumn.ToString(), LangKey = langkey, LangValue = newColumn.ColComment });
+                string oriLangkey = $"{oriColumn.TableName}_{oriColumn.ColName}";
+                string newLangkey = $"{newColumn.TableName}_{newColumn.ColName}";
+                string updateMultisql = $"Update {nameof(FapMultiLanguage)} set {nameof(FapMultiLanguage.LangKey)}=@NewLangKey,{nameof(FapMultiLanguage.LangValue)}=@LangValue where Qualifier=@Qualifier and LangKey=@LangKey";
+                var param = new Dapper.DynamicParameters(new { Qualifier = MultiLanguageOriginEnum.FapColumn.ToString(), LangKey = oriLangkey,NewLangKey= newLangkey, LangValue = newColumn.ColComment });
                 _dbContext.Execute(updateMultisql, param);
             }
+            
         }
         public override void BeforeDynamicObjectDelete(FapDynamicObject fapDynamicData)
         {

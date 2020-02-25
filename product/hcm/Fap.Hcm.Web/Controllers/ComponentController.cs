@@ -138,7 +138,7 @@ namespace Fap.Hcm.Web.Controllers
                         if (refColumn.CtrlType == FapColumn.CTRL_TYPE_REFERENCE && frmColumn.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
                         {
                             refRefCols.Add(refColumn.ColName + "MC");
-                            frmRefCols.Add(frmColumn.TableName + frmColumn.ColName + "MC");
+                            frmRefCols.Add(frmColumn.ColName + "MC");
                         }
                     }
                 }

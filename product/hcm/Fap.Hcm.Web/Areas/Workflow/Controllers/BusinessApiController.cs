@@ -112,11 +112,11 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
         /// <param name="processUid"></param>
         /// <returns></returns>
         [HttpGet]
-        [Route("Withdrawn/{processUid}/{bizUid}")]
-        public JsonResult GetWithdrawnBill(string bizUid, string processUid)
+        [Route("Withdrawn/{processUid}/{billUid}")]
+        public JsonResult GetWithdrawnBill(string billUid, string processUid)
         {
-            string sql = $"select * from WfProcessInstance where ProcessUid=@ProcessUid and BizUid=@BizUid and ProcessState='{WfProcessInstanceState.Running}'";
-            var wpins = _dbContext.QueryFirstOrDefault<WfProcessInstance>(sql, new DynamicParameters(new { ProcessUid = processUid, BizUid = bizUid }));
+            string sql = $"select * from WfProcessInstance where ProcessUid=@ProcessUid and BillUid=@BillUid and ProcessState='{WfProcessInstanceState.Running}'";
+            var wpins = _dbContext.QueryFirstOrDefault<WfProcessInstance>(sql, new DynamicParameters(new { ProcessUid = processUid, BillUid = billUid }));
             WfExecutedResult result = null;
             if (wpins == null)
             {
@@ -127,7 +127,7 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
                 WfAppRunner runner = new WfAppRunner();
                 runner.CurrProcessInsUid = wpins.Fid;
                 runner.BillTableName = wpins.BillTable;
-                runner.BillUid = wpins.BizUid;
+                runner.BillUid = wpins.BillUid;
                 result = _workflowService.WithdrawProcess(runner);
             }
             return Json(result);
@@ -186,10 +186,10 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
         /// <returns>活动实体</returns>
         [HttpGet]
         [Route("FirstAcitvity")]
-        public JsonResult GetFirstAcitvity(string bizUid, string processUid)
+        public JsonResult GetFirstAcitvity(string billUid, string processUid)
         {
 
-            var firstEntity = _workflowService.GetFirstActivity(processUid, bizUid);
+            var firstEntity = _workflowService.GetFirstActivity(processUid, billUid);
 
             return Json(firstEntity);
 
@@ -197,18 +197,18 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
         /// <summary>
         /// 获取下一个审批节点
         /// </summary>
-        /// <param name="bizUid"></param>
+        /// <param name="billUid"></param>
         /// <param name="processUid"></param>
         /// <param name="activityInsUid"></param>
         /// <param name="nodeId"></param>
         /// <returns></returns>
         [HttpGet]
         [Route("NextAcitvity")]
-        public JsonResult GetNextAcitvity(string bizUid, string processUid, string activityInsUid, string nodeId)
+        public JsonResult GetNextAcitvity(string billUid, string processUid, string activityInsUid, string nodeId)
         {
             if (_workflowService.NodeIsComplete(activityInsUid))
             {
-                var activityEntity = _workflowService.GetNextActivity(processUid, nodeId, bizUid);
+                var activityEntity = _workflowService.GetNextActivity(processUid, nodeId, billUid);
                 return Json(new { result = 1, data = activityEntity });
             }
             else

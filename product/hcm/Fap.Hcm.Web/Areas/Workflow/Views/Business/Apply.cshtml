@@ -6,9 +6,9 @@
     Fap.Workflow.Model.WfProcess wfProcess = ViewBag.WfProcess;
     string tableName = business.BillEntity;
     string bizCode = business.BizCode;
-    string bizFid = business.Fid;
+    string businessUid = business.Fid;
     string title = business.BizName;
-    IEnumerable<Fap.Core.Infrastructure.Metadata.FapDict> billStatus =_dbContext.Dictionarys("BillStatus");
+    IEnumerable<Fap.Core.Infrastructure.Metadata.FapDict> billStatus = _dbContext.Dictionarys("BillStatus");
     //增加操作列
     Column column = new Column("oper");
     column.SetLabel("操作");
@@ -18,96 +18,66 @@
 <script>
     //刷新列表
     function refreshList() {
-        var searchText = $("#id-text-search").val();
+        //var searchText = $("#id-text-search").val();
         var billstatus = $("#id-text-search").data("surstatus");
         var filter = { groupOp: "AND", rules: [] };
         var rules = [];
-        if (searchText != '') {
-            rules.push({ "field": "BillCode", "op": "cn", "data": searchText });
-        }
+        //if (searchText != '') {
+        //    rules.push({ "field": "BillCode", "op": "cn", "data": searchText });
+        //}
         if (billstatus != "-1") {
             rules.push({ field: "BillStatus", op: "eq", data: billstatus });
         }
-        if (rules.length > 0) {
-            filter.rules = rules;
-            $("#grid-@tableName").jqGrid('setGridParam', {
-                datatype: 'json',
-                postData: { filters: JSON.stringify(filter) }, //发送数据
-                page: 1
-            }).trigger("reloadGrid"); //重新载入
-        } else {
-            $("#grid-@tableName").jqGrid('setGridParam', {
-                page: 1,
-                postData: { 'filters': '' },
-            }).trigger("reloadGrid"); //重新载入
-        }
+        reloadGrid("grid-@tableName", { filters: JSON.stringify(filter) });
+        
     }
 
 </script>
+<div class="widget-box">
+    <div class="widget-header widget-header-flat">
+        <h4 class="widget-title smaller">@business.BizName</h4>
+        <div class="widget-toolbar">
+            <button class="btn btn-purple btn-link" id="btnAddApply">
+                <i class="ace-icon fa fa-plus"></i>
+                申请
+            </button>
+        </div>
 
-<div class="row">
-    <div class="col-xs-12">
-        <div class="row">
-            <div class="col-xs-6">
-                <div class="btn-group">
-                    <p>
-                        <button class="btn btn-purple" id="btnAddApply">
-                            <i class="ace-icon fa fa-plus"></i>
-                            申请
-                        </button>
-
-                    </p>
-                </div>
-
-                @*<div class="btn-group">
-                        <p>
-
-                            <button class="btn btn-info" id="btnPrintDoc">
-                                <i class="ace-icon fa fa-print"></i>
-                                打印
-                            </button>
-                        </p>
-                    </div>*@
-            </div>
-            <div class=" col-xs-6  btn-toolbar">
-
-                <div class="btn-group">
-                    <button data-toggle="dropdown" id="filterStatus" class="btn  btn-white dropdown-toggle">
-                        全部状态
-                        <i class="ace-icon fa fa-angle-down icon-on-right"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-default">
-
-                        <li data-surstatus="-1">
-                            <a href="javascript:void(0)">全部状态</a>
-                        </li>
-                        @foreach (var item in billStatus)
-                        {
-                            <li data-surstatus="@item.Code">
-                                <a href="javascript:void(0)">@item.Name</a>
-                            </li>
-                        }
-                    </ul>
-                </div><!-- /.btn-group -->
-                <div class="input-group col-sm-4 col-xs-12">
+        <div class="widget-toolbar">
+            <label>
+                <i class="ace-icon fa fa-filter icon-on-right"></i>
+                单据状态:
+            </label>
+            <button data-toggle="dropdown" id="filterStatus" class="btn  btn-link  dropdown-toggle">
+                全部状态
+                <i class="ace-icon fa fa-angle-down icon-on-right"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-default">
+                <li data-surstatus="-1">
+                    <a href="javascript:void(0)">全部状态</a>
+                </li>
+                @foreach (var item in billStatus)
+                {
+                    <li data-surstatus="@item.Code">
+                        <a href="javascript:void(0)">@item.Name</a>
+                    </li>
+                }
+            </ul>
+            <!-- /.btn-group -->
+            @*<div class="input-group ">
                     <input class="form-control" id="id-text-search" placeholder="单据编码" data-surstatus="-1" type="text" />
                     <span class="input-group-addon">
                         <i class="fa fa-search bigger-110"></i>
                     </span>
-                </div>
-
-            </div>
+                </div>*@
         </div>
+    </div>
 
+    <div class="widget-body">
+        <div class="widget-main">
+            <fap-grid id="@tableName" attach-column="@column" grid-model="Model" auto-width="true" shrink-fit="false" view-records="true" oper-import="false" on-grid-complete="initWorkflowMenu"></fap-grid>
 
-
-        <div class="row">
-            <div class="col-xs-12">
-                <fap-grid id="@tableName" attach-column="@column" grid-model="Model" auto-width="true" shrink-fit="false" view-records="true" oper-import="false" on-grid-complete="initWorkflowMenu"></fap-grid>
-
-            </div>
         </div>
-
     </div>
 </div>
 <script>
@@ -160,13 +130,9 @@
     {
          var processUid = '@wfProcess.Fid';//流程
          var frmType = '@wfProcess.FormType';//表单类型
-         var bizUid = '@bizFid';//业务Uid
-
-         if (processUid == '') {
-             bootbox.alert("此业务没关联流程或关联的流程已失效,请设置关联！");
-             return;
-         }
-        var openUrl = $.randomUrl('@Url.Content("~/Workflow/Business/ApplyBill")?processUid=' + processUid + '&bizUid=' + bizUid + '&billUid=' + billUid);
+         var businessUid = '@businessUid';//业务Uid
+      
+        var openUrl = $.randomUrl('@Url.Content("~/Workflow/Business/ApplyBill")?businessUid=' + businessUid + '&billUid=' + billUid);
 
         var dialog = bootbox.dialog({
             title: '"@title"申请单',
@@ -244,7 +210,7 @@
      * */
     function workflowChart(fid) {
         var processUid = '@wfProcess.Fid';//流程
-        var openUrl = $.randomUrl(basePath + "/Workflow/Business/FlowChart?processUid=" + processUid + "&bizUid=" + fid);
+        var openUrl = $.randomUrl(basePath + "/Workflow/Business/FlowChart?processUid=" + processUid + "&billUid=" + fid);
         var width = parseInt($(window).innerWidth() * 0.8) + 'px';
         var height = parseInt($(window).innerHeight() - 60) + 'px';
         var index = layer.open({
@@ -275,13 +241,13 @@
     function viewBill(fid) {
         var processUid = '@wfProcess.Fid';//流程
         var frmType = '@wfProcess.FormType';//表单类型
-        var bizUid = '@bizFid';//业务Uid
+        var businessUid = '@businessUid';//业务Uid
 
         if (processUid === '') {
             bootbox.alert("此业务没关联流程或关联的流程已失效,请设置关联！");
             return;
         }
-        var openUrl = $.randomUrl('@Url.Content("~/Workflow/Business/ApplyViewBill")?processUid=' + processUid + '&businessUid=' + bizUid + '&billUid=' + fid);
+        var openUrl = $.randomUrl('@Url.Content("~/Workflow/Business/ApplyViewBill")?processUid=' + processUid + '&businessUid=' + businessUid + '&billUid=' + fid);
         var width = parseInt($(window).innerWidth() * 0.8) + 'px';
         var height = parseInt($(window).innerHeight() - 60) + 'px';
         var index = layer.open({
@@ -323,6 +289,7 @@
             var tValue = $(this).data("surstatus");
             $("#id-text-search").data("surstatus", tValue);
             $("#filterStatus").html(tName + "<i class=\"ace-icon fa fa-angle-down icon-on-right\"></i>");
+            refreshList();
         })
         $(document).one('ajaxloadstart.page', function (e) {
             //$(document).off(ace.click_event, '.dropdown-menu>li');

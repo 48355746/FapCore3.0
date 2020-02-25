@@ -82,14 +82,14 @@ namespace Fap.Workflow.Engine.Manager
             activity.NodeId = activityEntity.ActivityID;
             activity.NodeName = activityEntity.ActivityCode;
             activity.AppName = runner.AppName;
-            activity.BizUid = runner.BillUid;
+            activity.BillUid = runner.BillUid;
             activity.TokensRequired = 1;
             activity.TokensHad = 1;
             activity.AssignedToUserIds = runner.UserId;
             activity.AssignedToUserNames = runner.UserName;
             activity.ActivityState = WfActivityInstanceState.Ready;
             activity.CanRenewInstance = 0;
-            activity.BizTypeId = runner.BusinessUid;
+            activity.BusinessUid = runner.BusinessUid;
             activity.AppEmpUid = processIns.AppEmpUid;
             activity.AppStartTime = processIns.StartTime;
             activity.ProcessState = processIns.ProcessState;
@@ -139,7 +139,7 @@ namespace Fap.Workflow.Engine.Manager
             instance.DirectionType = main.DirectionType;
             instance.ProcessInsUid = main.ProcessInsUid;
             instance.AppName = main.AppName;
-            instance.BizUid = main.BizUid;
+            instance.BillUid = main.BillUid;
             instance.ProcessState = main.ProcessState;
             instance.AppEmpUid = main.AppEmpUid;
             instance.TokensRequired = 1;
@@ -151,7 +151,7 @@ namespace Fap.Workflow.Engine.Manager
             instance.StartTime = DateTimeUtils.CurrentDateTimeStr;
             instance.NodeId = main.NodeId;
             instance.NodeName = main.NodeName;
-            instance.BizTypeId = main.BizTypeId;
+            instance.BusinessUid = main.BusinessUid;
             instance.AppStartTime = main.AppStartTime;
 
             return instance;
@@ -179,7 +179,7 @@ namespace Fap.Workflow.Engine.Manager
             instance.NodeId = activityNode.ActivityID;
             instance.NodeName = activityNode.ActivityName;
             instance.AppName = activity.AppName;
-            instance.BizUid = activity.BizUid;
+            instance.BillUid = activity.BillUid;
             instance.BackwardType = backwardType.ToString();
             instance.BackSrcActivityId = backSrcActivityId;
             instance.TokensRequired = 1;
@@ -189,7 +189,7 @@ namespace Fap.Workflow.Engine.Manager
             instance.UpdateDate = DateTimeUtils.CurrentDateTimeStr;
             instance.ActivityState = WfActivityInstanceState.Ready;
             instance.CanRenewInstance = 0;
-            activity.BizTypeId = process.BizTypeUid;
+            activity.BusinessUid = process.BusinessUid;
             instance.AppEmpUid = process.AppEmpUid;
             instance.StartTime = process.StartTime;
             instance.ProcessState = process.ProcessState;

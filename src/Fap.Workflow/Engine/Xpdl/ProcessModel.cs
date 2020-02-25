@@ -31,21 +31,21 @@ namespace Fap.Workflow.Engine.Xpdl
         /// </summary>
         public ProcessEntity ProcessEntity { get; set; }
 
-        public ProcessModel(IDbContext dataAccessor, ILoggerFactory loggerFactory, string processId, string bizUid)
+        public ProcessModel(IDbContext dataAccessor, ILoggerFactory loggerFactory, string processId, string billUid)
         {
             _dataAccessor = dataAccessor;
             _logger = loggerFactory.CreateLogger<ProcessModel>();
-            ProcessEntity = GetProcessEntity(processId, bizUid);
+            ProcessEntity = GetProcessEntity(processId, billUid);
         }
-        private ProcessEntity GetProcessEntity(string processUid, string bizUid)
+        private ProcessEntity GetProcessEntity(string processUid, string billUid)
         {
             ProcessEntity entity = null;
             WfProcess wfProcess = _dataAccessor.Get<WfProcess>(processUid);
             if (wfProcess != null)
             {
                 entity = new ProcessEntity();
-                dynamic bizData = _dataAccessor.Get(wfProcess.BillTable, bizUid);
-                var processInstance = _dataAccessor.QueryFirstOrDefaultWhere<WfProcessInstance>("ProcessUid=@ProcessUid and BizUid=@BizUid", new DynamicParameters(new { ProcessUid = processUid, BizUid = bizUid }));
+                dynamic bizData = _dataAccessor.Get(wfProcess.BillTable, billUid);
+                var processInstance = _dataAccessor.QueryFirstOrDefaultWhere<WfProcessInstance>("ProcessUid=@ProcessUid and BillUid=@BillUid", new DynamicParameters(new { ProcessUid = processUid, BillUid = billUid }));
                 if (processInstance == null)
                 {
                     WfDiagram diagram = _dataAccessor.Get<WfDiagram>(wfProcess.DiagramId);

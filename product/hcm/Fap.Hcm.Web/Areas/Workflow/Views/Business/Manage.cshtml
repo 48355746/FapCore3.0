@@ -6,7 +6,7 @@
     Fap.Workflow.Model.WfProcess wfProcess = ViewBag.WfProcess;
     string tableName = biz.BillEntity;// ViewData["tableName"].ToString();
     string bizCode = biz.BizCode; //ViewData["bizTypeCode"].ToString();
-    string bizUid = biz.Fid; //ViewData["bizTypeId"].ToString();
+    string businessUid = biz.Fid; //ViewData["bizTypeId"].ToString();
     string title = biz.BizName;
     IEnumerable<Fap.Core.Infrastructure.Metadata.FapDict> billStatus = _dbContext.Dictionarys("BillStatus");
     //增加操作列
@@ -122,8 +122,8 @@
     function urgeBill(fid) {
         bootbox.confirm('催办将向处理人发送消息，确认催办？', function (result) {
             if (result) {
-                var bizUid = '@bizUid';
-                var url = $.randomUrl(basePath + "/Workflow/Api/Business/UrgeBill?billUid=" + fid + "&businnessUid=" + bizUid);
+                var businessUid = '@businessUid';
+                var url = $.randomUrl(basePath + "/Workflow/Api/Business/UrgeBill?billUid=" + fid + "&businnessUid=" + businessUid);
                 $.get(url, function (rv) {
                     $.msg(rv.msg);
 
@@ -136,7 +136,7 @@
      * */
     function workflowChart(fid) {
         var processUid = '@wfProcess.Fid';//流程
-        var openUrl = $.randomUrl(basePath + "/Workflow/Business/FlowChart?processUid=" + processUid + "&bizUid=" + fid);
+        var openUrl = $.randomUrl(basePath + "/Workflow/Business/FlowChart?processUid=" + processUid + "&billUid=" + fid);
         var index = layer.open({
             type: 2,
             title: '"@title"申请单',
@@ -162,13 +162,13 @@
     function viewBill(fid) {
         var processUid = '@wfProcess.Fid';//流程
         var frmType = '@wfProcess.FormType';//表单类型
-        var bizTypeUid = '@bizTypeId';//业务Uid
+        var business = '@biz.Fid';//业务Uid
 
         if (processUid == '') {
             bootbox.alert("此业务没关联流程或关联的流程已失效,请设置关联！");
             return;
         }
-        var openUrl = $.randomUrl('@Url.Content("~/Workflow/Business/ApplyViewBill")?processUid=' + processUid + '&bizTypeUid=' + bizTypeUid + '&billUid=' + fid);
+        var openUrl = $.randomUrl('@Url.Content("~/Workflow/Business/ApplyViewBill")?processUid=' + processUid + '&businessUid=' + business + '&billUid=' + fid);
 
         var index = layer.open({
             type: 2,

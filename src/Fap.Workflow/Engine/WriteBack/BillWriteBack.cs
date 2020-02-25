@@ -357,9 +357,9 @@ namespace Fap.Workflow.Engine.WriteBack
         }
 
 
-        public void Approved(string billTable, string bizUid)
+        public void Approved(string billTable, string billUid)
         {
-            string sql = $"update {billTable} set BillStatus='{BillStatus.PASSED}' where Fid='{bizUid}'";
+            string sql = $"update {billTable} set BillStatus='{BillStatus.PASSED}' where Fid='{billUid}'";
             _dbContext.Execute(sql);
         }
 
@@ -368,9 +368,9 @@ namespace Fap.Workflow.Engine.WriteBack
             throw new NotImplementedException();
         }
 
-        public void Rejected(string billTable, string bizUid)
+        public void Rejected(string billTable, string billUid)
         {
-            string sql = $"update {billTable} set BillStatus='{BillStatus.REVOKED}' where Fid='{bizUid}'";
+            string sql = $"update {billTable} set BillStatus='{BillStatus.REVOKED}' where Fid='{billUid}'";
             _dbContext.Execute(sql);
         }
         #endregion

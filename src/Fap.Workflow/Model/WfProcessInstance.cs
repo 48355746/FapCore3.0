@@ -80,8 +80,8 @@ namespace Fap.Workflow.Model
         /// <summary>
         /// 所属业务 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
-        public string BizTypeUidMC { get; set; }
+        [Computed]
+        public string BusinessUidMC { get; set; }
         /// <summary>
         /// 是否处于处理状态
         /// </summary>

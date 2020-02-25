@@ -22,14 +22,14 @@ namespace Fap.Workflow.Engine.WriteBack
         /// 单据审核通过
         /// </summary>
         /// <param name="billTable"></param>
-        /// <param name="bizUid"></param>
-        void Approved(string billTable, string bizUid);
+        /// <param name="billUid"></param>
+        void Approved(string billTable, string billUid);
         /// <summary>
         /// 单据被驳回
         /// </summary>
         /// <param name="billTable"></param>
-        /// <param name="bizUid"></param>
-        void Rejected(string billTable, string bizUid);
+        /// <param name="billUid"></param>
+        void Rejected(string billTable, string billUid);
         /// <summary>
         /// 流程失败时处理
         /// </summary>

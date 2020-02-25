@@ -48,7 +48,10 @@ var MultiLangHelper = (function () {
       'is_enabled_workflow': { 'ZhCn': '是否要启用该流程', 'ZhTW': '', 'En': '', 'Ja': '' },
       'is_disabled_workflow': { 'ZhCn': '是否要禁用该流程', 'ZhTW': '', 'En': '', 'Ja': '' },
       'is_upgrade_workflow': { 'ZhCn': '是否要升级该流程', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'workflow_designer': { 'ZhCn': '流程设计器', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'workflow_designer': { 'ZhCn': '流程设计器', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'success': { 'ZhCn': '授权成功！', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'ess_userprofile_page_changphoto': { 'ZhCn': '更换照片', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'global_file_photo_updated': { 'ZhCn': '照片已更新', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

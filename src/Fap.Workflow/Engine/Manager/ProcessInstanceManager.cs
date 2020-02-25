@@ -74,12 +74,12 @@ namespace Fap.Workflow.Engine.Manager
             return processInstance;
         }
 
-        internal WfProcessInstance GetRunningProcessInstance(string processUid, string bizUid)
+        internal WfProcessInstance GetRunningProcessInstance(string processUid, string billUid)
         {
             DynamicParameters parameters = new DynamicParameters();
             parameters.Add("ProcessUid", processUid);
-            parameters.Add("BizUid", bizUid);
-            return _dataAccessor.QueryFirstOrDefaultWhere<WfProcessInstance>($"ProcessUid=@ProcessUid and BizUid=@BizUid and ProcessState='{WfProcessInstanceState.Running}'", parameters, false);
+            parameters.Add("BizUid", billUid);
+            return _dataAccessor.QueryFirstOrDefaultWhere<WfProcessInstance>($"ProcessUid=@ProcessUid and BillUid=@BillUid and ProcessState='{WfProcessInstanceState.Running}'", parameters, false);
 
         }
 
@@ -97,7 +97,7 @@ namespace Fap.Workflow.Engine.Manager
             WfProcessInstance wfProcessInstance = new WfProcessInstance();
             wfProcessInstance.Fid = UUIDUtils.Fid;;
             wfProcessInstance.ProcessUid = wfProcess.Fid;
-            wfProcessInstance.BizUid = runner.BillUid;
+            wfProcessInstance.BillUid = runner.BillUid;
             wfProcessInstance.BizName = runner.BillData.BillCode;//易标识
             wfProcessInstance.AppEmpUid = runner.UserId;
             wfProcessInstance.AppEmpName = runner.UserName;
@@ -106,7 +106,7 @@ namespace Fap.Workflow.Engine.Manager
             wfProcessInstance.ProcessName = wfProcess.ProcessName;
             wfProcessInstance.ProcessDesc = wfProcess.Description;
             wfProcessInstance.IsHasForm = 1;
-            wfProcessInstance.BizTypeUid = runner.BusinessUid;           
+            wfProcessInstance.BusinessUid = runner.BusinessUid;           
             wfProcessInstance.IsHandling = 0; //未处理状态
             wfProcessInstance.MessageSetting = wfProcess.MessageSetting;
             wfProcessInstance.FormTemplateUid = wfProcess.FormTemplateUid;
@@ -137,14 +137,14 @@ namespace Fap.Workflow.Engine.Manager
         /// 获取流程实例
         /// </summary>
         /// <param name="processUid">流程</param>
-        /// <param name="bizUid">业务</param>
+        /// <param name="billUid">单据uid</param>
         /// <returns></returns>
-        internal WfProcessInstance GetProcessInstance(string processUid, string bizUid)
+        internal WfProcessInstance GetProcessInstance(string processUid, string billUid)
         {
             DynamicParameters parameters = new DynamicParameters();
             parameters.Add("ProcessUid", processUid);
-            parameters.Add("BizUid", bizUid);
-            return _dataAccessor.QueryFirstOrDefaultWhere<WfProcessInstance>(@"ProcessUid=@ProcessUid and BizUid=@BizUid", parameters, false);
+            parameters.Add("BillUid", billUid);
+            return _dataAccessor.QueryFirstOrDefaultWhere<WfProcessInstance>(@"ProcessUid=@ProcessUid and BillUid=@BillUid", parameters, false);
         }
 
         /// <summary>
@@ -164,9 +164,9 @@ namespace Fap.Workflow.Engine.Manager
         /// </summary>
         /// <param name="processId"></param>
         /// <returns></returns>
-        internal WfProcessInstance GetProcessInstanceLatest(string processId, string bizUid)
+        internal WfProcessInstance GetProcessInstanceLatest(string processId, string billUid)
         {
-            WfProcessInstance instance = GetProcessInstance(processId, bizUid);
+            WfProcessInstance instance = GetProcessInstance(processId, billUid);
             return instance;
         }
 
@@ -196,7 +196,7 @@ namespace Fap.Workflow.Engine.Manager
         /// </summary>
         /// <param name="processInsUid">流程实例</param>
         /// <returns>是否成功</returns>
-        internal void Complete(string processInsUid, string bizUid)
+        internal void Complete(string processInsUid, string billUid)
         {
             var processIns = _dataAccessor.Get<WfProcessInstance>(processInsUid, false);
             if (WfProcessInstanceState.Running == processIns.ProcessState)
@@ -211,9 +211,9 @@ namespace Fap.Workflow.Engine.Manager
                
                 IWriteBackRule bwb = new BillWriteBack(_dataAccessor);
                 //改变单据状态为通过
-                bwb.Approved(billTable, bizUid);
+                bwb.Approved(billTable, billUid);
                 //单据回写业务
-                bwb.WriteBackToBusiness(billTable, bizUid);
+                bwb.WriteBackToBusiness(billTable, billUid);
             }
             else
             {
@@ -240,7 +240,7 @@ namespace Fap.Workflow.Engine.Manager
 
                 IWriteBackRule bwb = new BillWriteBack(_dataAccessor);
                 //改变单据状态为驳回
-                bwb.Rejected(processIns.BillTable, processIns.BizUid);
+                bwb.Rejected(processIns.BillTable, processIns.BillUid);
 
             }
             else

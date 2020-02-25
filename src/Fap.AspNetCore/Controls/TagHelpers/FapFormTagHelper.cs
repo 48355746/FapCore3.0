@@ -37,7 +37,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                 Id = FormModel.QueryOption.TableName;
             }
             
-            FapForm form = new FapForm(serviceProvider:_serviceProvider, Id);
+            BaseForm form = new FapForm(serviceProvider:_serviceProvider, Id);
             if (FormModel.FormStatus== FormStatus.View)
             {
                 form.SetFormStatus(FormStatus.View);

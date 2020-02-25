@@ -83,7 +83,7 @@ namespace Fap.Workflow.Engine.Message
                 }
                 if (sendMail)
                 {
-                    var biz = _dataAccessor.Get<WfBusiness>(activityIns.BizTypeId, false);
+                    var biz = _dataAccessor.Get<WfBusiness>(activityIns.BusinessUid, false);
                     string title = $"有一份\"{activityIns.AppName}\"的待处理任务需要您处理！";
                     string where = "TableName='" + biz.BillEntity + "' and Enabled=1 and ModuleUid='BillMailTmpl'";
                     var emailTemplates = _dataAccessor.QueryWhere<CfgEmailTemplate>(where, null, false);
@@ -159,7 +159,7 @@ namespace Fap.Workflow.Engine.Message
                 content = content.Replace("${业务申请时间}", processInstance.StartTime);
             }
 
-            dynamic bizData = _dataAccessor.Get(processInstance.BillTable, processInstance.BizUid, true);
+            dynamic bizData = _dataAccessor.Get(processInstance.BillTable, processInstance.BillUid, true);
             if (bizData == null)
             {
                 return content;
@@ -316,12 +316,12 @@ namespace Fap.Workflow.Engine.Message
         /// </summary>
         /// <param name="bizUid">业务Fid</param>
         /// <param name="bizTypeUid">业务类型</param>
-        public string SendUrgeMessage(string bizUid, string bizTypeUid)
+        public string SendUrgeMessage(string billUid, string businessUid)
         {
             DynamicParameters param = new DynamicParameters();
-            param.Add("BizUid", bizUid);
-            param.Add("BizTypeUid", bizTypeUid);
-            var receiver = _dataAccessor.Query("select WfTask.ExecutorEmpUid,WfTask.TaskStartTime from WfTask,WfActivityInstance where WfTask.ActivityInsUid=WfActivityInstance.Fid and WfTask.TaskState='Handling' and WfActivityInstance.BizUid=@BizUid and WfActivityInstance.BizTypeId=@BizTypeUid  and (WfActivityInstance.ActivityState='Ready' or WfActivityInstance.ActivityState='Running')", param);
+            param.Add("BillUid", billUid);
+            param.Add("BusinessUid", businessUid);
+            var receiver = _dataAccessor.Query("select WfTask.ExecutorEmpUid,WfTask.TaskStartTime from WfTask,WfActivityInstance where WfTask.ActivityInsUid=WfActivityInstance.Fid and WfTask.TaskState='Handling' and WfActivityInstance.BillUid=@BillUid and WfActivityInstance.BusinessUid=@BusinessUid  and (WfActivityInstance.ActivityState='Ready' or WfActivityInstance.ActivityState='Running')", param);
 
             if (receiver == null || !receiver.Any())
                 return "没有要催办的人。";
@@ -338,11 +338,11 @@ namespace Fap.Workflow.Engine.Message
                 receipantNames.Add(receipant.EmpName);
                 receipantMailboxes.Add($"{receipant.EmpName}<{receipant.Mailbox}>");
             }
-            WfBusiness biz = _dataAccessor.Get<WfBusiness>(bizTypeUid);
+            WfBusiness biz = _dataAccessor.Get<WfBusiness>(businessUid);
             if (biz == null)
                 return "未找到业务，催办失败！";
             string tableName = biz.BillEntity;
-            dynamic bizData = _dataAccessor.QueryFirstOrDefault($"select * from {tableName} where Fid=@BizUid", param, true);
+            dynamic bizData = _dataAccessor.QueryFirstOrDefault($"select * from {tableName} where Fid=@BillUid", param, true);
             string content = string.Format("您有一条：{0}的催办任务，制单人:{1},任务到达时间为:{2},请及时处理。", biz.BizName, bizData.BillEmpUidMC, receiver.First().TaskStartTime);
             string title = string.Format("{0}的催办任务", biz.BizName);
             try

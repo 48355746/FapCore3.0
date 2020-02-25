@@ -38,7 +38,7 @@
      * */
     function workflowChart(fid) {
         var processUid = '@biz.WfProcessUid';//流程
-        var openUrl = $.randomUrl(basePath + "/Workflow/Business/FlowChart?processUid=" + processUid + "&bizUid=" + fid);
+        var openUrl = $.randomUrl(basePath + "/Workflow/Business/FlowChart?processUid=" + processUid + "&billUid=" + fid);
         var width = parseInt($(window).innerWidth() * 0.8) + 'px';
         var height = parseInt($(window).innerHeight() - 60) + 'px';
         var index = layer.open({

@@ -88,7 +88,7 @@ namespace Fap.Workflow.Model
         /// 所属业务 的显性字段MC
         /// </summary>
         [Computed]
-        public string BizTypeUidMC { get; set; }
+        public string BusinessUidMC { get; set; }
         /// <summary>
         /// 流程实例
         /// </summary>

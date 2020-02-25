@@ -73,18 +73,18 @@
         function ApprovalProcess(appState,appComment,callback)
         {
             var processUid = '@process.Fid';
-            var bizTypeUid = '@wfTask.BizTypeUid';
-            var bizUid = '@wfTask.BizUid';
+            var businessUid = '@wfTask.BusinessUid';
+            var billUid = '@wfTask.BillUid';
             var nodeId = '@wfTask.NodeId';
             var wfTaskUid = '@wfTask.Fid';
             var billTable = '@formName';
             var appName = '@appName';
             var currProcessInsUid = '@wfTask.ProcessInsUid';
             var currActivityInsUid = '@wfTask.ActivityInsUid';
-            var wfvm = { AppName: appName, ProcessUid: processUid, ApproveState: appState, ApproveComment: appComment, BizTypeUid: bizTypeUid, BizUid: bizUid, CurrentNodeId: nodeId, CurrentActivityInsUid: currActivityInsUid, CurrentProcessInsUid: currProcessInsUid, CurrentWfTaskUid: wfTaskUid, BillTable: billTable };
+            var wfvm = { AppName: appName, ProcessUid: processUid, ApproveState: appState, ApproveComment: appComment, BusinessUid: businessUid, BillUid: billUid, CurrentNodeId: nodeId, CurrentActivityInsUid: currActivityInsUid, CurrentProcessInsUid: currProcessInsUid, CurrentWfTaskUid: wfTaskUid, BillTable: billTable };
             if (appState === 'Agree') {
                 //获取下一个节点
-                $.get(basePath + "/api/Workflow/BusinessApi/NextAcitvity", { bizUid: bizUid, processUid: processUid, activityInsUid: currActivityInsUid, nodeId: nodeId }, function (rv) {
+                $.get(basePath + "/Workflow/Api/Business/NextAcitvity", { billUid: billUid, processUid: processUid, activityInsUid: currActivityInsUid, nodeId: nodeId }, function (rv) {
                     if (rv.result == 1) {
                         if (rv.data.isAppoint) {
                             //下一级审批人需要指定
@@ -111,7 +111,7 @@
                 });
             } else if (appState === 'Disagree') {
 
-                $.post(basePath + "/api/Workflow/BusinessApi/SendBack", wfvm, function (rv) {
+                $.post(basePath + "/Workflow/Api/Business/SendBack", wfvm, function (rv) {
                     if (rv.status === 1) {
                         $.msg('已驳回成功！');
                         callback && callback();
@@ -127,7 +127,7 @@
         }
         function runProcess(wfdata, callback)
         {
-            $.post(basePath + "/api/Workflow/BusinessApi/RunProcess", wfdata, function (rv) {
+            $.post(basePath + "/Workflow/Api/Business/RunProcess", wfdata, function (rv) {
                 if (rv.status === 1) {
                     $.msg('审批成功！');
                     callback && callback();

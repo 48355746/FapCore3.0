@@ -8,6 +8,7 @@ using Fap.Core.MultiLanguage;
 using Fap.Core.Rbac;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,21 +16,15 @@ namespace Fap.AspNetCore.Controls.TagHelpers
 {
     public class FapFreeformTagHelper : TagHelper
     {
-        private IDbContext _dataAccessor;
-        private IRbacService _rbacService;
-        private IFapApplicationContext _applicationContext;
-        private IMultiLangService _multiLang;
-        public FapFreeformTagHelper(IDbContext dataAccessor, IRbacService rbacService, IFapApplicationContext applicationContext, IMultiLangService multiLang)
+        private IServiceProvider _serviceProvider;
+        public FapFreeformTagHelper(IServiceProvider serviceProvider)
         {
-            _dataAccessor = dataAccessor;
-            _rbacService = rbacService;
-            _applicationContext = applicationContext;
-            _multiLang = multiLang;
+            _serviceProvider = serviceProvider;
         }
         /// <summary>
         /// 控件ID
         /// </summary>
-        public string Id { get; set; }
+        public string Id { get; set; } = "freeform";
         /// <summary>
         /// 默认值设置
         /// </summary>
@@ -59,12 +54,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         {
             output.TagName = "div";
             output.Content.Clear();
-            string id = "jqgriddataform";
-            if (Id.IsPresent())
-            {
-                id = Id;
-            }
-            FapFreeForm form = new FapFreeForm(_dataAccessor, _rbacService, _applicationContext, _multiLang, id);
+            BaseForm form = new FapFreeForm(serviceProvider: _serviceProvider, Id);
             if (FormTemplate.IsPresent())
             {
                 form.SetFromTemplate(FormTemplate);

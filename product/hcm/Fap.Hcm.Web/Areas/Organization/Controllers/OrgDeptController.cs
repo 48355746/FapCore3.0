@@ -40,7 +40,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
             sq.TableName = "OrgDept";
             sq.QueryCols = "*";
             sq.InitWhere = "Id=@Id";
-            sq.Parameters.Add(new Parameter("Id", -1));
+            sq.Parameters.Add(new Parameter("Id", "-1"));
             fd.QueryOption = sq;
             fd.TableName = "OrgDept";           
             return PartialView(fd);
