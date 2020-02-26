@@ -106,13 +106,13 @@ var GetFapChildGridData = function (formid) {
 //持久化{success:true,data:obj}noPrompt--是否弹框
 var Persistence = function (formid, tableName, beforeSaveCallback, afterSaveCallback) {
     if (!$("#" + formid).valid()) {
-        $.msg('表单校验失败，请完善表单' + $(".error").html());
+        $.msg($.lang("form_validation_failed",'表单校验失败')+":" + $(".error").html());
         return false;
     } else {
         //富文本编辑控件
         var richtext = $("#" + formid).find(".wysiwyg-editor");
         if (richtext !== '' && richtext.first().data("nullable") === 0 && richtext.first().html() === '') {
-            $.msg("富文本内容不能为空！");
+            $.msg($.lang("richtext_required","富文本内容不能为空！"));
             return false;
         }
         //校验附件是否上传
@@ -132,7 +132,7 @@ var Persistence = function (formid, tableName, beforeSaveCallback, afterSaveCall
                 }
             });
             if (result) {
-                $.msg("必须要上传附件！");
+                $.msg($.lang("file_required","必须要上传附件！"));
                 return false;
             }
         }
@@ -214,7 +214,7 @@ $(function () {
         e.preventDefault();
         var fid = $(this).data("filefid");
         var df = $(this);
-        bootbox.confirm("确定删除此附件?", function (result) {
+        bootbox.confirm($.lang("confirm_delete","确定删除此附件?"), function (result) {
             if (result) {
                 //
                 $.get(basePath + "/Component/DeleteFile/" + fid, function (rv) {
@@ -236,7 +236,7 @@ $(function () {
                 if (data.id === 'img') {
                     openNewWindow(basePath + "/UploadFiles/View/" + data.msg);
                 } else if (data.id === "0" || data.id === 0) {
-                    $.msg("无法预览");
+                    $.msg($.msg("not_support_preview","无法预览"));
                 } else {
                     openNewWindow(basePath + "/Content/Pdf/web/viewer.html?file=/UploadFiles/View/" + data.msg);
                 }
@@ -254,7 +254,7 @@ var loadRefMessageBox = function (title, frmid, colfid, ctrlid, refurl, extra) {
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
         buttons: {
             success: {
-                label: $.lang("global_oper_enter", "确定"),
+                label: $.lang("ok", "确定"),
                 className: "btn-primary",
                 callback: function () {
                     var res = GetRefResult();
@@ -270,11 +270,11 @@ var loadRefMessageBox = function (title, frmid, colfid, ctrlid, refurl, extra) {
                             }
                         }
 
-                    } else { $.msg("请选择一条数据！"); return; }
+                    } else { $.msg($.lang("select_row","请选择一条数据！")); return; }
                 }
             },
             danger: {
-                label: "清空!",
+                label:$.lang("clear", "清空!"),
                 className: "btn-sm btn-danger",
                 callback: function () {
                     $("#" + frmid + " #" + ctrlid + "MC").val("").change();
@@ -309,11 +309,11 @@ var loadRefMessageBox = function (title, frmid, colfid, ctrlid, refurl, extra) {
 var loadFileMessageBox = function (ctrlid, frmid, initFileEvent) {
     //加载前，需要获取参照对话框
     var dialog = bootbox.dialog({
-        title: "附件",
+        title: $.lang("annex","附件"),
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
         buttons: {
             cancel: {
-                label: "关闭", className: "btn-default"
+                label: $.lang("close","关闭"), className: "btn-default"
             }
         }
 
@@ -328,25 +328,14 @@ var loadFileMessageBox = function (ctrlid, frmid, initFileEvent) {
 
 };
 //附件列表
-var loadFileList = function (frmid, ctrlName, bid, isFreeform) {
+var loadFileList = function (frmid, ctrlName, bid) {
     $.get(basePath + "/Component/AttachmentList/" + bid, function (rv) {
-        $("#frm-" + frmid + " #file" + frmid + ctrlName).parent().parent().parent().find(".filelist").remove();
-        var child = ' <div class=\'filelist\'>';
-        if (!isFreeform) {
-            child += '<div class=\'col-sm-2\'></div> <div class="col-xs-10 col-sm-10">';
-        } else {
-            child += '<div class="col-xs-12">';
-        }
-        child += '        <ul class="attachment-list pull-left list-inline list-unstyled">';
+        let $fv = $("#frm-" + frmid + " #" + ctrlName + "_filelist");
+        $fv.empty();
+        var child= '<ul class="attachment-list pull-left  list-unstyled">';
         child += rv;
-        child += ['    </ul>',
-            '    </div></div>'].join("");
-        if (!isFreeform) {
-            $("#frm-" + frmid + " #file" + frmid + ctrlName).parent().parent().parent().append(child);
-        } else {
-            $("#frm-" + frmid + " #file" + frmid + ctrlName).parent().append(child);
-        }
-
+        child += '    </ul>';
+        $fv.append(child);
     });
 
 };
@@ -369,7 +358,7 @@ var loadImageControl = function (ctrlid) {
             value: null,
             image: {
                 //specify ace file input plugin's options here
-                btn_choose: $.lang("ess_userprofile_page_changphoto", "更换照片"),
+                btn_choose: $.lang("replace_photo", "更换照片"),
                 droppable: true,
                 maxSize: 11000000,//~100Kb
 
@@ -379,14 +368,14 @@ var loadImageControl = function (ctrlid) {
                     if (last_gritter) $.gritter.remove(last_gritter);
                     if (error_type === 1) {//file format error
                         last_gritter = $.gritter.add({
-                            title: $.lang("ess_userprofile_page_filenotphoto", "文件不是图片") + '!',
-                            text: $.lang("global_oper_select", "请选择") + 'jpg|gif|png image!',
+                            title: $.lang("error_tip", "错误提示") + '!',
+                            text: $.lang("please_select", "请选择") + 'jpg|gif|png image!',
                             class_name: 'gritter-error gritter-center'
                         });
                     } else if (error_type === 2) {//file size rror
                         last_gritter = $.gritter.add({
-                            title: $.lang("global_file_filetoolarge", "文件太大") + '!',
-                            text: $.lang("global_file_sizenotexceed", "文件大小不要超过") + '10M!',
+                            title: $.lang("error_tip", "错误提示") + '!',
+                            text: $.lang("file_maxed", "文件大小不要超过") + '10M!',
                             class_name: 'gritter-error gritter-center'
                         });
                     }
@@ -492,7 +481,7 @@ var loadImageControl = function (ctrlid) {
                             $(avatar).get(0).src = $.randomUrl(basePath + "/Component/Photo/" + pk);
                             if (last_gritter) $.gritter.remove(last_gritter);
                             last_gritter = $.gritter.add({
-                                title: $.lang("global_file_photo_updated", "照片已更新") + '!',
+                                title: $.lang("photo_updated", "照片已更新") + '!',
                                 text: '',
                                 class_name: 'gritter-info gritter-center'
                             });
@@ -500,7 +489,7 @@ var loadImageControl = function (ctrlid) {
                         //else alert(res.message);
                     })
                     .fail(function (result) {//failure
-                        alert($.lang("global_file_photo_updateerror", "更新图片遇到错误"));
+                        alert($.lang("error", "遇到错误"));
                     })
                     .always(function () {//called on both success and failure
                         if (ie_timeout) clearTimeout(ie_timeout);

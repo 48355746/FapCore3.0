@@ -48,12 +48,11 @@
         function submitBill(callback) {
             var rv = Persistence('frm-@formName', billTable);
             if (rv === false) {
-                $.msg('数据校验失败！');
                 return;
             }
             var billData = rv.data;
-            var billcode = bizData.BillCode;
-            var billFid = bizData.Fid;
+            var billcode = billData.BillCode;
+            var billFid = billData.Fid;
             $("#frm-@formName #BillCode").val(billcode);
             if (rv.success)
             {

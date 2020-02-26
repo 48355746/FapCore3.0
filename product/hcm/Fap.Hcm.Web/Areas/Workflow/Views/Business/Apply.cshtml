@@ -15,24 +15,7 @@
     column.SetSortable(false);
     column.SetWidth(140);
 }
-<script>
-    //刷新列表
-    function refreshList() {
-        //var searchText = $("#id-text-search").val();
-        var billstatus = $("#id-text-search").data("surstatus");
-        var filter = { groupOp: "AND", rules: [] };
-        var rules = [];
-        //if (searchText != '') {
-        //    rules.push({ "field": "BillCode", "op": "cn", "data": searchText });
-        //}
-        if (billstatus != "-1") {
-            rules.push({ field: "BillStatus", op: "eq", data: billstatus });
-        }
-        reloadGrid("grid-@tableName", { filters: JSON.stringify(filter) });
-        
-    }
 
-</script>
 <div class="widget-box">
     <div class="widget-header widget-header-flat">
         <h4 class="widget-title smaller">@business.BizName</h4>
@@ -52,24 +35,18 @@
                 全部状态
                 <i class="ace-icon fa fa-angle-down icon-on-right"></i>
             </button>
-            <ul class="dropdown-menu dropdown-default">
-                <li data-surstatus="-1">
+            <ul class="dropdown-menu dropdown-default" id="btnBillStatus">
+                <li data-billstatus="-1">
                     <a href="javascript:void(0)">全部状态</a>
                 </li>
                 @foreach (var item in billStatus)
                 {
-                    <li data-surstatus="@item.Code">
+                    <li data-billstatus="@item.Code">
                         <a href="javascript:void(0)">@item.Name</a>
                     </li>
                 }
             </ul>
-            <!-- /.btn-group -->
-            @*<div class="input-group ">
-                    <input class="form-control" id="id-text-search" placeholder="单据编码" data-surstatus="-1" type="text" />
-                    <span class="input-group-addon">
-                        <i class="fa fa-search bigger-110"></i>
-                    </span>
-                </div>*@
+
         </div>
     </div>
 
@@ -81,6 +58,7 @@
     </div>
 </div>
 <script>
+
     /**
      * 初始化列表菜单
      * */
@@ -118,6 +96,20 @@
             jQuery('#grid-@tableName').jqGrid('setRowData', ids[i], { oper: de });
         }
     }
+        //刷新列表
+    function refreshList() {
+        //var searchText = $("#id-text-search").val();
+        var billstatus = $("#filterStatus").data("billstatus");
+        var filter = { groupOp: "AND", rules: [] };
+        var rules = [];
+        if (billstatus != "-1") {
+            rules.push({ field: "BillStatus", op: "eq", data: billstatus });
+            filter.rules = rules;
+            reloadGrid("grid-@tableName", { filters: JSON.stringify(filter) });
+        } else {
+            reloadGrid("grid-@tableName");
+        }
+    }
     /**
      * 提交草稿态单据
      * @@param fid
@@ -131,7 +123,7 @@
          var processUid = '@wfProcess.Fid';//流程
          var frmType = '@wfProcess.FormType';//表单类型
          var businessUid = '@businessUid';//业务Uid
-      
+
         var openUrl = $.randomUrl('@Url.Content("~/Workflow/Business/ApplyBill")?businessUid=' + businessUid + '&billUid=' + billUid);
 
         var dialog = bootbox.dialog({
@@ -142,7 +134,7 @@
             buttons: {
                 tempSave: {
                     label: '暂存',
-                    className: "btn-info",
+                    className: "btn-link btn-info",
                     callback: function () {
                         temporarySave();
                         refreshList();
@@ -150,7 +142,7 @@
                     }
                 }, submit: {
                     label: '提交',
-                    className: "btn-primary",
+                    className: "btn-link btn-primary",
                     callback: function () {
                         submitBill(function () {
                             refreshList();
@@ -284,10 +276,10 @@
 
 
     jQuery(function ($) {
-        $(".dropdown-menu>li").off(ace.click_event).on(ace.click_event, function (e) {
+        $("#btnBillStatus>li").off(ace.click_event).on(ace.click_event, function (e) {
             var tName = $(this).text();
-            var tValue = $(this).data("surstatus");
-            $("#id-text-search").data("surstatus", tValue);
+            var tValue = $(this).data("billstatus");
+            $("#filterStatus").data("billstatus", tValue);
             $("#filterStatus").html(tName + "<i class=\"ace-icon fa fa-angle-down icon-on-right\"></i>");
             refreshList();
         })
@@ -299,13 +291,6 @@
             //流程模板
             openBillForm('');
         });
-
-
-        //查询
-        $("#id-text-search").next().on(ace.click_event, function () {
-            refreshList();
-        });
-
     });
 
 

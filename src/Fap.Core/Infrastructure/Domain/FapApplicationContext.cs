@@ -82,7 +82,17 @@ namespace Fap.Core.Infrastructure.Domain
         /// <summary>
         /// 当前角色
         /// </summary>
-        public string CurrentRoleUid { get; set; } = FapPlatformConstants.CommonUserRoleFid;
+        public string CurrentRoleUid
+        {
+            get
+            {
+                return Session.GetString(FapPlatformConstants.CurrentSessionRoleKey);
+            }
+            set
+            {
+                Session.SetString(FapPlatformConstants.CurrentSessionRoleKey, value);
+            }
+        }
         /// <summary>
         /// HttpRequest
         /// </summary>
@@ -96,6 +106,6 @@ namespace Fap.Core.Infrastructure.Domain
         /// <summary>
         /// 是否为管理员
         /// </summary>
-        public bool IsAdministrator => UserName==FapPlatformConstants.Administrator;
+        public bool IsAdministrator => UserName == FapPlatformConstants.Administrator;
     }
 }

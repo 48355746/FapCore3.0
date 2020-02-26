@@ -11,6 +11,10 @@ namespace Fap.Core.Infrastructure.Domain
         /// </summary>
         public const string Administrator = "hr";
         /// <summary>
+        /// 当前角色session key
+        /// </summary>
+        public const string CurrentSessionRoleKey = "fapsessionrolekey";
+        /// <summary>
         /// 临时文件夹，临时存放导入上传的文件等
         /// </summary>
         public const string TemporaryFolder = "Temporary";

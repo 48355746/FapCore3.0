@@ -106,7 +106,7 @@ namespace Fap.Core.Infrastructure.Metadata
 
         public override string ToString()
         {
-            var sb = new StringBuilder().Append($"{{{nameof(FapDynamicObject)}}}");
+            var sb = new StringBuilder().Append("{FapDynamicObject");
             foreach (var kv in this)
             {
                 var value = kv.Value;

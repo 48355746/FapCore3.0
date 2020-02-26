@@ -79,7 +79,7 @@ namespace Fap.AspNetCore.Binder
             FapDynamicObject mainObject = new FapDynamicObject(columnList);
             foreach (var cell in mainDic)
             {
-                mainObject.SetValue(cell.Key, formValueProviders.GetValue(cell.Value));
+                mainObject.SetValue(cell.Key, formValueProviders.GetValue(cell.Value).FirstValue);
             }
             var childDicList = formValueProviders.GetKeysFromPrefix("childDataList");
             Dictionary<string, IEnumerable<FapDynamicObject>> childDataDic = null;
@@ -97,7 +97,7 @@ namespace Fap.AspNetCore.Binder
                     FapDynamicObject cData = new FapDynamicObject(_dbContext.Columns(tn));
                     foreach (var dataDic in formValueProviders.GetKeysFromPrefix(data.Value))
                     {
-                        cData.SetValue(dataDic.Key, formValueProviders.GetValue(dataDic.Value));
+                        cData.SetValue(dataDic.Key, formValueProviders.GetValue(dataDic.Value).FirstValue);
                     }
                     list.Add(cData);
                 }

@@ -30,6 +30,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
             output.TagName = "div";
+            output.Attributes.Add("style", "margin-right:25px");
             output.Content.Clear();
 
             if (Id.IsMissing())

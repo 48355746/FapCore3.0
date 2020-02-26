@@ -31,6 +31,7 @@ using Fap.AspNetCore.Binder;
 using Microsoft.Extensions.Caching.Memory;
 using Fap.Core.Rbac.Model;
 using System.Text.RegularExpressions;
+using Fap.Core.MultiLanguage;
 
 namespace Fap.AspNetCore.Serivce
 {
@@ -44,6 +45,7 @@ namespace Fap.AspNetCore.Serivce
         private readonly IOfficeService _officeService;
         private readonly ILogger<GridFormService> _logger;
         private readonly IMemoryCache _memoryCache;
+        private readonly IMultiLangService _multiLangService;
         public GridFormService(
             IFapApplicationContext fapApplicationContext,
             ILogger<GridFormService> logger,
@@ -51,7 +53,7 @@ namespace Fap.AspNetCore.Serivce
             IDbContext dbContext,
             IRbacService rbacService,
             IAntiforgery antiforgery,
-            IMemoryCache memoryCache)
+            IMemoryCache memoryCache,IMultiLangService multiLangService)
         {
             _dbContext = dbContext;
             _applicationContext = fapApplicationContext;
@@ -60,6 +62,7 @@ namespace Fap.AspNetCore.Serivce
             _officeService = officeService;
             _logger = logger;
             _memoryCache = memoryCache;
+            _multiLangService = multiLangService;
         }
         [Transactional]
         public PageDataResultView QueryPageDataResultView(JqGridPostData jqGridPostData)
@@ -349,17 +352,18 @@ namespace Fap.AspNetCore.Serivce
             var childDataList = formModel.ChildDataList;
             if (formModel.Oper == FormOperEnum.add)
             {
-                _dbContext.InsertDynamicData(formModel.MainData);
+                _dbContext.InsertDynamicData(mainData);
                 SaveChildData(mainData, childDataList);
-                return ResponseViewModelUtils.Sueecss(mainData, "创建成功");
+                return ResponseViewModelUtils.Sueecss(mainData,_multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page,"insert_success", "创建成功"));
             }
             else if (formModel.Oper == FormOperEnum.edit)
             {
                 //返回原因
                 bool rv = _dbContext.UpdateDynamicData(mainData);
                 SaveChildData(mainData, childDataList);
+                rvm.data = mainData;
                 rvm.success = rv;
-                rvm.msg = rv ? "更新成功" : "更新失败，请重试";
+                rvm.msg = rv ?_multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page,"update_success", "更新成功") :_multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page,"update_failure", "更新失败，请重试");
                 return rvm;
             }
             else if (formModel.Oper == FormOperEnum.del)
@@ -368,7 +372,7 @@ namespace Fap.AspNetCore.Serivce
                 bool rv = _dbContext.DeleteDynamicData(mainData);
                 DeleteChildData(mainData);
                 rvm.success = rv;
-                rvm.msg = rv ? "删除成功" : "删除失败，请重试";
+                rvm.msg = rv ?_multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page,"delete_success", "删除成功") :_multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page,"delete_failure", "删除失败，请重试");
                 return rvm;
             }
             else if (formModel.Oper == FormOperEnum.batch_edit)
@@ -380,7 +384,7 @@ namespace Fap.AspNetCore.Serivce
                     _dbContext.UpdateDynamicData(mainData);
                 }
                 rvm.success = true;
-                rvm.msg = "批量更新成功！";
+                rvm.msg =_multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page,"batch_update_success", "批量更新成功！");
                 return rvm;
             }
             return ResponseViewModelUtils.Sueecss();

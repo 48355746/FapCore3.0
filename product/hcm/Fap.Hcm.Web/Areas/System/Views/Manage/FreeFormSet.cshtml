@@ -1,7 +1,7 @@
 ﻿@model Fap.Core.Infrastructure.Model.CfgFreeForm
 @using Fap.Core.Infrastructure.Metadata
 @{
-    Layout = "~/Views/Shared/_Layout_Empty.cshtml";
+    Layout = "~/Views/Shared/_Layout.cshtml";
     ViewBag.Title = "自由表单设计器";
     IEnumerable<FapColumn> cols = ViewBag.DbFields;
     IEnumerable<FapTable> childTables = ViewBag.ChildTables;

@@ -982,10 +982,8 @@ namespace Fap.Workflow.Engine.Xpdl
             if (_dataAccessor.DatabaseDialect != DatabaseDialectEnum.MSSQL)
             {
                 sql = $"select 1 from dual where {condition}";
-
             }
-            object o = null;
-            _dataAccessor.ExecuteScalar(sql);
+            object o = _dataAccessor.ExecuteScalar(sql);
             if (o != null && DBNull.Value != o)
             {
                 return true;

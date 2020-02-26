@@ -257,6 +257,7 @@ namespace Fap.Workflow.Service
         /// 获取流程的第一个可办理节点
         /// </summary>
         /// <returns></returns>
+        [Transactional]
         public ActivityEntity GetFirstActivity(string processId, string billUid)
         {
             _processModel = new ProcessModel(_dataAccessor, _loggerFactory, processId, billUid);

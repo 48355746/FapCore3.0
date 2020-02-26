@@ -74,7 +74,8 @@ namespace Fap.Hcm.Web.Controllers
             var onlineUser = LoginLogging();
             var claimsPrincipal = CreateClaimsPrincipal();
             var authenticationProperties = CreateAuthenticationProperties();
-
+            //设置当前角色为普通员工
+            _applicationContext.CurrentRoleUid =FapPlatformConstants.CommonUserRoleFid;
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 claimsPrincipal, authenticationProperties);
@@ -177,11 +178,11 @@ namespace Fap.Hcm.Web.Controllers
                     new Claim(ClaimTypes.Sid,currLanguage),//语言
                     new Claim(ClaimTypes.Actor,emp.EmpPhoto)//用户图像
                 };
-                var userRoles = _loginService.GetUserRoles(loginUser.Fid);
-                foreach (var role in userRoles)
-                {
-                    claims.Add(new Claim(ClaimTypes.Role, role.Fid));
-                }
+                //var userRoles = _loginService.GetUserRoles(loginUser.Fid);
+                //foreach (var role in userRoles)
+                //{
+                //    claims.Add(new Claim(ClaimTypes.Role, role.Fid));
+                //}
                 //组装身份
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                 return new ClaimsPrincipal(claimsIdentity);

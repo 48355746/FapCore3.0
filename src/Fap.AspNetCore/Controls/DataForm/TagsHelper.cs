@@ -268,6 +268,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             sbFile.AppendFormat("<button id=\"file{0}{1}\" " + editAble + " class=\"btn btn-info\" type=\"button\"><i class=\"ace-icon fa fa-paperclip\"></i>附件</button>", frmid, ctrlName).AppendLine();
             sbFile.AppendFormat("<input type=\"text\" class=\"form-control attachment hidden\"  id=\"{0}\" name=\"{0}\" ng-model=\"{1}\"  value=\"{2}\" data-text=\"{3}\" data-nullable={4} data-editable={5} />", ctrlName, ngModel, fieldValue, lableName, fapColumn.NullAble, fapColumn.EditAble).AppendLine();
             sbFile.AppendFormat("<label class=\"text-muted\">支持文件格式({0})</label>", fapColumn.FileSuffix.IsMissing() ? "*.*" : fapColumn.FileSuffix).AppendLine();
+            sbFile.AppendLine($"<div id=\"{ctrlName}_filelist\"></div>");
             return sbFile.ToString();
         }
         public static string AsImage(this FapColumn fapColumn,  string fieldValue)

@@ -142,7 +142,7 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
             });
             ViewBag.Agent = agent;
             ViewBag.BusinessUid = businessUid;
-            var bizs = _dbContext.QueryFirstOrDefaultWhere<WfBusiness>("BusinessUid=@BusinessUid and BizStatus=1", new DynamicParameters(new { BusinessUid = businessUid }), true);
+            var bizs = _dbContext.QueryFirstOrDefaultWhere<WfBusiness>("Fid=@BusinessUid and BizStatus=1", new DynamicParameters(new { BusinessUid = businessUid }), true);
             ViewBag.Business = bizs;
             return PartialView(model);
         }
