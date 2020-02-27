@@ -10,19 +10,24 @@
 </style>
 <div class="row">
     <div class="col-xs-12">
-        <h4 class="smaller lighter green">业务信息</h4>
-        <ul class="list-inline bizprocess nav nav-pills">
-            @foreach (var item in Model)
-            {
-                <li>
-                    <a href="javascript:void(0)" data-business="@item.Fid" data-bill="@item.BillEntity">
-                        <i class="ace-icon fa fa-suitcase green bigger-110"></i>
-                        @item.BizName 
+        @foreach (var bizGrp in Model.GroupBy(b => b.BizTypeUidMC))
+        {
+            <h4 class="smaller lighter green">@bizGrp.Key</h4>
 
-                    </a>
-                </li>
-            }
-        </ul>
+            <ul class="list-inline bizprocess nav nav-pills">
+                @foreach (var biz in bizGrp.AsEnumerable())
+                {
+                    <li>
+                        <a href="javascript:void(0)" data-business="@biz.Fid" data-bill="@biz.BillEntity">
+                            <i class="ace-icon fa fa-suitcase green bigger-110"></i>
+                            @biz.BizName
+
+                        </a>
+                    </li>
+                }
+            </ul>
+        }
+
     </div>
 </div>
 <hr />

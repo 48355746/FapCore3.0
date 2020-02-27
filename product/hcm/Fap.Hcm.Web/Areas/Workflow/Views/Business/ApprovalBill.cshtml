@@ -215,11 +215,11 @@
     <div class="col-xs-12" id="formdiv">
         @if (formType == WfFormType.Internal)
         {
-            <fap-form id="@formName" default-data="@Model.DefaultData" query-option="@Model.QueryOption"></fap-form>
+            <fap-form id="@formName" form-model="Model"></fap-form>
         }
         else
         {
-            <fap-freeform id="@formName" default-data="@Model.DefaultData" form-template="@ffTemplate" grid-readonly="true"  query-option="@Model.QueryOption"></fap-freeform>
+            <fap-freeform id="@formName" form-model="Model" form-template="@ffTemplate" grid-readonly="true" ></fap-freeform>
         }
     </div>
 </div>

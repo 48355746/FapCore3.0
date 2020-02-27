@@ -12,12 +12,22 @@
     WfBusiness biz = ViewBag.Business;
 }
 
-<div class="row">
-    <div class="col-xs-12">
-        <fap-grid id="@Model.JqgridId" attach-column="@column" grid-model="Model" wrapper="col-xs-12" auto-width="true" shrink-fit="false" oper-import="false" on-grid-complete="initOperMenu"></fap-grid>
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="widget-box">
+                <div class="widget-header widget-header-flat">
+                    <h4 class="widget-title smaller">@biz.BizName</h4>
+                </div>
+
+                <div class="widget-body">
+                    <div class="widget-main">
+                        <fap-grid id="@Model.JqgridId" attach-column="@column" grid-model="Model"  auto-width="true" shrink-fit="false" oper-import="false" on-grid-complete="initOperMenu"></fap-grid>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
-<script>
+    <script>
     function initOperMenu()
     {
         var ids = jQuery("#grid-@tableName").jqGrid('getDataIDs');
@@ -27,8 +37,8 @@
             var ret = jQuery('#grid-@tableName').jqGrid('getRowData', cl);
             var fid = ret.Fid;
 
-            de += "<a  href='javascript:void(0)' onclick='viewBill(\"" + fid + "\")'>查看</a>  ";
-            de += "<a  href='javascript:void(0)' onclick='workflowChart(\"" + fid + "\")'>流程图</a>";
+            de += "<a  href='javascript:void(0)' onclick='viewBill(\"" + fid + "\")'>"+$.lang("view","查看")+"</a>  ";
+            de += "<a  href='javascript:void(0)' onclick='workflowChart(\"" + fid + "\")'>"+$.lang("flow_diagram","流程图")+"</a>";
 
             jQuery('#grid-@tableName').jqGrid('setRowData', ids[i], { oper: de });
         }
@@ -43,7 +53,7 @@
         var height = parseInt($(window).innerHeight() - 60) + 'px';
         var index = layer.open({
             type: 2,
-            title: '"@biz.BizName"流程图',
+            title: '@biz.BizName',
             shadeClose: true,
             shade: 0.8,
             maxmin: true, //开启最大化最小化按钮
@@ -51,7 +61,7 @@
             btnAlign: 'c',
             area: [width, height],
             content: openUrl,
-            btn: ['关闭'],
+            btn: [$.lang("close",'关闭')],
             yes: function (index, layero) {
                 layer.close(index);
             }
@@ -62,7 +72,7 @@
             }
         });
     }
-       
+
     function viewBill(fid)
     {
         var agent = '@ViewBag.Agent';
@@ -72,7 +82,7 @@
         var height = parseInt($(window).innerHeight() - 60) + 'px';
         var index = layer.open({
             type: 2,
-            title: '审批单查看',
+            title: '@biz.BizName',
             shadeClose: true,
             shade: 0.8,
             maxmin: true, //开启最大化最小化按钮
@@ -80,7 +90,7 @@
             btnAlign: 'c',
             area: [width, height],
             content: openUrl,
-            btn: [ '关闭']
+            btn: [$.lang("close",'关闭')]
             , yes: function (index, layero) {
                 layer.close(index);
             }
@@ -96,4 +106,4 @@
         $("#grid-@tableName").trigger("reloadGrid"); //重新载入
 
     }
-</script>
+    </script>

@@ -1,6 +1,6 @@
 ﻿@model IEnumerable<Fap.Workflow.Model.WfBusiness>
 
-<title>待办任务</title>
+<title><fap-multilang lang-key="todo_task" default-content="待办任务"></fap-multilang></title>
 <link href="~/Content/bootstrap-layer.css" rel="stylesheet" />
 <style>
     .billskin .layui-layer-btn0 {
@@ -10,19 +10,24 @@
 </style>
 <div class="row">
     <div class="col-xs-12">
-        <h4 class="smaller lighter green">业务信息</h4>
-        <ul class="list-inline bizprocess nav nav-pills">
-            @foreach (var item in Model)
-            {
-                <li>
-                    <a href="javascript:void(0)" data-business="@item.Fid" data-bill="@item.BillEntity">
-                        <i class="ace-icon fa fa-suitcase green bigger-110"></i>
-                        @item.BizName <i class="text-danger">@(item.Exp.ToString() == "0" ? "" : $"+{item.Exp}")</i>
+        @foreach (var bizGrp in Model.GroupBy(b => b.BizTypeUidMC))
+        {
+            <h4 class="smaller lighter green">@bizGrp.Key</h4>
 
-                    </a>
-                </li>
-            }
-        </ul>
+            <ul class="list-inline bizprocess nav nav-pills">
+                @foreach (var biz in bizGrp.AsEnumerable())
+                {
+                    <li>
+                        <a href="javascript:void(0)" data-business="@biz.Fid" data-bill="@biz.BillEntity">
+                            <i class="ace-icon fa fa-suitcase green bigger-110"></i>
+                            @biz.BizName <i class="text-danger">@(biz.Exp.ToString() == "0" ? "" : $"+{biz.Exp}")</i>
+
+                        </a>
+                    </li>
+                }
+            </ul>
+        }
+
     </div>
 </div>
 <hr />

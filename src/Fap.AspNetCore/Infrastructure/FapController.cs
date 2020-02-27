@@ -40,6 +40,11 @@ namespace Fap.AspNetCore.Infrastructure
             if (fid.IsMissing())
             {
                 fid = UUIDUtils.Fid;
+                model.FormStatus = Controls.DataForm.FormStatus.Add;
+            }
+            else
+            {
+                model.FormStatus = Controls.DataForm.FormStatus.Edit;
             }
             qs.InitWhere = "Fid=@Fid";
             qs.Parameters.Add(new Parameter("Fid", fid));

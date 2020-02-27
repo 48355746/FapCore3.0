@@ -7,7 +7,7 @@ namespace Fap.AspNetCore.Controls
 {
     /// <summary>
     /// 文件上传控件
-    /// js：~/Content/fileinput/fileinput.js,~/Content/fileinput/fileinput_locale_zh.js
+    /// js：~/Content/fileinput/fileinput.js,~/Content/fileinput/locales/zh.js
     /// css:~/Content/css/fileinput.css
     /// </summary>
     public class FileInput : HtmlString

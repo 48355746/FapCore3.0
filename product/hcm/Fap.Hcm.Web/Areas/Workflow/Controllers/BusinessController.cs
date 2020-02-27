@@ -132,7 +132,6 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
                 }
             });
             ViewBag.Agent = agent;
-            ViewBag.BusinessUid = businessUid;
             var bizs = _dbContext.QueryFirstOrDefaultWhere<WfBusiness>("Fid=@BusinessUid and BizStatus=1", new DynamicParameters(new { BusinessUid = businessUid }), true);
             ViewBag.Business = bizs;
             return PartialView(model);
@@ -352,7 +351,7 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
         public IActionResult TodoTask()
         {
             //获取审批业务
-            IEnumerable<WfBusiness> businessList = _dbContext.QueryWhere<WfBusiness>("BizStatus=1");
+            IEnumerable<WfBusiness> businessList = _dbContext.QueryWhere<WfBusiness>("BizStatus=1", null, true);
             //获取待办
             var listCount = _dbContext.Query($"select count(0) C,WfTask.BusinessUid from WfTask,WfActivityInstance,WfProcessInstance where WfTask.ActivityInsUid=WfActivityInstance.Fid and WfTask.ProcessInsUid= WfProcessInstance.Fid and  WfProcessInstance.ProcessState='Running' and  WfActivityInstance.ActivityState in('{WfActivityInstanceState.Running}','{WfActivityInstanceState.Ready}') and WfTask.TaskState='{WfTaskState.Handling}' and WfTask.ExecutorEmpUid='{_applicationContext.EmpUid}' group by WfTask.BusinessUid");
             foreach (var item in businessList)
@@ -369,7 +368,7 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
         public IActionResult DoneTask()
         {
             //获取审批业务
-            IEnumerable<WfBusiness> businesses = _dbContext.QueryWhere<WfBusiness>("BizStatus=1");
+            IEnumerable<WfBusiness> businesses = _dbContext.QueryWhere<WfBusiness>("BizStatus=1", null, true);
 
             return View(businesses);
         }
@@ -380,7 +379,7 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
         public IActionResult AgentTask()
         {
             //获取审批业务
-            IEnumerable<WfBusiness> bizs = _dbContext.QueryWhere<WfBusiness>("BizStatus=1");
+            IEnumerable<WfBusiness> bizs = _dbContext.QueryWhere<WfBusiness>("BizStatus=1", null, true);
             //获取代理人
             var agents = _dbContext.QueryAll<WfAgentSetting>().Where(a => a.Agent == _applicationContext.EmpUid && a.State == 1);// _dbContext.QueryWhere<WfAgentSetting>($" Agent='{_applicationContext.EmpUid}' and [State]=1");
 
@@ -417,7 +416,7 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
             }
             DynamicParameters param = new DynamicParameters();
             param.Add("ModuleUid", moduleUid);
-            IEnumerable<WfBusiness> businessList = _dbContext.QueryWhere<WfBusiness>("ModuleUid=@ModuleUid and BizStatus = 1", param);
+            IEnumerable<WfBusiness> businessList = _dbContext.QueryWhere<WfBusiness>("ModuleUid=@ModuleUid and BizStatus = 1", param,null,true);
             if (businessList == null || !businessList.Any())
             {
                 return Content("业务分类不存在");

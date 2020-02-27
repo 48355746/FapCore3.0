@@ -158,8 +158,6 @@
         if ('ontouchstart' in document.documentElement) document.write("<script src='../Content/js/jquery.mobile.custom.js'>" + "<" + "/script>");
     </script>
     <script src="~/Scripts/MultiLanguage.js" asp-append-version="true"></script>
-    @*<script src="~/Scripts/jquery.cookie.js"></script>
-    <script src="~/Scripts/jquery.base64.js"></script>*@
     <script src="~/Content/js/jquery.validate.js"></script>
     <script>
 
@@ -231,11 +229,11 @@
 
                 messages: {
                     username: {
-                        required: $.lang("login_username_required", "请输入你的用户名"),
+                        required: MultiLangHelper.getResName("login_username_required", "请输入你的用户名"),
                     },
                     userpwd: {
-                        required: $.lang("login_password_required", "请输入你的密码"),
-                        minlength: $.lang("login_password_level", "请指定一个安全密码")
+                        required: MultiLangHelper.getResName("login_password_required", "请输入你的密码"),
+                        minlength: MultiLangHelper.getResName("login_password_level", "请指定一个安全密码")
                     },
 
                 },

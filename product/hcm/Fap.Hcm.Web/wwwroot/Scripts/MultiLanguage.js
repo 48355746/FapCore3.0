@@ -54,7 +54,12 @@ var MultiLangHelper = (function () {
       'global_file_photo_updated': { 'ZhCn': '照片已更新', 'ZhTW': '', 'En': '', 'Ja': '' },
       'replace_photo': { 'ZhCn': '更换照片', 'ZhTW': '', 'En': '', 'Ja': '' },
       'global_oper_cancel': { 'ZhCn': '取消', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'clear': { 'ZhCn': '清空!', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'clear': { 'ZhCn': '清空!', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'handler': { 'ZhCn': '办理', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'flow_diagram': { 'ZhCn': '流程图', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'login_username_required': { 'ZhCn': '请输入你的用户名', 'ZhTW': '', 'En': 'please input your user name', 'Ja': '' },
+      'login_password_required': { 'ZhCn': '请输入你的密码', 'ZhTW': '', 'En': 'please input your password', 'Ja': '' },
+      'login_password_level': { 'ZhCn': '请指定一个安全密码', 'ZhTW': '', 'En': 'please input security code', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

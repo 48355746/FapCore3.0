@@ -2,9 +2,7 @@
 @model Fap.AspNetCore.ViewModel.JqGridViewModel
 @using Fap.AspNetCore.Controls.JqGrid
 @{
-    Layout = null;
     string tableName = Model.JqgridId;
-    string businessUid = ViewBag.BusinessUid;
     //增加操作列
     Column column = new Column("oper");
     column.SetLabel("操作");
@@ -14,12 +12,22 @@
     WfBusiness biz = ViewBag.Business;
 }
 
-<div class="row">
-    <div class="col-xs-12">
-        <fap-grid id="@Model.JqgridId" attach-column="@column" grid-model="Model" wrapper="col-xs-12" auto-width="true" shrink-fit="false" oper-import="false" on-grid-complete="initOperMenu"></fap-grid>
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="widget-box">
+                <div class="widget-header widget-header-flat">
+                    <h4 class="widget-title smaller">@biz.BizName</h4>
+                </div>
+
+                <div class="widget-body">
+                    <div class="widget-main">
+                        <fap-grid id="@Model.JqgridId" attach-column="@column" grid-model="Model"  auto-width="true" shrink-fit="false" oper-import="false" on-grid-complete="initOperMenu"></fap-grid>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
-<script>
+            <script>
     function initOperMenu()
     {
         var ids = jQuery("#grid-@tableName").jqGrid('getDataIDs');
@@ -28,9 +36,8 @@
             var cl = ids[i];
             var ret = jQuery('#grid-@tableName').jqGrid('getRowData', cl);
             var fid = ret.Fid;
-
-            de += "<a  href='javascript:void(0)' onclick='approvalBill(\"" + fid + "\")'>办理</a>  ";
-            de += "<a  href='javascript:void(0)' onclick='workflowChart(\"" + fid + "\")'>流程图</a>";
+            de += "<a  href='javascript:void(0)' onclick='approvalBill(\"" + fid + "\")'>"+$.lang("handler","办理")+"</a>  ";
+            de += "<a  href='javascript:void(0)' onclick='workflowChart(\"" + fid + "\")'>"+$.lang("flow_diagram","流程图")+"</a>";
             jQuery('#grid-@tableName').jqGrid('setRowData', ids[i], { oper: de });
         }
     }
@@ -44,7 +51,7 @@
         var height = parseInt($(window).innerHeight() - 60) + 'px';
         var index = layer.open({
             type: 2,
-            title: '"@biz.BizName"流程图',
+            title: '@biz.BizName',
             shadeClose: true,
             shade: 0.8,
             maxmin: true, //开启最大化最小化按钮
@@ -66,7 +73,7 @@
     function approvalBill(fid)
     {
         var agent = '@ViewBag.Agent';
-        var businessUid = '@businessUid';
+        var businessUid = '@biz.Fid';
         var openUrl = basePath + "/Workflow/Business/ApprovalBill?billUid=" + fid + "&businessUid=" + businessUid + "&agent=" + agent;
 
         var dialog = bootbox.dialog({
@@ -78,7 +85,7 @@
                 disagree: {
                     label: '不同意',
                     className: "btn-danger",
-                    callback: function () {    
+                    callback: function () {
                         layer.prompt({ title: '请填写审批意见，并确认', formType: 2 }, function (text, index) {
                             layer.close(index);
                             ApprovalProcess('Disagree', text, function () {
@@ -111,7 +118,7 @@
         dialog.init(function () {
             $.get(openUrl, function (ev) {
                 dialog.find('.bootbox-body').html(ev);
-               
+
             });
         });
 
@@ -203,7 +210,7 @@
                 if (agent == '1') {
                     let iagent = parseInt(agent) - 1;
                     $('#agentcounter  a ').find('.percent').text(iagent);
-                    let agentpercent = (iagent / itotal).toFixed(2) * 100; 
+                    let agentpercent = (iagent / itotal).toFixed(2) * 100;
                     let todopercent = 100 - agentpercent;
                     $('#todocounter  a ').find('.progress-bar').css('width', todopercent + '%');
                     $('#agentcounter  a ').find('.progress-bar').css('width', agentpercent + '%');
@@ -217,7 +224,7 @@
                     $('#agentcounter  a ').find('.progress-bar').css('width', agentpercent + '%');
                 }
             }
-            
+
         }
 
     }
@@ -226,4 +233,4 @@
         $("#grid-@tableName").trigger("reloadGrid"); //重新载入
 
     }
-</script>
+            </script>

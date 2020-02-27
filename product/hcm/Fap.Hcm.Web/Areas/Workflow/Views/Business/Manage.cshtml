@@ -18,78 +18,54 @@
 <script>
     //刷新列表
     function refreshList() {
-        var searchText = $("#id-text-search").val();
-        var billstatus = $("#id-text-search").data("surstatus");
+           var billstatus = $("#filterStatus").data("billstatus");
         var filter = { groupOp: "AND", rules: [] };
         var rules = [];
-        if (searchText != '') {
-            rules.push({ "field": "BillCode", "op": "cn", "data": searchText });
-        }
         if (billstatus != "-1") {
             rules.push({ field: "BillStatus", op: "eq", data: billstatus });
-        }
-        if (rules.length > 0) {
             filter.rules = rules;
-            $("#grid-@tableName").jqGrid('setGridParam', {
-                datatype: 'json',
-                postData: { filters: JSON.stringify(filter) }, //发送数据
-                page: 1
-            }).trigger("reloadGrid"); //重新载入
+            reloadGrid("grid-@tableName", { filters: JSON.stringify(filter) });
         } else {
-            $("#grid-@tableName").jqGrid('setGridParam', {
-                page: 1,
-                postData: { 'filters': '' },
-            }).trigger("reloadGrid"); //重新载入
+            reloadGrid("grid-@tableName");
         }
     }
 
 </script>
+<div class="widget-box">
+    <div class="widget-header widget-header-flat">
+        <h4 class="widget-title smaller">@biz.BizName</h4>     
 
-<div class="row">
-    <div class="col-xs-12">
-        <div class="row">
-          
-            <div class=" col-xs-6  btn-toolbar">
-                <p>
-                    <div class="btn-group">
-                        <button data-toggle="dropdown" id="filterStatus" class="btn  btn-white dropdown-toggle">
-                            全部状态
-                            <i class="ace-icon fa fa-angle-down icon-on-right"></i>
-                        </button>
-                        <ul class="dropdown-menu dropdown-default">
+        <div class="widget-toolbar">
+            <label>
+                <i class="ace-icon fa fa-filter icon-on-right"></i>
+                <fap-multilang lang-key="bill_status" default-content="单据状态"></fap-multilang>:
+            </label>
+            <button data-toggle="dropdown" id="filterStatus" data-billstatus="-1" class="btn  btn-link  dropdown-toggle">
+                <fap-multilang lang-key="all_status" default-content="全部状态"></fap-multilang>
+                <i class="ace-icon fa fa-angle-down icon-on-right"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-default" id="btnBillStatus">
+                <li data-billstatus="-1">
+                    <a href="javascript:void(0)"> <fap-multilang lang-key="all_status" default-content="全部状态"></fap-multilang></a>
+                </li>
+                @foreach (var item in billStatus)
+                {
+                    <li data-billstatus="@item.Code">
+                        <a href="javascript:void(0)">@item.Name</a>
+                    </li>
+                }
+            </ul>
 
-                            <li data-surstatus="-1">
-                                <a href="javascript:void(0)">全部状态</a>
-                            </li>
-                            @foreach (var item in billStatus)
-                            {
-                                <li data-surstatus="@item.Code">
-                                    <a href="javascript:void(0)">@item.Name</a>
-                                </li>
-                            }
-                        </ul>
-                    </div><!-- /.btn-group -->
-                    <div class="input-group col-sm-4 col-xs-12">
-                        <input class="form-control" id="id-text-search" placeholder="单据编码" data-surstatus="-1" type="text" />
-                        <span class="input-group-addon">
-                            <i class="fa fa-search bigger-110"></i>
-                        </span>
-                    </div>
-                </p>
-            </div>
         </div>
+    </div>
 
-
-
-        <div class="row">
-            <div class="col-xs-12">
-                <fap-grid id="@tableName" attach-column="@column" grid-model="Model" auto-width="true" shrink-fit="false" view-records="true" on-grid-complete="initWorkflowMenu"></fap-grid>
-
-            </div>
+    <div class="widget-body">
+        <div class="widget-main">
+            <fap-grid id="@tableName" attach-column="@column" grid-model="Model" auto-width="true" shrink-fit="false" view-records="true" on-grid-complete="initWorkflowMenu"></fap-grid>
         </div>
-
     </div>
 </div>
+
 <script>
     /**
      * 初始化列表菜单
@@ -105,12 +81,12 @@
             var status = ret.BillStatus;
 
             //其他不为作废的单子
-            de += "<a  href='javascript:void(0)' onclick='viewBill(\"" + fid + "\",\"" + name + "\")'>查看</a>  ";
+            de += "<a  href='javascript:void(0)' onclick='viewBill(\"" + fid + "\",\"" + name + "\")'>"+$.lang("view","查看")+"</a>  ";
             if (status === 'PROCESSING') {
                 //流程中
-                de += "<a  href='javascript:void(0)' onclick='urgeBill(\"" + fid + "\")'>催办</a>  ";
+                de += "<a  href='javascript:void(0)' onclick='urgeBill(\"" + fid + "\")'>"+$.lang("urge","催办")+"</a>  ";
             }
-            de += "<a  href='javascript:void(0)' onclick='workflowChart(\"" + fid + "\")'>流程图</a>  ";
+            de += "<a  href='javascript:void(0)' onclick='workflowChart(\"" + fid + "\")'>"+$.lang("flow_diagram","流程图")+"</a>  ";
 
             jQuery('#grid-@tableName').jqGrid('setRowData', ids[i], { oper: de });
         }
@@ -204,13 +180,14 @@
         }
     }
 
-        jQuery(function ($) {
-            $(".dropdown-menu>li").off(ace.click_event).on(ace.click_event, function (e) {
+        jQuery(function ($) {        
+            $("#btnBillStatus>li").off(ace.click_event).on(ace.click_event, function (e) {
                 var tName = $(this).text();
-                var tValue = $(this).data("surstatus");
-                $("#id-text-search").data("surstatus", tValue);
+                var tValue = $(this).data("billstatus");
+                $("#filterStatus").data("billstatus", tValue);
                 $("#filterStatus").html(tName + "<i class=\"ace-icon fa fa-angle-down icon-on-right\"></i>");
-            })
+                refreshList();
+            });
             $(document).one('ajaxloadstart.page', function (e) {
                 //$(document).off(ace.click_event, '.dropdown-menu>li');
             })
@@ -220,11 +197,6 @@
                 openBillForm('');
             });
 
-
-            //查询
-            $("#id-text-search").next().on(ace.click_event, function () {
-                refreshList();
-            });
 
         })
 

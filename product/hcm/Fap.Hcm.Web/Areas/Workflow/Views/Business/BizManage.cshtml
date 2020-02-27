@@ -14,18 +14,22 @@
 </style>
 <div class="row">
     <div class="col-xs-12">
-        <h4 class="smaller lighter green">业务信息</h4>
-        <ul class="list-inline bizprocess">
-            @foreach (var item in Model)
-            {
+        @foreach (var bizGrp in Model.GroupBy(b => b.BizTypeUidMC))
+        {
+            <h4 class="smaller lighter green">@bizGrp.Key</h4>
+
+            <ul class="list-inline bizprocess nav nav-pills">
+                @foreach (var biz in bizGrp.AsEnumerable())
+                {
                 <li>
-                    <a href="javascript:void(0)" data-business="@item.Fid" data-bill="@item.BillEntity">
+                    <a href="javascript:void(0)" data-business="@biz.Fid" data-bill="@biz.BillEntity">
                         <i class="ace-icon fa fa-suitcase green bigger-110"></i>
-                        @item.BizName
+                        @biz.BizName
                     </a>
                 </li>
-            }
-        </ul>
+                }
+            </ul>
+        }       
     </div>
 </div>
 <hr />

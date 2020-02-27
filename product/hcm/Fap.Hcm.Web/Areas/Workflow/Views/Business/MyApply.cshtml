@@ -19,12 +19,12 @@
             <ul class="list-inline bizprocess nav nav-pills">
                 @foreach (var biz in bizGrp.AsEnumerable())
                 {
-                    <li>                      
-                        <fap-button id="@biz.BizCode" btn-tag="link" content="@biz.BizName"  data-business="@biz.Fid" icon-before="fa fa-suitcase green"></fap-button>
+                    <li>
+                        <fap-button id="@biz.BizCode" btn-tag="link" content="@biz.BizName" data-business="@biz.Fid" icon-before="fa fa-suitcase green"></fap-button>
                     </li>
                 }
             </ul>
-            }
+        }
     </div>
 </div>
 <hr />
@@ -61,7 +61,7 @@
             })
             $(".bizprocess li>a").on(ace.click_event, function () {
                 var $this = $(this);
-                var business = $this.data("business");               
+                var business = $this.data("business");
                 $("#myApplyContent").empty();
                 layer.load();
                 $.get(basePath + "/Workflow/Business/Apply/" + business, function (content) {
