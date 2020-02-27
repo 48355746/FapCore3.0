@@ -21,23 +21,23 @@
         <h4 class="widget-title smaller">@business.BizName</h4>
         <div class="widget-toolbar">
             <button class="btn btn-purple btn-link" id="btnAddApply">
-                <i class="ace-icon fa fa-plus"></i>
-                申请
+                <i class="ace-icon fa fa-plus"></i>                
+                <fap-multilang lang-key="apply" default-content="申请"></fap-multilang>
             </button>
         </div>
 
         <div class="widget-toolbar">
             <label>
                 <i class="ace-icon fa fa-filter icon-on-right"></i>
-                单据状态:
+                <fap-multilang lang-key="bill_status" default-content="单据状态"></fap-multilang>:
             </label>
             <button data-toggle="dropdown" id="filterStatus" class="btn  btn-link  dropdown-toggle">
-                全部状态
+                <fap-multilang lang-key="all_status" default-content="全部状态"></fap-multilang>
                 <i class="ace-icon fa fa-angle-down icon-on-right"></i>
             </button>
             <ul class="dropdown-menu dropdown-default" id="btnBillStatus">
                 <li data-billstatus="-1">
-                    <a href="javascript:void(0)">全部状态</a>
+                    <a href="javascript:void(0)"> <fap-multilang lang-key="all_status" default-content="全部状态"></fap-multilang></a>
                 </li>
                 @foreach (var item in billStatus)
                 {
@@ -73,24 +73,24 @@
             var status = ret.BillStatus;
             if (status === 'DRAFT') {
                 //草稿
-                de += "<a  href='javascript:void(0)' onclick='submitDraft(\"" + fid + "\")'>提交</a>  ";
-                de += "<a  href='javascript:void(0)' onclick='invalidBill(\"" + fid + "\")'>作废</a>";
+                de += "<a  href='javascript:void(0)' onclick='submitDraft(\"" + fid + "\")'>"+$.lang("submit","提交")+"</a>  ";
+                de += "<a  href='javascript:void(0)' onclick='invalidBill(\"" + fid + "\")'>"+$.lang("invalid","作废")+"</a>";
             } else if (status === 'REVOKED') {
                 //驳回
-                de += "<a  href='javascript:void(0)' onclick='submitDraft(\"" + fid + "\")'>提交</a>  ";
-                de += "<a  href='javascript:void(0)' onclick='workflowChart(\"" + fid + "\")'>流程图</a>  ";
+                de += "<a  href='javascript:void(0)' onclick='submitDraft(\"" + fid + "\")'>"+$.lang("submit","提交")+"</a>  ";
+                de += "<a  href='javascript:void(0)' onclick='workflowChart(\"" + fid + "\")'>"+$.lang("flow_diagram","流程图")+"</a>  ";
             } else if (status === 'PROCESSING') {
                 //流程中
-                de += "<a  href='javascript:void(0)' onclick='viewBill(\"" + fid + "\")'>查看</a>  ";
-                de += "<a  href='javascript:void(0)' onclick='recallBill(\"" + fid + "\")'>撤回</a>  ";
-                de += "<a  href='javascript:void(0)' onclick='workflowChart(\"" + fid + "\")'>流程图</a>  ";
+                de += "<a  href='javascript:void(0)' onclick='viewBill(\"" + fid + "\")'>"+$.lang("view","查看")+"</a>  ";
+                de += "<a  href='javascript:void(0)' onclick='recallBill(\"" + fid + "\")'>"+$.lang("recall","撤回")+"</a>  ";
+                de += "<a  href='javascript:void(0)' onclick='workflowChart(\"" + fid + "\")'>"+$.lang("flow_diagram","流程图")+"</a>  ";
 
             } else if (status !== 'CANCELED') {
                 //其他不为作废的单子
-                de += "<a  href='javascript:void(0)' onclick='viewBill(\"" + fid + "\",\"" + name + "\")'>查看</a> ";
-                de += "<a  href='javascript:void(0)' onclick='workflowChart(\"" + fid + "\")'>流程图</a>  ";
+                de += "<a  href='javascript:void(0)' onclick='viewBill(\"" + fid + "\",\"" + name + "\")'>"+$.lang("view","查看")+"</a> ";
+                de += "<a  href='javascript:void(0)' onclick='workflowChart(\"" + fid + "\")'>"+$.lang("flow_diagram","流程图")+"</a>  ";
             } else {
-                de += "<a  href='javascript:void(0)' onclick='viewBill(\"" + fid + "\",\"" + name + "\")'>查看</a> ";
+                de += "<a  href='javascript:void(0)' onclick='viewBill(\"" + fid + "\",\"" + name + "\")'>"+$.lang("view","查看")+"</a> ";
 
             }
             jQuery('#grid-@tableName').jqGrid('setRowData', ids[i], { oper: de });
@@ -127,13 +127,13 @@
         var openUrl = $.randomUrl('@Url.Content("~/Workflow/Business/ApplyBill")?businessUid=' + businessUid + '&billUid=' + billUid);
 
         var dialog = bootbox.dialog({
-            title: '"@title"申请单',
+            title: '@title',
             message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
             size: "large",
             footer: false,
             buttons: {
                 tempSave: {
-                    label: '暂存',
+                    label: $.lang("temporary",'暂存'),
                     className: "btn-link btn-info",
                     callback: function () {
                         temporarySave();
@@ -141,7 +141,7 @@
                         return false;
                     }
                 }, submit: {
-                    label: '提交',
+                    label: $.lang("submit","提交"),
                     className: "btn-link btn-primary",
                     callback: function () {
                         submitBill(function () {
@@ -165,9 +165,9 @@
      * @@param fid
      */
     function invalidBill(fid) {
-        bootbox.confirm("确认撤销单据吗？", function (result) {
+        bootbox.confirm($.lang("confirm_invalid","确认作废单据吗？"), function (result) {
             if (result) {
-                $.get(basePath + "/api/Workflow/BusinessApi/Invalid/@tableName/" + fid, function (rv) {
+                $.get(basePath + "/Workflow/Api/Business/Invalid/@tableName/" + fid, function (rv) {
                     if (rv.status === 3) {
                         bootbox.alert(rv.message);
 
@@ -183,11 +183,11 @@
      * @@param fid
      */
     function recallBill(fid) {
-        bootbox.confirm("确认撤销单据吗？", function (result) {
+        bootbox.confirm($.lang("confirm_recall","确认撤销单据吗？"), function (result) {
             if (result) {
                 var processUid = '@wfProcess.Fid';//流程
 
-                $.get(basePath + "/api/Workflow/BusinessApi/Withdrawn/" + processUid + "/" + fid, function (rv) {
+                $.get(basePath + "/Workflow/Api/Business/Withdrawn/" + processUid + "/" + fid, function (rv) {
                     if (rv.status === 3) {
                         bootbox.alert(rv.message);
                     } else {
@@ -207,7 +207,7 @@
         var height = parseInt($(window).innerHeight() - 60) + 'px';
         var index = layer.open({
             type: 2,
-            title: '"@title"申请单',
+            title: '@title',
             shadeClose: true,
             shade: 0.8,
             maxmin: true, //开启最大化最小化按钮
@@ -216,7 +216,7 @@
             area: width,//[width, 'auto'],
             offset: '100px',
             content: openUrl,
-            btn: ['关闭'],
+            btn: [$.lang("close",'关闭')],
             success: function (layero, index) {
                 layer.iframeAuto(index);
             },
@@ -234,17 +234,13 @@
         var processUid = '@wfProcess.Fid';//流程
         var frmType = '@wfProcess.FormType';//表单类型
         var businessUid = '@businessUid';//业务Uid
-
-        if (processUid === '') {
-            bootbox.alert("此业务没关联流程或关联的流程已失效,请设置关联！");
-            return;
-        }
+        
         var openUrl = $.randomUrl('@Url.Content("~/Workflow/Business/ApplyViewBill")?processUid=' + processUid + '&businessUid=' + businessUid + '&billUid=' + fid);
         var width = parseInt($(window).innerWidth() * 0.8) + 'px';
         var height = parseInt($(window).innerHeight() - 60) + 'px';
         var index = layer.open({
             type: 2,
-            title: '"@title"申请单查看',
+            title: '@title',
             shadeClose: true,
             shade: 0.8,
             maxmin: true, //开启最大化最小化按钮
@@ -252,7 +248,7 @@
             btnAlign: 'c',
             area: [width, height],
             content: openUrl,
-            btn: ['打印', '关闭']
+            btn: [$.lang('print','打印'),$.lang('close','关闭')]
             , yes: function (index, layero) {
                 //按钮【暂存】的回调
                 var iframeWin = layero.find('iframe')[0];

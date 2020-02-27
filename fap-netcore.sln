@@ -35,6 +35,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		update1.sql = update1.sql
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UEditorNetCore", "thirdparty\UEditorNetCore\UEditorNetCore.csproj", "{01A60121-72CC-4893-8754-8E5DBD589B2F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,10 @@ Global
 		{43994168-CF9F-4994-9694-C81408939B85}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{43994168-CF9F-4994-9694-C81408939B85}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{43994168-CF9F-4994-9694-C81408939B85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01A60121-72CC-4893-8754-8E5DBD589B2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01A60121-72CC-4893-8754-8E5DBD589B2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01A60121-72CC-4893-8754-8E5DBD589B2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01A60121-72CC-4893-8754-8E5DBD589B2F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -82,6 +88,7 @@ Global
 		{E23CD73E-9AB0-44D4-B1AD-91C6F7715F8F} = {F090AD1C-246B-49B8-A787-0BC76378B0BC}
 		{C6C1789A-2BE8-4A2F-A6A3-81C008FA4143} = {F090AD1C-246B-49B8-A787-0BC76378B0BC}
 		{43994168-CF9F-4994-9694-C81408939B85} = {B10864B6-D325-4345-AB3F-BF37B1379878}
+		{01A60121-72CC-4893-8754-8E5DBD589B2F} = {CFA4CB9A-8CBF-4F54-914B-5F2B96CAC57C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {44AE87F0-7178-43D6-81AB-3D9AB237BD1C}

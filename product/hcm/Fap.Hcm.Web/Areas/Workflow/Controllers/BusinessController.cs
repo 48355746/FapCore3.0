@@ -84,23 +84,14 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
         public IActionResult ApplyViewBill(string processUid, string businessUid, string billUid)
         {
             WfProcess process = _dbContext.Get<WfProcess>(processUid);
-            FormViewModel model = new FormViewModel();
-            string tn = process.BillTable;
-            model.FormId = "frm-" + tn;
-            QuerySet qs = new QuerySet()
-            {
-                TableName = tn,
-                GlobalWhere = "Fid=@Fid"
-            };
-            qs.Parameters.Add(new Parameter("Fid", billUid));
+            FormViewModel model = this.GetFormViewModel(process.BillTable, "frm-" + process.BillTable, billUid);
+          
             model.FormStatus = AspNetCore.Controls.DataForm.FormStatus.View;
 
             //关联的业务类型Uid
             ViewBag.BusinessUid = businessUid;
             //当前流程
             ViewBag.Process = process;
-            model.QueryOption = qs;
-            model.TableName = tn;
             //获取审批历史
             DynamicParameters parameters = new DynamicParameters();
             parameters.Add("ProcessUid", processUid);
@@ -270,14 +261,8 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
             ViewBag.IsEdit = needEdit;
             //审批任务
             ViewBag.WfTask = wfTask;
-            FormViewModel model = new FormViewModel();
-            model.FormId = "frm-" + tn;
-            QuerySet qs = new QuerySet();
-            qs.TableName = tn;
-            qs.GlobalWhere = "Fid=@Fid";
-            qs.Parameters.Add(new Parameter("Fid", billUid));
-            model.QueryOption = qs;
-            model.TableName = tn;
+            FormViewModel model = this.GetFormViewModel(tn, "frm-" + tn, billUid);          
+           
             return View(model);
         }
         /// <summary>
@@ -342,14 +327,7 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
             ViewBag.IsEdit = needEdit;
             //审批任务
             ViewBag.WfTask = wfTask;
-            FormViewModel model = new FormViewModel();
-            model.FormId = "frm-" + tn;
-            QuerySet qs = new QuerySet();
-            qs.TableName = tn;
-            qs.GlobalWhere = "Fid=@Fid";
-            qs.Parameters.Add(new Parameter("Fid", billUid));
-            model.QueryOption = qs;
-            model.TableName = tn;
+            FormViewModel model = this.GetFormViewModel(tn, "frm-" + tn,billUid);            
             return View(model);
         }
 

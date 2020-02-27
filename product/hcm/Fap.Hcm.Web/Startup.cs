@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Newtonsoft.Json;
 using Fap.Hcm.Web.Models;
 using Fap.AspNetCore.Infrastructure.Filter;
+using UEditorNetCore;
 
 namespace Fap.Hcm.Web
 {
@@ -43,6 +44,8 @@ namespace Fap.Hcm.Web
             //添加内存缓存
             services.AddMemoryCache();
             services.AddSession();
+            //UEditor
+            services.AddUEditorService("ueditorconfig.json");
             //添加认证
             services.AddAuthentication(options =>
             {

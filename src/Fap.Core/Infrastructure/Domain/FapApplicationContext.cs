@@ -86,7 +86,12 @@ namespace Fap.Core.Infrastructure.Domain
         {
             get
             {
-                return Session.GetString(FapPlatformConstants.CurrentSessionRoleKey);
+                string roleUid= Session.GetString(FapPlatformConstants.CurrentSessionRoleKey);
+                if (roleUid.IsPresent())
+                {
+                    return roleUid;
+                }
+                return  HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;                
             }
             set
             {

@@ -1,4 +1,4 @@
-﻿<environment include="Development">    
+﻿<environment include="Development">
     <!-- common scripts -->
     <script src="~/Content/js/date-time/moment.js" asp-append-version="true"></script>
     <script src="~/Content/js/bootbox.js" asp-append-version="true"></script>
@@ -18,7 +18,7 @@
     <script src="~/Content/date-time-h5/js/mobiscroll.android-ics-2.6.2.js" asp-append-version="true"></script>
     <script src="~/Content/date-time-h5/js/mobiscroll.datetime-2.6.2.js" asp-append-version="true"></script>
     <script src="~/Content/date-time-h5/js/mobiscroll.core-2.6.2-zh.js" asp-append-version="true"></script>
-    <script src="~/Content/js/fileinput/fileinput.js" asp-append-version="true"></script>
+    <script src="~/Content/fileinput/fileinput.js" asp-append-version="true"></script>
     <script src="~/Content/js/fileinput/fileinput_locale_zh.js" asp-append-version="true"></script>
     <script src="~/Content/js/chosen.jquery.js" asp-append-version="true"></script>
     <script src="~/Content/js/jquery.bootstrap-touchspin.js" asp-append-version="true"></script>
@@ -45,8 +45,30 @@
     <script src="~/Content/js/jRange/jquery.range.js" asp-append-version="true"></script>
 
 </environment>
-<environment exclude="Development"> 
+<environment exclude="Development">
     <script src="~/js/fapcommon.min.js" asp-append-version="true"></script>
     <script src="~/js/fapcontrol.min.js" asp-append-version="true"></script>
     <script src="~/Content/js/lodash.min.js" asp-append-version="true"></script>
 </environment>
+
+@if (_applicationContext.Language == Fap.Core.MultiLanguage.MultiLanguageEnum.En)
+{
+    //多语
+    <script src="~/Content/JqGrid/i18n/grid.locale-en.js" asp-append-version="true"></script>
+    <script src="~/Content/fileinput/locales/LANG.js" asp-append-version="true"></script>
+}
+else if (_applicationContext.Language == Fap.Core.MultiLanguage.MultiLanguageEnum.ZhCn)
+{
+    <script src="~/Content/JqGrid/i18n/grid.locale-cn.js" asp-append-version="true"></script>
+    <script src="~/Content/fileinput/locales/zh.js" asp-append-version="true"></script>
+}
+else if (_applicationContext.Language == Fap.Core.MultiLanguage.MultiLanguageEnum.ZhTW)
+{
+    <script src="~/Content/JqGrid/i18n/grid.locale-tw.js" asp-append-version="true"></script>
+    <script src="~/Content/fileinput/locales/zh-TW.js" asp-append-version="true"></script>
+}
+else if (_applicationContext.Language == Fap.Core.MultiLanguage.MultiLanguageEnum.Ja)
+{
+    <script src="~/Content/JqGrid/i18n/grid.locale-ja.js" asp-append-version="true"></script>
+    <script src="~/Content/fileinput/locales/ja.js" asp-append-version="true"></script>
+}

@@ -82,6 +82,7 @@
     <ProjectReference Include="..\..\..\src\Fap.AspNetCore\Fap.AspNetCore.csproj" />
     <ProjectReference Include="..\..\..\src\Fap.Core\Fap.Core.csproj" />
     <ProjectReference Include="..\..\..\src\Fap.Workflow\Fap.Workflow.csproj" />
+    <ProjectReference Include="..\..\..\thirdparty\UEditorNetCore\UEditorNetCore.csproj" />
     <ProjectReference Include="..\Fap.Hcm.Service\Fap.Hcm.Service.csproj" />
   </ItemGroup>
 

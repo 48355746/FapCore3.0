@@ -6,35 +6,22 @@
     IEnumerable<FapColumn> cols = ViewBag.DbFields;
     IEnumerable<FapTable> childTables = ViewBag.ChildTables;
 }
-@section specificcss2{
-    <style>
-        .dropdown-preview {
-            margin: 0 5px;
-            display: inline-block;
-        }
-
-            .dropdown-preview > .dropdown-menu {
-                display: block;
-                position: static;
-                margin-bottom: 5px;
-            }
-    </style>
-}
 
 @section specificscript{
-    <script type="text/javascript" charset="utf-8" src="~/lib/ueditor/ueditor.config.js?v=2"></script>
-    <script type="text/javascript" charset="utf-8" src="~/lib/ueditor/ueditor.all.min.js?v=1"></script>
+    <script type="text/javascript" charset="utf-8" src="~/lib/ueditor/ueditor.config.js" asp-append-version="true"></script>
+    <script type="text/javascript" charset="utf-8" src="~/lib/ueditor/ueditor.all.min.js" asp-append-version="true"></script>
     <script type="text/javascript" charset="utf-8" src="~/lib/ueditor/lang/zh-cn/zh-cn.js"></script>
     <!-- 实例化编辑器 -->
     <script type="text/javascript">
         $(function () {
             var ue = UE.getEditor('ffcontainer');
             $("[data-action=insertfield]").click(function () {
-                var label = $(this).text();
+                var label = $(this).text().trim();
                 var colName = $(this).data("colName");
                 var value = "${" + label + "}"
                 ue.execCommand('inserthtml', value);
             })
+
         })
         var getContent = function () {
             return UE.getEditor('ffcontainer').getContent();
@@ -46,7 +33,7 @@
             //注册按钮执行时的command命令,用uiName作为command名字，使用命令默认就会带有回退操作
             editor.registerCommand(uiName, {
             execCommand: function (cmdName, value) {
-                //设置jqgrid容器   
+                //设置jqgrid容器
                 this.selection.getRange().startContainer.className="girdcontainer";
                 this.execCommand('inserthtml', "{{" + value + "}}");
                 },
@@ -122,18 +109,71 @@
 
 <div class="row">
     <div class="col-xs-2">
-        <div class="dropdown dropdown-preview">
-            <ul class="dropdown-menu">
-                @foreach (var field in cols)
-                {
-                    if (field.IsDefaultCol == 0)
-                    {
-                        <li>
-                            <a href="javascript:void(0)" data-action="insertfield" data-colname="@field.ColName" data-ctrltype="@field.CtrlType" tabindex="-1">@field.ColComment</a>
-                        </li>
-                    }
-                }
-            </ul>
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4  class="smaller">单据属性<small>点击加入右侧模板</small></h4>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main">
+                    <ul class="list-unstyled spaced">
+                        @foreach (var field in cols)
+                        {
+                            if (field.IsDefaultCol == 0)
+                            {
+                                <li class="text-info " data-id="14">
+
+                                    @if (field.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
+                                    {
+                                        <i class="normal-icon ace-icon fa fa-search"></i>
+                                    }
+                                    else if (field.CtrlType == FapColumn.CTRL_TYPE_DATE)
+                                    {
+                                        <i class="normal-icon ace-icon fa fa-calendar "></i>
+                                    }
+                                    else if (field.CtrlType == FapColumn.CTRL_TYPE_DATETIME)
+                                    {
+                                        <i class="normal-icon ace-icon fa fa-clock-o"></i>
+                                    }
+                                    else if (field.CtrlType == FapColumn.CTRL_TYPE_FILE || field.CtrlType == FapColumn.CTRL_TYPE_IMAGE)
+                                    {
+                                        <i class="normal-icon ace-icon fa fa-paperclip"></i>
+                                    }
+                                    else if (field.CtrlType == FapColumn.CTRL_TYPE_CHECKBOX || field.CtrlType == FapColumn.CTRL_TYPE_CHECKBOXLIST)
+                                    {
+                                        <i class="normal-icon ace-icon fa fa-check-square-o"></i>
+                                    }
+                                    else if (field.CtrlType == FapColumn.CTRL_TYPE_INT || field.CtrlType == FapColumn.CTRL_TYPE_DOUBLE || field.CtrlType == FapColumn.CTRL_TYPE_MONEY)
+                                    {
+                                        <i class="normal-icon ace-icon glyphicon glyphicon-sound-5-1"></i>
+                                    }
+                                    else if (field.CtrlType == FapColumn.CTRL_TYPE_RANGE)
+                                    {
+                                        <i class="normal-icon ace-icon glyphicon glyphicon-resize-horizontal"></i>
+                                    }
+                                    else if (field.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX)
+                                    {
+                                        <i class="normal-icon glyphicon glyphicon-collapse-down"></i>
+                                    }
+
+                                    else if (field.CtrlType == FapColumn.CTRL_TYPE_STAR)
+                                    {
+                                        <i class="normal-icon ace-icon fa fa-star"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="normal-icon ace-icon fa fa-keyboard-o"></i>
+                                    }
+                                    <a href="javascript:void(0)" data-action="insertfield" data-colname="@field.ColName" data-ctrltype="@field.CtrlType" tabindex="-1">
+                                        @field.ColComment
+                                    </a>
+                                </li>
+                            }
+
+                        }
+                    </ul>
+                </div>
+            </div>
         </div>
 
     </div>

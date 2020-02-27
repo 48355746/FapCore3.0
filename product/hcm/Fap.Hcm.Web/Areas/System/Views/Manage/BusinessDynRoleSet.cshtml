@@ -2,7 +2,7 @@
 @model Fap.Core.Rbac.Model.FapBizDynRole
 
 @{
-    Layout = "~/Views/Shared/_Layout_Empty.cshtml";
+    Layout = "~/Views/Shared/_Layout.cshtml";
     ViewBag.Title = "动态角色设置";
     Fap.Core.Rbac.Model.FapBizDynRole dynRole = Model;
     var bindTypes = _platformDomain.DictSet.Where(c => c.Category == "PlaceHolderBindType");
