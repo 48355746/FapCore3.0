@@ -59,7 +59,12 @@ var MultiLangHelper = (function () {
       'flow_diagram': { 'ZhCn': '流程图', 'ZhTW': '', 'En': '', 'Ja': '' },
       'login_username_required': { 'ZhCn': '请输入你的用户名', 'ZhTW': '', 'En': 'please input your user name', 'Ja': '' },
       'login_password_required': { 'ZhCn': '请输入你的密码', 'ZhTW': '', 'En': 'please input your password', 'Ja': '' },
-      'login_password_level': { 'ZhCn': '请指定一个安全密码', 'ZhTW': '', 'En': 'please input security code', 'Ja': '' }
+      'login_password_level': { 'ZhCn': '请指定一个安全密码', 'ZhTW': '', 'En': 'please input security code', 'Ja': '' },
+      'submit': { 'ZhCn': '提交', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'recall': { 'ZhCn': '撤回', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'invalid': { 'ZhCn': '作废', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'temporary': { 'ZhCn': '暂存', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'print': { 'ZhCn': '打印', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

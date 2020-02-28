@@ -98,6 +98,7 @@
     }
         //刷新列表
     function refreshList() {
+        debugger
         //var searchText = $("#id-text-search").val();
         var billstatus = $("#filterStatus").data("billstatus");
         var filter = { groupOp: "AND", rules: [] };
@@ -105,10 +106,8 @@
         if (billstatus != "-1") {
             rules.push({ field: "BillStatus", op: "eq", data: billstatus });
             filter.rules = rules;
-            reloadGrid("grid-@tableName", { filters: JSON.stringify(filter) });
-        } else {
-            reloadGrid("grid-@tableName");
         }
+        reloadGrid("grid-@tableName", { filters: JSON.stringify(filter) });
     }
     /**
      * 提交草稿态单据

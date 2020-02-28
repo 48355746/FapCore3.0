@@ -199,7 +199,7 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
                 var agents = _dbContext.QueryAll<WfAgentSetting>().Where(a => a.Agent == _applicationContext.EmpUid && a.State == 1);// _dbContext.QueryWhere<WfAgentSetting>($" Agent='{_applicationContext.EmpUid}' and [State]=1");
                 if (agents.Any())
                 {
-                    sql = $"select WfTask.* from WfTask,WfActivityInstance where WfTask.ActivityInsUid=WfActivityInstance.Fid and  WfActivityInstance.ActivityState in('{WfActivityInstanceState.Running}','{WfActivityInstanceState.Ready}') and WfTask.ExecutorEmpUid in(@Agent) and WfTask.BusinessUid=@BusinessUid and WfTask.BillUid=@BillUid and WfTask.TaskState='Handling'";
+                    sql = $"select WfTask.* from WfTask,WfActivityInstance where WfTask.ActivityInsUid=WfActivityInstance.Fid and  WfActivityInstance.ActivityState in('{WfActivityInstanceState.Running}','{WfActivityInstanceState.Ready}') and WfTask.ExecutorEmpUid in @Agent and WfTask.BusinessUid=@BusinessUid and WfTask.BillUid=@BillUid and WfTask.TaskState='Handling'";
                     param.Add("Agent", agents.Select(a => a.Principal));
                 }
                 else
@@ -280,7 +280,7 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
             WfTask wfTask = _dbContext.QueryFirstOrDefault<WfTask>(sql, param);
             if (wfTask == null)
             {
-                return Content("没有找到要审批的数据");
+                return Content("没有找到审批数据");
             }
             string activityInsUid = wfTask.ActivityInsUid;
             //获取表单类型 以及模板，字段权限
@@ -326,7 +326,8 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
             ViewBag.IsEdit = needEdit;
             //审批任务
             ViewBag.WfTask = wfTask;
-            FormViewModel model = this.GetFormViewModel(tn, "frm-" + tn,billUid);            
+            FormViewModel model = this.GetFormViewModel(tn, "frm-" + tn,billUid);
+            model.FormStatus = AspNetCore.Controls.DataForm.FormStatus.View;
             return View(model);
         }
 
@@ -340,7 +341,7 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
             {
                 qs.GlobalWhere = $"Principal='{_applicationContext.EmpUid}'";
                 qs.AddDefaultValue("Principal", _applicationContext.EmpUid);
-                qs.AddDefaultValue("WfAgentSettingPrincipalMC", _applicationContext.EmpName);
+                qs.AddDefaultValue("PrincipalMC", _applicationContext.EmpName);
             });
             return View(model);
         }
@@ -384,7 +385,7 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
             var agents = _dbContext.QueryAll<WfAgentSetting>().Where(a => a.Agent == _applicationContext.EmpUid && a.State == 1);// _dbContext.QueryWhere<WfAgentSetting>($" Agent='{_applicationContext.EmpUid}' and [State]=1");
 
             //获取待办
-            var listCount = _dbContext.Query($"select count(0) C,WfTask.BusinessUid from WfTask,WfActivityInstance,WfProcessInstance where WfTask.ActivityInsUid=WfActivityInstance.Fid and WfTask.ProcessInsUid= WfProcessInstance.Fid and  WfProcessInstance.ProcessState='Running'  and  WfActivityInstance.ActivityState in('{WfActivityInstanceState.Running}','{WfActivityInstanceState.Ready}') and WfTask.TaskState='{WfTaskState.Handling}' and WfTask.ExecutorEmpUid in (@Agents) group by WfTask.BusinessUid", new DynamicParameters(new { Agents = agents.Select(a => a.Principal) }));
+            var listCount = _dbContext.Query($"select count(0) C,WfTask.BusinessUid from WfTask,WfActivityInstance,WfProcessInstance where WfTask.ActivityInsUid=WfActivityInstance.Fid and WfTask.ProcessInsUid= WfProcessInstance.Fid and  WfProcessInstance.ProcessState='Running'  and  WfActivityInstance.ActivityState in('{WfActivityInstanceState.Running}','{WfActivityInstanceState.Ready}') and WfTask.TaskState='{WfTaskState.Handling}' and WfTask.ExecutorEmpUid in @Agents group by WfTask.BusinessUid", new DynamicParameters(new { Agents = agents.Select(a => a.Principal) }));
             foreach (var item in bizs)
             {
                 //检查是否代理了此业务
@@ -416,7 +417,7 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
             }
             DynamicParameters param = new DynamicParameters();
             param.Add("ModuleUid", moduleUid);
-            IEnumerable<WfBusiness> businessList = _dbContext.QueryWhere<WfBusiness>("ModuleUid=@ModuleUid and BizStatus = 1", param,null,true);
+            IEnumerable<WfBusiness> businessList = _dbContext.QueryWhere<WfBusiness>("ModuleUid=@ModuleUid and BizStatus = 1", param,true);
             if (businessList == null || !businessList.Any())
             {
                 return Content("业务分类不存在");
