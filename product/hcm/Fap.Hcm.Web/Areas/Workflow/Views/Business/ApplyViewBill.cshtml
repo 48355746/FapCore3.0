@@ -58,11 +58,13 @@
     <div class="col-xs-12" id="formdiv">
         @if (formType == WfFormType.Internal)
         {
-            <fap-form id="@formName" form-model="Model" ></fap-form>
+            <div class="wordpage">
+                <fap-form id="@formName" form-model="Model"></fap-form>
+            </div>
         }
         else
         {
-            <fap-freeform id="@formName" form-model="Model" form-template="@ffTemplate" ></fap-freeform>
+            <fap-freeform id="@formName" form-model="Model" form-template="@ffTemplate"></fap-freeform>
 
         }
     </div>

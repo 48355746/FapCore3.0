@@ -44,7 +44,7 @@ function getSelectedRow(grdid) {
 }
 function reloadGrid(grdid, postData) {
     if (postData === undefined || postData === null) {
-        postData = {};
+        postData = { filters:null};
     }
     $("#" + grdid).jqGrid('setGridParam', {
         datatype: 'json',

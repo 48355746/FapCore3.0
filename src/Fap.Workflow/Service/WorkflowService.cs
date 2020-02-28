@@ -175,16 +175,6 @@ namespace Fap.Workflow.Service
 
                     waitHandler.WaitOne();
 
-                    if (runtimeManager.WfExecutedResult.Status == WfExecutedStatus.Success)
-                    {
-                        if (runner.BillData.BillStatus != BillStatus.PASSED)
-                        {
-                            //改变单据状态
-                            runner.BillData.BillStatus = BillStatus.PROCESSING;
-                            string updateSql = $"update {runner.BillTableName} set SubmitTime='{DateTimeUtils.CurrentDateTimeStr}', BillStatus='{BillStatus.PROCESSING}' where id={runner.BillData.Id}";
-                            _dataAccessor.Execute(updateSql);
-                        }
-                    }
                 }
                 result = runtimeManager.WfExecutedResult;
 

@@ -131,7 +131,7 @@ var Persistence = function (formid, tableName, beforeSaveCallback, afterSaveCall
                     }
                 }
             });
-            if (result) {
+            if (!result) {
                 $.msg($.lang("file_required","必须要上传附件！"));
                 return false;
             }

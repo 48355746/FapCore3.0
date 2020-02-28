@@ -106,8 +106,10 @@
         if (billstatus != "-1") {
             rules.push({ field: "BillStatus", op: "eq", data: billstatus });
             filter.rules = rules;
+            reloadGrid("grid-@tableName", { filters: JSON.stringify(filter) });
+        } else {
+            reloadGrid("grid-@tableName");
         }
-        reloadGrid("grid-@tableName", { filters: JSON.stringify(filter) });
     }
     /**
      * 提交草稿态单据
@@ -137,13 +139,14 @@
                     callback: function () {
                         temporarySave();
                         refreshList();
-                        return false;
+                        //return false;
                     }
                 }, submit: {
                     label: $.lang("submit","提交"),
                     className: "btn-link btn-primary",
                     callback: function () {
                         submitBill(function () {
+                            bootbox.hideAll();
                             refreshList();
                         });
                         return false;
@@ -235,6 +238,8 @@
         var businessUid = '@businessUid';//业务Uid
         
         var openUrl = $.randomUrl('@Url.Content("~/Workflow/Business/ApplyViewBill")?processUid=' + processUid + '&businessUid=' + businessUid + '&billUid=' + fid);
+
+
         var width = parseInt($(window).innerWidth() * 0.8) + 'px';
         var height = parseInt($(window).innerHeight() - 60) + 'px';
         var index = layer.open({

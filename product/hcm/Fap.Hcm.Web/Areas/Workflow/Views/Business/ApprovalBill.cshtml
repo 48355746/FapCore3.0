@@ -17,24 +17,22 @@
 <script>
         $(function () {
             setTimeout(() => {
-                debugger
                 $("#frm-@formName .form-control").attr('disabled', 'disabled')
                 var formPower =@Html.Raw(billPower);
                 if (formPower != undefined) {
-                    $.each(formPower, function (i, item) {
-                                        debugger
+                    $.each(formPower, function (i, item) {                                    
                         if (item.property === 0) {
                             //隐藏
                             $("#frm-@formName .form-control[name$=" + item.fieldName + "]").val('');
-                                        } else if (item.property === 1) {
+                        } else if (item.property === 1) {
                             //编辑
                             $("#frm-@formName .form-control[name$=" + item.fieldName + "]").removeAttr('disabled');
                             $("#frm-@formName .form-control[name$=" + item.fieldName + "]").rules("add", {
-                                                required: true,
+                                required: true,
                                 messages: {
-                                                    required: "[" + item.fieldNameMC + "]--必须填写！"
+                                    required: "[" + item.fieldNameMC + "]--必须填写！"
                                 }
-                                            });
+                            });
                         } else if (item.property === 3) {
                             //必填
                         }
@@ -47,7 +45,6 @@
         //校验单据是否先需要存储
         function checkBeforeProcess()
         {
-            debugger
             var isEdit = '@ViewBag.IsEdit';
             if (isEdit === '1') {
                 //需要保存

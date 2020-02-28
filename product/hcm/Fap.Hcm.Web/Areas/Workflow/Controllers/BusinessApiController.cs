@@ -14,6 +14,8 @@ using Fap.AspNetCore.ViewModel;
 using System.Net.Mime;
 using System;
 using Fap.Core.Infrastructure.Enums;
+using Fap.Core.Utility;
+using Ardalis.GuardClauses;
 
 namespace Fap.Hcm.Web.Areas.Workflow.Controllers
 {
@@ -35,13 +37,13 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
         [HttpPost("SubmitProcess")]
         public JsonResult SubmitProcess(WfViewModel wfvm)
         {
-            //DynamicParameters param = new DynamicParameters();
-            //param.Add("Fid", wfvm.BizUid);
+            Guard.Against.Null(wfvm, nameof(WfViewModel));
             var formData = _dbContext.Get(wfvm.BillTable,wfvm.BillUid,true);
+            //改变单据状态
+            string updateSql = $"update {wfvm.BillTable} set SubmitTime='{DateTimeUtils.CurrentDateTimeStr}', BillStatus='{BillStatus.PROCESSING}' where id={formData.Id}";
+            _dbContext.Execute(updateSql);
             string appEmpUid = formData.AppEmpUid;
             string appEmpName = formData.AppEmpUidMC;
-            WfExecutedResult result = null;
-
             WfAppRunner runner = new WfAppRunner();
             runner.BillTableName = wfvm.BillTable;
             runner.ProcessUid = wfvm.ProcessUid;
@@ -55,14 +57,13 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
             ae.ActivityID = wfvm.AvtivityId;
             ae.Performers = wfvm.NextPerformers;
             runner.NextActivity = ae;
-            result = _workflowService.StartProcess(runner);
+            WfExecutedResult result = _workflowService.StartProcess(runner);
             return Json(result);
         }
         [HttpPost("RunProcess")]
         public JsonResult RunProcess(WfViewModel wfvm)
         {
-            //DynamicParameters param = new DynamicParameters();
-            //param.Add("Fid", wfvm.BizUid);
+            Guard.Against.Null(wfvm, nameof(WfViewModel));
             var formData = _dbContext.Get(wfvm.BillTable, wfvm.BillUid, true);
 
             WfAppRunner runner = new WfAppRunner();
