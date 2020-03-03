@@ -249,10 +249,7 @@ $("#RefReturnMapping").on("focus", function () {
             }
         }
 
-    });
-    dialog.on("shown.bs.modal", function () {
-        $(window).triggerHandler('resize.jqGrid');//触发窗口调整,使Grid得到正确的大小
-    });
+    }); 
     dialog.init(function () {
         var strVar = "";
         strVar += "<form class=\"form-inline\">";

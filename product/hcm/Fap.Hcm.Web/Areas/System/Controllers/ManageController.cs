@@ -180,6 +180,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             JqGridViewModel mailTemplate = this.GetJqGridModel("CfgEmailTemplate", (qs) =>
             {
                 qs.GlobalWhere = "ModuleUid='BillMailTmpl'";
+                qs.AddDefaultValue("ModuleUid", "BillMailTmpl");
                 //qs.QueryCols = "Id,Fid,Code,Name,ModuleUid,TableName,Enabled";
             });
             JqGridViewModel ffmodel = GetJqGridModel("CfgFreeForm", (qs) =>
@@ -197,10 +198,9 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public IActionResult BillWriteBackSet(string fid)
+        public IActionResult BillWriteBackSet()
         {
-            CfgBillWriteBackRule model = _dbContext.Get<CfgBillWriteBackRule>(fid);
-            return View(model);
+            return View();
         }
         public IActionResult FreeFormSet(string fid)
         {

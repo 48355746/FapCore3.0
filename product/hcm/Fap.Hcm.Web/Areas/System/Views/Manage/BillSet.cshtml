@@ -17,168 +17,87 @@
     column.SetWidth(110);
 }
 <title>单据编码设置</title>
+<link href="~/Content/css/codemirror/codemirror.css" rel="stylesheet" />
+<link rel="stylesheet" href="~/Content/css/codemirror/theme/xq-light.css"/>
+
 <link href="~/Content/bootstrap-layer.css" rel="stylesheet" />
 <div class="row">
     <div class="col-xs-12">
-        <div class="tabbable">
-            <ul class="nav nav-tabs" id="myTab">
-                <li class="active">
-                    <a data-toggle="tab" href="#coderule">
-                        <i class=" blue ace-icon fa  fa-cog bigger-120"></i>
-                        编码规则
-                    </a>
-                </li>
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h5 class="widget-title smaller"><fap-multilang lang-key="bill_set" default-content="单据设置"></fap-multilang></h5>
+                <!-- #section:custom/widget-box.tabbed -->
+                <div class="widget-toolbar no-border">
+                    <ul class="nav nav-tabs" id="billTab">
+                        <li class="active">
+                            <a data-toggle="tab" href="#billcode">
+                                <fap-multilang lang-key="bill_code" default-content="单据编码"></fap-multilang>
+                            </a>
+                        </li>
 
-                <li>
-                    <a data-toggle="tab" href="#wbrule">
-                        <i class="green ace-icon fa fa-cogs bigger-120"></i>
-                        回写规则
-                    </a>
-                </li>
-                <li>
-                    <a data-toggle="tab" href="#freeform">
-                        <i class="green ace-icon fa fa-pencil-square-o bigger-120"></i>
-                        自由表单
-                    </a>
-                </li>
-                <li>
-                    <a data-toggle="tab" href="#mailtemplate">
-                        <i class="green ace-icon fa fa-envelope bigger-120"></i>
-                        邮件模板
-                    </a>
-                </li>
+                        <li>
+                            <a data-toggle="tab" href="#billcallback">
+                                <fap-multilang lang-key="bill_callback" default-content="单据回写"></fap-multilang>
+                            </a>
+                        </li>
 
-            </ul>
-
-            <div class="tab-content">
-                <div id="coderule" class="tab-pane fade in active">
-                    <fap-grid id="cfgbillcoderule"  auto-width="true" grid-model="coderule" wrapper="myTab,coderule"
-                              shrink-fit="false" view-records="true" oper-add="true" oper-update="true" oper-delete="true"></fap-grid>                 
-
+                        <li>
+                            <a data-toggle="tab" href="#billfreeform">
+                                <fap-multilang lang-key="bill_freeform" default-content="自由表单"></fap-multilang>
+                            </a>
+                        </li>
+                        <li>
+                            <a data-toggle="tab" href="#billmail">
+                                <fap-multilang lang-key="bill_mail" default-content="单据邮件"></fap-multilang>
+                            </a>
+                        </li>
+                    </ul>
                 </div>
 
-                <div id="wbrule" class="tab-pane fade">
-                    <div class="row">
-                        <div class="col-xs-12">                          
-                                <div class="btn-group ">
-                                    <button id="btnAddMapping" class="btn btn-white">
-                                        <i class="ace-icon fa fa-plus-circle green"></i>
-                                        新增
-                                    </button>
-                                    <button id="btnEditMapping" class="btn btn-white">
-                                        <i class="ace-icon fa fa-pencil blue" ></i>
-                                        编辑
-                                    </button>
-                                </div>                           
-                        </div>
-                    </div>
-                    <div class="space-4"></div>
-                    <fap-grid id="wfbusinessmapping" grid-model="wbrule"  auto-width="true" view-records="true" wrapper="myTab,wbrule"></fap-grid>
-                </div>
-                <div id="freeform" class="tab-pane fade">
-                    <fap-grid id="wffreeform" attach-column="@column" grid-model="freeform" auto-width="true" wrapper="myTab,freeform" oper-cud="true" on-grid-complete="initMenu"></fap-grid>
-               
-                </div>
-                <div id="mailtemplate" class="tab-pane fade">
-                    <div class="row">
-                        <div class="col-xs-12">
-                            <div class="btn-group ">
-                                <button id="btnAddMailTmpl" class="btn btn-white">
-                                    <i class="ace-icon fa fa-plus-circle green"></i>
-                                    新增
-                                </button>
-                                <button id="btnEditMailTmpl" class="btn btn-white">
-                                    <i class="ace-icon fa fa-pencil blue"></i>
-                                    编辑
-                                </button>
-                            </div>
+                <!-- /section:custom/widget-box.tabbed -->
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main">
+                    <div class="tab-content">
+                        <div id="billcode" class="tab-pane in active">
+                            <fap-grid id="cfgbillcoderule" grid-model="coderule" wrapper="billTab,billcode"
+                                      auto-width="true" shrink-fit="false" view-records="true"></fap-grid>
                         </div>
 
+                        <div id="billcallback" class="tab-pane">
+                            <fap-grid id="wfbusinessmapping" grid-model="wbrule" auto-width="true" view-records="true"
+                                      wrapper="billTab,billcallback"></fap-grid>
+                        </div>
+
+                        <div id="billfreeform" class="tab-pane">
+                            <fap-grid id="wffreeform" attach-column="@column" grid-model="freeform" auto-width="true"
+                                      wrapper="billTab,billfreeform" oper-cud="true" on-grid-complete="initMenu"></fap-grid>
+
+                        </div>
+                        <div id="billmail" class="tab-pane">
+                            <fap-grid id="cfgemailtemplate" grid-model="mailTmpl" auto-width="true" oper-delete="true"
+                                      wrapper="billTab,billmail" view-records="true"></fap-grid>
+                        </div>
                     </div>
-                    <div class="space-4"></div>
-                    <fap-grid id="cfgemailtemplate" grid-model="mailTmpl" auto-width="true"  oper-delete="true" wrapper="myTab,mailtemplate" view-records="true"></fap-grid>
-                   
                 </div>
             </div>
         </div>
+
     </div>
 </div>
 
 
 @*@(Html.Window("win-billmailtemplate").SetTitle("邮件模板设置", "fa fa-cogs").SetContent(@<text><div class="row"><div id="divmailtemplate" class="col-xs-12"></div></div></text>).SetConfirmButtons().SetMaximizing(true))*@
 <script>
-    var scripts = [null, "/Content/layer/layer.js", null];
+    var scripts = [null, "/Content/layer/layer.js","/Content/js/codemirror/codemirror.js","/Content/js/codemirror/mode/sql/sql.js", null];
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
             $(document).one('ajaxloadstart.page', function (e) {
             })
-            $("#btnAddMapping").on(ace.click_event, function () {
-                var index = layer.open({
-                    btn: ['保存', '关闭'],
-                    type: 2,
-                    title: '回写规则设置',
-                    shadeClose: true,
-                    shade: false,
-                    maxmin: true, //开启最大化最小化按钮
-                    area: ['900px', '600px'],
-                    content: basePath + '/System/Manage/BillWriteBackSet/0',
-                    yes: function (index, layero) {
-                        var iframeWin = layero.find('iframe')[0];
-                        var sels = iframeWin.contentWindow.SaveSet();
-                        if (sels == true) {
-                            layer.close(index); //如果设定了yes回调，需进行手工关闭
-                            $("#grid-wfbusinessmapping").jqGrid('setGridParam', {
-                                page: 1
-                            }).trigger("reloadGrid"); //重新载入
-
-                        } else {
-                            layer.alert('保存失败！');
-                        }
-
-
-                    },
-                    cancel: function () {
-                        //console.log('cancel');
-                    }
-                });
-            })
-
-            $("#btnEditMapping").on(ace.click_event, function () {
-                var gr = $("#grid-wfbusinessmapping").jqGrid('getGridParam', 'selrow');
-                if (gr === null) {
-                    bootbox.alert("请选中一个设置修改");
-                    return;
-                }
-                var rowData = $("#grid-wfbusinessmapping").getRowData(gr);
-                var index = layer.open({
-                    btn: ['保存', '关闭'],
-                    type: 2,
-                    title: '回写规则设置',
-                    shadeClose: true,
-                    shade: false,
-                    maxmin: true, //开启最大化最小化按钮
-                    area: ['900px', '600px'],
-                    content: basePath + '/System/Manage/BillWriteBackSet/' + rowData.Fid,
-                    yes: function (index, layero) {
-                        var iframeWin = layero.find('iframe')[0];
-                        var sels = iframeWin.contentWindow.SaveSet();
-                        if (sels == true) {
-                          
-                            refreshGrid("grid-wfbusinessmapping");
-                            layer.close(index); //如果设定了yes回调，需进行手工关闭
-
-                        } else {
-                            layer.alert('保存失败！');
-                        }
-                    },
-                    cancel: function () {
-                        //console.log('cancel');
-                    }
-                });
-            })
-            //添加邮件模板
+             //添加邮件模板
             $("#btnAddMailTmpl").on(ace.click_event, function () {
-         
+
                 layer.open({
                     btn: ['保存', '关闭'],
                     type: 2,

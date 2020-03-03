@@ -65,7 +65,8 @@ var MultiLangHelper = (function () {
       'invalid': { 'ZhCn': '作废', 'ZhTW': '', 'En': '', 'Ja': '' },
       'temporary': { 'ZhCn': '暂存', 'ZhTW': '', 'En': '', 'Ja': '' },
       'print': { 'ZhCn': '打印', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'confirm_recall': { 'ZhCn': '确认撤销单据吗？', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'confirm_recall': { 'ZhCn': '确认撤销单据吗？', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'bill_biz_required': { 'ZhCn': '单据实体和业务实体必选', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

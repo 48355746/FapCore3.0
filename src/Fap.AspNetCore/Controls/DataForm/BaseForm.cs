@@ -447,7 +447,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 #region 富文本控件
                 else if (column.CtrlType == FapColumn.CTRL_TYPE_RICHTEXTBOX)
                 {
-                    script.AppendLine("$(\"###formid## #" + column.ColName + ".wysiwyg-editor\").ace_wysiwyg({" + @"
+                    script.AppendLine("var wysiwyg_"+ column.ColName + " =$(\"###formid## #" + column.ColName + ".wysiwyg-editor\").ace_wysiwyg({" + @"
 						toolbar:
 						[
                             'font',
