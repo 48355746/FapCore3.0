@@ -528,6 +528,33 @@ namespace Fap.AspNetCore.Serivce
                 return false;
             }
         }
+        public bool ImportExcelReportTemplate(string fid)
+        {
+            try
+            {
+                var files = _applicationContext.Request.Form.Files;
+               // List<string> excelFiles = new List<string>();
+                if (files != null && files.Count > 0)
+                {
+                    foreach (var file in files)
+                    {
+                        string fullPath = Path.Combine(Environment.CurrentDirectory, FapPlatformConstants.Template, $"{fid}.xlsx");
+
+                        using (FileStream fs = System.IO.File.Create(fullPath))
+                        {
+                            files[0].CopyTo(fs);
+                        }
+                       // excelFiles.Add(fullPath);
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
         public string PrintWordTemplate(GridModel gridModel)
         {
             string tableName = gridModel.TableName;

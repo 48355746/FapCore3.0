@@ -19,6 +19,8 @@ using System.IO;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Annex.Utility.Zip;
 using System.Text;
+using System.Threading.Tasks;
+using Fap.ExcelReport;
 
 namespace Fap.Hcm.Web.Areas.System.Controllers
 {
@@ -27,12 +29,14 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
     [Route("[area]/Api/Tools")]
     public class ToolsApiController : FapController
     {
+        private readonly IExcelReportService _reportService;
         private IFapFileService _fileService;
         private IDbMetadataContext _dbMetadataContext;
-        public ToolsApiController(IServiceProvider serviceProvider, IFapFileService fileService, IDbMetadataContext dbMetadataContext) : base(serviceProvider)
+        public ToolsApiController(IServiceProvider serviceProvider, IFapFileService fileService, IDbMetadataContext dbMetadataContext,IExcelReportService reportService) : base(serviceProvider)
         {
             _fileService = fileService;
             _dbMetadataContext = dbMetadataContext;
+            _reportService = reportService;
         }
 
 
@@ -185,6 +189,14 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             var columns = _dbContext.QueryWhere<FapColumn>($"TableName='{table.TableName}'").Where(c => c.IsDefaultCol == 0);
             string modelClass= _dbMetadataContext.GeneraterModelClass(table, columns);
             return Json(new ResponseViewModel { success = true, data = modelClass });
+        }
+        [HttpGet("ReportRender/{fid}")]
+        public async Task<JsonResult> Render(string fid)
+        {
+            string path = await _reportService.Render(fid).ConfigureAwait(false);
+            ResponseViewModel rvm = new ResponseViewModel { data = path, success = true };
+            return Json(rvm);
+
         }
     }
 }

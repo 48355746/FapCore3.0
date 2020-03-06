@@ -124,6 +124,13 @@ namespace Fap.Hcm.Web.Controllers
             _gridFormService.ImportWordTemplate(tableName);
             return true;
         }
+        [HttpPost("ImportExcelReportTemplate/{fid}")]
+        public bool ImportExcelReportTemplate(string fid)
+        {
+            Guard.Against.NullOrWhiteSpace(fid, nameof(fid));
+            _gridFormService.ImportExcelReportTemplate(fid);
+            return true;
+        }
         /// <summary>
         /// 检查word打印模板是否存在
         /// </summary>

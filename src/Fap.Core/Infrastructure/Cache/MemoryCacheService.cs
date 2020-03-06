@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace Fap.Core.Infrastructure.Cache
 {
+    [Service]
     public class MemoryCacheService:ICacheService
     {
         protected IMemoryCache _cache;

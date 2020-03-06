@@ -18,6 +18,7 @@ namespace Fap.AspNetCore.Serivce
         string ExportExcelTemplate(QuerySet querySet);
         bool ImportExcelData(string tableName);
         bool ImportWordTemplate(string tableName);
+        bool ImportExcelReportTemplate(string fid);
         string PrintWordTemplate(GridModel gridModel);
     }
 }
