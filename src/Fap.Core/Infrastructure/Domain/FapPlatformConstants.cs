@@ -19,9 +19,9 @@ namespace Fap.Core.Infrastructure.Domain
         /// </summary>
         public const string TemporaryFolder = "Temporary";
         /// <summary>
-        /// 存放上传的打印模板
+        /// 存放上传的模板(打印模板，报表模板)
         /// </summary>
-        public const string PrintTemplate = "PrintTemplate";
+        public const string Template = "Templates";
         /// <summary>
         /// 变量替换正则表达式${Variable}
         /// </summary>

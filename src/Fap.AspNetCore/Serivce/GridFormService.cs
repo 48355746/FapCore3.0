@@ -511,7 +511,7 @@ namespace Fap.AspNetCore.Serivce
                 {
                     foreach (var file in files)
                     {
-                        string fullPath = Path.Combine(Environment.CurrentDirectory, FapPlatformConstants.PrintTemplate, $"{tableName.ToLower()}.docx");
+                        string fullPath = Path.Combine(Environment.CurrentDirectory, FapPlatformConstants.Template, $"{tableName.ToLower()}.docx");
 
                         using (FileStream fs = System.IO.File.Create(fullPath))
                         {
@@ -563,7 +563,7 @@ namespace Fap.AspNetCore.Serivce
                 list.Add(dic);
             }
 
-            string templateFile = Path.Combine(Environment.CurrentDirectory, FapPlatformConstants.PrintTemplate, tableName.ToLower() + ".docx");
+            string templateFile = Path.Combine(Environment.CurrentDirectory, FapPlatformConstants.Template, tableName.ToLower() + ".docx");
             IList<string> oriFile = new List<string>();
             foreach (var dic in list)
             {

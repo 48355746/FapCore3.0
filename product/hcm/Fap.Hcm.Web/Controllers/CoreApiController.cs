@@ -134,7 +134,7 @@ namespace Fap.Hcm.Web.Controllers
         {
             Guard.Against.Null(gridModel, nameof(gridModel));
             Guard.Against.NullOrWhiteSpace(gridModel.TableName, nameof(gridModel.TableName));
-            string fileName = Path.Combine(Environment.CurrentDirectory, FapPlatformConstants.PrintTemplate, $"{gridModel.TableName.ToLower()}.docx");
+            string fileName = Path.Combine(Environment.CurrentDirectory, FapPlatformConstants.Template, $"{gridModel.TableName.ToLower()}.docx");
             if (!System.IO.File.Exists(fileName))
             {
                 return Json(ResponseViewModelUtils.Failure());

@@ -5,6 +5,8 @@ using Fap.Core.DataAccess.Interceptor;
 using Fap.Core.DataAccess;
 using Fap.Core.Utility;
 using Fap.Core.Infrastructure.Metadata;
+using Fap.Workflow.Model;
+using Fap.Core.Extensions;
 
 namespace Fap.Workflow.Interceptor
 {
@@ -24,28 +26,27 @@ namespace Fap.Workflow.Interceptor
         /// <param name="dynamicData"></param>
         public override void BeforeDynamicObjectDelete(FapDynamicObject fapDynamicData)
         {
-            dynamic dynamicData = fapDynamicData;
-            bool allow = _wfService.AllowDeleteProcessTemplate(dynamicData.Fid);
+            string fid = fapDynamicData.Get("Fid").ToString();
+            bool allow = _wfService.AllowDeleteProcessTemplate(fid);
             if (allow)
             {
-                _dbContext.Execute($"delete from WfProcess where Fid={dynamicData.Fid}'");
+                _dbContext.Execute($"delete from WfProcess where Fid='{fid}'");
             }
             else
             {
-                var wft = _dbContext.Get("WfProcess", dynamicData.Fid);
-                throw new Exception($"流程[{wft.TemplateName}]已关联业务，不能删除");
+                WfProcess wft = _dbContext.Get<WfProcess>(fid);
+                throw new Exception($"流程[{wft.ProcessName}]已关联业务，不能删除");
             }
         }
         public override void BeforeDynamicObjectInsert(FapDynamicObject fapDynamicData)
         {
-            dynamic dynamicData = fapDynamicData;
-            if (!dynamicData.ContainsKey("CollectionId"))
+            if (!fapDynamicData.ContainsKey("CollectionId"))
             {
-                dynamicData.CollectionId = UUIDUtils.Fid;
+                fapDynamicData.SetValue("CollectionId",UUIDUtils.Fid);
             }
-            else if (dynamicData.ContainsKey("CollectionId") && (dynamicData.CollectionId == null || dynamicData.CollectionId == ""))
+            else if (fapDynamicData.ContainsKey("CollectionId") && (fapDynamicData.Get("CollectionId") == null || fapDynamicData.Get("CollectionId").ToString().IsMissing()))
             {
-                dynamicData.CollectionId = UUIDUtils.Fid;
+                fapDynamicData.SetValue("CollectionId", UUIDUtils.Fid);
             }
         }
 

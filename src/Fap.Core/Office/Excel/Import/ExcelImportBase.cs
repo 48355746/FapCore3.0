@@ -15,20 +15,20 @@ namespace Fap.Core.Office.Excel.Import
     public abstract class ExcelImportBase
     {
         private string fileName = null; //文件名
-        private ExcelVersion excelVersion = ExcelVersion.XLSX; //EXCEL版本
+       // private ExcelVersion excelVersion = ExcelVersion.XLSX; //EXCEL版本
 
         protected IDbContext _dataAccessor;
 
         /// <summary>
         /// EXCEL版本
         /// </summary>
-        public ExcelVersion ExcelVersion
-        {
-            get
-            {
-                return excelVersion;
-            }
-        }
+        //public ExcelVersion ExcelVersion
+        //{
+        //    get
+        //    {
+        //        return excelVersion;
+        //    }
+        //}
 
         public ExcelImportBase(IDbContext dataAccsessor, string fileName)
         {
@@ -47,17 +47,17 @@ namespace Fap.Core.Office.Excel.Import
             {
                 using (FileStream fs = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite))
                 {
-                    IWorkbook workbook = null;
-                    if (fileName.IndexOf(".xlsx") > 0) // 2007版本
-                    {
-                        workbook = new XSSFWorkbook(fs);
-                        excelVersion = ExcelVersion.XLSX;
-                    }
-                    else if (fileName.IndexOf(".xls") > 0) // 2003版本
-                    {
-                        workbook = new HSSFWorkbook(fs);
-                        excelVersion = ExcelVersion.XLS;
-                    }
+                    IWorkbook workbook = WorkbookFactory.Create((Stream)fs); ;
+                    //if (fileName.IndexOf(".xlsx") > 0) // 2007版本
+                    //{
+                    //    workbook = new XSSFWorkbook(fs);
+                    //    excelVersion = ExcelVersion.XLSX;
+                    //}
+                    //else if (fileName.IndexOf(".xls") > 0) // 2003版本
+                    //{
+                    //    workbook = new HSSFWorkbook(fs);
+                    //    excelVersion = ExcelVersion.XLS;
+                    //}
 
                     SheetMetadata sheetMetadata = this.CollectMetadata(workbook);
                     this.Import(workbook, sheetMetadata);
@@ -92,7 +92,7 @@ namespace Fap.Core.Office.Excel.Import
             string xmlString = obj.ToString();
             SheetMetadata sheetMetadata = ExcelUtils.XmlDeserialize<SheetMetadata>(xmlString);
             return sheetMetadata;
-           
+
         }
     }
 }

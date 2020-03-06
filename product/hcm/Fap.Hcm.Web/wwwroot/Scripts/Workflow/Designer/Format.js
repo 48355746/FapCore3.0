@@ -2681,11 +2681,11 @@ SubProcessFormatPanel.prototype.init = function () {
         $.each(data, function (index, value) {
             var option = document.createElement('option');
             option.setAttribute('value', value.Fid);
-            if (subProcess == value.Fid) {
+            if (subProcess === value.Fid) {
                 option.setAttribute('selected', true);
                 cell.setAttribute('subProcess', subProcess);
             }
-            mxUtils.write(option, value.TemplateName);
+            mxUtils.write(option, value.ProcessName);
             wfTemplateSelect.appendChild(option);
         });
 
