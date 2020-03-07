@@ -194,6 +194,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         public async Task<JsonResult> Render(string fid)
         {
             string path = await _reportService.Render(fid).ConfigureAwait(false);
+
             ResponseViewModel rvm = new ResponseViewModel { data = path, success = true };
             return Json(rvm);
 

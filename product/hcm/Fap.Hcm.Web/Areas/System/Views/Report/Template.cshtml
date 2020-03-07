@@ -15,26 +15,41 @@
                     </a>
                 </div>
                 <div class="widget-toolbar no-border">
-                    <fap-button id="btnDownloadTemplate" btn-tag="link" content="下载模板" icon-before="fa fa-download blue" class-name="info"></fap-button>
                     <fap-button id="btnRenderReport" btn-tag="link" content="预览报表" icon-before="fa fa-leaf blue" class-name="info"></fap-button>
-                    
+
                 </div>
             </div>
             <div class="widget-body">
                 <!-- #section:custom/widget-box.toolbox -->
                 <div class="widget-main">
                     <fap-grid id="simplereport" grid-model="Model"
-                              is-tree-grid="true" expand-column="ReportName" col-menu="false" row-numbers="false" view-records="true" shrink-fit="false" ></fap-grid>
+                              is-tree-grid="true" expand-column="ReportName" col-menu="false" row-numbers="false" on-grid-complete="initTemplate" shrink-fit="false"></fap-grid>
 
                 </div>
             </div>
         </div>
     </div>
 </div>
-
+<script>
+    function initTemplate() {
+        var ids = jQuery("#grid-simplereport").jqGrid('getDataIDs');
+        for (var i = 0; i < ids.length; i++) {
+            var de = '';
+            var cl = ids[i];
+            var rd = jQuery('#grid-simplereport').jqGrid('getRowData', cl);
+            if (rd.IsDir === "0") {
+                de += "<a  href='javascript:void(0)' onclick='dowloadTemplate(\"" + rd.XlsFile + "\")'>" + $.lang("download", "下载") + "</a> ";
+            }
+            jQuery('#grid-simplereport').jqGrid('setRowData', ids[i], { XlsFile: de });
+        }
+    }
+    function dowloadTemplate(fid) {
+        location.href = basePath + "/Templates/" + fid+".xlsx";
+    }
+</script>
 
 <script>
-    var scripts = [null,, null]
+    var scripts = [null, , null]
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
             $("#btnRenderReport").on(ace.click_event, function () {

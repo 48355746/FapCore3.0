@@ -110,6 +110,13 @@ namespace Fap.Hcm.Web
                 FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), $"{FapPlatformConstants.TemporaryFolder}")),
                 RequestPath = new PathString($"/{FapPlatformConstants.TemporaryFolder}")
             });
+            //模板（打印模板，报表模板）
+            app.UseStaticFiles(new StaticFileOptions()
+            {
+                ServeUnknownFileTypes = true,
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), $"{FapPlatformConstants.Template}")),
+                RequestPath = new PathString($"/{FapPlatformConstants.Template}")
+            });
             app.UseRouting();
             //认证
             app.UseAuthentication();

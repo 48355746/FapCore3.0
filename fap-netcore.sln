@@ -37,7 +37,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UEditorNetCore", "thirdparty\UEditorNetCore\UEditorNetCore.csproj", "{01A60121-72CC-4893-8754-8E5DBD589B2F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fap.ExcelReport", "src\Fap.ExcelReport\Fap.ExcelReport.csproj", "{FF8EFF7A-BB5A-4C25-A9CD-AADCD27BB550}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fap.ExcelReport", "src\Fap.ExcelReport\Fap.ExcelReport.csproj", "{FF8EFF7A-BB5A-4C25-A9CD-AADCD27BB550}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

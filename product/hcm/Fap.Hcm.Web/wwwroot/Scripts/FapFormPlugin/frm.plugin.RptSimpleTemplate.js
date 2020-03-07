@@ -3,7 +3,7 @@ $("#XlsFile").addClass("hide").parent().append($annexBtn);
 
 $annexBtn.on(ace.click_event, function () {
     var dialog = bootbox.dialog({
-        title: '<i class="ace-icon fa fa-file-word-o"></i> ' + $.lang("upload_template", "上传模板"),
+        title: '<i class="ace-icon fa fa-file-excel-o"></i> ' + $.lang("upload_template", "上传模板"),
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
         buttons: {
             cancel: {

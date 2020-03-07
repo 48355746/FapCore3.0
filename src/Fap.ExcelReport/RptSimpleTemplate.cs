@@ -25,6 +25,14 @@ namespace Fap.ExcelReport
 		/// </summary>
 		public string ReportName { get; set; }
 		/// <summary>
+		/// 包含图片
+		/// </summary>
+		public int HasImage { get; set; }
+		/// <summary>
+		/// 自定义Sql
+		/// </summary>
+		public string CustomSql { get; set; }
+		/// <summary>
 		/// Excel文件
 		/// </summary>
 		public string XlsFile { get; set; }
