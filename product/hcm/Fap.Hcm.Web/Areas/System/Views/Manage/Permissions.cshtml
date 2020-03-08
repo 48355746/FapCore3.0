@@ -557,20 +557,16 @@
             });
             //保存报表
             $("#btnSaveReport").on(ace.click_event, function (ev) {
-
                 ev.preventDefault();
                 var roleUid = getRoleUid();
                 if (roleUid === 0) {
                     return;
                 }
-
                 var treeRpt = $('#tree-reporttemplate').jstree(true),
                     checks = treeRpt.get_checked();
                 //筛选是报表的节点
                 var sels = $.grep(checks, function (d, i) {
-
                     return treeRpt.get_node(d).data.isRpt == true;
-
                 });
                 saveAuthority({ "RoleUid": roleUid, "RptUids": sels, "AType": 6 });
 

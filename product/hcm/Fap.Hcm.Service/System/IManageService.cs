@@ -27,7 +27,7 @@ namespace Fap.Hcm.Service.System
 
         IEnumerable<TreeDataView> GetModuleTree();
         IEnumerable<TreeDataView> GetModuleAndMenuTree();
-
+        IEnumerable<TreeDataView> GetSimpleReportTree();
         IEnumerable<TreeDataView> GetAllDeptTree();
         IEnumerable<TreeDataView> GetMenuButtonTree();
 

@@ -19,6 +19,7 @@ using Fap.Model.Infrastructure;
 using Fap.Core.Infrastructure.Metadata;
 using Ardalis.GuardClauses;
 using Fap.Core.MultiLanguage;
+using Fap.ExcelReport;
 
 namespace Fap.Hcm.Service.System
 {
@@ -31,7 +32,7 @@ namespace Fap.Hcm.Service.System
         private readonly IFapApplicationContext _applicationContext;
         private readonly IFapPlatformDomain _platformDomain;
         private readonly IMultiLangService _multiLangService;
-        public ManageService(IRbacService rbacService, IDbContext dbContext, IFapConfigService configService, IFapApplicationContext applicationContext, IFapPlatformDomain platformDomain,IMultiLangService multiLangService)
+        public ManageService(IRbacService rbacService, IDbContext dbContext, IFapConfigService configService, IFapApplicationContext applicationContext, IFapPlatformDomain platformDomain, IMultiLangService multiLangService)
         {
             _rbacService = rbacService;
             _dbContext = dbContext;
@@ -130,12 +131,12 @@ namespace Fap.Hcm.Service.System
             }
 
             //普通用户角色加到tree根级
-            FapRole commonRole= roles.FirstOrDefault(r => r.Fid == FapPlatformConstants.CommonUserRoleFid);
+            FapRole commonRole = roles.FirstOrDefault(r => r.Fid == FapPlatformConstants.CommonUserRoleFid);
             if (commonRole != null)
             {
                 treeGroup.Insert(0, new TreeDataView { Id = commonRole.Fid, Data = new { IsRole = true }, Pid = "0", Text = commonRole.RoleName, Icon = "icon-folder orange ace-icon fa fa-users" });
             }
-            
+
             List<TreeDataView> treeRole = roles.Select(r => new TreeDataView { Id = r.Fid.ToString(), Data = new { IsRole = true }, Pid = r.RoleGroupUid, Text = r.RoleName, State = new NodeState { Opened = true }, Icon = "icon-folder orange ace-icon fa fa-users" }).ToList<TreeDataView>();
             List<TreeDataView> tree = new List<TreeDataView>();
 
@@ -303,7 +304,7 @@ namespace Fap.Hcm.Service.System
 
         public ResponseViewModel OperConfigGroup(TreePostData postData)
         {
-            Guard.Against.Null(postData,nameof(postData));
+            Guard.Against.Null(postData, nameof(postData));
             ResponseViewModel vm = new ResponseViewModel();
             if (postData.Operation == TreeNodeOper.DELETE_NODE)
             {
@@ -376,13 +377,13 @@ namespace Fap.Hcm.Service.System
 
         public IEnumerable<TreeDataView> GetModuleTree()
         {
-            List<TreeDataView> moList = _platformDomain.ModuleSet.Select(t => new TreeDataView { Id = t.Fid.ToString(), Pid = t.Pid, Text =_multiLangService.GetMultiLangValue(MultiLanguageOriginEnum.Module, t.Fid), Icon = (t.Icon.IsMissing() ? "icon-folder green ace-icon fa fa-leaf" : "icon-folder green ace-icon " + t.Icon) }).ToList<TreeDataView>();
+            List<TreeDataView> moList = _platformDomain.ModuleSet.Select(t => new TreeDataView { Id = t.Fid.ToString(), Pid = t.Pid, Text = _multiLangService.GetMultiLangValue(MultiLanguageOriginEnum.Module, t.Fid), Icon = (t.Icon.IsMissing() ? "icon-folder green ace-icon fa fa-leaf" : "icon-folder green ace-icon " + t.Icon) }).ToList<TreeDataView>();
 
             List<TreeDataView> tree = new List<TreeDataView>();
             TreeDataView treeRoot = new TreeDataView()
             {
                 Id = "0",
-                Text =_multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page,"page_module_rootname", "系统模块"),
+                Text = _multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page, "page_module_rootname", "系统模块"),
                 State = new NodeState { Opened = true },
                 Icon = "icon-folder purple ace-icon fa fa-home bigger-160",
             };
@@ -406,9 +407,9 @@ namespace Fap.Hcm.Service.System
 
             List<TreeDataView> moduleList = _platformDomain.ModuleSet
                 .Where(m => menus.Select(m => m.ModuleUid).Distinct().Contains(m.Fid))
-                .Select(t => new TreeDataView { Id = t.Fid.ToString(), Data = new { IsMenu = false }, Pid = t.Pid.ToString(), Text =_multiLangService.GetMultiLangValue(MultiLanguageOriginEnum.Module, t.Fid), State = new NodeState { Opened = false }, Icon = (t.Icon.IsMissing() ? "icon-folder green ace-icon fa fa-leaf" : "icon-folder green ace-icon " + t.Icon) }).ToList<TreeDataView>();
+                .Select(t => new TreeDataView { Id = t.Fid.ToString(), Data = new { IsMenu = false }, Pid = t.Pid.ToString(), Text = _multiLangService.GetMultiLangValue(MultiLanguageOriginEnum.Module, t.Fid), State = new NodeState { Opened = false }, Icon = (t.Icon.IsMissing() ? "icon-folder green ace-icon fa fa-leaf" : "icon-folder green ace-icon " + t.Icon) }).ToList<TreeDataView>();
             //授权 仅仅授予到二级菜单
-            List<TreeDataView> menuList = menus.Where(m => m.MenuCode.Length == 5).Select(r => new TreeDataView { Id = r.Fid.ToString(), Data = new { IsMenu = true }, Pid = r.ModuleUid, Text =_multiLangService.GetMultiLangValue(MultiLanguageOriginEnum.Menu, r.Fid), State = new NodeState { Opened = false }, Icon = "icon-folder orange ace-icon fa fa-leaf" }).ToList<TreeDataView>();
+            List<TreeDataView> menuList = menus.Where(m => m.MenuCode.Length == 5).Select(r => new TreeDataView { Id = r.Fid.ToString(), Data = new { IsMenu = true }, Pid = r.ModuleUid, Text = _multiLangService.GetMultiLangValue(MultiLanguageOriginEnum.Menu, r.Fid), State = new NodeState { Opened = false }, Icon = "icon-folder orange ace-icon fa fa-leaf" }).ToList<TreeDataView>();
             List<TreeDataView> threeLevels = menus.Where(m => m.MenuCode.Length == 7).Select(r => new TreeDataView { Id = r.Fid.ToString(), Data = new { IsMenu = true }, Pid = r.Pid, Text = _multiLangService.GetMultiLangValue(MultiLanguageOriginEnum.Menu, r.Fid), State = new NodeState { Opened = false }, Icon = "icon-folder orange ace-icon fa fa-leaf" }).ToList<TreeDataView>();
             List<TreeDataView> tree = new List<TreeDataView>();
             List<TreeDataView> treeRoots = moduleList.Where(g => g.Pid == "0").ToList();
@@ -584,7 +585,7 @@ namespace Fap.Hcm.Service.System
                                 Id = button.Fid,
                                 Data = new { IsBtn = false, IsMenu = false },
                                 Pid = menuNode.Id,
-                                Text=button.Description
+                                Text = button.Description
                             };
                             if (button.ButtonType == FapMenuButtonType.Grid)
                             {
@@ -651,7 +652,7 @@ namespace Fap.Hcm.Service.System
                 _ => "fa fa-bolt"
             };
         }
-   
+
         public IEnumerable<TreeDataView> GetMenuEntityTree()
         {
             var tree = GetModuleAndMenuTree();
@@ -709,8 +710,8 @@ namespace Fap.Hcm.Service.System
                     {
                         TreeDataView tcol = new TreeDataView()
                         {
-                            Id =$"{menuUid}|{menuColumn.GridId}|{column.Fid}",
-                            Data = new { IsColumn = true, MenuUid = menuUid,GridId= menuColumn.GridId,ColumnUid=column.Fid },
+                            Id = $"{menuUid}|{menuColumn.GridId}|{column.Fid}",
+                            Data = new { IsColumn = true, MenuUid = menuUid, GridId = menuColumn.GridId, ColumnUid = column.Fid },
                             Pid = toper.Id,
                             Text = column.ColComment,
                             Icon = "green fa fa-tag"
@@ -742,6 +743,36 @@ namespace Fap.Hcm.Service.System
             TreeViewHelper.MakeTree(treeRoot.Children, oriList, treeRoot.Id);
             return tree;
         }
+        public IEnumerable<TreeDataView> GetSimpleReportTree()
+        {
+            var templates = _dbContext.QueryAll<RptSimpleTemplate>();
+            if (!_applicationContext.IsAdministrator)
+            {
+                var roleReports = _rbacService.GetRoleReportList(_applicationContext.CurrentRoleUid);
+                if (roleReports.Any())
+                {
+                    var prr = roleReports.Select(r => r.RptUid);
+                    templates = templates.Where(r => (prr.Contains(r.Fid)||r.IsDir==1));
+                }
+                else
+                {
+                    templates = Enumerable.Empty<RptSimpleTemplate>();
+                }
+            }
+            List<TreeDataView> oriList = templates.Select(t => new TreeDataView { Id = t.Fid, Pid = (t.Pid.IsMissing() ? "0" : t.Pid), Data = new { isRpt = true,isDir=t.IsDir }, Text = t.ReportName, Icon = (t.IsDir == 1 ? "icon-folder blue ace-icon fa fa-folder" : "icon-folder orange ace-icon fa fa-file-text-o") }).ToList<TreeDataView>();
+            List<TreeDataView> tree = new List<TreeDataView>();
+            TreeDataView treeRoot = new TreeDataView()
+            {
+                Id = "0",
+                Text = "报表",
+                Data = new { isRpt = false,isDir=1 },
+                State = new NodeState { Opened = true },
+                Icon = "icon-folder blue ace-icon fa fa-folder",
+            };
+            tree.Add(treeRoot);
+            TreeViewHelper.MakeTree(treeRoot.Children, oriList, treeRoot.Id);
+            return tree;
+        }
         public AuthorityViewModel GetAuthority(string roleUid)
         {
             DynamicParameters dparam = new DynamicParameters();
@@ -758,17 +789,17 @@ namespace Fap.Hcm.Service.System
             //获取角色用户
             IEnumerable<FapUser> userList = _dbContext.Query<FapUser>("select Fid, UserCode,UserName,UserEmail,UserIdentity from FapUser where fid in(select useruid from FapRoleUser where RoleUid=@RoleUid) order by UserCode", dparam, true);
             //获取角色报表
-            IEnumerable<dynamic> rpts = _dbContext.Query("select RptUid from FapRoleReport where RoleUid=@RoleUid", dparam);
+            var rpts = _rbacService.GetRoleReportList(roleUid).Select(r => r.RptUid);
             //获取角色实体属性
             IEnumerable<FapRoleColumn> columnList = _rbacService.GetRoleColumnList(roleUid);// _dbContext.Query("select ColumnUid,EditAble,ViewAble from FapRoleColumn where RoleUid=@RoleUid", dparam);
-            var rptJson = rpts.Select(x => x.RptUid).ToList();
+
             var buttonJson = GetRoleButtons();
             return new AuthorityViewModel()
             {
                 Users = userList,
                 Menus = menus,
                 Depts = depts,
-                Rpts = rptJson,
+                Rpts = rpts,
                 Columns = columnList,
                 Roles = roles,
                 Buttons = buttonJson
@@ -830,7 +861,7 @@ namespace Fap.Hcm.Service.System
 
                 _platformDomain.RoleDeptSet.Refresh();
             }
-            else if (authority.AType ==  AuthorityTypeEnum.ColumnEdit || authority.AType == AuthorityTypeEnum.ColumnView)
+            else if (authority.AType == AuthorityTypeEnum.ColumnEdit || authority.AType == AuthorityTypeEnum.ColumnView)
             {
                 //实体列
                 List<FapRoleColumn> columns = new List<FapRoleColumn>();

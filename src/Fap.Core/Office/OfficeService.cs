@@ -53,27 +53,7 @@ namespace Fap.Core.Office
             return false;
 
         }
-        private void ExcelToHtml(string fileName)
-        {
-            
-            var workbook= ExcelToHtmlUtils.LoadXls(fileName);
-            ExcelToHtmlConverter excelToHtmlConverter = new ExcelToHtmlConverter()
-            {
-                // Set output parameters
-                OutputColumnHeaders = false,
-                OutputHiddenColumns = true,
-                OutputHiddenRows = true,
-                OutputLeadingSpacesAsNonBreaking = false,
-                OutputRowNumbers = true,
-                UseDivsToSpan = true
-
-            };
-            // Process the Excel file
-            excelToHtmlConverter.ProcessWorkbook(workbook);
-
-            // Output the HTML file
-            excelToHtmlConverter.Document.Save(Path.ChangeExtension(fileName, "html"));
-        }
+        
 
         public void PrintWordTemplate(string templateFile,string outputFile,IDictionary<string,string> keyValues)
         {

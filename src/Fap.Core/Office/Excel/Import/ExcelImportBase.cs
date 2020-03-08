@@ -47,7 +47,7 @@ namespace Fap.Core.Office.Excel.Import
             {
                 using (FileStream fs = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite))
                 {
-                    IWorkbook workbook = WorkbookFactory.Create((Stream)fs); ;
+                    IWorkbook workbook = WorkbookFactory.Create((Stream)fs); 
                     //if (fileName.IndexOf(".xlsx") > 0) // 2007版本
                     //{
                     //    workbook = new XSSFWorkbook(fs);

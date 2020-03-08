@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using Fap.Core.Infrastructure.Enums;
 using Fap.Core.Rbac.AC;
 using Fap.Hcm.Service.System;
+using Fap.ExcelReport;
 
 namespace Fap.Hcm.Web.Areas.System.Controllers
 {
@@ -301,55 +302,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         // POST: api/Common
         public JsonResult GetReportTemplate()
         {
-            //List<RptSimpleTemplate> allTemplate = _dbContext.QueryEntityBySql<RptSimpleTemplate>("select Id,Fid,Pid,ReportName,IsDir from RptSimpleTemplate");
-
-            //List<RptSimpleTemplate> templates = allTemplate.Where(r => r.Pid != "0").ToList();
-            //if (!_session.AcSession.IsDeveloper())
-            //{
-            //    var roleReports = _session.AcSession.AccountPrivilege.GetUserReportList();
-            //    if (roleReports.Any())
-            //    {
-            //        var prr = roleReports.Select(r => r.RptUid);
-            //        if (prr != null && prr.Any())
-            //        {
-            //            templates = templates.Where(r => r.IsDir == 1 || (r.IsDir == 0 && prr.Contains(r.Fid))).ToList();
-            //        }
-            //        else
-            //        {
-            //            templates = templates.Where(r => r.IsDir == 1).ToList();
-            //        }
-            //    }
-            //    else
-            //    {
-            //        templates = templates.Where(r => r.IsDir == 1).ToList();
-            //    }
-            //}
-            //List<TreeDataView> oriList = templates.Select(t => new TreeDataView { Id = t.Fid.ToString(), Pid = t.Pid.ToString(), Data = new { isdir = "" + t.IsDir, isRpt = (t.IsDir == 0 ? true : false) }, Text = t.ReportName, Icon = (t.IsDir == 1 ? "icon-folder blue ace-icon fa fa-folder" : "icon-folder orange ace-icon fa fa-file-text-o") }).ToList<TreeDataView>();
-            //List<TreeDataView> tree = new List<TreeDataView>();
-
-            ////RptSimpleTemplate rootTemplate = _dbContext.QueryFirstOrDefaultEntityBySql<RptSimpleTemplate>("select * from RptSimpleTemplate where Pid='0'");
-            //RptSimpleTemplate rootTemplate = allTemplate.FirstOrDefault(r => r.Pid == "0");
-            //TreeDataView treeRoot = new TreeDataView()
-            //{
-            //    Id = "" + rootTemplate.Fid,
-            //    Text = rootTemplate.ReportName,
-            //    Data = new { isdir = "" + rootTemplate.IsDir, isRpt = false },
-            //    State = new NodeState { Opened = true },
-            //    Icon = "icon-folder blue ace-icon fa fa-folder",
-            //};
-            //tree.Add(treeRoot);
-            //TreeViewHelper.MakeTree(treeRoot.Children, oriList, treeRoot.Id);
-            //return Json(tree);
-            List<TreeDataView> tree = new List<TreeDataView>();
-            TreeDataView treeRoot = new TreeDataView()
-            {
-                Id = "0",
-                Text = "报表",
-                Data = new { isdir = 1, isRpt = false },
-                State = new NodeState { Opened = true },
-                Icon = "icon-folder blue ace-icon fa fa-folder",
-            };
-            tree.Add(treeRoot);
+            var tree = _manageService.GetSimpleReportTree();
             return Json(tree);
         }
 

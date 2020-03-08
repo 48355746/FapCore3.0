@@ -21,6 +21,10 @@ using Fap.Core.Annex.Utility.Zip;
 using System.Text;
 using System.Threading.Tasks;
 using Fap.ExcelReport;
+using NPOI.SS.Converter;
+using NPOI.HSSF.UserModel;
+using NPOI.XSSF.UserModel;
+using Fap.Core.Office.Excel;
 
 namespace Fap.Hcm.Web.Areas.System.Controllers
 {
@@ -197,7 +201,16 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
 
             ResponseViewModel rvm = new ResponseViewModel { data = path, success = true };
             return Json(rvm);
-
+        }
+        [HttpGet("ReportRenderHtml/{fid}")]
+        public async Task<JsonResult> RenderHtml(string fid)
+        {
+            string path = await _reportService.Render(fid).ConfigureAwait(false);
+            //string strPath= Path.Combine(Environment.CurrentDirectory, path);
+            //ExcelToHTML toHTML = new ExcelToHTML(strPath);
+            //string htmlContent = toHTML.ToHtml();
+            ResponseViewModel rvm = new ResponseViewModel { data = path, success = true };
+            return Json(rvm);
         }
     }
 }
