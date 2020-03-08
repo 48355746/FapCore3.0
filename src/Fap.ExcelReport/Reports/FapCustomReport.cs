@@ -11,13 +11,13 @@ using System.Text.RegularExpressions;
 
 namespace Fap.ExcelReport.Reports
 {
-    public class FapDefaultReport : ReportBase
+    public class FapCustomReport : ReportBase
     {
         private readonly IDbContext _dbContext;
         private readonly RptSimpleTemplate _rptSimpleTemplate;
         private readonly ICacheService _cacheService;
         private readonly IFapApplicationContext _applicationContext;
-        public FapDefaultReport(IDbContext dbContext, IFapApplicationContext applicationContext, ICacheService cacheService, RptSimpleTemplate rptSimpleTemplate)
+        public FapCustomReport(IDbContext dbContext, IFapApplicationContext applicationContext, ICacheService cacheService, RptSimpleTemplate rptSimpleTemplate)
         {
             _dbContext = dbContext;
             _applicationContext = applicationContext;
@@ -54,7 +54,7 @@ namespace Fap.ExcelReport.Reports
         public IEnumerable<IDictionary<string, object>> GetEntitySql(string sql, object p0 = null,
             object p1 = null, object p2 = null, object p3 = null, object p4 = null, object p5 = null, object p6 = null, object p7 = null, object p8 = null, object p9 = null, object p10 = null)
         {
-            sql = sql.Replace("(", "").Replace(")", "");
+            sql = sql.TrimStart('(').TrimEnd(')');
             List<object> sqlParams = new List<object>();
             if (p0 != null)
             {

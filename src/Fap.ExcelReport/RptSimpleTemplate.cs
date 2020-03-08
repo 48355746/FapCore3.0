@@ -29,9 +29,9 @@ namespace Fap.ExcelReport
 		/// </summary>
 		public int HasImage { get; set; }
 		/// <summary>
-		/// 自定义Sql
+		/// 报表类型
 		/// </summary>
-		public string CustomSql { get; set; }
+		public string ReportType { get; set; }
 		/// <summary>
 		/// Excel文件
 		/// </summary>
@@ -49,5 +49,10 @@ namespace Fap.ExcelReport
 		/// </summary>
 		public int IsFinal { get; set; }
 
+	}
+	public class ReportType
+	{
+		public const string Custom = "Custom";
+		public const string Dynamic = "Dynamic";
 	}
 }

@@ -40,7 +40,7 @@ namespace Fap.ExcelReport
         public async Task<string> Render(string rptUid)
         {
             var rptModel = _dbContext.Get<RptSimpleTemplate>(rptUid);
-            ReportBase report = new FapDefaultReport(_dbContext, _applicationContext, _cacheService, rptModel);
+            ReportBase report = GetReport(rptModel);
             var reportGenerator = new FapReportGenerator(_serviceProvider, report);
             string outFilePath = Path.Combine(Environment.CurrentDirectory, FapPlatformConstants.TemporaryFolder, $"{rptModel.ReportName}_Result.xlsx");
             await Task.Factory.StartNew(() =>
@@ -50,6 +50,14 @@ namespace Fap.ExcelReport
             });
             
             return FapPlatformConstants.TemporaryFolder + Path.DirectorySeparatorChar + $"{rptModel.ReportName}_Result.xlsx";
+        }
+        private ReportBase GetReport(RptSimpleTemplate rptSimpleTemplate)
+        {
+            if (rptSimpleTemplate.ReportType == ReportType.Dynamic)
+            {
+                return new FapDynamicReport(_dbContext, _applicationContext, _cacheService, rptSimpleTemplate);
+            }
+            return new FapCustomReport(_dbContext, _applicationContext, _cacheService, rptSimpleTemplate);
         }
     }
 }
