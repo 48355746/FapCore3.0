@@ -24,5 +24,20 @@ namespace Fap.ExcelReport.Reports
         {
             return $"$[{bid}]";
         }
+        public static string ConvertGender(string sex)
+        {
+            if (sex.Equals("female"))
+            {
+                return "男";
+            }
+            else if(sex.Equals("male"))
+            {
+                return "女";
+            }
+            else
+            {
+                return "未知";
+            }            
+        }
     }
 }
