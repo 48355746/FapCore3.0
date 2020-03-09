@@ -2,8 +2,9 @@
 using Dapper;
 using Dapper.Contrib.Extensions;
 using Fap.Core.Extensions;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.Utility;
+using StackExchange.Profiling.Data;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -36,7 +37,13 @@ namespace Fap.Core.DataAccess
             var name = tableName;
 
             var adapter = GetFormatter(connection);
-
+            StringBuilder builderColumn = new StringBuilder();
+            foreach (var colName in sbColumnList.SplitComma())
+            {
+                adapter.AppendColumnName(builderColumn, colName);
+                builderColumn.Append(",");
+            }
+            string columnList = builderColumn.ToString().TrimEnd(',');
             int returnVal;
             var wasClosed = connection.State == ConnectionState.Closed;
             if (wasClosed) connection.Open();
@@ -44,13 +51,13 @@ namespace Fap.Core.DataAccess
             if (!isList)    //single entity
             {
                 var keyProperties = new List<PropertyInfo>();
-                returnVal = adapter.Insert(connection, transaction, commandTimeout, name, sbColumnList,
+                returnVal = adapter.Insert(connection, transaction, commandTimeout, name, columnList,
                     sbParameterList, keyProperties, entityToInsert);
             }
             else
             {
                 //insert list of entities
-                var cmd = $"insert into {name} ({sbColumnList}) values ({sbParameterList})";
+                var cmd = $"insert into {name} ({columnList}) values ({sbParameterList})";
                 returnVal = connection.Execute(cmd, entityToInsert, transaction, commandTimeout);
             }
             if (wasClosed) connection.Close();
@@ -67,37 +74,45 @@ namespace Fap.Core.DataAccess
         /// <param name="transaction"></param>
         /// <param name="commandTimeout"></param>
         /// <returns></returns>
-        public static bool Update(this IDbConnection connection, string tableName, dynamic dynamicToUpdate, IDbTransaction transaction = null, int? commandTimeout = null)
+        public static bool Update(this IDbConnection connection, FapDynamicObject dynamicToUpdate, IDbTransaction transaction = null, int? commandTimeout = null)
         {
-            var id = dynamicToUpdate.Get(FapDbConstants.FAPCOLUMN_FIELD_Id);
-            if (id == null)
-            {
-                Guard.Against.NullOrEmpty("更新数据Id必须设置.", nameof(dynamicToUpdate));
-            }
-            var ts = dynamicToUpdate.Get(FapDbConstants.FAPCOLUMN_FIELD_Ts);
-            if (ts == null)
-            {
-                Guard.Against.NullOrEmpty("更新数据Ts必须设置.", nameof(dynamicToUpdate));
-            }
+            string tableName = dynamicToUpdate.TableName;
+            Guard.Against.NullOrEmpty(tableName, nameof(tableName));
+            long id = dynamicToUpdate.Get(FapDbConstants.FAPCOLUMN_FIELD_Id).ToLong();
+            long ts = dynamicToUpdate.Get(FapDbConstants.FAPCOLUMN_FIELD_Ts).ToLong();
+            Guard.Against.Zero(id, nameof(id));
+            
             var adapter = GetFormatter(connection);
             StringBuilder sqlBuilder = new StringBuilder();
             sqlBuilder.Append(" UPDATE ").Append(tableName).Append(" SET ");
-            foreach (string fildName in dynamicToUpdate.Keys())
+            foreach (string fieldName in dynamicToUpdate.Keys)
             {
-                if ("Id".EqualsWithIgnoreCase(fildName))
+                if ("Id".EqualsWithIgnoreCase(fieldName)||"Fid".EqualsWithIgnoreCase(fieldName))
                 {
                     continue;
                 }
-                adapter.AppendColumnNameEqualsValue(sqlBuilder, fildName);
+                //规定计算字段以MC结尾，此处也可以比较元数据
+                if (fieldName.EndsWith("MC"))
+                {
+                    continue;
+                }
+                adapter.AppendColumnNameEqualsValue(sqlBuilder, fieldName);
                 sqlBuilder.Append(",");
             }
             sqlBuilder.Remove(sqlBuilder.Length - 1, 1);
             sqlBuilder.Append(" where ");
             adapter.AppendColumnNameEqualsValue(sqlBuilder, "Id");
-            sqlBuilder.Append(" and ");
-            adapter.AppendColumnName(sqlBuilder, "Ts");
-            sqlBuilder.Append($" = {ts}");
-            DynamicParameters parameters = dynamicToUpdate.DynamicParameters();
+            if (ts != 0)
+            {
+                sqlBuilder.Append(" and ");
+                adapter.AppendColumnName(sqlBuilder, "Ts");
+                sqlBuilder.Append($" = {ts}");
+            }
+            DynamicParameters parameters = new DynamicParameters();
+            foreach (var entry in dynamicToUpdate as IDictionary<string,object>)
+            {
+                parameters.Add(entry.Key, entry.Value);
+            }
             parameters.Add("Ts", UUIDUtils.Ts);
             //Console.WriteLine(sqlBuilder.ToString());
             int updated = connection.Execute(sqlBuilder.ToString(), parameters, transaction, commandTimeout);
@@ -106,16 +121,11 @@ namespace Fap.Core.DataAccess
 
         public static bool Update<T>(this IDbConnection connection, T entityUpdate, IDbTransaction transaction = null, int? commandTimeout = null) where T : BaseModel
         {
-            var id = entityUpdate.Id ?? 0;
-            if (id < 1)
-            {
-                Guard.Against.NullOrEmpty("更新数据Id必须设置.", nameof(entityUpdate));
-            }
-            var ts = entityUpdate.Ts ?? 0;
-            if (ts < 1)
-            {
-                Guard.Against.NullOrEmpty("更新数据Ts必须设置.", nameof(entityUpdate));
-            }
+            long id = entityUpdate.Id;
+            long ts = entityUpdate.Ts;
+            
+            Guard.Against.Zero(id, nameof(id));
+            Guard.Against.Zero(ts, nameof(ts));
             var type = typeof(T);
             var adapter = GetFormatter(connection);
             StringBuilder sqlBuilder = new StringBuilder();
@@ -154,6 +164,10 @@ namespace Fap.Core.DataAccess
         private static ISqlAdapter GetFormatter(IDbConnection connection)
         {
             var name = connection.GetType().Name.ToLower();
+            if (connection is ProfiledDbConnection)
+            {
+                name= (connection as ProfiledDbConnection).WrappedConnection.GetType().Name.ToLower();
+            }
 
             return !AdapterDictionary.ContainsKey(name)
                 ? new SqlServerAdapter()

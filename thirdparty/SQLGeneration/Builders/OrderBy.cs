@@ -75,19 +75,13 @@ namespace SQLGeneration.Builders
             set;
         }
         /// <summary>
-        /// sql2012+分页
+        /// 分页
         /// </summary>
-        public string OffsetFetch
+        public string Pagination
         {
             get;set;
         }
-        /// <summary>
-        /// mysql分页
-        /// </summary>
-        public string Limit
-        {
-            get;set;
-        }
+       
         void IVisitableBuilder.Accept(BuilderVisitor visitor)
         {
             visitor.VisitOrderBy(this);

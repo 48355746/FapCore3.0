@@ -110,8 +110,7 @@ namespace SQLGeneration.Parsing
         /// <summary>
         /// Gets the identifier for the IN keyword.
         /// </summary>
-        public const string In = "In";
-
+        public const string In = "In";    
         /// <summary>
         /// Gets the identifier for the INSERT keyword.
         /// </summary>
@@ -589,7 +588,7 @@ namespace SQLGeneration.Parsing
             Define(Descending, @"DESC\b", true);
             //sql2012以上分页语法
             Define(OffsetFetch, @"OFFSET\s+\d+\s+(ROWS|ROW)\s+FETCH\s+NEXT\s+\d+\s+(ROWS|ROW)\s+ONLY\b", true);
-            Define(Limit, @"LIMIT\s+\d\s*,\s*\d\b", true);
+            Define(Limit, @"LIMIT\s+\d+\s*,\s*\d+\b", true); 
             Define(Percent, @"PERCENT\b", true);
             Define(Select, @"SELECT\b", true);
             Define(Union, @"UNION\b", true);
@@ -654,7 +653,7 @@ namespace SQLGeneration.Parsing
             Define(ModulusOperator, @"%");
             Define(Comma, @",");
             Define(EqualTo, @"=");
-            Define(NotEqualTo, @"<>");
+            Define(NotEqualTo, @"<>|!=");
             Define(LessThanEqualTo, @"<=");
             Define(GreaterThanEqualTo, @">=");
             Define(LessThan, @"<");

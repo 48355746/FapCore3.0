@@ -1,0 +1,60 @@
+﻿@using Fap.Workflow.Model;
+@model Fap.AspNetCore.ViewModel.FormViewModel
+@{
+    ViewBag.Title = "单据信息";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    WfProcess process = ViewBag.Process;
+    string formType = process.FormType; //ViewBag.FormType;
+    string ffTemplate = ViewBag.FormTemplate;
+    string billPower = ViewBag.FormPower;
+    string formName = process.BillTable; //ViewBag.BillTable;
+    string appName = process.ProcessName;
+
+}
+@section specificcss{
+    @{await Html.RenderPartialAsync("_ControlCssPartial");}
+    <style>
+        .item-list > li.selected label, .item-list > li.selected .lbl {
+            text-decoration: underline !important;
+            color: #8090A0;
+        }
+    </style>
+}
+@section specificscript{
+    @{await Html.RenderPartialAsync("_ControlJsPartial");}
+    <script src="~/lib/ueditor/ueditor.parse.js"></script>
+    <script>
+        $(function () {
+            setTimeout(() => {
+                var formPower =@Html.Raw(billPower);
+                if (formPower != undefined) {
+                    $.each(formPower, function (i, item) {
+
+                        if (item.property === 0) {
+                            //隐藏
+                            $("#" + item.fieldName).text('');
+                         }
+                    });
+
+                }
+            }, 0);
+
+        });
+        uParse('#formdiv', {
+            rootPath: '../../'
+            //chartContainerHeight: 500
+        });
+    </script>
+}
+<div class="row">
+    <div class="col-xs-12" id="formdiv">
+        @if (formType == WfFormType.Internal)
+        {
+            <fap-form id="@formName" form-model="Model"></fap-form>
+        }
+        else
+        {
+            <fap-freeform id="@formName" form-model="Model" form-template="@ffTemplate"></fap-freeform>
+        }
+    </div>
+</div>

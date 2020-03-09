@@ -1,4 +1,4 @@
-﻿using Fap.Core.Metadata;
+﻿using Fap.Core.Infrastructure.Metadata;
 using System.Collections.Generic;
 
 namespace Fap.Core.Rbac.AC
@@ -12,6 +12,6 @@ namespace Fap.Core.Rbac.AC
         bool TryGetValue(string fid, out FapColumn fapColumn);
         bool TryGetValue(int id, out FapColumn fapColumn);
 
-        bool TryGetValueByTable(string tableName, out List<FapColumn> fapColumns);
+        bool TryGetValueByTable(string tableName, out IEnumerable<FapColumn> fapColumns);
     }
 }

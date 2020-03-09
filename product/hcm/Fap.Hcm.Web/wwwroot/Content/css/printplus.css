@@ -1,0 +1,46 @@
+﻿.page-content {
+    padding: 0px;
+}
+
+.wordpage {
+    width: 100%;
+    padding: 0px;
+    margin: 1px auto;
+    border: 0px #D3D3D3 solid;
+    border-radius: 5px;
+    background: white;
+    box-shadow: 0 0 0px rgba(0, 0, 0, 0);
+}
+
+td,th {
+    border: 1px solid #000000 !important;
+}
+/**jqgrid start**/
+jqgfirstrow td{
+    border:0px;
+}
+.ui-jqgrid-btable {
+    margin-top: -3px !important;
+}
+.ui-jqgrid tr.ui-row-ltr td {
+    border-right-width: 0px !important;
+    border-top-width: 0px !important;
+    border-right-style: solid !important;
+}
+table {
+    border-right: 1px solid black !important;
+}
+/**jqgrid end**/
+.table-bordered > thead > tr > th, .table-bordered > tbody > tr > th, .table-bordered > tfoot > tr > th, .table-bordered > thead > tr > td, .table-bordered > tbody > tr > td, .table-bordered > tfoot > tr > td {
+    border: 1px solid #000000 !important;
+}
+
+.control-label {
+    font-size: 16px !important;
+    font-weight: normal;
+}
+
+.form-group > label[class*="col-"] {
+    margin-bottom: 0px !important;
+    padding-top: 8px !important;
+}

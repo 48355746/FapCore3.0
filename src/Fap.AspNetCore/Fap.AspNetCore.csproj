@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">  
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <AssemblyName>Fap.AspNetCore</AssemblyName>
+    <RootNamespace>Fap.AspNetCore</RootNamespace>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>wangyanfei</Authors>
+    <Version>1.0.5</Version>
+    <Company>-</Company>
+    <Product>Fap</Product>
+  </PropertyGroup>
+
+ 
+  <ItemGroup>
+    <PackageReference Include="HtmlSanitizer" Version="4.0.217" />
+    <PackageReference Include="IdentityModel" Version="4.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="3.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" Version="2.2.0" />   
+    <PackageReference Include="YUICompressor.NET" Version="3.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Fap.Core\Fap.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="IdentityServer4\" />
+  </ItemGroup>
+
+</Project>

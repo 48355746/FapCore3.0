@@ -1,0 +1,263 @@
+﻿@using Fap.AspNetCore.Controls
+@{
+    Layout = "~/Views/Shared/_Layout_Empty.cshtml";
+    string fid = ViewBag.Fid;
+    if (fid == "0")
+    {
+        fid = "";
+    }
+    Select2Model selModel=    new Select2Model { IdField = "TableName", NameField = "TableComment", TableName = "FapTable", Where = "TableFeature like '%BillFeature%'" };
+}
+@section specificcss{
+    <link href="~/Content/Select2/css/select2.min.css" rel="stylesheet" />
+    <link href="~/Content/layer/skin/layer.css" rel="stylesheet" />
+}
+@section specificscript{
+    <script src="~/Content/Select2/js/select2.js"></script>
+    <script src="~/Content/js/jquery.hotkeys.js"></script>
+    <script src="~/Content/js/bootstrap-wysiwyg.js"></script>
+    <script>
+        //初始化富文本编辑框事件
+        var initRichText = function (props) {
+            $('#editorContent').ace_wysiwyg({
+                toolbar:
+                    [
+                        {
+                            name: 'font',
+                            title: '字体',
+                            values: ['Some Font!', 'Microsoft YaHei', 'Arial', 'Verdana', 'Comic Sans MS', 'Custom Font!']
+                        },
+                        null,
+                        {
+                            name: 'fontSize',
+                            title: '大小',
+                            values: { 1: 'Size#1 Text', 2: 'Size#1 Text', 3: 'Size#3 Text', 4: 'Size#4 Text', 5: 'Size#5 Text' }
+                        },
+                        null,
+                        { name: 'bold', title: '加粗' },
+                        { name: 'italic', title: '斜体' },
+                        { name: 'strikethrough', title: '删除线' },
+                        { name: 'underline', title: '下划线' },
+                        null,
+                        'insertunorderedlist',
+                        'insertorderedlist',
+                        'outdent',
+                        'indent',
+                        null,
+                        { name: 'justifyleft' },
+                        { name: 'justifycenter' },
+                        { name: 'justifyright' },
+                        { name: 'justifyfull' },
+                        null,
+                        {
+                            name: 'createLink',
+                            placeholder: 'url地址',
+                            button_class: 'btn-purple',
+                            button_text: '添加链接'
+                        },
+                        { name: 'unlink' },
+                        null,
+                        {
+                            name: 'insertImage',
+                            title: '插入图片',
+                            placeholder: 'url地址',
+                            button_class: 'btn-primary',
+                            //choose_file:false,//hide choose file button
+                            button_text: '选择本地',// 'Set choose_file:false to hide this',
+                            button_insert_class: 'btn-pink',
+                            button_insert: '插入图片'
+                        },
+                        null,
+                        {
+                            name: 'foreColor',
+                            title: '前景色',
+                            values: ['red', 'green', 'blue', 'navy', 'orange'],
+                            /**
+                                You change colors as well
+                            */
+                        },
+                        null,
+                        {
+                            name: 'backColor',
+                            title: '背景色'
+                        },
+                        null,
+                        { name: 'undo' },
+                        { name: 'redo' },
+                        null,
+                        'viewSource',
+                        null,
+                        { name: 'insertText', values: props }
+
+                    ],
+                //speech_button:false,//hide speech button on chrome
+
+                'wysiwyg': {
+                    hotKeys: {} //disable hotkeys
+                }
+
+
+            }).prev().addClass('wysiwyg-style1');
+        }
+        $(function () {
+            //加载初始化
+            var initMailTmpl = function (fid) {
+                debugger
+                $.get("@Url.Content("~/System/Api/Manage/MailTemplate/")" + fid, function (data) {
+                    if (data) {
+                        $("#txtTemplateName").val(data.name);
+                        $("#selTmplCategory").val(data.code);
+                        $("#sel-seltable").val(data.tableName).trigger("change");;
+                        //getColsByTableName(data.tableName);
+                        $("#editorContent").html(data.templateContent);
+                    }
+                })
+            }
+            $("#selTmplCategory").select2({ width: "300" });
+            //不是新增 则初始化
+            if ('@fid' != '') {
+                initMailTmpl('@fid');
+                $("#selTmplCategory").prop("disabled", true);
+                $("#sel-seltable").prop("disabled", true);
+            }
+
+
+        })
+
+        var tableChange = function (e) {
+            var tn = $(e.currentTarget).val();
+            if (tn != '') {
+                getColsByTableName(tn);
+
+            }
+        }
+        var getColsByTableName = function (tableName) {
+            $.get("@Url.Content("~/Api/Core/fieldlist/")" + tableName, function (data) {
+
+                initColsToolBar(data);
+            })
+        }
+        var initColsToolBar = function (data) {
+            $(".wysiwyg-toolbar").remove();
+            var filterData = $.grep(data, function (d, i) {
+                return d.isDefaultCol == 0&&d.colProperty!=3;
+            })
+            //加入常量
+            //filterData.unshift({ colComment: '处理人常量' });
+            //filterData.unshift({ colComment: '处理结果常量' });
+            //filterData.unshift({ colComment: '处理Url常量' });
+            filterData.unshift({ colComment: '业务名称' });
+            filterData.unshift({ colComment: '业务申请人' });
+            filterData.unshift({ colComment: '业务处理人' });
+            filterData.unshift({ colComment: '业务申请时间' });
+            filterData.unshift({ colComment: '业务处理时间' });
+            filterData.unshift({ colComment: '业务流程状态' });
+            filterData.unshift({ colComment: '业务审批结论' });
+            filterData.unshift({ colComment: '业务审批意见' });
+            filterData.unshift({ colComment: '单据编码' });
+            initRichText(filterData);
+        }
+
+        var saveMailTmpl = function () {
+            var txtCode = $("#selTmplCategory").val();
+            var txtName = $("#txtTemplateName").val();
+            var entity = $("#sel-seltable").val();
+            var content = $("#editorContent").html();
+            if (txtCode == '') {
+                layer.msg("模板方案不能为空");
+                return;
+            }
+            if (txtName == '') {
+                layer.msg("名称不能为空");
+                return;
+            }
+
+            if (entity == '') {
+                layer.msg("业务实体不能为空");
+                return;
+            }
+            if (content == '') {
+                layer.msg("模板内容不能为空");
+                return;
+            }
+            var rv = false;
+            $.ajax({
+                url: "@Url.Content("~/api/commctrlsapi/mailtemplateoper")",    //请求的url地址
+                dataType: "json",   //返回格式为json
+                async: false, //请求是否异步，默认为异步，这也是ajax重要特性
+                data: { Fid: '@fid', Code: txtCode, ModuleUid: 'BillMailTmpl', Name: txtName, TableName: entity, TemplateContent: content, Enabled: 1 },    //参数值
+                type: "POST",   //请求方式
+                beforeSend: function () {
+                    //请求前的处理
+                },
+                success: function (req) {
+                    //请求成功时处理
+                    if (req) {
+                        rv = true;
+                        layer.msg("保存成功");
+                    }
+                },
+                complete: function () {
+                    //请求完成的处理
+                },
+                error: function () {
+                    //请求出错处理
+                }
+            });
+            return rv;
+        }
+    </script>
+}
+<!-- PAGE CONTENT BEGINS -->
+<form class="form-horizontal" role="form">
+    <!-- #section:elements.form -->
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> 模板方案 </label>
+
+        <div class="col-sm-9">
+            <select id="selTmplCategory">
+                <option value="NoticeApprover">流程中通知处理人模板</option>
+                <option value="CompleteNoticeApplier">流程完成通知申请人模板</option>
+                <option value="NoticeAllWhenEnd">流程终止通知申请人处理人模板</option>
+                @*<option value="NoticeAllWhenCancel">流程取消通知申请人处理人模板</option>*@
+                <option value="NoticeAllWhenWithdraw">流程撤销通知申请人处理人模板</option>
+                <option value="NoticeAllWhenSuspend">流程挂起通知申请人处理人模板</option>
+                @*<option value="NoticeAllWhenResume">流程恢复通知申请人处理人模板</option>*@
+            </select>
+        </div>
+    </div>
+    <hr />
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="txtTemplateName"> 名称 *</label>
+
+        <div class="col-sm-6">
+            <input type="text" id="txtTemplateName" placeholder="名称" class="form-control" />
+        </div>
+    </div>
+
+    <!-- /section:elements.form -->
+    <div class="space-4"></div>
+
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="form-field-2"> 业务实体 *</label>
+
+        <div class="col-sm-9">
+            <fap-select id="seltable" placeholder="业务实体" on-change="tableChange" select-model="selModel"></fap-select>
+        </div>
+    </div>
+
+    <div class="space-4"></div>
+
+    <div class="form-group">
+
+        <div class="col-sm-12">
+
+            <div class="wysiwyg-editor" id="editorContent"></div>
+
+        </div>
+    </div>
+
+
+
+
+</form>

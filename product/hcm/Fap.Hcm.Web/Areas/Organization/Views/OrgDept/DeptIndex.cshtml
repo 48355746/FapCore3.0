@@ -1,0 +1,174 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+
+<title><fap-multilang lang-key="orgdept_index_page_title" default-content="组织部门"></fap-multilang> </title>
+<link href="~/Content/css/jquery.orgchart.css" rel="stylesheet" />
+<link href="~/Content/css/bootstrap-timeline.css" rel="stylesheet" />
+
+<div class="row">
+    <div class="col-xs-12">
+        <div id="widget-box-orgdept" class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">
+                    <fap-multilang lang-key="global_info_dept" default-content="部门"></fap-multilang>
+                </h4>
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar no-border">
+                    <fap-button id="btnMergeDept" btn-tag="link" content="合并" icon-before="fa fa-link blue" class-name="info"></fap-button>
+                    <fap-button id="btnMoveDept" btn-tag="link" content="移动" icon-before="fa fa-arrows-v blue" class-name="info"></fap-button>
+                    <fap-button id="btnHistoryDept" btn-tag="link" content="历史" icon-before="fa fa-history blue" class-name="info"></fap-button>
+                    <fap-button id="btnOrgChart" btn-tag="link" content="机构图" icon-before="fa fa-sitemap blue" class-name="info"></fap-button>
+                </div>
+            </div>
+            <div class="widget-body">
+                <!-- #section:custom/widget-box.toolbox -->
+                <div class="widget-main">
+                    <fap-grid id="orgdept" grid-model="Model"
+                              is-tree-grid="true" expand-column="DeptName" col-menu="false" row-numbers="false" view-records="true" shrink-fit="false" oper-import="true"></fap-grid>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var scripts = [null, "/Content/js/jquery.orgchart.min.js", null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            //机构图
+            $("#btnOrgChart").on(ace.click_event, function () {
+                var rowData = getSelectedRow('grid-orgdept');
+                if (rowData == null) {
+                    //bootbox.alert($.lang("orgdept_index_page_pleaseSelshowdept", "请选择一个部门查看"));
+                    return;
+                }
+                openUrl("@Url.Content("~/Organization/OrgDept/OrgChart/")" + rowData.Fid+ "?type=directorName");
+
+            })
+
+            $("#btnHistoryDept").on(ace.click_event, function () {
+                var rowData = getSelectedRow('grid-orgdept');
+                if (rowData == null) {
+                    //bootbox.alert($.lang("orgdept_index_page_selshowhistoricaltracingdept", "请选择要历史追溯的部门"));
+                    return;
+                }
+                var dialog = bootbox.dialog({
+                    title: "历史追溯",
+                    size: "large",
+                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                    buttons: {
+                        cancel: {
+                            label: "关闭", className: "btn-default"
+                        }
+                    }
+
+                });
+
+                dialog.init(function () {
+                    var url = "@Html.Raw(Url.Action("DataHistory", "Component",new { area=""}))";
+                    $.get(url, {bn:'OrgDept',fid:rowData.Fid}, function (ev) {
+                        dialog.find('.bootbox-body').html(ev);
+                    })
+                });
+            })
+            //合并
+            $("#btnMergeDept").on(ace.click_event, function () {               
+                var dialog = bootbox.dialog({
+                    title: $.lang("orgdept_index_page_mergedepartment", "合并部门"),
+                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                    size: "large",
+                    buttons: {                       
+                        cancel: {
+                            label: $.lang("cancel", "取消"), className: "btn-default"
+                        }
+                    }
+                });
+                dialog.init(function () {
+                    var url = "@Url.Content("~/Organization/OrgDept/MergeDept")" ;
+                    $.get(url, function (ev) {
+                        dialog.find('.bootbox-body').html(ev);
+                        dialog.find('.modal-footer').html($(".wizard-actions").eq(0));
+                        dialog.find('#modal-wizard-container').ace_wizard({
+                            //手动指定按钮
+                            buttons: '.wizard-actions:eq(0)'
+                        }).on('actionclicked.fu.wizard', function (e, info) {
+                            if (info.step === 1) {
+                                 var treeDept = $("#tree-orgdeptmerge").jstree(true);
+                                //获取选中的部门
+                                var selDepts = treeDept.get_checked();
+                                if (selDepts.length < 2) {
+                                    $.msg('至少请选择两个部门合并');
+                                    return false;
+                                }
+                                $("#confirmDepts").empty();
+                                $.each(selDepts, function (i, v) {                                    
+                                    var $lbl = $(`     <label>
+                                        <input name="form-field-checkbox" type="checkbox" checked value='`+v+`' class="ace" />
+                                        <span class="lbl"> `+treeDept.get_node(v).text+`</span>
+                                    </label>   `);
+                                    $("#confirmDepts").append($lbl);
+                                })
+                            } else if (info.step === 2) {
+                                var chks = $("#confirmDepts input[type='checkbox']:checked");
+                                 if (chks.length < 2) {
+                                    $.msg('至少请选择两个部门合并');
+                                    return false;
+                                }
+                            }
+                        }).on('finished.fu.wizard', function (e) {
+                            Persistence('frm-orgdeptmerge', 'OrgDept', null, function (data) {
+                                var chks = $("#confirmDepts input[type='checkbox']:checked");
+                                var mergeUids = [];
+                                $.each(chks, function (i, v) {
+                                    mergeUids.push(v.value);
+                                })
+                                $.post(basePath + "/Organization/Api/OrgDept/Merge", { DeptFid: data.Fid, DeptCode: data.DeptCode, MergeFids: mergeUids }, function (rv) {
+                                    if (rv.success) {
+                                        $.msg('合并成功');
+                                        dialog.modal("hide");
+                                         $('#grid-orgdept').trigger('reloadGrid');
+                                    } else {
+                                        bootbox.alert(rv.msg);
+                                    }
+                                })
+                            });
+                        });
+                    })
+                });
+            })
+            //移动
+            $("#btnMoveDept").on(ace.click_event, function () {
+                var dialog = bootbox.dialog({
+                    title: "移动部门",
+                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                    buttons: {
+                        success: {
+                            label: $.lang("global_oper_enter", "确定"),
+                            className: "btn-primary",
+                            callback: function () {
+                                $('#grid-orgdept').trigger('reloadGrid');
+                            }
+                        },
+                        cancel: {
+                            label: "取消", className: "btn-default"
+                        }
+                    }
+
+                });
+
+                dialog.init(function () {
+                    var url = "@Url.Content("~/Organization/OrgDept/MoveDept")";
+                    $.get(url, function (ev) {
+                        dialog.find('.bootbox-body').html(ev);
+                    })
+                });
+            })
+
+        })
+    })
+</script>

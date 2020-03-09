@@ -109,12 +109,47 @@ namespace XUnitTestFapCore
             Assert.True(b);
         }
         [Fact]
+        public void ConcurrentDeleteEntityLogic()
+        {
+            Action<string> a1 = (s) =>
+            {
+                _userService.DeleteLogic();
+            };
+            Parallel.Invoke(() => a1("gaoya1")
+            , () => a1("gaoya2"), () => a1("gaoya3"),
+             () => a1("gaoya4"),
+              () => a1("gaoya5"),
+             () => a1("gaoya6"),
+              () => a1("gaoya7"),
+              () => a1("gaoya8"),
+              () => a1("gaoya9")
+              );
+            Assert.True(true);
+        }
+        [Fact]
         public void DeleteTrace()
         {
             var b = _userService.DeleteTrace();
             Assert.True(b);
         }
-
+        [Fact]
+        public void ConcurrentDeleteEntityTrace()
+        {
+            Action<string> a1 = (s) =>
+            {
+                _userService.DeleteTrace();
+            };
+            Parallel.Invoke(() => a1("gaoya1")
+            , () => a1("gaoya2"), () => a1("gaoya3"),
+             () => a1("gaoya4"),
+              () => a1("gaoya5"),
+             () => a1("gaoya6"),
+              () => a1("gaoya7"),
+              () => a1("gaoya8"),
+              () => a1("gaoya9")
+              );
+            Assert.True(true);
+        }
         [Fact]
         public void DeleteDynamicLogic()
         {
@@ -126,6 +161,42 @@ namespace XUnitTestFapCore
         {
             var b = _userService.DeleteDynamicTrace();
             Assert.True(b);
+        }
+        [Fact]
+        public void ConcurrentDeleteDynamicTrace()
+        {
+            Action<string> a1 = (s) =>
+            {
+                _userService.DeleteDynamicTrace();
+            };
+            Parallel.Invoke(() => a1("gaoya1")
+            , () => a1("gaoya2"), () => a1("gaoya3"),
+             () => a1("gaoya4"),
+              () => a1("gaoya5"),
+             () => a1("gaoya6"),
+              () => a1("gaoya7"),
+              () => a1("gaoya8"),
+              () => a1("gaoya9")
+              );
+            Assert.True(true);
+        }
+        [Fact]
+        public void ConcurrentDeleteDynamicLogic()
+        {
+            Action<string> a1 = (s) =>
+            {
+                _userService.DeleteDynamicLogic();
+            };
+            Parallel.Invoke(() => a1("gaoya1")
+            , () => a1("gaoya2"), () => a1("gaoya3"),
+             () => a1("gaoya4"),
+              () => a1("gaoya5"),
+             () => a1("gaoya6"),
+              () => a1("gaoya7"),
+              () => a1("gaoya8"),
+              () => a1("gaoya9")
+              );
+            Assert.True(true);
         }
     }
 }

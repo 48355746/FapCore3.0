@@ -1,0 +1,194 @@
+﻿@using Fap.AspNetCore.Controls.JqGrid
+@model Fap.AspNetCore.ViewModel.JqGridViewModel
+
+<title><fap-multilang lang-key="workflow" default-content="流程"></fap-multilang></title>
+<style>
+    .tablediv .ui-jqgrid .ui-jqgrid-pager {
+        line-height: 15px;
+        height: 40px;
+        padding-top: 5px !important;
+        padding-bottom: 5px !important;
+    }
+
+    .ui-jqgrid .ui-subgrid .ui-jqgrid .ui-jqgrid-hdiv .ui-jqgrid-htable th div {
+        padding-top: 10px;
+        padding-bottom: 22px;
+    }
+</style>
+<script>
+      //加载历史版本
+    function showHistoryVersionGrid(parentRowID, parentRowKey)
+    {
+        $('#' + parentRowID).load($.randomUrl("@Url.Content("~/Workflow/Process/HistoryVersion")?id="+parentRowKey));
+    }
+</script>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="row">
+            <div class="col-xs-12 col-sm-3">
+                <div class="widget-box">
+                    <div class="widget-header widget-header-flat">
+                        <h4 class="widget-title"><fap-multilang lang-key="workflow_category" default-content="流程分类"></fap-multilang></h4>
+                        <fap-tree-button id="processgroup" description="流程分类" tree-id="tree-processgroup"></fap-tree-button>
+
+                    </div>
+
+                    <div class="widget-body">
+                        <div class="widget-main scrollable">
+                            <fap-tree id="processgroup" get-url="@Url.Content("~/Workflow/Api/ProcessGroup/")" edit-url="@Url.Content("~/Workflow/Api/OperProcessGroup")" is-async="true"></fap-tree>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-9">
+                <div class="widget-box">
+                    <div class="widget-header widget-header-flat">
+                        <h4 class="widget-title"><fap-multilang lang-key="workflow" default-content="流程"></fap-multilang></h4>
+
+                        <div class="widget-toolbar">
+                            <a href="#" data-action="fullscreen" class="orange2">
+                                <i class="ace-icon fa fa-expand"></i>
+                            </a>
+                        </div>
+                        <div class="widget-toolbar no-border">
+                            <fap-button id="btnProcessDesign" btn-tag="link" content="流程设计" icon-before="fa fa-cog blue" class-name="info"></fap-button>
+                        </div>
+                        <div class="widget-toolbar no-border">
+                            <fap-button id="btnEnableTemplate" btn-tag="link" content="启用" icon-before="fa fa-check-square blue" class-name="info"></fap-button>
+                            <fap-button id="btnDisableTemplate" btn-tag="link" content=" 禁用" icon-before="fa fa-pause blue" class-name="info"></fap-button>
+                            <fap-button id="btnUpgradeTemplate" btn-tag="link" content="升级" icon-before="fa fa-arrow-up blue" class-name="info"></fap-button>
+
+                        </div>
+                    </div>
+                    <div class="widget-body">
+
+                        <div class="widget-main">
+                            <fap-grid id="process" grid-model="Model" wrapper="widget-main" oper-cud="true" on-form-init-add="initForm" multi-select="false" subgrid-rowexpanded="showHistoryVersionGrid"></fap-grid>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script>
+    function initForm()
+    {
+        if (wfProcessGroupUid) {
+            $("#frm-grid-process #ProcessGroupUid").val(wfProcessGroupUid).next().val(wfProcessGroupName);
+        }
+    }
+        //流程设计
+    function workflowDesigner(fid) {
+        var index = layer.open({
+            type: 2,
+            title: $.lang('workflow_designer','流程设计器')+ 'V1.0',
+            shadeClose: true,
+            shade: 0.8,
+            maxmin: true, //开启最大化最小化按钮
+            area: ['893px', '600px'],
+            content: '@Url.Content("~/Workflow/Process/Design")/' + fid,
+        });
+        layer.full(index);
+    }
+    var wfProcessGroupUid, wfProcessGroupName;
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+                $('#tree-processgroup').jstree('destory');
+            })
+
+            $('#tree-processgroup').on("changed.jstree", function (e, data) {
+                if (data && data.selected && data.selected.length) {
+                    var groupid = data.selected[0];
+                    if (groupid == "0") {
+                        wfProcessGroupUid = null;
+                        wfProcessGroupName=null;
+                        return;
+                    }
+                    wfProcessGroupName = data.node.text;
+                    wfProcessGroupUid = groupid; //选择的流程分类Id
+                    var jsonc = { 'ProcessGroupUid': wfProcessGroupUid, 'ProcessGroupUidMC': wfProcessGroupName };
+                    var filter = '{"groupOp":"AND","rules":[{"field":"ProcessGroupUid","op":"eq","data":"' + wfProcessGroupUid + '"}]}'
+                    reloadGrid("grid-process",{ pageCondition: filter })
+
+                }
+            });
+
+            $("#btnProcessDesign").on(ace.click_event, function () {
+                var rowData = getSelectedRow("grid-process");
+                if (rowData === null) {
+                    return;
+                }
+                workflowDesigner(rowData.Fid);
+            });
+
+
+            //按钮：启用流程
+            $("#btnEnableTemplate").on(ace.click_event,function () {
+                let selectRow = getSelectedRow("grid-process");
+                if (selectRow == null)
+                {
+                    return;
+                }
+                //var rowData = $("#gridTable").jqGrid('getRowData', rowId);
+                bootbox.confirm($.lang("is_enabled_workflow","是否要启用该流程")+'?', function (result) {
+                    if (result) {
+                        $.post(basePath + "/Workflow/Api/Process", { Status: "Using", Fid: selectRow.Fid }, function (rv) {
+                            if (rv.success) {
+                                $.msg(rv.msg);
+                                $("#grid-process").trigger("reloadGrid");
+                            } else {
+                                bootbox.alert(rv.msg);
+                            }
+                        })
+                    }
+                })
+
+            });
+
+            //按钮：禁用模板
+            $("#btnDisableTemplate").click(function () {
+                let selectRow = getSelectedRow("grid-process");
+                if (selectRow == null) {
+                    return;
+                }
+                bootbox.confirm($.lang("is_disabled_workflow","是否要禁用该流程")+'?', function (result) {
+                    if (result) {
+                        $.post(basePath + "/Workflow/Api/Process", { Status: "Forbidden", Fid: selectRow.Fid }, function (rv) {
+                            if (rv.success) {
+                                $.msg(rv.msg);
+                                $("#grid-process").trigger("reloadGrid");
+                            } else {
+                                bootbox.alert(rv.msg);
+                            }
+                        })
+                    }
+                })
+            });
+
+            //按钮：升级模板
+            $("#btnUpgradeTemplate").click(function () {
+                let selectRow = getSelectedRow("grid-process");
+                if (selectRow == null) {
+                    return;
+                }
+                bootbox.confirm($.lang("is_upgrade_workflow","是否要升级该流程")+'?', function (result) {
+                    if (result) {
+                        $.post('@Url.Content("/Workflow/Api/UpgradeFlowTemplate")', { id: selectRow.Id }
+                            ,function (data) {
+                                $("#grid-process").trigger("reloadGrid");
+                            })
+                    };
+                });
+            });
+
+        })
+    });
+
+</script>

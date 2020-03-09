@@ -1,14 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dapper;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Model;
+using Fap.Core.Infrastructure.Query;
+using Fap.Core.Infrastructure.Metadata;
+using System;
 
 namespace Fap.Core.DataAccess
 {
     public interface IDbContext
     {
         string HistoryDateTime { get; set; }
-
+        DatabaseDialectEnum DatabaseDialect {get;}
         void BeginTransaction();
         void Commit();
         int Count(string tableName, string where = "", DynamicParameters parameters = null);
@@ -27,7 +30,6 @@ namespace Fap.Core.DataAccess
         void DeleteDynamicDataBatch(IEnumerable<FapDynamicObject> dataObjects);
         int DeleteExec(string tableName, string where = "", DynamicParameters parameters = null);
         Task<int> DeleteExecAsync(string tableName, string where = "", DynamicParameters parameters = null);
-        void Dispose();
         int Execute(string sqlOri, DynamicParameters parameters = null);
         Task<int> ExecuteAsync(string sqlOri, DynamicParameters parameters = null);
         object ExecuteScalar(string sqlOri, DynamicParameters parameters = null);
@@ -48,12 +50,28 @@ namespace Fap.Core.DataAccess
         Task<List<long>> InsertBatchAsync<T>(IEnumerable<T> entityListToInsert) where T : BaseModel;
         long InsertDynamicData(FapDynamicObject fapDynData);
         List<long> InsertDynamicDataBatch(IEnumerable<FapDynamicObject> dataObjects);
+        /// <summary>
+        /// 查询原始sql，不进行包装
+        /// </summary>
+        /// <param name="sqlOri"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        IEnumerable<dynamic> QueryOriSql(string sqlOri, DynamicParameters parameters = null);
+        /// <summary>
+        /// 查询原始sql，不进行包装
+        /// </summary>
+        /// <param name="sqlOri"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        IEnumerable<T> QueryOriSql<T>(string sqlOri, DynamicParameters parameters = null) where T:class;
         IEnumerable<dynamic> Query(string sqlOri, DynamicParameters parameters = null, bool withMC = false);
-        IEnumerable<T> Query<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : BaseModel;
+        IEnumerable<T> Query<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : class;
+        IEnumerable<dynamic> QueryAll(string tableName, bool withMC = false);
+        Task<IEnumerable<dynamic>> QueryAllAsync(string tableName, bool withMC = false);
         IEnumerable<T> QueryAll<T>(bool withMC = false) where T : BaseModel;
         Task<IEnumerable<T>> QueryAllAsync<T>(bool withMC = false) where T : BaseModel;
         Task<IEnumerable<dynamic>> QueryAsync(string sqlOri, DynamicParameters parameters = null, bool withMC = false);
-        Task<IEnumerable<T>> QueryAsync<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : BaseModel;
+        Task<IEnumerable<T>> QueryAsync<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : class;
         /// <summary>
         /// 仅当元素个数大于等于1时返回第一个元素，否则抛异常InvalidOperationException: Sequence contains no elements
         /// </summary>
@@ -241,5 +259,26 @@ namespace Fap.Core.DataAccess
         Task<bool> UpdateBatchAsync<T>(IEnumerable<T> entityListToUpdate) where T : BaseModel;
         bool UpdateDynamicData(FapDynamicObject fapDynData);
         void UpdateDynamicDataBatch(IEnumerable<FapDynamicObject> dataObjects);
+
+        PageInfo<T> QueryPage<T>(Pageable pageable) where T : BaseModel;
+        PageInfo<dynamic> QueryPage(Pageable pageable);
+        /// <summary>
+        /// 获取一个默认数据
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
+        FapDynamicObject GetDefualtData(string tableName);
+        IEnumerable<DataChangeHistory> QueryDataHistory(string tableName, string fid);
+
+        #region metadata
+        FapTable Table(string tableName);
+        IEnumerable<FapTable> Tables(string tableCategory);
+        IEnumerable<FapTable> Tables(Func<FapTable, bool> predicate);
+        IEnumerable<FapColumn> Columns(string tableName);
+        FapColumn Column(string tableName, string colName);
+        IEnumerable<FapDict> Dictionarys(string category);
+        FapDict Dictionary(string category, string code);
+        #endregion
+
     }
 }

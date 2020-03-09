@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
 using Dapper;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 
 namespace Fap.Core.DataAccess
 {
     public interface IDbSession
     {
         IConnectionFactory ConnectionFactory { get; }
-
+        DatabaseDialectEnum DatabaseDialect { get; }
         bool Delete<T>(T entityToDelete) where T : class;
         bool DeleteAll<T>() where T : class;
         Task<bool> DeleteAllAsync<T>() where T : class;

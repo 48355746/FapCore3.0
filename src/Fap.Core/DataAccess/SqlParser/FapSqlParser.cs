@@ -1,6 +1,7 @@
 ﻿using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Domain;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
+using Fap.Core.MultiLanguage;
 using SQLGeneration.Builders;
 using SQLGeneration.Generators;
 using System;
@@ -13,11 +14,12 @@ namespace Fap.Core.DataAccess.SqlParser
     /// <summary>
     /// 简单SQL语句解析器
     /// </summary>
-    internal class FapSqlParser
+    public class FapSqlParser
     {
         private string _sql = "";
         private bool _withMC = false; //是否取参照的名称
         private bool _withId = false; //是否取参照的ID
+
         private IFapPlatformDomain _appDomain;
 
         /// <summary>
@@ -33,47 +35,16 @@ namespace Fap.Core.DataAccess.SqlParser
             _withMC = withMC;
             _appDomain = platformDomain;
         }
-
         /// <summary>
-        /// 从SQL语句中提取出有效的WHERE条件语句
+        /// jqGrid查询的时候不用关联dict
         /// </summary>
-        /// <param name="isHasMetadata"></param>
-        /// <returns></returns>
-        public string DrawValidWhereClauseFromSQL(out bool isHasMetadata)
-        {
-            isHasMetadata = false;
-            //解析SQL语句
-            CommandBuilder commandBuilder = new CommandBuilder();
-            SelectBuilder selectBuilder = (SelectBuilder)commandBuilder.GetCommand(_sql);
-            if (selectBuilder == null)
-            {
-                return null;
-            }
-            foreach (var item in selectBuilder.Projection)
-            {
-                var pi = item.ProjectionItem;
-                if (pi is SelectBuilder)
-                {
-                    SelectBuilder sbi = pi as SelectBuilder;
-                    FilterGroup topFilter =
-                   new FilterGroup(Conjunction.And,
-                       new LessThanEqualToFilter(new Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
-                       new GreaterThanEqualToFilter(new Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
-                       new EqualToFilter(new Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_Dr)));
-                    sbi.AddWhere(topFilter);
-                }
-            }
-            Formatter formatter = new Formatter();
-            string beforeActual = formatter.GetCommandText(selectBuilder);
-
-            return beforeActual;
-        }
-
+        public bool IsGridQuery { get; set; }
+        public string CurrentLang { get; set; } = MultiLanguageEnum.ZhCn.ToString();
         /// <summary>
-        /// 获得完整的SQL语句
+        /// 获得解析完整的SQL语句
         /// </summary>
         /// <returns></returns>
-        public string GetCompletedSql()
+        public string ParserSqlStatement()
         {
             //解析SQL语句
             CommandBuilder commandBuilder = new CommandBuilder();
@@ -83,22 +54,16 @@ namespace Fap.Core.DataAccess.SqlParser
             {
                 SelectBuilder select = command as SelectBuilder;
                 RepackSelectSQL(select);
-                //Formatter formatter = new Formatter();
-                //return formatter.GetCommandText(select) ;
             }
             else if (command is UpdateBuilder)
             {
                 UpdateBuilder update = command as UpdateBuilder;
                 RepackUpdateSQL(update);
-                //Formatter formatter = new Formatter();
-                //return formatter.GetCommandText(update);
             }
             else if (command is DeleteBuilder)
             {
                 DeleteBuilder delete = command as DeleteBuilder;
                 RepackDeleteSQL(delete);
-                //Formatter formatter = new Formatter();
-                //return formatter.GetCommandText(delete);
             }
             else if (command is InsertBuilder)
             {
@@ -110,6 +75,51 @@ namespace Fap.Core.DataAccess.SqlParser
 
             return newSql;
         }
+        /// <summary>
+        /// 获得解析select语句不在主where部分加有效期限制
+        /// </summary>
+        /// <returns></returns>
+        public string ParserSelectSqlNoWhere()
+        {
+            //解析SQL语句
+            CommandBuilder commandBuilder = new CommandBuilder();
+            ICommand command = commandBuilder.GetCommand(_sql);
+
+            if (command is SelectBuilder)
+            {
+                SelectBuilder select = command as SelectBuilder;
+                var projections = select.Projection;
+                int fieldCount = projections.Count();
+                if (fieldCount > 0)
+                {
+                    var arryProjections = projections.ToArray();
+                    for (int i = 0; i < fieldCount; i++)
+                    {
+                        IProjectionItem item = arryProjections[i].ProjectionItem;
+                        if (item is AllColumns)//*
+                        {
+                            AllColumns currItem = item as AllColumns;
+                            //移除掉重新构建
+                            select.RemoveProjection(arryProjections[i]);
+                            HandleSelectStarStatement(select, currItem);
+
+                        }
+                        else if (item is Column)
+                        {
+                            Column currItem = item as Column;
+                            HandleSelectStatement(select, arryProjections[i], currItem);
+                            i++;
+                        }
+                    }
+                }
+                Formatter formatter = new Formatter();
+                string newSql = formatter.GetCommandText(command);
+
+                return newSql;
+            }
+            return string.Empty;
+        }
+
 
         private void RepackInsertSQL(InsertBuilder insert)
         {
@@ -124,7 +134,7 @@ namespace Fap.Core.DataAccess.SqlParser
         {
             var table = delete.Table;
             var where = delete.Where;
-            BuilderWhere(where);
+            HandlerInFilterWhere(where);
             //添加有效期验证
             FilterGroup validFilter = new FilterGroup(Conjunction.And,
                new LessThanEqualToFilter(table.Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
@@ -136,7 +146,7 @@ namespace Fap.Core.DataAccess.SqlParser
         {
             var table = update.Table;
             var where = update.Where;
-            BuilderWhere(where);
+            HandlerInFilterWhere(where);
             //添加有效期验证
             FilterGroup validFilter = new FilterGroup(Conjunction.And,
                new LessThanEqualToFilter(table.Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
@@ -144,8 +154,11 @@ namespace Fap.Core.DataAccess.SqlParser
                new EqualToFilter(table.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_Dr)));
             update.AddWhere(validFilter);
         }
-
-        private void BuilderWhere(IEnumerable<IFilter> where)
+        /// <summary>
+        /// 处理In中的select
+        /// </summary>
+        /// <param name="where"></param>
+        private void HandlerInFilterWhere(IEnumerable<IFilter> where)
         {
             if (where.Any())
             {
@@ -179,10 +192,7 @@ namespace Fap.Core.DataAccess.SqlParser
         /// <summary>
         /// 重新组合SQL语句(带上有效时间和删除标识)
         /// </summary>
-        /// <param name="fields"></param>
-        /// <param name="tables"></param>
-        /// <param name="whereClause"></param>
-        /// <param name="sqlBuilder"></param>
+        ///<param name="select"></param>
         private void RepackSelectSQL(SelectBuilder select)
         {
             var projections = select.Projection;
@@ -206,14 +216,18 @@ namespace Fap.Core.DataAccess.SqlParser
                     else if (item is Column)
                     {
                         Column currItem = item as Column;
-                        HandleSelectStatement(select, currItem);
-                        i++;
+                        HandleSelectStatement(select, arryProjections[i], currItem);
                     }
                 }
             }
-            BuilderWhere(where);
+            HandlerInFilterWhere(where);
 
-            foreach (AliasedSource tb in tables.Sources)
+            ParserWhere(select);
+        }
+
+        private static void ParserWhere(SelectBuilder select)
+        {
+            foreach (AliasedSource tb in select.Sources.Sources)
             {
                 //添加有效期验证
                 FilterGroup validFilter = new FilterGroup(Conjunction.And,
@@ -222,8 +236,6 @@ namespace Fap.Core.DataAccess.SqlParser
                    new EqualToFilter(tb.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_Dr)));
                 select.AddWhere(validFilter);
             }
-
-
         }
 
 
@@ -241,7 +253,7 @@ namespace Fap.Core.DataAccess.SqlParser
                 tableSource = select.Sources.Sources.First();
             }
             string tableName = tableSource.Source.GetSourceName();
-            List<FapColumn> columns = GetColumnsOfTable(tableName);
+            IEnumerable<FapColumn> columns = GetColumnsOfTable(tableName);
             if (columns != null)
             {
                 this.MakeSelectStarPartition(columns, tableSource, select);
@@ -254,16 +266,19 @@ namespace Fap.Core.DataAccess.SqlParser
         /// <param name="tables"></param>
         /// <param name="field"></param>
         /// <param name="builder"></param>
-        private void HandleSelectStatement(SelectBuilder select, Column column)
+        private void HandleSelectStatement(SelectBuilder select, AliasedProjection currProjection, Column column)
         {
+            string colName = column.Name;
+            //string tableAlias = column.Source.Alias;
+            string tableName = column.Source.Source.GetSourceName();
+            FapColumn fCol = GetSingleColumnOfTable(tableName, colName);
+            if (fCol.IsMultiLang == 1 && IsGridQuery)
+            {
+                select.RemoveProjection(currProjection);
+                select.AddProjection(column.Source.Column($"{colName}{CurrentLang}"), colName);
+            }
             if (_withMC)
             {
-                string colName = column.Name;
-                string tableAlias = column.Source.Alias;
-                string tableName = column.Source.Source.GetSourceName();
-
-                FapColumn fCol = GetSingleColumnOfTable(tableName, colName);
-
                 this.MakeSelectPartition(fCol, select, column);
 
             }
@@ -275,9 +290,9 @@ namespace Fap.Core.DataAccess.SqlParser
         /// </summary>
         /// <param name="table"></param>
         /// <returns></returns>
-        private List<FapColumn> GetColumnsOfTable(string table)
+        private IEnumerable<FapColumn> GetColumnsOfTable(string table)
         {
-            _appDomain.ColumnSet.TryGetValueByTable(table, out List<FapColumn> fapCols);
+            _appDomain.ColumnSet.TryGetValueByTable(table, out IEnumerable<FapColumn> fapCols);
             return fapCols;
         }
 
@@ -300,18 +315,37 @@ namespace Fap.Core.DataAccess.SqlParser
         /// <param name="columnList"></param>
         /// <param name="table"></param>
         /// <param name="selectBuilder"></param>
-        public void MakeSelectStarPartition(IEnumerable<FapColumn> columnList, AliasedSource aliaseSource, SelectBuilder select)
+        private void MakeSelectStarPartition(IEnumerable<FapColumn> columnList, AliasedSource aliaseSource, SelectBuilder select)
         {
             string tableAlias = aliaseSource.Alias;
             int mcIndex = 0;
             foreach (var column in columnList)
             {
                 //AliasedSource table = select.AddTable(new Table($"{column.TableName}"), tableAlias);
-                select.AddProjection(aliaseSource.Column(column.ColName));
+                if (column.IsMultiLang == 1)
+                {
+                    if (IsGridQuery)
+                    {
+                        select.AddProjection(aliaseSource.Column($"{column.ColName}{CurrentLang}"), column.ColName);
+                    }
+                    else
+                    {
+                        select.AddProjection(aliaseSource.Column(column.ColName));
+                    }
+                    var langs = typeof(MultiLanguageEnum).EnumItems();
+                    foreach (var lang in langs)
+                    {
+                        select.AddProjection(aliaseSource.Column($"{column.ColName}{lang.Value}"), $"{column.ColName}{lang.Value}");
+                    }
+                }
+                else
+                {
+                    select.AddProjection(aliaseSource.Column(column.ColName));
+                }
                 if (this._withMC)
                 {
                     //处理MC字段
-                    if (FapColumn.CTRL_TYPE_COMBOBOX == column.CtrlType)
+                    if (FapColumn.CTRL_TYPE_COMBOBOX == column.CtrlType && !IsGridQuery)
                     {
                         string refAlias = "b" + (mcIndex++);
                         BuildFapDict(select, column, aliaseSource, refAlias);
@@ -355,6 +389,11 @@ namespace Fap.Core.DataAccess.SqlParser
                 new LessThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
                 new GreaterThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
                 new EqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_Dr)));
+            if (column.RefTable.EqualsWithIgnoreCase(nameof(FapColumn)))
+            {
+                IFilter filter = new EqualToFilter(innerTable.Column("TableName"), table.Column("TableName"));
+                joinFilter.AddFilter(filter);
+            }
             inner.AddWhere(joinFilter);
             select.AddProjection(inner, $"{column.ColName}MCID");
         }
@@ -364,22 +403,23 @@ namespace Fap.Core.DataAccess.SqlParser
             SelectBuilder inner = new SelectBuilder();
             AliasedSource innerTable = inner.AddTable(new Table($"{column.RefTable}"), refAlias);
             inner.AddProjection(innerTable.Column($"{column.RefName}"));
-            if (column.MultiAble == 1) //是否多选
-            {
 
-            }
             FilterGroup joinFilter = new FilterGroup(Conjunction.And,
                 new EqualToFilter(innerTable.Column($"{column.RefID}"), table.Column(column.ColName)),
                 new LessThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
                 new GreaterThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
                 new EqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_Dr)));
+
+            if (column.RefTable.EqualsWithIgnoreCase(nameof(FapColumn)))
+            {
+                //fapcolumn存在重复colName，加一个去重
+                IFilter filter = new EqualToFilter(innerTable.Column("TableName"), table.Column("RefTable"));
+                joinFilter.AddFilter(filter);
+            }
             inner.AddWhere(joinFilter);
             select.AddProjection(inner, $"{column.ColName}MC");
 
-            if (column.MultiAble == 1) //是否多选
-            {
 
-            }
         }
 
         private static void BuildFapDict(SelectBuilder select, FapColumn column, AliasedSource table, string refAlias)
@@ -393,7 +433,7 @@ namespace Fap.Core.DataAccess.SqlParser
             }
             FilterGroup joinFilter = new FilterGroup(Conjunction.And,
                 new EqualToFilter(innerTable.Column("Code"), table.Column(column.ColName)),
-                new EqualToFilter(innerTable.Column("Category"), new StringLiteral(column.RefTable)),
+                new EqualToFilter(innerTable.Column("Category"), new StringLiteral(column.ComboxSource)),
                 new LessThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
                 new GreaterThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
                 new EqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_Dr)));
@@ -411,14 +451,14 @@ namespace Fap.Core.DataAccess.SqlParser
         /// <param name="columnList"></param>
         /// <param name="table"></param>
         /// <param name="selectBuilder"></param>
-        public void MakeSelectPartition(FapColumn fCol, SelectBuilder select, Column column)
+        private void MakeSelectPartition(FapColumn fCol, SelectBuilder select, Column column)
         {
             string tableAlias = column.Source.Alias;
             int mcIndex = 0;
             //AliasedSource table = select.AddTable(new Table($"{fCol.TableName}"), tableAlias);
             //select.AddProjection(table.Column(fCol.ColName));
             //处理MC字段
-            if (FapColumn.CTRL_TYPE_COMBOBOX == fCol.CtrlType)
+            if (FapColumn.CTRL_TYPE_COMBOBOX == fCol.CtrlType && !IsGridQuery)
             {
                 string refAlias = "b" + (mcIndex++);
 

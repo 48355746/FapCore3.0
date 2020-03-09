@@ -7,26 +7,32 @@ using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Config;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Infrastructure.Enums;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Model;
+using Fap.Core.Infrastructure.Query;
+using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.Utility;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Fap.Core.MultiLanguage;
 
 namespace Fap.Core.DataAccess
 {
-    public class DbContext : IDisposable, IDbContext
+    public class DbContext : IDbContext
     {
         private readonly IFapApplicationContext _applicationContext;
         private readonly ILogger<DbContext> _logger;
         private readonly IDbSession _dbSession;
         private readonly IFapPlatformDomain _fapPlatformDomain;
         private readonly IServiceProvider _serviceProvider;
+        private ThreadLocal<string> threadLocalHistoryTimePoint = new ThreadLocal<string>();
         public DbContext(ILoggerFactory loggerFactory, IFapPlatformDomain fapPlatformDomain, IFapApplicationContext applicationContext, IDbSession dbSession, IServiceProvider serviceProvider)
         {
             _logger = loggerFactory.CreateLogger<DbContext>();
@@ -35,49 +41,56 @@ namespace Fap.Core.DataAccess
             _applicationContext = applicationContext;
             _serviceProvider = serviceProvider;
         }
+
         /// <summary>
         /// 历史时间点
         /// </summary>
-        public string HistoryDateTime { get; set; }
+        public string HistoryDateTime
+        {
+            set { threadLocalHistoryTimePoint.Value = value; }
+            get { return threadLocalHistoryTimePoint.Value; }
+        }
+        public DatabaseDialectEnum DatabaseDialect => _dbSession.DatabaseDialect;
+
         #region private
-        private static Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
+        private static ConcurrentDictionary<string, PropertyInfo> properties = new ConcurrentDictionary<string, PropertyInfo>();
         private (string, DynamicParameters) WrapSqlAndParam(string sqlOri, DynamicParameters parameters, bool withMC = false, bool withId = false)
         {
             return (ParseFapSql(sqlOri, withMC, withId), InitParamers(parameters));
-            DynamicParameters InitParamers(DynamicParameters parameters)
-            {
-                if (parameters == null)
-                {
-                    parameters = new DynamicParameters();
-                }
-                if (!parameters.ParameterNames.Contains(FapDbConstants.FAPCOLUMN_FIELD_CurrentDate))
-                {
-                    if (HistoryDateTime.IsMissing())
-                    {
-                        parameters.Add(FapDbConstants.FAPCOLUMN_FIELD_CurrentDate, DateTimeUtils.CurrentDateTimeStr);
-                    }
-                    else
-                    {
-                        parameters.Add(FapDbConstants.FAPCOLUMN_FIELD_CurrentDate, HistoryDateTime);
-                    }
-                }
-                if (!parameters.ParameterNames.Contains(FapDbConstants.FAPCOLUMN_FIELD_Dr))
-                {
-                    parameters.Add(FapDbConstants.FAPCOLUMN_FIELD_Dr, 0);
-                }
-                return parameters;
-            }
+
             string ParseFapSql(string sqlOri, bool withMC = false, bool withId = false)
             {
                 _logger.LogTrace($"wrap前的sql:{sqlOri}");
                 FapSqlParser parse = new FapSqlParser(_fapPlatformDomain, sqlOri, withMC, withId);
-
-                var sql = parse.GetCompletedSql();
+                parse.CurrentLang = _applicationContext.Language.ToString();
+                var sql = parse.ParserSqlStatement();
                 _logger.LogTrace($"wrap后的sql:{sql}");
                 return sql;
             }
         }
-
+        private DynamicParameters InitParamers(DynamicParameters parameters = null)
+        {
+            if (parameters == null)
+            {
+                parameters = new DynamicParameters();
+            }
+            if (!parameters.ParameterNames.Contains(FapDbConstants.FAPCOLUMN_FIELD_CurrentDate))
+            {
+                if (HistoryDateTime.IsMissing())
+                {
+                    parameters.Add(FapDbConstants.FAPCOLUMN_FIELD_CurrentDate, DateTimeUtils.CurrentDateTimeStr);
+                }
+                else
+                {
+                    parameters.Add(FapDbConstants.FAPCOLUMN_FIELD_CurrentDate, HistoryDateTime);
+                }
+            }
+            if (!parameters.ParameterNames.Contains(FapDbConstants.FAPCOLUMN_FIELD_Dr))
+            {
+                parameters.Add(FapDbConstants.FAPCOLUMN_FIELD_Dr, 0);
+            }
+            return parameters;
+        }
         private void InitEntityToInsert<T>(T entity) where T : BaseModel
         {
             if (entity.Fid.IsMissing())
@@ -95,13 +108,13 @@ namespace Fap.Core.DataAccess
             entity.OrgUid = _applicationContext.OrgUid;
             entity.GroupUid = _applicationContext.GroupUid;
             //非系统默认列的默认值的生成
-            IEnumerable<FapColumn> columns = _fapPlatformDomain.ColumnSet.Where(c => c.TableName == tableName && c.IsDefaultCol != 1 && (c.DefaultValueClass.IsPresent() || c.ColDefault.IsPresent()));
+            IEnumerable<FapColumn> columns = Columns(tableName).Where(c => c.IsDefaultCol != 1 && (c.DefaultValueClass.IsPresent() || c.ColDefault.IsPresent()));
             foreach (var column in columns)
             {
                 Type type = entity.GetType();
                 if (!properties.TryGetValue(column.TableName + column.ColName, out PropertyInfo propertyInfo))
                 {
-                    properties.Add(column.TableName + column.ColName, (propertyInfo = type.GetProperty(column.ColName)));
+                    properties.TryAdd(column.TableName + column.ColName, (propertyInfo = type.GetProperty(column.ColName)));
                 }
                 if (propertyInfo == null)
                 {
@@ -151,7 +164,6 @@ namespace Fap.Core.DataAccess
         }
         private object GetFieldDefaultValue(FapColumn column)
         {
-
             string key = column.ColName;
             //判断表单中是否存在此字段，存在就跳过
             if (column.ColDefault.StartsWith("sql:"))
@@ -201,29 +213,33 @@ namespace Fap.Core.DataAccess
             }
             return "";
         }
-        private void InitDynamicToInsert(dynamic dynEntity)
+        /// <summary>
+        /// 初始化默认值
+        /// </summary>
+        /// <param name="dynEntity">FapDynamicObject</param>
+        private void InitDynamicToInsert(FapDynamicObject dynEntity)
         {
             if (dynEntity == null)
             {
                 return;
             }
             string tableName = dynEntity.TableName;
-            if (!dynEntity.ContainsKey("Fid") || (dynEntity.ContainsKey("Fid") && string.IsNullOrWhiteSpace(dynEntity.Fid)))
+            if (!dynEntity.ContainsKey(FapDbConstants.FAPCOLUMN_FIELD_Fid) || (dynEntity.ContainsKey(FapDbConstants.FAPCOLUMN_FIELD_Fid) && dynEntity.Get(FapDbConstants.FAPCOLUMN_FIELD_Fid).ToString().IsMissing()))
             {
-                dynEntity.Fid = UUIDUtils.Fid;
+                dynEntity.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Fid, UUIDUtils.Fid);
             }
-            dynEntity.CreateDate = DateTimeUtils.CurrentDateTimeStr;
-            dynEntity.EnableDate = DateTimeUtils.LastSecondDateTimeStr;
-            dynEntity.DisableDate = DateTimeUtils.PermanentTimeStr;
-            dynEntity.Ts = DateTimeUtils.Ts;
-            dynEntity.Dr = 0;
-            dynEntity.CreateBy = _applicationContext.EmpUid;
-            dynEntity.CreateName = _applicationContext.EmpName;
-            dynEntity.OrgUid = _applicationContext.OrgUid;
-            dynEntity.GroupUid = _applicationContext.GroupUid;
+            dynEntity.SetValue(FapDbConstants.FAPCOLUMN_FIELD_CreateDate, DateTimeUtils.CurrentDateTimeStr);
+            dynEntity.SetValue(FapDbConstants.FAPCOLUMN_FIELD_EnableDate, DateTimeUtils.LastSecondDateTimeStr);
+            dynEntity.SetValue(FapDbConstants.FAPCOLUMN_FIELD_DisableDate, DateTimeUtils.PermanentTimeStr);
+            dynEntity.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Ts, DateTimeUtils.Ts);
+            dynEntity.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Dr, 0);
+            dynEntity.SetValue(FapDbConstants.FAPCOLUMN_FIELD_CreateBy, _applicationContext.EmpUid);
+            dynEntity.SetValue(FapDbConstants.FAPCOLUMN_FIELD_CreateName, _applicationContext.EmpName);
+            dynEntity.SetValue(FapDbConstants.FAPCOLUMN_FIELD_OrgUid, _applicationContext.OrgUid);
+            dynEntity.SetValue(FapDbConstants.FAPCOLUMN_FIELD_GroupUid, _applicationContext.GroupUid);
 
             //非系统默认列的默认值的生成
-            IEnumerable<FapColumn> columns = _fapPlatformDomain.ColumnSet.Where(c => c.TableName == tableName && c.IsDefaultCol != 1 && (c.DefaultValueClass.IsPresent() || c.ColDefault.IsPresent()));
+            IEnumerable<FapColumn> columns = Columns(tableName).Where(c => c.IsDefaultCol != 1 && (c.DefaultValueClass.IsPresent() || c.ColDefault.IsPresent()));
             foreach (var column in columns)
             {
                 //先判断是否有值，如果有值，则不赋值
@@ -236,7 +252,7 @@ namespace Fap.Core.DataAccess
                 {
                     string key = column.ColName;
                     object cv = GetFieldDefaultValue(column);
-                    dynEntity.Add(key, cv);
+                    dynEntity.SetValue(key, cv);
                 }
             }
             //是否有配置的编码
@@ -245,13 +261,13 @@ namespace Fap.Core.DataAccess
             {
                 foreach (var cc in ccr)
                 {
-                    if (dynEntity.ContainsKey(cc.Key) && (dynEntity.Get(cc.Key) == "" || dynEntity.Get(cc.Key) == null))
+                    if (dynEntity.ContainsKey(cc.Key) && (dynEntity.Get(cc.Key) == null || dynEntity.Get(cc.Key).ToString().IsMissing()))
                     {
-                        dynEntity.Add(cc.Key, cc.Value);
+                        dynEntity.SetValue(cc.Key, cc.Value);
                     }
                     else if (!dynEntity.ContainsKey(cc.Key))
                     {
-                        dynEntity.Add(cc.Key, cc.Value);
+                        dynEntity.SetValue(cc.Key, cc.Value);
                     }
                 }
             }
@@ -311,19 +327,24 @@ namespace Fap.Core.DataAccess
             //单据没有配置的时候 返回默认的值
             if (IsBill(tableName))
             {
-                //CfgBillCodeRule bc = new CfgBillCodeRule();
-                //bc.FieldName = "BillCode";
-                int seq = GetSequence(tableName);
-                //bc.BillCode = seq.ToString().PadLeft(7, '0');
-                string billcode = seq.ToString().PadLeft(7, '0');
-                dictCodes.Add("BillCode", billcode);
+                if (!dictCodes.ContainsKey("BillCode"))
+                {
+                    int seq = GetSequence(tableName);
+                    //bc.BillCode = seq.ToString().PadLeft(7, '0');
+                    string billcode = seq.ToString().PadLeft(7, '0');
+                    dictCodes.Add("BillCode", billcode);
+                }
                 dictCodes.Add("BillStatus", BillStatus.DRAFT);
+                dictCodes.Add("BillTime", DateTimeUtils.CurrentDateTimeStr);
+                dictCodes.Add("BillEmpUid", _applicationContext.EmpUid);
+                dictCodes.Add("BillEmpUidMC", _applicationContext.EmpName);
+                dictCodes.Add("AppEmpUid", _applicationContext.EmpUid);
+                dictCodes.Add("AppEmpUidMC", _applicationContext.EmpName);
             }
-
             return dictCodes;
             bool IsBill(string tableName)
             {
-                FapTable tb = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
+                FapTable tb = Table(tableName);
                 if (tb != null && tb.TableFeature != null && tb.TableFeature.Contains("BillFeature"))
                 {
                     return true;
@@ -362,47 +383,91 @@ namespace Fap.Core.DataAccess
                 }
             }
         }
+        /// <summary>
+        /// 获取初始化表单数据
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
+        public FapDynamicObject GetDefualtData(string tableName)
+        {
+            var fapColumns = Columns(tableName);
+            FapDynamicObject dynEntity = new FapDynamicObject(fapColumns);
+            //非系统默认列的默认值的生成
+            //IEnumerable<FapColumn> columns = fapColumns.Where(c => c.IsDefaultCol != 1 && (c.DefaultValueClass.IsPresent() || c.ColDefault.IsPresent()));
+            foreach (var column in fapColumns)
+            {
+                string key = column.ColName;
+                if (column.ColDefault.IsPresent())
+                {
+                    object cv = GetFieldDefaultValue(column);
+                    dynEntity.SetValue(key, cv);
+                }
+                else
+                {
+                    dynEntity.SetValue(key, "");
+                }
+                if (column.IsMultiLang == 1)
+                {
+                    //设置多语字段
+                    var langs= typeof(MultiLanguageEnum).EnumItems();
+                    foreach (var lang in langs)
+                    {
+                        dynEntity.SetValue(key+lang, "");
+                    }
+                }
+            }
+            //是否有配置的编码
+            Dictionary<string, string> ccr = GetBillCode(tableName);
+            if (ccr != null && ccr.Any())
+            {
+                foreach (var cc in ccr)
+                {
+                    if (dynEntity.ContainsKey(cc.Key) && (dynEntity.Get(cc.Key) == null || dynEntity.Get(cc.Key).ToString().IsMissing()))
+                    {
+                        dynEntity.SetValue(cc.Key, cc.Value);
+                    }
+                    else if (!dynEntity.ContainsKey(cc.Key))
+                    {
+                        dynEntity.SetValue(cc.Key, cc.Value);
+                    }
+                }
+            }
+            return dynEntity;
+        }
 
         #region inner Get       
-        private T GetById<T>(long? id) where T : BaseModel
+        private T GetById<T>(long id) where T : BaseModel
         {
-            if (id == null)
-            {
-                Guard.Against.Null("Id 不能为null", nameof(GetById));
-            }
+            Guard.Against.Zero(id, nameof(id));
+
             string sqlOri = $"select * from {typeof(T).Name} where id=@Id";
             DynamicParameters param = new DynamicParameters();
             param.Add("Id", id);
             return _dbSession.QueryFirstOrDefault<T>(sqlOri, param);
         }
-        private Task<T> GetByIdAsync<T>(long? id) where T : BaseModel
+        private Task<T> GetByIdAsync<T>(long id) where T : BaseModel
         {
-            if (id == null)
-            {
-                Guard.Against.Null("Id 不能为null", nameof(GetById));
-            }
+            Guard.Against.Zero(id, nameof(id));
+
             string sqlOri = $"select * from {typeof(T).Name} where id=@Id";
             DynamicParameters param = new DynamicParameters();
             param.Add("Id", id);
             return _dbSession.QueryFirstOrDefaultAsync<T>(sqlOri, param);
         }
-        private dynamic GetById(string tableName, long? id)
+        private dynamic GetById(string tableName, long id)
         {
-            if (id == null)
-            {
-                Guard.Against.Null("Id 不能为null", nameof(GetById));
-            }
+            Guard.Against.NullOrEmpty(tableName, nameof(tableName));
+            Guard.Against.Zero(id, nameof(id));
+
             string sqlOri = $"select * from {tableName} where id=@Id";
             DynamicParameters param = new DynamicParameters();
             param.Add("Id", id);
             return _dbSession.QueryFirstOrDefault(sqlOri, param);
         }
-        private Task<dynamic> GetByIdAsync(string tableName, long? id)
+        private Task<dynamic> GetByIdAsync(string tableName, long id)
         {
-            if (id == null)
-            {
-                Guard.Against.Null("Id 不能为null", nameof(GetById));
-            }
+            Guard.Against.NullOrEmpty(tableName, nameof(tableName));
+            Guard.Against.Zero(id, nameof(id));
             string sqlOri = $"select * from {tableName} where id=@Id";
             DynamicParameters param = new DynamicParameters();
             param.Add("Id", id);
@@ -424,7 +489,8 @@ namespace Fap.Core.DataAccess
                     Type type = System.Type.GetType(dataInterceptorClass);
                     if (type != null && type.GetInterface("IDataInterceptor") != null)
                     {
-                        dataInterceptor = (IDataInterceptor)Activator.CreateInstance(type, new object[] { _serviceProvider, this });
+                        //dataInterceptor = (IDataInterceptor)Activator.CreateInstance(type, new object[] { _serviceProvider, this });
+                        dataInterceptor = (IDataInterceptor)ActivatorUtilities.GetServiceOrCreateInstance(_serviceProvider, type);
                     }
                 }
                 catch (Exception ex)
@@ -443,7 +509,7 @@ namespace Fap.Core.DataAccess
                 dataInterceptor.BeforeEntityInsert(entity);
             }
         }
-        private void BeforeDynamicInsert(dynamic dynEntity, IDataInterceptor dataInterceptor)
+        private void BeforeDynamicInsert(FapDynamicObject dynEntity, IDataInterceptor dataInterceptor)
         {
             if (dataInterceptor != null)
             {
@@ -457,7 +523,7 @@ namespace Fap.Core.DataAccess
                 dataInterceptor.AfterEntityInsert(model);
             }
         }
-        private void AfterDynamicInsert(dynamic dynEntity, IDataInterceptor dataInterceptor)
+        private void AfterDynamicInsert(FapDynamicObject dynEntity, IDataInterceptor dataInterceptor)
         {
             if (dataInterceptor != null)
             {
@@ -470,12 +536,12 @@ namespace Fap.Core.DataAccess
             model.UpdateName = _applicationContext.EmpName;
             model.UpdateDate = DateTimeUtils.CurrentDateTimeStr;
         }
-        private void InitDynamicToUpdate(dynamic dynEntity)
+        private void InitDynamicToUpdate(FapDynamicObject dynEntity)
         {
             //这里不要设置时间戳，更新的时候时间戳会作为条件，防止并发
-            dynEntity.UpdateBy = _applicationContext.EmpUid;
-            dynEntity.UpdateName = _applicationContext.EmpName;
-            dynEntity.UpdateDate = DateTimeUtils.CurrentDateTimeStr;
+            dynEntity.SetValue(FapDbConstants.FAPCOLUMN_FIELD_UpdateBy, _applicationContext.EmpUid);
+            dynEntity.SetValue(FapDbConstants.FAPCOLUMN_FIELD_UpdateName, _applicationContext.EmpName);
+            dynEntity.SetValue(FapDbConstants.FAPCOLUMN_FIELD_UpdateDate, DateTimeUtils.CurrentDateTimeStr);
         }
         private void BeforeUpdate<T>(T entity, IDataInterceptor dataInterceptor) where T : BaseModel
         {
@@ -484,7 +550,7 @@ namespace Fap.Core.DataAccess
                 dataInterceptor.BeforeEntityUpdate(entity);
             }
         }
-        private void BeforeDynamicUpdate(dynamic dynEntity, IDataInterceptor dataInterceptor)
+        private void BeforeDynamicUpdate(FapDynamicObject dynEntity, IDataInterceptor dataInterceptor)
         {
             if (dataInterceptor != null)
             {
@@ -498,7 +564,7 @@ namespace Fap.Core.DataAccess
                 dataInterceptor.AfterEntityUpdate(entity);
             }
         }
-        private void AfterDynamicUpdate(dynamic dynEntity, IDataInterceptor dataInterceptor)
+        private void AfterDynamicUpdate(FapDynamicObject dynEntity, IDataInterceptor dataInterceptor)
         {
             if (dataInterceptor != null)
             {
@@ -512,7 +578,7 @@ namespace Fap.Core.DataAccess
         {
             string tableName = table.TableName;
             T oldDataClone = GetById<T>(entityToUpdate.Id);
-            if (entityToUpdate.Ts != null && entityToUpdate.Ts != oldDataClone.Ts)
+            if (entityToUpdate.Ts != oldDataClone.Ts)
             {
                 _logger.LogInformation("时间戳改变，说明数据已经过期，被其他人修改了,需要刷新数据");
                 return false;
@@ -556,10 +622,6 @@ namespace Fap.Core.DataAccess
                 _logger.LogError($"更新失败:{ex.Message}");
                 Rollback();
             }
-            finally
-            {
-                Dispose();
-            }
             //RemoveCache(table.TableName);
             return execResult;
             /// <summary>
@@ -572,11 +634,11 @@ namespace Fap.Core.DataAccess
             bool TraceUpdate<T1>(T1 newEntity, T1 oldDataClone, FapTable table) where T1 : BaseModel
             {
                 string tableName = table.TableName;
-                var fieldList = _fapPlatformDomain.ColumnSet.Where(t => t.TableName == tableName).Select(f => f.ColName);
+                var fieldList = Columns(tableName).Select(f => f.ColName);
                 string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
                 string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
                 //设置clone数据的enabledate为当前时间
-                var currDate = DateTimeUtils.CurrentDateTimeStr;
+                var currDate = DateTimeUtils.LastSecondDateTimeStr;
                 try
                 {
                     //clone老数据到新数据
@@ -601,7 +663,7 @@ namespace Fap.Core.DataAccess
         {
             string tableName = table.TableName;
             T oldDataClone = await GetByIdAsync<T>(entityToUpdate.Id);
-            if (entityToUpdate.Ts != null && entityToUpdate.Ts != oldDataClone.Ts)
+            if (entityToUpdate.Ts != oldDataClone.Ts)
             {
                 _logger.LogInformation("时间戳改变，说明数据已经过期，被其他人修改了,需要刷新数据");
                 return false;
@@ -645,10 +707,6 @@ namespace Fap.Core.DataAccess
                 _logger.LogError($"更新失败:{ex.Message}");
                 Rollback();
             }
-            finally
-            {
-                Dispose();
-            }
 
             //RemoveCache(table.TableName);
             return execResult;
@@ -662,11 +720,11 @@ namespace Fap.Core.DataAccess
             async Task<bool> TraceUpdateAsync<T1>(T1 newEntity, T1 oldDataClone, FapTable table) where T1 : BaseModel
             {
                 string tableName = table.TableName;
-                var fieldList = _fapPlatformDomain.ColumnSet.Where(t => t.TableName == tableName).Select(f => f.ColName);
+                var fieldList = Columns(tableName).Select(f => f.ColName);
                 string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
                 string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
                 //设置clone数据的enabledate为当前时间
-                var currDate = DateTimeUtils.CurrentDateTimeStr;
+                var currDate = DateTimeUtils.LastSecondDateTimeStr;
                 try
                 {
                     //clone老数据到新数据
@@ -696,30 +754,28 @@ namespace Fap.Core.DataAccess
         /// </summary>
         /// <typeparam name="newData">DapperRow</typeparam>
         /// <param name="currDate"></param>
-        private void SetNewDynamicToDelete(dynamic newData, string currDate)
+        private void SetNewDynamicToDelete(FapDynamicObject newData, string enableDate, string currDate)
         {
-            var nd = newData as IDictionary<string, object>;
-            nd[FapDbConstants.FAPCOLUMN_FIELD_EnableDate] = currDate;
-            nd[FapDbConstants.FAPCOLUMN_FIELD_DisableDate] = DateTimeUtils.PermanentTimeStr;
-
-            nd[FapDbConstants.FAPCOLUMN_FIELD_Dr] = 1;
-            nd[FapDbConstants.FAPCOLUMN_FIELD_UpdateBy] = _applicationContext.EmpUid;
-            nd[FapDbConstants.FAPCOLUMN_FIELD_UpdateDate] = currDate;
-            nd[FapDbConstants.FAPCOLUMN_FIELD_UpdateName] = _applicationContext.EmpName;
+            newData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_EnableDate, enableDate);
+            newData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_DisableDate, DateTimeUtils.PermanentTimeStr);
+            newData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Dr, 1);
+            newData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_UpdateBy, _applicationContext.EmpUid);
+            newData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_UpdateDate, currDate);
+            newData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_UpdateName, _applicationContext.EmpName);
 
         }
         /// <summary>
         /// 逻辑删除，不设置EnableDate
         /// </summary>
         /// <param name="newData">FapDynamicObject</param>
-        private void SetDynamicToLogicDelete(dynamic newData)
+        private void SetDynamicToLogicDelete(FapDynamicObject newData)
         {
             var currDate = DateTimeUtils.CurrentDateTimeStr;
-            newData.DisableDate = DateTimeUtils.PermanentTimeStr;
-            newData.Dr = 1;
-            newData.UpdateBy = _applicationContext.EmpUid;
-            newData.UpdateDate = currDate;
-            newData.UpdateName = _applicationContext.EmpName;
+            newData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_DisableDate, DateTimeUtils.PermanentTimeStr);
+            newData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Dr, 1);
+            newData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_UpdateBy, _applicationContext.EmpUid);
+            newData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_UpdateDate, currDate);
+            newData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_UpdateName, _applicationContext.EmpName);
 
         }
         /// <summary>
@@ -764,11 +820,11 @@ namespace Fap.Core.DataAccess
         /// </summary>
         /// <param name="oldEntity">FapDynamicObject</param>
         /// <param name="currDate"></param>
-        private void SetOldDynamicInvalid(dynamic oldEntity, string currDate)
+        private void SetOldDynamicInvalid(FapDynamicObject oldEntity, string currDate)
         {
             //设置旧entity为失效态
-            oldEntity.Dr = 0;
-            oldEntity.DisableDate = currDate;
+            oldEntity.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Dr, 0);
+            oldEntity.SetValue(FapDbConstants.FAPCOLUMN_FIELD_DisableDate, currDate);
         }
         private void BeforeDelete<T>(T model, IDataInterceptor dataInterceptor) where T : BaseModel
         {
@@ -777,7 +833,7 @@ namespace Fap.Core.DataAccess
                 dataInterceptor.BeforeEntityDelete(model);
             }
         }
-        private void BeforeDynamicDelete(dynamic dynEntity, IDataInterceptor dataInterceptor)
+        private void BeforeDynamicDelete(FapDynamicObject dynEntity, IDataInterceptor dataInterceptor)
         {
             if (dataInterceptor != null)
             {
@@ -791,7 +847,7 @@ namespace Fap.Core.DataAccess
                 dataInterceptor.AfterEntityDelete(model);
             }
         }
-        private void AfterDynamicDelete(dynamic dynEntity, IDataInterceptor dataInterceptor)
+        private void AfterDynamicDelete(FapDynamicObject dynEntity, IDataInterceptor dataInterceptor)
         {
             if (dataInterceptor != null)
             {
@@ -835,6 +891,26 @@ namespace Fap.Core.DataAccess
             var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters);
             return _dbSession.ExecuteScalarAsync<T>(sql, dynParams);
         }
+        /// <summary>
+        /// 查询原始sql，不进行包装
+        /// </summary>
+        /// <param name="sqlOri"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        public IEnumerable<dynamic> QueryOriSql(string sqlOri, DynamicParameters parameters = null)
+        {
+            return _dbSession.Query(sqlOri, parameters);
+        }
+        /// <summary>
+        /// 查询原始sql，不进行包装
+        /// </summary>
+        /// <param name="sqlOri"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        public IEnumerable<T> QueryOriSql<T>(string sqlOri, DynamicParameters parameters = null) where T : class
+        {
+            return _dbSession.Query<T>(sqlOri, parameters);
+        }
         public IEnumerable<dynamic> Query(string sqlOri, DynamicParameters parameters = null, bool withMC = false)
         {
             var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
@@ -846,27 +922,37 @@ namespace Fap.Core.DataAccess
             return _dbSession.QueryAsync(sql, dynParams);
         }
 
-        public IEnumerable<T> Query<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : BaseModel
+        public IEnumerable<T> Query<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : class
         {
             var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
             return _dbSession.Query<T>(sql, dynParams);
         }
-        public Task<IEnumerable<T>> QueryAsync<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : BaseModel
+        public Task<IEnumerable<T>> QueryAsync<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : class
         {
             var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters, withMC);
             return _dbSession.QueryAsync<T>(sql, dynParams);
+        }
+        public IEnumerable<dynamic> QueryAll(string tableName, bool withMC = false)
+        {
+            string sql = $"select * from {tableName}";
+            return Query(sql, null, withMC);
+        }
+        public Task<IEnumerable<dynamic>> QueryAllAsync(string tableName, bool withMC = false)
+        {
+            string sql = $"select * from {tableName}";
+            return QueryAsync(sql, null, withMC);
         }
         public IEnumerable<T> QueryAll<T>(bool withMC = false) where T : BaseModel
         {
             string tableName = typeof(T).Name;
             string sql = $"select * from {tableName}";
-            return Query<T>(sql);
+            return Query<T>(sql, null, withMC);
         }
         public Task<IEnumerable<T>> QueryAllAsync<T>(bool withMC = false) where T : BaseModel
         {
             string tableName = typeof(T).Name;
             string sql = $"select * from {tableName}";
-            return QueryAsync<T>(sql);
+            return QueryAsync<T>(sql, null, withMC);
         }
         /// <summary>
         /// 仅当元素个数大于等于1时返回第一个元素，否则抛异常InvalidOperationException: Sequence contains no elements
@@ -1207,7 +1293,10 @@ namespace Fap.Core.DataAccess
                 }
                 finally
                 {
-                    Dispose();
+                    if (ActiveTransactionNumber.Value == 0)
+                    {
+                        _dbSession.Dispose();
+                    }
                 }
             }
         }
@@ -1229,15 +1318,11 @@ namespace Fap.Core.DataAccess
                 }
                 finally
                 {
-                    Dispose();
+                    if (ActiveTransactionNumber.Value == 0)
+                    {
+                        _dbSession.Dispose();
+                    }
                 }
-            }
-        }
-        public void Dispose()
-        {
-            if (ActiveTransactionNumber.Value == 0)
-            {
-                _dbSession.Dispose();
             }
         }
         #endregion
@@ -1401,23 +1486,19 @@ namespace Fap.Core.DataAccess
                 _logger.LogError($"insert 事务异常:{ex.Message}");
                 throw;
             }
-            finally
-            {
-                Dispose();
-            }
 
-            long InsertEntity<T>(T entityToInsert) where T : BaseModel
+            long InsertEntity<T1>(T1 entityToInsert) where T1 : BaseModel
             {
                 string tableName = typeof(T).Name;
-                FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
+                FapTable table = Table(tableName);
                 //初始化基础数据以及默认值
-                InitEntityToInsert<T>(entityToInsert);
+                InitEntityToInsert<T1>(entityToInsert);
                 IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
                 //insert前事件
-                BeforeInsert<T>(entityToInsert, dataInterceptor);
-                long id = _dbSession.Insert<T>(entityToInsert);
+                BeforeInsert<T1>(entityToInsert, dataInterceptor);
+                long id = _dbSession.Insert<T1>(entityToInsert);
                 //insert 后事件            
-                AfterInsert<T>(entityToInsert, dataInterceptor);
+                AfterInsert<T1>(entityToInsert, dataInterceptor);
                 //RemoveCache(tableName);
                 return id;
             }
@@ -1437,22 +1518,18 @@ namespace Fap.Core.DataAccess
                 _logger.LogError($"insert 事务异常:{ex.Message}");
                 throw;
             }
-            finally
+            async Task<long> InsertEntityAsync<T1>(T1 entityToInsert) where T1 : BaseModel
             {
-                Dispose();
-            }
-            async Task<long> InsertEntityAsync<T>(T entityToInsert) where T : BaseModel
-            {
-                string tableName = typeof(T).Name;
-                FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
+                string tableName = typeof(T1).Name;
+                FapTable table = Table(tableName);
                 //初始化基础数据以及默认值
-                InitEntityToInsert<T>(entityToInsert);
+                InitEntityToInsert<T1>(entityToInsert);
                 IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
                 //insert前事件
-                BeforeInsert<T>(entityToInsert, dataInterceptor);
-                long id = await _dbSession.InsertAsync<T>(entityToInsert);
+                BeforeInsert<T1>(entityToInsert, dataInterceptor);
+                long id = await _dbSession.InsertAsync<T1>(entityToInsert);
                 //insert 后事件            
-                AfterInsert<T>(entityToInsert, dataInterceptor);
+                AfterInsert<T1>(entityToInsert, dataInterceptor);
                 //RemoveCache(tableName);
                 return id;
             }
@@ -1512,14 +1589,14 @@ namespace Fap.Core.DataAccess
         public bool Update<T>(T entityToUpdate) where T : BaseModel
         {
             string tableName = typeof(T).Name;
-            FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
+            FapTable table = Table(tableName);
 
             return UpdateEntity(entityToUpdate, table);
         }
         public async Task<bool> UpdateAsync<T>(T entityToUpdate) where T : BaseModel
         {
             string tableName = typeof(T).Name;
-            FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
+            FapTable table = Table(tableName);
 
             return await UpdateEntityAsync(entityToUpdate, table);
 
@@ -1530,7 +1607,7 @@ namespace Fap.Core.DataAccess
             if (entityListToUpdate == null || entityListToUpdate.Count() < 1) return false;
 
             string tableName = typeof(T).Name;
-            FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
+            FapTable table = Table(tableName);
 
             foreach (var entity in entityListToUpdate)
             {
@@ -1544,7 +1621,7 @@ namespace Fap.Core.DataAccess
             if (entityListToUpdate == null || entityListToUpdate.Count() < 1) return false;
 
             string tableName = typeof(T).Name;
-            FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
+            FapTable table = Table(tableName);
             foreach (var entity in entityListToUpdate)
             {
                 await UpdateEntityAsync(entity, table);
@@ -1561,8 +1638,12 @@ namespace Fap.Core.DataAccess
         /// <returns></returns>
         public bool Delete<T>(T entityToDelete) where T : BaseModel
         {
+            if (entityToDelete == null)
+            {
+                return false;
+            }
             string tableName = typeof(T).Name;
-            FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
+            FapTable table = Table(tableName);
             //是否历史追溯
             bool isTrace = table.TraceAble == 1;
             return DeleteEntity(entityToDelete, table, isTrace);
@@ -1588,51 +1669,52 @@ namespace Fap.Core.DataAccess
                     if (!execResult)
                     {
                         Rollback();
+                        _logger.LogInformation($"线程{Thread.CurrentThread.ManagedThreadId}回滚了");
                     }
                     else
                     {
                         //删除后
                         AfterDelete<T1>(entityToDelete, dataInterceptor);
                         Commit();
+                        _logger.LogInformation($"线程{Thread.CurrentThread.ManagedThreadId}提交了");
                     }
                 }
                 catch (Exception ex)
                 {
                     Rollback();
                     _logger.LogError($"更新dynamic失败：{ex.Message}");
-                }
-                finally
-                {
-                    Dispose();
+                    throw ex;
                 }
                 return execResult;
                 bool TraceDelete<T2>(T2 newEntity) where T2 : BaseModel
                 {
                     string tableName = table.TableName;
-                    var fieldList = _fapPlatformDomain.ColumnSet.Where(t => t.TableName == tableName).Select(f => f.ColName);
+                    var fieldList = Columns(tableName).Select(f => f.ColName);
                     string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
                     string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
                     //设置clone数据的enabledate为当前时间
-                    var currDate = DateTimeUtils.CurrentDateTimeStr;
+                    var currDate = DateTimeUtils.LastSecondDateTimeStr;
                     try
                     {
                         //clone老数据到新数据
                         var oldData = GetById(table.TableName, newEntity.Id);
                         long newId = _dbSession.Insert(tableName, columnList, paramList, oldData);
-
                         //修改老数据失效
                         newEntity.DisableDate = currDate;
-                        _dbSession.UpdateWithTimestamp<T2>(newEntity);
-
-                        //根据传值更新新数据
-                        newEntity.Id = newId;
-                        SetNewEntityToDelete<T2>(newEntity, currDate);
-                        return _dbSession.Update(newEntity);
+                        bool execRv = _dbSession.UpdateWithTimestamp<T2>(newEntity);
+                        if (execRv)
+                        {
+                            //根据传值更新新数据
+                            newEntity.Id = newId;
+                            SetNewEntityToDelete<T2>(newEntity, currDate);
+                            _dbSession.Update(newEntity);
+                        }
+                        return execRv;
                     }
                     catch (Exception ex)
                     {
                         _logger.LogError($"跟踪更新失败:{ex.Message}");
-                        throw;
+                        throw ex;
                     }
                 }
             }
@@ -1640,7 +1722,7 @@ namespace Fap.Core.DataAccess
         public async Task<bool> DeleteAsync<T>(T entityToDelete) where T : BaseModel
         {
             string tableName = typeof(T).Name;
-            FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
+            FapTable table = Table(tableName);
             //是否历史追溯
             bool isTrace = table.TraceAble == 1;
             return await DeleteEntityAsync(entityToDelete, table, isTrace);
@@ -1678,39 +1760,39 @@ namespace Fap.Core.DataAccess
                 {
                     Rollback();
                     _logger.LogError($"更新dynamic失败：{ex.Message}");
-                }
-                finally
-                {
-                    Dispose();
+                    throw ex;
                 }
                 return execResult;
                 async Task<bool> TraceDeleteAsync<T2>(T2 newEntity) where T2 : BaseModel
                 {
                     string tableName = table.TableName;
-                    var fieldList = _fapPlatformDomain.ColumnSet.Where(t => t.TableName == tableName).Select(f => f.ColName);
+                    var fieldList = Columns(tableName).Select(f => f.ColName);
                     string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
                     string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
                     //设置clone数据的enabledate为当前时间
-                    var currDate = DateTimeUtils.CurrentDateTimeStr;
+                    var currDate = DateTimeUtils.LastSecondDateTimeStr;
                     try
                     {
                         //clone老数据到新数据
                         var oldData = GetById(table.TableName, newEntity.Id);
-                        long newId =await _dbSession.Insert(tableName, columnList, paramList, oldData);
+                        long newId = await _dbSession.Insert(tableName, columnList, paramList, oldData);
 
                         //修改老数据失效
                         newEntity.DisableDate = currDate;
-                        _dbSession.UpdateWithTimestamp<T2>(newEntity);
-
-                        //根据传值更新新数据
-                        newEntity.Id = newId;
-                        SetNewEntityToDelete<T2>(newEntity, currDate);
-                        return await _dbSession.UpdateAsync(newEntity);
+                        bool rv = _dbSession.UpdateWithTimestamp<T2>(newEntity);
+                        if (rv)
+                        {
+                            //根据传值更新新数据
+                            newEntity.Id = newId;
+                            SetNewEntityToDelete<T2>(newEntity, currDate);
+                            await _dbSession.UpdateAsync(newEntity);
+                        }
+                        return rv;
                     }
                     catch (Exception ex)
                     {
                         _logger.LogError($"跟踪更新失败:{ex.Message}");
-                        throw;
+                        throw ex;
                     }
                 }
             }
@@ -1777,6 +1859,7 @@ namespace Fap.Core.DataAccess
                 catch (Exception ex)
                 {
                     _logger.LogError($"删除实体失败：{ex.Message}");
+                    throw ex;
                 }
             }
         }
@@ -1791,6 +1874,7 @@ namespace Fap.Core.DataAccess
                 catch (Exception ex)
                 {
                     _logger.LogError($"删除实体失败：{ex.Message}");
+                    throw ex;
                 }
             }
         }
@@ -1799,20 +1883,17 @@ namespace Fap.Core.DataAccess
         #region CRUD dynamic
         public long InsertDynamicData(FapDynamicObject fapDynData)
         {
-            if (fapDynData.TableName == null)
-            {
-                Guard.Against.NullOrWhiteSpace("tableName不能为null", nameof(FapDynamicObject));
-            }
-            FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == fapDynData.TableName);
-            if (table == null)
-            {
-                Guard.Against.Null("实体元数据未发现或未注册", nameof(FapTable));
-            }
+            string tableName = fapDynData.TableName;
+            Guard.Against.NullOrWhiteSpace(tableName, nameof(tableName));
+
+            FapTable table = Table(tableName);
+
+            Guard.Against.Null(table, nameof(table));
 
             try
             {
                 BeginTransaction();
-                long id = InsertDynamicData(fapDynData, table);
+                long id = InsertDynamicData();
                 Commit();
                 return id;
             }
@@ -1820,24 +1901,22 @@ namespace Fap.Core.DataAccess
             {
                 Rollback();
                 _logger.LogError($"insert dynamic error:{ex.Message}");
-                throw;
+                throw ex;
             }
-            finally
-            {
-                Dispose();
-            }
-            long InsertDynamicData(dynamic fapDynData, FapTable table)
+            long InsertDynamicData()
             {
                 InitDynamicToInsert(fapDynData);
                 //新增前，通过数据拦截器处理数据
                 IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
                 BeforeDynamicInsert(fapDynData, dataInterceptor);
                 //新增数据
-                string columnList = string.Join(',', fapDynData.ColumnKeys());
-                string paramList = string.Join(',', fapDynData.ParamKeys());
+                var keys = fapDynData.Keys.Where(k => !k.EndsWith("MC") && !k.EqualsWithIgnoreCase(FapDbConstants.FAPCOLUMN_FIELD_Id));
+
+                string columnList = string.Join(',', keys);
+                string paramList = string.Join(',', keys.Select(k => $"@{k}"));
                 long id = _dbSession.Insert(table.TableName, columnList, paramList, fapDynData);// obj);
                 //动态需要手动设置Id的值，实体InsertEntity不需要
-                fapDynData.Id = id;
+                fapDynData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Id, id);
                 //新增后，通过数据拦截器处理数据
                 AfterDynamicInsert(fapDynData, dataInterceptor);
                 //RemoveCache(table.TableName);
@@ -1870,56 +1949,37 @@ namespace Fap.Core.DataAccess
         public bool UpdateDynamicData(FapDynamicObject fapDynData)
         {
             string tableName = fapDynData.TableName;
-            if (tableName.IsMissing())
-            {
-                Guard.Against.Null("请指定表名", "UpdateDynamicData");
-            }
-            FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
-            if (table == null)
-            {
-                Guard.Against.Null($"未找到实体{tableName}元数据", nameof(FapDynamicObject));
-            }
-            dynamic dataObject = fapDynData;
-            long? id = dataObject.Get(FapDbConstants.FAPCOLUMN_FIELD_Id);
-            long? ts = dataObject.Get(FapDbConstants.FAPCOLUMN_FIELD_Ts);
-            if ((id ?? 0) < 1)
-            {
-                Guard.Against.Null($"更新数据，请设置Key Id的值", nameof(FapDynamicObject));
-            }
-            if ((ts ?? 0) < 1)
-            {
-                Guard.Against.Null($"更新数据，请设置Ts 的值", nameof(FapDynamicObject));
-            }
-            dynamic oriData = GetById(tableName, id);
-            if (oriData.Ts != ts)
-            {
-                _logger.LogInformation("数据已经被其他人更新，你需要刷新数据,重新编辑");
-                return false;
-            }
-            if (oriData.DisableDate != DateTimeUtils.PermanentTimeStr)
-            {
-                _logger.LogInformation("数据已经失效,不能再编辑");
-                return false;
-            }
-            return UpdateDynamicData(dataObject, table, oriData);
 
-            bool UpdateDynamicData(FapDynamicObject dataObject, FapTable table, dynamic oriData)
+            Guard.Against.NullOrEmpty(tableName, nameof(tableName));
+
+            FapTable table = Table(tableName);
+
+            Guard.Against.Null(table, nameof(table));
+
+            long id = fapDynData.Get(FapDbConstants.FAPCOLUMN_FIELD_Id).ToLong();
+
+            Guard.Against.Zero(id, nameof(id));
+
+            return UpdateDynamicData();
+
+            bool UpdateDynamicData()
             {
                 bool execResult = false;
-                InitDynamicToUpdate(dataObject);
+                InitDynamicToUpdate(fapDynData);
                 try
                 {
                     BeginTransaction();
                     IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
-                    BeforeDynamicUpdate(dataObject, dataInterceptor);
+                    BeforeDynamicUpdate(fapDynData, dataInterceptor);
                     bool isTrace = table.TraceAble.ToString().ToBool();
                     if (isTrace)
                     {
-                        execResult = TraceDynamicUpdate(dataObject, table.TableName, oriData);
+                        dynamic oriData = GetById(tableName, id);
+                        execResult = TraceDynamicUpdate(oriData);
                     }
                     else
                     {
-                        execResult = DynamicObjectUpdate(dataObject);
+                        execResult = DynamicObjectUpdate();
                     }
                     if (!execResult)
                     {
@@ -1927,7 +1987,7 @@ namespace Fap.Core.DataAccess
                     }
                     else
                     {
-                        AfterDynamicUpdate(dataObject, dataInterceptor);
+                        AfterDynamicUpdate(fapDynData, dataInterceptor);
                         Commit();
                     }
                 }
@@ -1936,45 +1996,47 @@ namespace Fap.Core.DataAccess
                     Rollback();
                     execResult = false;
                     _logger.LogError($"更新dynamic失败：{ex.Message}");
-                }
-                finally
-                {
-                    Dispose();
+                    throw ex;
                 }
                 return execResult;
-                bool DynamicObjectUpdate(dynamic dynamicData)
+                bool DynamicObjectUpdate()
                 {
-                    return _dbSession.Update(dynamicData);
+                    return _dbSession.Update(fapDynData);
                 }
-                bool TraceDynamicUpdate(dynamic dynamicData, string tableName, dynamic oriData)
+                bool TraceDynamicUpdate(dynamic oriData)
                 {
-                    var fieldList = _fapPlatformDomain.ColumnSet.Where(c => c.TableName == tableName).Select(c => c.ColName);
-                    long? id = dynamicData.Id;
+                    var fieldList = Columns(tableName).Select(c => c.ColName);
                     //将旧数据变成历史数据， 更新后的数据为最新数据
                     try
                     {
                         var currDate = DateTimeUtils.CurrentDateTimeStr;
+                        var enableDate = DateTimeUtils.LastSecondDateTimeStr;
                         //复制一份old data 形成新数据，修改EnableDate为当前日期                       
-                        oriData.EnableDate = currDate;
+                        oriData.EnableDate = enableDate;
                         string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
                         string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
                         long newId = _dbSession.Insert(tableName, columnList, paramList, oriData);
 
                         //更新新数据
-                        dynamicData.Id = newId;
-                        dynamicData.UpdateDate = currDate;
-                        dynamicData.UpdateBy = _applicationContext.EmpUid;
-                        dynamicData.UpdateName = _applicationContext.EmpName;
-                        _dbSession.Update(dynamicData);
+                        fapDynData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Id, newId);
+                        fapDynData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_UpdateDate, currDate);
+                        fapDynData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_UpdateBy, _applicationContext.EmpUid);
+                        fapDynData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_UpdateName, _applicationContext.EmpName);
+                        _dbSession.Update(fapDynData);
                         //修改老数据过期时间
-                        dynamic oldUpdate = new FapDynamicObject(tableName, oriData.Id, oriData.Ts);
-                        oldUpdate.DisableDate = currDate;
+                        FapDynamicObject oldUpdate = new FapDynamicObject(Columns(tableName));
+                        long id = oriData.Id;
+                        long ts = oriData.Ts;
+                        oldUpdate.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Id, id);
+                        oldUpdate.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Ts, ts);
+                        oldUpdate.SetValue(FapDbConstants.FAPCOLUMN_FIELD_DisableDate, enableDate);
                         return _dbSession.Update(oldUpdate);
 
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
-                        throw;
+                        _logger.LogError(ex.Message);
+                        throw ex;
                     }
 
                 }
@@ -1993,98 +2055,98 @@ namespace Fap.Core.DataAccess
                 UpdateDynamicData(d);
             }
         }
-
-        public bool DeleteDynamicData(FapDynamicObject dataObject)
+        /// <summary>
+        /// 删除，批量删除请设置Fid多个 用逗号隔开，或Id用逗号隔开
+        /// </summary>
+        /// <param name="delDynamicData"></param>
+        /// <returns></returns>
+        public bool DeleteDynamicData(FapDynamicObject delDynamicData)
         {
-            string tableName = dataObject.TableName;
-            if (tableName.IsMissing())
+            string tableName = delDynamicData.TableName;
+            Guard.Against.NullOrEmpty(tableName, nameof(tableName));
+            string fids = delDynamicData.Get(FapDbConstants.FAPCOLUMN_FIELD_Fid)?.ToString();
+            string ids = delDynamicData.Get(FapDbConstants.FAPCOLUMN_FIELD_Id)?.ToString();
+            if (fids.IsMissing() && ids.IsMissing())
             {
-                Guard.Against.Null("删除实体表名不能为null", nameof(DeleteDynamicData));
+                throw new FapException("删除数据请设置Fid或Id");
             }
-            dynamic dynamicData = dataObject;
-            long? id = dynamicData.Id;
-            if ((id ?? 0) < 1)
+            IEnumerable<dynamic> delList;
+            //获取要删除的数据
+            if (ids.IsPresent())
             {
-                Guard.Against.Null("删除实体Key不能为null", nameof(DeleteDynamicData));
+                var idList = ids.SplitComma();
+                delList = Query($"select * from {tableName} where Id in @Ids", new DynamicParameters(new { Ids = idList }));
             }
-            FapTable table = _fapPlatformDomain.TableSet.First<FapTable>(t => t.TableName == tableName);
-
-            return TraceDynamicDelete(dynamicData, table);
-
-            bool TraceDynamicDelete(dynamic dynamicData, FapTable table)
+            else
             {
-                bool execRv = false;
+                var fidList = fids.SplitComma();
+                delList = Query($"select * from {tableName} where Fid in @Fids", new DynamicParameters(new { Fids = fidList }));
+            }
+            Guard.Against.Null(delList, nameof(delList));
+
+            FapTable table = Table(tableName);
+
+            return TraceDynamicDelete();
+
+            bool TraceDynamicDelete()
+            {
                 try
                 {
                     BeginTransaction();
                     //删除前，通过数据拦截器处理数据
                     IDataInterceptor dataInterceptor = GetTableInterceptor(table.DataInterceptor);
-                    BeforeDynamicDelete(dataObject, dataInterceptor);
-
-                    long id = dynamicData.Get("Id");
-                    string tableName = dynamicData.TableName;
-
                     bool isTrace = table.TraceAble.ToString().ToBool();
-                    if (isTrace) //逻辑删除(历史追溯)
+                    foreach (var dynamicData in delList.ToFapDynamicObjectList(Columns(tableName)))
                     {
-                        execRv = TraceDelete(dynamicData, id, tableName);
-
+                        BeforeDynamicDelete(dynamicData, dataInterceptor);
+                        if (isTrace) //逻辑删除(历史追溯)
+                        {
+                            TraceDelete(dynamicData);
+                        }
+                        else //逻辑删除
+                        {
+                            FapDynamicObject dyData = new FapDynamicObject(Columns(tableName));
+                            long id = dynamicData.Get(FapDbConstants.FAPCOLUMN_FIELD_Id).ToLong();
+                            long ts = dynamicData.Get(FapDbConstants.FAPCOLUMN_FIELD_Ts).ToLong();
+                            dyData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Id, id);
+                            dyData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Ts, ts);
+                            SetDynamicToLogicDelete(dyData);
+                            _dbSession.Update(dyData);
+                        }
+                        AfterDynamicDelete(dynamicData, dataInterceptor);
                     }
-                    else //逻辑删除
-                    {
-                        dynamic dyData = new FapDynamicObject(tableName, id, dynamicData.Ts);
-
-                        SetDynamicToLogicDelete(dyData);
-
-                        execRv = _dbSession.Update(dyData);
-
-                    }
-                    if (!execRv)
-                    {
-                        Rollback();
-                    }
-                    else
-                    {
-                        AfterDynamicDelete(dataObject, dataInterceptor);
-                        Commit();
-                    }
+                    Commit();
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex.Message);
                     Rollback();
+                    throw ex;
                 }
-                finally
-                {
-                    Dispose();
-                }
-                return execRv;
+                return true;
 
-                bool TraceDelete(dynamic dynamicData, long id, string tableName)
+                bool TraceDelete(FapDynamicObject dynamicData)
                 {
-                    List<string> fieldList = _fapPlatformDomain.ColumnSet.Where(c => c.TableName == dynamicData.TableName).Select(c => c.ColName).ToList();
+                    long id = dynamicData.Get(FapDbConstants.FAPCOLUMN_FIELD_Id).ToLong();
+                    long ts = dynamicData.Get(FapDbConstants.FAPCOLUMN_FIELD_Ts).ToLong();
+                    var fieldList = Columns(tableName).Select(c => c.ColName);
                     var currDate = DateTimeUtils.CurrentDateTimeStr;
-                    //insert new data
-                    var newData = GetById(dynamicData.TableName, id);
-                    if (newData == null)
-                    {
-                        Guard.Against.Null("要删除的数据不能为null", "deleteData");
-                    }
-                    SetNewDynamicToDelete(newData, currDate);
+                    var enableDate = DateTimeUtils.LastSecondDateTimeStr;
+                    //insert new data                   
+                    SetNewDynamicToDelete(dynamicData, enableDate, currDate);
                     string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
                     string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
-                    long newId = _dbSession.Insert(tableName, columnList, paramList, newData);
+                    long newId = _dbSession.Insert(tableName, columnList, paramList, dynamicData);
+                    //_logger.LogInformation($"-----{newId}-----");
                     //update old data invalid
-                    dynamic dyData = new FapDynamicObject(tableName, id, newData.Ts);
-
-                    SetOldDynamicInvalid(dyData, currDate);
+                    FapDynamicObject dyData = new FapDynamicObject(Columns(tableName));
+                    dyData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Id, id);
+                    dyData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Ts, ts);
+                    SetOldDynamicInvalid(dyData, enableDate);
                     return _dbSession.Update(dyData);
                 }
             }
         }
-
-
-
         public void DeleteDynamicDataBatch(IEnumerable<FapDynamicObject> dataObjects)
         {
             foreach (var dataObject in dataObjects)
@@ -2096,13 +2158,392 @@ namespace Fap.Core.DataAccess
                 catch (Exception ex)
                 {
                     _logger.LogError($"删除失败：{ex.Message}");
-                    continue;
+                    //continue;
+                    throw ex;
                 }
             }
 
         }
         #endregion
 
+        #region jqgrid paging statistics query
+        public PageInfo<T> QueryPage<T>(Pageable pageable) where T : BaseModel
+        {
+            DynamicParameters dynamicParameters = new DynamicParameters();
+            InitParamers(dynamicParameters);
+            string sql = PagingSQL(pageable);
+
+            //返回总数
+            string[] sqls = sql.Split(';', StringSplitOptions.RemoveEmptyEntries);
+            Dictionary<string, object> parameterMap = pageable.Parameters;
+            //设置参数值
+            foreach (var item in parameterMap)
+            {
+                dynamicParameters.Add(item.Key, item.Value);
+            }
+            PageInfo<T> page = new PageInfo<T>();
+            page.PageSize = pageable.PageSize;
+            page.TotalCount = ExecuteScalar<int>(sqls[1], dynamicParameters);
+            page.Items = Query<T>(sqls[0], dynamicParameters, true);
+            page.MaxIdValue = page.Items.Max(a => a.Id);
+            page.CurrentPage = pageable.CurrentPage;
+            string statSql = StatisticsSql(pageable);
+            if (statSql.IsPresent())
+            {
+                page.StatFieldData = Query(statSql, dynamicParameters);
+            }
+            return page;
+        }
+        public PageInfo<dynamic> QueryPage(Pageable pageable)
+        {
+            DynamicParameters dynamicParameters = new DynamicParameters();
+            InitParamers(dynamicParameters);
+            string sql = string.Empty;
+            sql = PagingSQL(pageable);
+
+            //返回总数
+            string[] sqls = sql.Split(';', StringSplitOptions.RemoveEmptyEntries);
+            Dictionary<string, object> parameterMap = pageable.Parameters;
+            //设置参数值
+            foreach (var item in parameterMap)
+            {
+                dynamicParameters.Add(item.Key, item.Value);
+            }
+            PageInfo<dynamic> page = new PageInfo<dynamic>();
+            page.PageSize = pageable.PageSize;
+            page.TotalCount = ExecuteScalar<int>(sqls[1], dynamicParameters);
+            FapSqlParser parse = new FapSqlParser(_fapPlatformDomain, sqls[0], true)
+            {
+                IsGridQuery = true,
+                CurrentLang = _applicationContext.Language.ToString()
+            };
+            var sqlQuery = parse.ParserSqlStatement();
+            page.Items = _dbSession.Query(sqlQuery, dynamicParameters);
+            if (page.Items.Count() > 0)
+            {
+                page.MaxIdValue = page.Items.Max(a => a.Id);
+            }
+            page.CurrentPage = pageable.CurrentPage;
+            string statSql = StatisticsSql(pageable);
+            if (statSql.IsPresent())
+            {
+                page.StatFieldData = QueryFirstOrDefault(statSql, dynamicParameters);
+            }
+            return page;
+        }
+        #region page sql
+        private string PagingSQL(Pageable pageable)
+        {
+            //Orderby条件
+            string orderBy = pageable.Wraper.MakeOrderBySql();
+            if (!string.IsNullOrEmpty(orderBy))
+            {
+                orderBy = $" ORDER BY {orderBy} ";
+            }
+            else
+            {
+                orderBy = " order by Id ";
+            }
+
+            //Join条件
+            string join = string.Empty;// pageable.Wraper.MakeJoinSql();
+
+            if (pageable.MaxId != null)
+            {
+                pageable.AddWhere($"Id>{pageable.MaxId}");
+            }
+            string where = pageable.Wraper.MakeWhere();
+            StringBuilder sql = new StringBuilder();
+            var databaseDialect = _dbSession.DatabaseDialect;
+            if (databaseDialect == DatabaseDialectEnum.MSSQL)
+            {
+                sql.Append($"select {pageable.Wraper.MakeSelectSql()} from {pageable.Wraper.MakeFromSql()} {join} {where} {orderBy}  offset {pageable.Offset} rows fetch next {pageable.PageSize} rows only ;");
+
+                //总数sql
+                sql.Append($"SELECT count(0) FROM {pageable.Wraper.MakeFromSql()} {join} {where}");
+            }
+            else if (databaseDialect == DatabaseDialectEnum.MYSQL)
+            {
+                sql.Append($"select {pageable.Wraper.MakeSelectSql()} from {pageable.Wraper.MakeFromSql()} {join} {where} {orderBy}   limit {pageable.Offset},{pageable.PageSize};");
+
+                //总数sql
+                sql.Append($"SELECT count(0) FROM {pageable.Wraper.MakeFromSql()} {join} {where}");
+            }
+            else
+            {
+                throw new NotImplementedException("jqgrid 分页脚本为实现，暂不支持");
+            }
+            return sql.ToString();
+
+        }
+
+        private string StatisticsSql(Pageable pageable)
+        {
+            Dictionary<string, StatSymbolEnum> statFields = pageable.StatFields;
+            if (statFields.Any())
+            {
+                StringBuilder sqlBuilder = new StringBuilder();
+                sqlBuilder.Append("SELECT ");
+                foreach (var statField in statFields)
+                {
+                    if (statField.Value == StatSymbolEnum.None)
+                    {
+                        continue;
+                    }
+                    if (statField.Value == StatSymbolEnum.Description)
+                    {
+                        sqlBuilder.Append(statField.Key + ",");
+                    }
+                    else
+                    {
+                        //string statTitle = MyEnumHelper.GetDescription(typeof(EnumStatSymbol), statField.Value);
+                        string statSymbol = Enum.GetName(typeof(StatSymbolEnum), statField.Value);
+                        string statFieldName = statField.Key;
+                        sqlBuilder.AppendFormat("{0}({1}) {2},", statSymbol, statFieldName, statFieldName);
+                    }
+                }
+                sqlBuilder.Remove(sqlBuilder.Length - 1, 1);
+
+                sqlBuilder.Append(" FROM ").Append(pageable.Wraper.MakeFromSql());
+
+                //Join条件
+                //string join = pageable.Wraper.MakeJoinSql();
+                //sqlBuilder.Append($" {join} ");
+                //Where条件
+                sqlBuilder.Append($" {pageable.Wraper.MakeWhere()} ");
+                return sqlBuilder.ToString();
+            }
+            return string.Empty;
+        }
+
+
+        #endregion
+
+        #endregion
+
+        #region Metadata
+        public FapTable Table(string tableName)
+        {
+            if (!_fapPlatformDomain.TableSet.TryGetValueByName(tableName, out FapTable fapTable))
+            {
+                Guard.Against.Null(fapTable, nameof(fapTable));
+            }
+            return fapTable;
+        }
+        public IEnumerable<FapTable> Tables(string tableCategory)
+        {
+            return Tables(t => t.TableCategory == tableCategory);
+        }
+        public IEnumerable<FapTable> Tables(Func<FapTable, bool> predicate)
+        {
+            return _fapPlatformDomain.TableSet.TryGetValue(predicate);
+        }
+        public IEnumerable<FapColumn> Columns(string tableName)
+        {
+            if (!_fapPlatformDomain.ColumnSet.TryGetValueByTable(tableName, out IEnumerable<FapColumn> fapColumns))
+            {
+                Guard.Against.Null(fapColumns, nameof(fapColumns));
+            }
+            return fapColumns;
+        }
+        public FapColumn Column(string tableName, string colName)
+        {
+            return Columns(tableName).FirstOrDefault(c => c.ColName.EqualsWithIgnoreCase(colName));
+        }
+        public IEnumerable<FapDict> Dictionarys(string category)
+        {
+            if (!_fapPlatformDomain.DictSet.TryGetValueByCategory(category, out IEnumerable<FapDict> fapDictionarys))
+            {
+                Guard.Against.Null(fapDictionarys, nameof(fapDictionarys));
+            }
+            foreach (var dict in fapDictionarys)
+            {
+                string name= GetDictName(dict);
+                if (name.IsPresent()) {
+                    dict.Name =name ;
+                }
+            }
+            return fapDictionarys;
+        }
+        private string GetDictName(FapDict dict) => _applicationContext.Language switch
+        {
+            MultiLanguageEnum.En => dict.NameEn,
+            MultiLanguageEnum.Ja => dict.NameJa,
+            MultiLanguageEnum.ZhCn => dict.NameZhCn,
+            MultiLanguageEnum.ZhTW => dict.NameZhTW,
+            _=>dict.Name
+        };
+       
+        public FapDict Dictionary(string category, string code)
+        {
+            var dict= Dictionarys(category).FirstOrDefault(d => d.Code.EqualsWithIgnoreCase(code));
+            if (dict != null)
+            {
+                string name = GetDictName(dict);
+                if (name.IsPresent())
+                {
+                    dict.Name = name;
+                }
+            }
+            return dict;
+        }
+        #endregion
+
+        #region history trace
+        /// <summary>
+        /// 获取指定数据的历史变化
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <param name="fid"></param>
+        /// <returns></returns>
+        public IEnumerable<DataChangeHistory> QueryDataHistory(string tableName, string fid)
+        {
+            string sql = $"SELECT * FROM {tableName} where  Fid=@Fid ORDER BY Id ASC";
+            FapSqlParser parse = new FapSqlParser(_fapPlatformDomain, sql, true);
+            sql = parse.ParserSelectSqlNoWhere();
+
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("Fid", fid);
+            InitParamers(parameters);
+
+            var list = _dbSession.Query(sql, parameters).ToList();
+            FapTable table = _fapPlatformDomain.TableSet.FirstOrDefault(t => t.TableName == tableName);
+            var columns = _fapPlatformDomain.ColumnSet.Where(c => c.TableName == tableName);
+            for (int i = 0; i < list.Count(); i++)
+            {
+                if (i == 0)
+                {
+                    DataChangeHistory dch = CompareDataChange(list[i], null, table, columns);
+                    yield return dch;
+                }
+                else
+                {
+                    DataChangeHistory dch = CompareDataChange(list[i], list[i - 1], table, columns);
+                    yield return dch;
+                }
+            }
+            DataChangeHistory CompareDataChange(dynamic currentData, dynamic preData, FapTable table, IEnumerable<FapColumn> columnList)
+            {
+                IDictionary<string, object> currRow = currentData as IDictionary<string, object>;
+                currRow.TryGetValue(FapDbConstants.FAPCOLUMN_FIELD_UpdateDate, out object datetime);
+                DataChangeHistory dcHistory = new DataChangeHistory();
+                dcHistory.ChangeDateTime = datetime.ToStringOrEmpty();
+                dcHistory.DataName = table.TableComment;
+                if (preData == null)
+                {
+                    dcHistory.ChangeType = DataChangeTypeEnum.ADD;
+                    currRow.TryGetValue(FapDbConstants.FAPCOLUMN_FIELD_CreateName, out object creator);
+                    dcHistory.Operator = creator == null ? "初始化" : creator.ToStringOrEmpty();
+                    return dcHistory;
+                }
+
+                currRow.TryGetValue(FapDbConstants.FAPCOLUMN_FIELD_Dr, out object dr);
+                currRow.TryGetValue(FapDbConstants.FAPCOLUMN_FIELD_UpdateName, out object updateName);
+                if ("1" == dr.ToStringOrEmpty()) //删除标志
+                {
+                    dcHistory.ChangeType = DataChangeTypeEnum.DELETE;
+                    dcHistory.Operator = updateName == null ? "未知" : updateName.ToString();
+                    return dcHistory;
+                }
+
+                dcHistory.ChangeType = DataChangeTypeEnum.UPDATE;
+                dcHistory.Operator = updateName == null ? "未知" : updateName.ToString();
+                List<DataItemChangeHistory> dicHistory = new List<DataItemChangeHistory>();
+                IDictionary<string, object> preRow = preData as IDictionary<string, object>;
+                var keyList = currRow.Keys.ExcludeBaseColumns();
+                foreach (var key in keyList)
+                {
+                    //if (FapDbConstants.FAPCOLUMN_FIELD_Id.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                    //    || FapDbConstants.FAPCOLUMN_FIELD_Fid.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                    //    || FapDbConstants.FAPCOLUMN_FIELD_CreateBy.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                    //    || FapDbConstants.FAPCOLUMN_FIELD_CreateDate.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                    //    || FapDbConstants.FAPCOLUMN_FIELD_CreateName.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                    //    || FapDbConstants.FAPCOLUMN_FIELD_DisableDate.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                    //    || FapDbConstants.FAPCOLUMN_FIELD_EnableDate.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                    //    || FapDbConstants.FAPCOLUMN_FIELD_Ts.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                    //    || FapDbConstants.FAPCOLUMN_FIELD_UpdateBy.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                    //    || FapDbConstants.FAPCOLUMN_FIELD_UpdateDate.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                    //    || FapDbConstants.FAPCOLUMN_FIELD_UpdateName.Equals(key, StringComparison.CurrentCultureIgnoreCase)
+                    //    )
+                    //{
+                    //    continue;
+                    //}
+                    if (key.EndsWith("MC"))
+                    {
+                        continue;
+                    }
+                    string colKey = key;
+                    FapColumn col = columnList.Where(c => c.ColName == key).FirstOrDefault();
+                    if (col.CtrlType == FapColumn.CTRL_TYPE_FILE || col.CtrlType == FapColumn.CTRL_TYPE_IMAGE)
+                    {
+                        continue;
+                    }
+                    if (col.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX || col.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
+                    {
+                        colKey = key + "MC";
+                    }
+                    currRow.TryGetValue(colKey, out object currentValue);
+                    preRow.TryGetValue(colKey, out object preValue);
+                    if (col.CtrlType == FapColumn.CTRL_TYPE_CHECKBOX)
+                    {
+                        currentValue = currentValue.ToInt() == 1 ? "是" : "否";
+                        preValue = preValue.ToInt() == 1 ? "是" : "否";
+                    }
+                    if (!IsObjectEquals(currentValue, preValue))
+                    {
+                        if (currentValue == null || currentValue.ToString() == "")
+                        {
+                            currentValue = "空";
+                        }
+                        if (preValue == null || preValue.ToString() == "")
+                        {
+                            preValue = "空";
+                        }
+                        if (preValue == currentValue)
+                        {
+                            continue;
+                        }
+                        DataItemChangeHistory dich = new DataItemChangeHistory();
+                        if (col != null)
+                        {
+                            dich.ItemName = $"\"{ col.ColComment}\"";
+                            dich.ChangeMessage = "从\"" + preValue + "\"更新成\"" + currentValue + "\"";
+                        }
+                        else
+                        {
+                            dich.ChangeMessage = "从\"" + preValue + "]更新成\"" + currentValue + "\"";
+                        }
+                        dicHistory.Add(dich);
+                    }
+                }
+
+                dcHistory.ItemChangeList = dicHistory;
+                return dcHistory;
+            }
+            bool IsObjectEquals(object value1, object value2)
+            {
+                if ((value1 == null && value2 != null) || (value1 != null && value2 == null))
+                {
+                    return false;
+                }
+                if (value1 is int && value2 is int)
+                {
+                    return ((int)value1) == ((int)value2);
+                }
+                else if (value1 is double && value2 is double)
+                {
+                    return ((double)value1) == ((double)value2);
+                }
+                else if (value1 is string && value2 is string)
+                {
+                    return ((string)value1) == ((string)value2);
+                }
+
+                return true;
+            }
+        }
+
+        #endregion
     }
 }
 

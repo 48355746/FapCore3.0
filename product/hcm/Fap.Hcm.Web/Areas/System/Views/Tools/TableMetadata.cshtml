@@ -1,0 +1,333 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+    IEnumerable<Fap.Core.Infrastructure.Metadata.FapDict> tableCategorys= _dbContext.Dictionarys("TableCategory").OrderBy(d=>d.SortBy);
+}
+<title><fap-multilang lang-key="system_tools_tablemetadata_title" default-content="表元数据"></fap-multilang>    </title>
+<link href="~/Content/css/chosen.css" rel="stylesheet" />
+<link href="~/Content/css/codemirror/codemirror.css" rel="stylesheet" />
+<link href="~/Content/css/codemirror/theme/xq-light.css" rel="stylesheet" />
+
+<div class="row">
+    <div class="col-xs-12">
+        <div id="widget-box-orgdept" class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">
+                    <fap-multilang lang-key="system_tools_tablemetadata_title" default-content="表元数据"></fap-multilang>
+                </h4>
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar">
+                    <select class="chosen-select form-control" style="width:300px" id="selTableCategory"  multi-placeholder="表分类...">
+                        <option value="">  </option>
+                        @foreach (var category in tableCategorys)
+                        {
+                            <option value="@category.Code">@category.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="widget-toolbar no-border">
+                    <fap-button id="btnColumnMetadata" btn-tag="link" content="列元数据" icon-before="glyphicon glyphicon-th blue" class-name="info"></fap-button>
+                    <fap-button id="btnForceSync" btn-tag="link" content="强制同步" icon-before="fa fa-bolt blue" class-name="info"></fap-button>
+                    <fap-button id="btnRefreshMetadata" btn-tag="link" content="刷新元数据" icon-before="fa fa-refresh blue" class-name="info"></fap-button>
+                    <fap-button id="btnExportSql" btn-tag="link" content="导出Sql" icon-before="fa fa-code blue" class-name="info"></fap-button>
+                    <fap-button id="btnExportModel" btn-tag="link" content="导出Class" icon-before="fa fa-code blue" class-name="info"></fap-button>
+                </div>
+            </div>
+            <div class="widget-body">
+                <!-- #section:custom/widget-box.toolbox -->
+                <div class="widget-main">
+                    <fap-grid id="faptable" grid-model="Model" source-type="Local" auto-width="true"></fap-grid>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    //导出数据需要的js
+    var scripts = [null, "/Content/js/chosen.jquery.js","/Content/js/codemirror/codemirror.js","/Content/js/codemirror/mode/sql/sql.js","/Content/js/codemirror/mode/clike/clike.js", null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+            })
+            $('.chosen-select').chosen({ allow_single_deselect: true }).on("change", function () {
+                var c = $(this).val();
+                if (c === "") {
+                    return;
+                }
+                var filter = '{"groupOp":"AND","rules":[{"field":"TableCategory","op":"eq","data":"' + c + '"}]}'
+
+                reloadGrid("grid-faptable", { filters: filter })
+            });
+            $("#btnColumnMetadata").on(ace.click_event, function () {
+                var rowData = getSelectedRow("grid-faptable");
+                if (rowData == null) {
+                    return;
+                }
+                var url = "@Url.Content("~/System/Tools/ColumnMetadata")/" + rowData.Fid + "?menuUrl=~/System/Tools/TableMetadata";
+
+                var dialog = bootbox.dialog({
+                    title: '列元数据',
+                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                    size: "fullscreen",
+                    footer: false,
+                   // buttons: buttons
+                });
+                dialog.init(function () {
+                    $.get(url, function (ev) {
+                        dialog.find('.bootbox-body').html(ev);
+
+                    });
+                });
+            });
+            $("#btnForceSync").on(ace.click_event, function () {
+                var rowData = getSelectedRow("grid-faptable");
+                if (rowData == null) {
+                    return;
+                }
+                if (rowData.IsSync == 1) {
+                    $.msg("已存在数据表，不能再同步了");
+                    return;
+                }
+                $.get(basePath + "/System/Api/Tools/ForceSync/" + rowData.Id, function (rv) {
+                    if (rv.success) {
+                        $.msg(rv.msg);
+                    } else {
+                        bootbox.alert(rv.msg);
+                    }
+                })
+            });
+            $("#btnRefreshMetadata").on(ace.click_event, function () {
+                $.get(basePath + "/System/Api/Tools/RefreshMetadata", function (rv) {
+                    if (rv.success) {
+                        $.msg(rv.msg);
+                    } else {
+                        bootbox.alert(rv.msg);
+                    }
+                })
+            })
+            $("#btnExportModel").on(ace.click_event, function () {
+
+                var rowData = getSelectedRow("grid-faptable");
+                if (rowData == null) {
+                    return;
+                }
+                $.get(basePath + "/System/Api/Tools/ExportModelClass/" + rowData.Fid, function (rv) {
+                    if (rv.success) {
+                        var dialog = bootbox.dialog({
+                            title: rowData.TableName + "Model类!",
+                            size: "fullscreen",
+                            message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>'
+                        });
+                         var $ta = $("<textarea class=\"form-control\"></textarea>");
+                        dialog.on('shown.bs.modal', function (e) {
+                            var editor = CodeMirror.fromTextArea($ta.get(0), {
+                                mode:  "text/x-java",
+                                theme: 'xq-light',
+                                indentWithTabs: true,
+                                smartIndent: true,
+                                lineNumbers: true,
+                                matchBrackets: true,
+                                autofocus: true
+
+                            });
+                            editor.setSize('100%', '650px');
+                        });
+                        dialog.init(function () {
+                            $ta.val(rv.data);
+                            dialog.find('.bootbox-body').html("");
+                            dialog.find('.bootbox-body').append($ta);
+
+                            //editor.setValue(rv.data);
+                            //editor.onFocus();
+                        });
+                    }else {
+                        bootbox.alert(rv.msg);
+                    }
+                })
+                
+            });
+            $("#btnExportSql").on(ace.click_event, function () {
+                var $html =$(`<div class="row">
+    <div class="col-xs-12 col-sm-5">
+        <div class="control-group">
+            <label class="control-label bolder blue">选项</label>
+
+            <!-- #section:custom/checkbox -->
+            <div class="checkbox">
+                <label>
+                    <input name="form-field-option" type="checkbox" value="1"  class="ace" />
+                    <span class="lbl">当前选中表的脚本</span>
+                </label>
+            </div>
+
+            <div class="checkbox">
+                <label>
+                    <input name="form-field-option" type="checkbox" value="2" checked class="ace" />
+                    <span class="lbl"> 当前选中表分类的脚本</span>
+                </label>
+            </div>
+
+            <div class="checkbox">
+                <label>
+                    <input name="form-field-option" type="checkbox" value="5"  class="ace" />
+                    <span class="lbl"> 整个库的脚本</span>
+                </label>
+            </div>
+            <div class="checkbox">
+                <label>
+                    <input name="form-field-option" class="ace ace-checkbox-2" value="3" checked type="checkbox" />
+                    <span class="lbl"> 包含table CREATE 语句</span>
+                </label>
+            </div>
+
+            <div class="checkbox">
+                <label class="block">
+                    <input name="form-field-option"  type="checkbox" value="4" checked class="ace" />
+                    <span class="lbl"> 包含table INSERT 语句</span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-12 col-sm-6">
+        <div class="control-group">
+            <label class="control-label bolder blue">数据库</label>
+            <div class="radio">
+                <label>
+                    <input name="form-field-database" type="radio" value="MSSQL" checked class="ace" />
+                    <span class="lbl">MSSQL</span>
+                </label>
+            </div>
+
+            <div class="radio">
+                <label>
+                    <input name="form-field-database" type="radio" value="MYSQL" class="ace" />
+                    <span class="lbl"> MYSQL</span>
+                </label>
+            </div>
+        </div>
+    </div>
+</div>`);
+
+
+                 var dialog = bootbox.dialog({
+                    title: '导出数据库脚本',
+                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                     buttons: {
+                         ok: {
+                             label: '确定',
+                             className: 'btn-primary',
+                             callback: function () {
+
+                                 var checkedItems = $html.find("input[name='form-field-option']:checked");
+                                 var result = [];
+                                 $.each(checkedItems, function (_, item) {
+                                     result.push($(item).val());
+                                 });
+                                 var data = {};
+                                 var isvalid = true;
+                                 $.each(result, function (i, d) {
+                                     if (d === "1") {
+                                         var rowData = getSelectedRow("grid-faptable");
+                                         if (rowData != null) {
+                                             data.tableName = rowData.TableName;
+                                         } else {
+                                             isvalid = false;
+                                             return;
+                                         }
+                                     }
+                                     if (d === "2") {
+                                         var category = $("#selTableCategory").val();
+                                         if (category === "") {
+                                             isvalid = false;
+                                             $.msg($.lang("tablecategory_required", "请选中表分类"));
+                                             return;
+                                         }
+                                         data.tableCategory = category;
+                                     }
+                                     if (d === "3") {
+                                         data.includCreate = true;
+                                     }
+                                     if (d === "4") {
+                                         data.includInsert = true;
+                                     }
+                                     if (d === "5") {
+                                         data.isAllTable = true;
+                                     }
+                                 });
+                                 if (!isvalid) {
+                                     return;
+                                 }
+                                 var database = $html.find("input[name='form-field-database']:checked").val();
+                                 data.database = database;
+                                 if (data.tableName == null && data.tableCategory == null&&data.isAllTable==null) {
+                                     $.msg("至少选择一种导出类型");
+                                     return false;
+                                 }
+                                 var index=layer.load();
+                                 $.post(basePath + "/System/Api/Tools/ExportSql", data, function (rv) {
+                                     if (rv.success) {
+                                         if (data.tableName != null) {
+                                             var $ta = $("<textarea class=\"form-control\"></textarea>");
+                                             var sqldialog = bootbox.dialog({
+                                                 title: data.tableName + "脚本!",
+                                                 size: "fullscreen",
+                                                 message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>'
+                                             });
+                                             sqldialog.on('shown.bs.modal', function (e) {
+                                                  var editor =  CodeMirror.fromTextArea($ta.get(0), {
+                                                     mode: 'text/x-mssql',
+                                                     theme: 'xq-light',
+                                                     indentWithTabs: true,
+                                                     smartIndent: true,
+                                                     lineNumbers: true,
+                                                     matchBrackets: true,
+                                                    autofocus: true
+
+                                                });
+                                                 editor.setSize('100%', '650px');
+                                             });
+                                             sqldialog.init(function () {
+                                                 $ta.val(rv.data);
+                                                 sqldialog.find('.bootbox-body').html("");
+                                                 sqldialog.find('.bootbox-body').append($ta);
+
+                                                 //editor.setValue(rv.data);
+                                                 //editor.onFocus();
+                                             });
+                                         } else {
+                                             window.location.href = basePath + "/" + rv.data;
+                                         }
+                                     } else {
+                                         bootbox.alert(rv.msg);
+                                     }
+                                     layer.close(index);
+                                 });
+                             }
+
+                         },
+                         cancel: {
+                             label: '取消',
+                             className: 'btn-info',
+                             callback: function () {
+
+                             }
+                         }
+                     }
+                });
+                dialog.init(function () {
+                    dialog.find('.bootbox-body').html("");
+                    dialog.find('.bootbox-body').append($html);
+                });
+
+            });
+        })
+    });
+
+
+</script>

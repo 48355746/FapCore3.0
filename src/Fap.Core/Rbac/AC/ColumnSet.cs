@@ -1,6 +1,6 @@
 ﻿using Fap.Core.DataAccess;
 using Fap.Core.DI;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Fap.Core.Rbac.AC
 {
-    public class ColumnSet:IColumnSet
+    public class ColumnSet : IColumnSet
     {
         private IEnumerable<FapColumn> _allColumns = new List<FapColumn>();
         private static readonly object Locker = new object();
@@ -31,9 +31,9 @@ namespace Fap.Core.Rbac.AC
             if (_initialized) return;
             lock (Locker)
             {
-              
-                    _allColumns = _dbSession.Query<FapColumn>("select * from FapColumn");
-              
+
+                _allColumns = _dbSession.Query<FapColumn>("select * from FapColumn where Dr=0");
+
                 _initialized = true;
             }
         }
@@ -72,20 +72,15 @@ namespace Fap.Core.Rbac.AC
         }
 
 
-        public bool TryGetValueByTable(string tableName, out List<FapColumn> fapColumns)
+        public bool TryGetValueByTable(string tableName, out IEnumerable<FapColumn> fapColumns)
         {
             if (!_initialized)
             {
                 Init();
             }
-            var result = _allColumns.Where<FapColumn>(c => c.TableName.Equals(tableName,StringComparison.CurrentCultureIgnoreCase));
-            if (result != null&&result.Any())
-            {
-                fapColumns = result.ToList<FapColumn>();
-                return true;
-            }
-            fapColumns = null;
-            return false;
+            fapColumns = _allColumns.Where<FapColumn>(c => c.TableName.Equals(tableName, StringComparison.CurrentCultureIgnoreCase));
+           
+            return fapColumns.Any();
         }
 
 

@@ -1,0 +1,163 @@
+﻿@using Fap.Workflow.Model
+@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@using Fap.AspNetCore.Controls.JqGrid
+@{
+    string tableName = Model.JqgridId;
+    //增加操作列
+    Column column = new Column("oper");
+    column.SetLabel("操作");
+    column.SetSortable(false);
+    column.SetWidth(110);
+
+    WfBusiness biz = ViewBag.Business;
+}
+<script>
+    function initOperMenu() {
+        var ids = jQuery("#grid-@tableName").jqGrid('getDataIDs');
+        for (var i = 0; i < ids.length; i++) {
+            var de = '';
+            var cl = ids[i];
+            var ret = jQuery('#grid-@tableName').jqGrid('getRowData', cl);
+            var fid = ret.Fid;
+            de += "<a  href='javascript:void(0)' onclick='approvalBill(\"" + fid + "\")'>" + $.lang("handler", "办理") + "</a>  ";
+            de += "<a  href='javascript:void(0)' onclick='workflowChart(\"" + fid + "\")'>" + $.lang("flow_diagram", "流程图") + "</a>";
+            jQuery('#grid-@tableName').jqGrid('setRowData', ids[i], { oper: de });
+        }
+        //总记录数
+        var total = jQuery("#grid-@tableName").jqGrid('getGridParam', 'records');
+        debugger
+        //更新显示条数
+        //处理待审批计数
+        counter(total);
+    }
+        /**
+     * 重新计算待处理计数
+     * @@param total
+     */
+    function counter(total) {
+        var countstr = $("a[data-business='@biz.Fid'] .text-danger");
+        if (countstr) {
+            if (total > 0) {
+                $("a[data-business='@biz.Fid'] .text-danger").text('+'+total);
+            } else {
+                $("a[data-business='@biz.Fid'] .text-danger").text('');
+            }
+        }
+    }
+</script>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title smaller">@biz.BizName</h4>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main">
+                    <fap-grid id="@Model.JqgridId" attach-column="@column" grid-model="Model" auto-width="true" shrink-fit="false" oper-import="false" on-grid-complete="initOperMenu"></fap-grid>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+     /**
+     * 流程图
+     * */
+    function workflowChart(fid) {
+        var processUid = '@biz.WfProcessUid';//流程
+        var openUrl = $.randomUrl(basePath + "/Workflow/Business/FlowChart?processUid=" + processUid + "&billUid=" + fid);
+        var width = parseInt($(window).innerWidth() * 0.8) + 'px';
+        var height = parseInt($(window).innerHeight() - 60) + 'px';
+        var index = layer.open({
+            type: 2,
+            title: '@biz.BizName',
+            shadeClose: true,
+            shade: 0.8,
+            maxmin: true, //开启最大化最小化按钮
+            skin: 'billskin',
+            btnAlign: 'c',
+            area: [width, height],
+            content: openUrl,
+            btn: ['关闭'],
+            yes: function (index, layero) {
+                layer.close(index);
+            }
+            , cancel: function () {
+                //右上角关闭回调
+
+                //return false 开启该代码可禁止点击该按钮关闭
+            }
+        });
+    }
+    function approvalBill(fid)
+    {
+        var agent = '@ViewBag.Agent';
+        var businessUid = '@biz.Fid';
+        var openUrl = basePath + "/Workflow/Business/ApprovalBill?billUid=" + fid + "&businessUid=" + businessUid + "&agent=" + agent;
+
+        var dialog = bootbox.dialog({
+            title: '审批单',
+            message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+            size: "large",
+            footer: false,
+            buttons: {
+                disagree: {
+                    label: '不同意',
+                    className: "btn-link",
+                    callback: function () {                       
+                        bootbox.prompt({
+                            title: "审批意见",
+                            inputType: 'textarea',
+                            value: '不同意',
+                            callback: function (result) {
+                                if (result != null) {
+                                    //if (checkBeforeProcess()) {
+                                        ApprovalProcess('Disagree', result, function () {
+                                            refreshApprovalList();
+                                        });
+                                    //}
+                                }
+                            }
+                        }); 
+                        return false;
+                    }
+                }, agree: {
+                    label: '同意',
+                    className: "btn-link",
+                    callback: function () {                        
+                            bootbox.prompt({
+                                title: "审批意见",
+                                inputType: 'textarea',
+                                value: '同意',
+                                callback: function (result) {
+                                    if (result != null) {
+                                        if (checkBeforeProcess()) {
+                                            ApprovalProcess('Agree', result, function () {
+                                                refreshApprovalList();
+                                            });
+                                        }
+                                    }
+                                }
+                            });                        
+                        return false;
+                    }
+                }
+            }
+
+        });
+        dialog.init(function () {
+            $.get(openUrl, function (ev) {
+                dialog.find('.bootbox-body').html(ev);
+
+            });
+        });
+
+    }
+
+    function refreshApprovalList()
+    {
+        bootbox.hideAll();
+        $("#grid-@tableName").trigger("reloadGrid"); //重新载入
+    }
+</script>

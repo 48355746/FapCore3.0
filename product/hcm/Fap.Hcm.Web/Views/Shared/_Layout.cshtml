@@ -1,48 +1,136 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Fap.Hcm.Web</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" />
-</head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Fap.Hcm.Web</a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+    <title>@ViewBag.Title</title>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2019 - Fap.Hcm.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <!-- page specific plugin styles -->
+    @RenderSection("specificcss", required: false)
+    <environment include="Development">
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+        <link rel="stylesheet" href="~/Content/css/font-awesome.css" />
+        <link rel="stylesheet" href="~/Content/css/ace-fonts.css" />
+        <link rel="stylesheet" href="~/Content/css/jquery.gritter.css" />
+        <link rel="stylesheet" href="~/Content/Handsontable/css/handsontable.full.css" />
+        <link rel="stylesheet" href="~/Content/css/ace.css" class="ace-main-stylesheet" id="main-ace-style" asp-append-version="true" />
+    </environment>
+    <environment exclude="Development">
+        <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css"
+              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
+              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
+        <link rel="stylesheet" href="~/css/acefont.min.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/css/ace.min.css" asp-append-version="true" />
+    </environment>
+    <!--[if lte IE 9]>
+        <link rel="stylesheet" href="@Url.Content("~/Content/css/ace-part2.css")" class="ace-main-stylesheet" />
+    <![endif]-->
+    <!--[if lte IE 9]>
+      <link rel="stylesheet" href="@Url.Content("~/Content/css/ace-ie.css")" />
+    <![endif]-->
+    <!-- page specific plugin styles -->
+    @RenderSection("specificcss2", required: false)
+    <style>
+        .error .help-block {
+            color: #d16e6c;
+            font-size: 14px;
+        }
+    </style>
+    <!-- inline styles related to this page -->
+    <!-- ace settings handler -->
+    <script src="@Url.Content("~/Content/js/ace-extra.js")"></script>
+
+    <!-- HTML5shiv and Respond.js for IE8 to support HTML5 elements and media queries -->
+    <!--[if lte IE 8]>
+    <script src="@Url.Content("~/Content/js/html5shiv.js")"></script>
+    <script src="@Url.Content("~/Content/js/respond.js")"></script>
+    <![endif]-->
+    <!-- basic scripts -->
+    <!--[if !IE]> -->
+    <script type="text/javascript">
+        window.jQuery || document.write("<script src='@Url.Content("~/Content/js/jquery.js")'>" + "<" + "/script>");
+    </script>
+
+    <!-- <![endif]-->
+    <!--[if IE]>
+    <script type="text/javascript">
+     window.jQuery || document.write("<script src='@Url.Content("~/Content/js/jquery1x.js")'>"+"<"+"/script>");
+    </script>
+    <![endif]-->
+    <script type="text/javascript">
+        if ('ontouchstart' in document.documentElement) document.write("<script src='@Url.Content("~/Content/js/jquery.mobile.custom.js")'>" + "<" + "/script>");
+    </script>
+
+    <!-- page specific plugin scripts -->
+    <!--[if lte IE 8]>
+          <script src="@Url.Content("~/Content/js/excanvas.js")"></script>
+      <![endif]-->
+    @RenderSection("userscript", required: false)
+    <script>
+
+        var basePath = "http://" + window.location.host;
+    </script>
+    <script src="@Url.Content("~/Scripts/Fap/common.js")"></script>
+</head>
+<body class="no-skin">
+    <div class="main-content">
+        <div class="main-content-inner">
+            <div class="page-content">
+                @*<div class="row">
+                    <div class="col-xs-12">*@
+                @RenderBody()
+                @*</div>
+                    </div>*@
+            </div>
         </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @RenderSection("Scripts", required: false)
+    </div>
+    <!-- ace scripts -->
+    <environment include="Development">
+        <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+        <!-- ace scripts -->
+        <script src="~/Content/js/ace/elements.scroller.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/elements.colorpicker.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/elements.fileinput.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/elements.typeahead.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/elements.wysiwyg.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/elements.spinner.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/elements.treeview.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/elements.wizard.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/elements.aside.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/ace.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/ace.ajax-content.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/ace.touch-drag.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/ace.sidebar.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/ace.sidebar-scroll-1.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/ace.submenu-hover.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/ace.widget-box.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/ace.settings.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/ace.settings-rtl.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/ace.settings-skin.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/ace.widget-on-reload.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/lib/bootstrap/dist/js/bootstrap.min.js" asp-append-version="true"></script>
+        @*<script src="~/Content/js/lodash.min.js" asp-append-version="true"></script>*@
+        <script src="~/js/ace.min.js" asp-append-version="true"></script>
+    </environment>
+    <script src="~/Content/layer/layer.js"></script>
+    <script src="~/Content/js/date-time/moment.js"></script>
+    <!--多语资源-->
+    <script src="~/Scripts/MultiLanguage.js" asp-append-version="true"></script>
+    @RenderSection("specificscript", required: false)
+    <script>
+        $(function () {
+            //解决bootbox多弹出框focus 死循环问题
+            $.fn.modal.Constructor.prototype.enforceFocus = function () { };
+            $('[data-rel=tooltip]').tooltip();
+            $('[data-rel=popover]').popover({ html: true });
+
+        })
+    </script>
 </body>
 </html>

@@ -1,10 +1,20 @@
 ﻿using Castle.DynamicProxy;
 using Fap.Core.DataAccess;
 using Fap.Core.DataAccess.Interceptor;
+using Fap.Core.MultiLanguage;
+using Fap.Core.Scheduler;
+using Fap.Core.Tracker;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Polly;
+using Polly.Extensions.Http;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Fap.Core.Infrastructure.Domain
 {
@@ -39,55 +49,57 @@ namespace Fap.Core.Infrastructure.Domain
             var builder = services.AddFapBuilder();
             builder.AddFap();
             return builder;
-
         }
+
         public static IFapBuilder AddFap(this IFapBuilder builder)
         {
+            //httpcontext,httpclient            
             builder.Services.AddHttpContextAccessor();
+            builder.Services.AddHttpClient();
+            var retryPolicy = HttpPolicyExtensions.HandleTransientHttpError()
+                .WaitAndRetryAsync(new[]
+                {
+                    TimeSpan.FromSeconds(1),
+                    TimeSpan.FromSeconds(5),
+                    TimeSpan.FromSeconds(10)
+                }, onRetryAsync: async (outcome, timespan, retryCount, context) =>
+                 {
+                     context["RetriesInvoked"] = retryCount;
+                     await Task.CompletedTask;
+                    // ...
+                });
+            builder.Services.AddHttpClient("Retry").AddPolicyHandler(retryPolicy);
             //数据库访问
             builder.Services.AddSingleton<IConnectionFactory, ConnectionFactory>();
             builder.Services.AddSingleton<IDbSession, DbSession>();
             builder.Services.AddSingleton<IDbContext, DbContext>();
             //AOP代理
             builder.Services.AddSingleton<ProxyGenerator>();
-            builder.Services.AddScoped<IInterceptor, TransactionalInterceptor>();
+            builder.Services.AddSingleton<IInterceptor, TransactionalInterceptor>();
             //应用程序域，需要初始化为单例
-            builder.Services.AddSingleton<IFapPlatformDomain, FapPlatfromDomain>();           
+            builder.Services.AddSingleton<IFapPlatformDomain, FapPlatfromDomain>();
             //Fap应用上下文
             builder.Services.AddSingleton<IFapApplicationContext, FapApplicationContext>();
-     
-            //业务配置
-            //builder.Services.AddSingleton<IFapConfigService, FapConfigService>();
-            ////多语服务类
-            //builder.Services.AddSingleton<IMultiLangService, MultiLangService>();           
-            ////统计图表
-            //builder.Services.AddScoped<IStatisticService, StatisticService>();
-            ////Rbac
-            ////使用session，获取acsession           
-            //builder.Services.AddTransient<IRbacService, RbacService>();
-            //builder.Services.AddTransient<ILoginService, LoginService>();
-            ////信息发送
-            //builder.Services.AddTransient<IMessageSendService, MessageSendService>();
-            ////元数据
-            //builder.Services.AddTransient<IMetaDataService, MetaDataService>();
-            ////文件支持
-            //builder.Services.AddTransient<IFapFileService, FapFileService>();
+
             return builder;
         }
         /// <summary>
-        /// 添加三方同步
+        /// 数据变化触发（用于第三方系统同步变化数据）
         /// </summary>
         /// <param name="services"></param>
-        //public static IFapBuilder AddThirdpartySynchronize(this IFapBuilder builder)
-        //{
-        //    //实时同步
-        //    builder.Services.AddTransient<IRealtimeSynchService, RealtimeSynchUrlService>();
-        //    #region 事件驱动
-        //    builder.Services.AddTransient<IEventHandler, RealtimeSynEventHandler>();
-        //    builder.Services.AddSingleton<IEventBus, PassThroughEventBus>();
-        //    #endregion
-        //    return builder;
-        //}
+        public static IFapBuilder AddDataTracker(this IFapBuilder builder)
+        {
+            builder.Services.AddSingleton<EventDataTracker>();
+            builder.Services.AddSingleton<EventDataReporter>();           
+            return builder;
+        }
+        public static void UseDataTracker(this IApplicationBuilder app)
+        {
+            var provider= app.ApplicationServices;
+            EventDataReporter reporter = provider.GetService<EventDataReporter>();
+            EventDataTracker tracker = provider.GetService<EventDataTracker>();
+            reporter.Subscribe(tracker);
+        }
         /// <summary>
         /// 添加调度
         /// </summary>
@@ -99,36 +111,36 @@ namespace Fap.Core.Infrastructure.Domain
         //    return builder;
         //}
 
-        //public static void BuilderMultiLanguageJsFile(this IApplicationBuilder app)
-        //{
-        //    //初始化多语言js文件
-        //    IMultiLangService multiLang = app.ApplicationServices.GetService<IMultiLangService>();
-        //    multiLang.InitMultiLangResJS();
-        //}
+        public static void BuilderMultiLanguageJsFile(this IApplicationBuilder app)
+        {
+            //初始化多语言js文件
+            IMultiLangService multiLang = app.ApplicationServices.GetService<IMultiLangService>();
+            multiLang.CreateMultilanguageJsFile();
+        }
 
 
     }
     /// <summary>
     /// 单独开启后台线程处理 Scheduler
     /// </summary>
-    //public class BackgroundSchedulerService : BackgroundService
-    //{
-    //    private readonly ISchedulerService _schedulerService;
-    //    public BackgroundSchedulerService(ISchedulerService schedulerService)
-    //    {
-    //        _schedulerService = schedulerService;
-    //    }
-    //    protected override Task ExecuteAsync(CancellationToken stoppingToken)
-    //    {
-    //        _schedulerService.Init();
-    //        return Task.CompletedTask;
-    //    }
-    //    public override Task StopAsync(CancellationToken cancellationToken)
-    //    {
-    //        _schedulerService.ShutdownJobs();
-    //        return base.StopAsync(cancellationToken);
-    //    }
-    //}
+    public class BackgroundSchedulerService : BackgroundService
+    {
+        private readonly ISchedulerService _schedulerService;
+        public BackgroundSchedulerService(ISchedulerService schedulerService)
+        {
+            _schedulerService = schedulerService;
+        }
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            _schedulerService.Run();
+            return Task.CompletedTask;
+        }
+        public override Task StopAsync(CancellationToken cancellationToken)
+        {
+            _schedulerService.Shutdown();
+            return base.StopAsync(cancellationToken);
+        }
+    }
     /// <summary>
     /// 启用后台三方同步
     /// </summary>

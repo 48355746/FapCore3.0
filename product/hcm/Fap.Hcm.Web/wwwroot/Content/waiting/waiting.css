@@ -1,0 +1,57 @@
+.waiting-container {
+  min-height: 16px;
+  transition: opacity 0.25s;
+  opacity: 1;
+}
+.waiting-container.hidden {
+  opacity: 0;
+}
+.waiting-container.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.waiting-container.fixed {
+  position: fixed;
+  z-index: 9999;
+}
+
+.waiting-overlay {
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+/*.waiting-indicator {
+  width: 16px;
+  height: 16px;
+  background: url("../src/ajax-loader-white.gif");
+}*/
+.waiting-indicator.center, .waiting-indicator.top, .waiting-indicator.bottom {
+  position: absolute;
+}
+.waiting-indicator.center {
+  top: 50%;
+  left: 50%;
+  margin: -8px 0 0 -8px;
+}
+.waiting-indicator.top {
+  top: 0;
+  margin-top: 0;
+}
+.waiting-indicator.bottom {
+  top: auto;
+  bottom: 0;
+  margin-top: 0;
+}
+.waiting-indicator.left {
+  left: 0;
+  margin-left: 0;
+}
+.waiting-indicator.right {
+  left: auto;
+  right: 0;
+  margin-left: 0;
+}

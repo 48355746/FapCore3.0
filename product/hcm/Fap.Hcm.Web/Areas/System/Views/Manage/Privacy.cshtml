@@ -1,0 +1,28 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+    Layout = null;
+}
+<title>隐私设置</title>
+<div class="row">
+    <div class="col-xs-12">
+        <fap-grid id="fapdataencrypt" grid-model="Model"  auto-width="true" on-form-init-add="initForm" multi-box-only="true" multi-select="true" oper-cud="true"></fap-grid>
+
+    </div>
+
+</div>
+<script>
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+            })
+        })
+    })
+    function initForm(){
+        $("#frm-FapDataEncrypt #TableUid").val("Employee");
+        $("#frm-FapDataEncrypt #FapDataEncryptTableUidMC").val("员工信息");
+        $("#frm-FapDataEncrypt #ColumnUid").val("bfe911e582cac2ffd110");
+        $("#frm-FapDataEncrypt #FapDataEncryptColumnUidMC").val("手机");
+        $("#frm-FapDataEncrypt #ColumnName").val("Mobile");
+    }
+</script>

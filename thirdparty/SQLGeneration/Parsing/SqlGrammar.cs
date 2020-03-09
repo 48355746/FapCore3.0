@@ -25,9 +25,8 @@ namespace SQLGeneration.Parsing
             defineOrderByList();
             defineOrderByItem();
             defineOrderDirection();
-            //sql2012+分页
-            defineOffsetFetch();
-            DefineLimit();
+            //分页
+            definePagination();
             defineNullPlacement();
             defineAdditiveExpression();
             defineAdditiveOperator();
@@ -638,13 +637,10 @@ namespace SQLGeneration.Parsing
             /// </summary>
             public const string NullPlacement = "null_placement";
             /// <summary>
-            /// sql2012+分页
+            /// 分页
             /// </summary>
-            public const string PageOffsetFetch = "page_offset_fetch";
-            /// <summary>
-            /// Gets the identifier for the limit specifier.
-            /// </summary>
-            public const string PageLimit = "page_limit";
+            public const string Pagination = "order_pagination";
+            
         }
 
         private void defineOrderByItem()
@@ -653,8 +649,7 @@ namespace SQLGeneration.Parsing
                 .Add(OrderByItem.Expression, true, Expression(ArithmeticItem.Name))
                 .Add(OrderByItem.OrderDirection, false, Expression(OrderDirection.Name))
                 .Add(OrderByItem.NullPlacement, false, Expression(NullPlacement.Name))
-                .Add(OrderByItem.PageOffsetFetch, false, Expression(OffsetFetch.Name))
-                .Add(OrderByItem.PageLimit,false,Expression(Limit.Name));
+                .Add(OrderByItem.Pagination, false, Expression(Pagination.Name));
         }
 
         #endregion
@@ -692,29 +687,33 @@ namespace SQLGeneration.Parsing
 
         #endregion
 
-        #region OffsetFetch
-        public static class OffsetFetch
+        #region Pagination
+        public static class Pagination
         {
-            public const string Name = "OffsetFetch";
-            public const string OffsetFetchItem = "page_offset_fetch";
-        }
-        private void defineOffsetFetch()
-        {
-            Define(OffsetFetch.Name).Add(OffsetFetch.OffsetFetchItem, true, Token(SqlTokenRegistry.OffsetFetch));
-        }
-        #endregion
+            /// <summary>
+            /// Gets the identifier indicating that the token is an ORDER direction.
+            /// </summary>
+            public const string Name = "Pagination";
 
-        #region Limit
-        public static class Limit
-        {
-            public const string Name = "Limit";
-            public const string LimitItem = "page_limit";
+            /// <summary>
+            /// Gets the identifier for the DESC keyword.
+            /// </summary>
+            public const string OffsetFetch = "OffsetFetch";
+
+            /// <summary>
+            /// Gets the identifier for the ASC keyword.
+            /// </summary>
+            public const string Limit = "Limit";
         }
-        private void DefineLimit()
+        private void definePagination()
         {
-            Define(Limit.Name).Add(Limit.LimitItem, true, Token(SqlTokenRegistry.Limit));
+            Define(Pagination.Name)
+                .Add(true, Options()
+                    .Add(Pagination.OffsetFetch, Token(SqlTokenRegistry.OffsetFetch))
+                    .Add(Pagination.Limit, Token(SqlTokenRegistry.Limit)));
         }
-        #endregion
+       
+        #endregion    
 
         #region NullPlacement
 
@@ -2058,7 +2057,15 @@ namespace SQLGeneration.Parsing
                 /// Gets the identifier for the IN keyword.
                 /// </summary>
                 public const string InKeyword = "in";
-
+                /// <summary>
+                /// Describes the structure of a parameter variable.
+                /// </summary>
+                /// <remarks>wyf 用于dapper 中的 in @参数表达式</remarks>
+                public static class Parameter
+                {
+                    public const string Name = "Parameter";
+                    public const string Value = "value_parameter";
+                }
                 /// <summary>
                 /// Describes the structure of a values list.
                 /// </summary>
@@ -2258,7 +2265,9 @@ namespace SQLGeneration.Parsing
                         .Add(Filter.In.Expression, true, Expression(ArithmeticItem.Name))
                         .Add(Filter.In.NotKeyword, false, Token(SqlTokenRegistry.Not))
                         .Add(Filter.In.InKeyword, true, Token(SqlTokenRegistry.In))
-                        .Add(true, Options()
+                        .Add(true, Options()//wyf 增加in后面加@参数，用于dapper语法
+                            .Add(Filter.In.Parameter.Name,Define()
+                                .Add(Filter.In.Parameter.Value,true,Token(SqlTokenRegistry.Identifier)))
                             .Add(Filter.In.Values.Name, Define()
                                 .Add(Filter.In.Values.LeftParenthesis, true, Token(SqlTokenRegistry.LeftParenthesis))
                                 .Add(Filter.In.Values.ValueList, false, Expression(ValueList.Name))

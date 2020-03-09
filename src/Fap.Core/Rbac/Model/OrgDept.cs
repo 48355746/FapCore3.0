@@ -1,5 +1,5 @@
 ﻿using Dapper.Contrib.Extensions;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,7 +37,7 @@ namespace Fap.Core.Rbac.Model
         /// <summary>
         /// 父部门 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string PidMC { get; set; }
         /// <summary>
         /// 部门类型
@@ -70,7 +70,7 @@ namespace Fap.Core.Rbac.Model
         /// <summary>
         /// 部门经理 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string DeptManagerMC { get; set; }
         /// <summary>
         /// 负责人
@@ -79,24 +79,24 @@ namespace Fap.Core.Rbac.Model
         /// <summary>
         /// 负责人 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string DirectorMC { get; set; }
 
         /// <summary>
         /// 子部门
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public IEnumerable<OrgDept> Children { get; set; }
         /// <summary>
         /// 部门人数
         /// </summary>
 
-        [ComputedAttribute]
+        [Computed]
         public int EmpNum { get; set; }
         /// <summary>
         /// 权限【判断对这个部门拥有部分权限】
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public bool HasPartPower { get; set; }
         /// <summary>
         /// 编制人数,用于在编校验

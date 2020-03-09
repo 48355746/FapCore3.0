@@ -1,0 +1,40 @@
+﻿@model Fap.AspNetCore.ViewModel.MultiJqGridViewModel
+@{
+    int i = 0;
+    int j = 0;
+}
+<div class="row">
+    <div class="col-xs-12">
+        <div class="tabbable">
+            <ul class="nav nav-tabs" id="gridViewTab">
+                @foreach (var keyValue in Model.JqGridViewModels)
+                {
+                    i++;
+                    <li class="@(i==1?"active":"")">
+                        <a data-toggle="tab" href="#@keyValue.Key">
+                           
+                            @keyValue.Value.Title
+                        </a>
+                    </li>
+
+                }
+
+            </ul>
+
+            <div class="tab-content">
+                @foreach (var keyValue in Model.JqGridViewModels)
+                {
+                    j++;
+                    <div id="@keyValue.Key" class="tab-pane in @(j==1?"active":"")">
+                        <fap-grid id="@keyValue.Value.JqgridId" grid-model="keyValue.Value" auto-width="true" view-records="true" multi-box-only="true" multi-select="true" shrink-fit="false"></fap-grid>
+
+                    </div>
+
+                }
+
+            </div>
+        </div>
+    </div>
+</div>
+
+

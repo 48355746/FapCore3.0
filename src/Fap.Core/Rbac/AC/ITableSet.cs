@@ -1,4 +1,5 @@
-﻿using Fap.Core.Metadata;
+﻿using Fap.Core.Infrastructure.Metadata;
+using System;
 using System.Collections.Generic;
 
 namespace Fap.Core.Rbac.AC
@@ -11,5 +12,7 @@ namespace Fap.Core.Rbac.AC
         void Refresh();
         bool TryGetValue(string fid, out FapTable fapTable);
         bool TryGetValueByName(string tableName, out FapTable fapTable);
+        bool TryGetValueByCategory(string category, out IEnumerable<FapTable> tables);
+        IEnumerable<FapTable> TryGetValue(Func<FapTable, bool> predicate);
     }
 }

@@ -1,0 +1,115 @@
+﻿@using Fap.AspNetCore.Controls.JqGrid
+@using Fap.AspNetCore.Controls
+@model Fap.AspNetCore.ViewModel.TreeGridViewModel
+@{
+    Layout = null;
+    string treeid = "tree-" + Model.TreeGridId;
+    string gridid = "grid-" + Model.TreeGridId;
+    string pagerid = "paper-" + Model.TreeGridId;
+    string filterCondition = Model.TreeFilterCondition;
+    string returnfields = Model.TempData["returnfields"];
+}
+
+<script>
+    $(function () {
+        $('#@treeid').on("changed.jstree", function (e, data) {
+            if (data && data.selected && data.selected.length) {
+                var filter = data.selected[0];
+                if (filter == "0")
+                    return;
+                //获取所有子Fid
+                var childs = data.node.children_d;
+                var selids = childs.concat(filter);
+                //过滤可操作部门
+                var tree=$('#@treeid').jstree(true);
+                var sels = $.grep(selids, function (d, i) {
+                    return tree.get_node(d).data.selectable == true;
+                });
+                var filter = '{"groupOp":"AND","rules":[{"field":"@filterCondition","op":"in","data":"' + sels + '"}]}'
+                $("#@gridid").jqGrid('setGridParam', {
+                    datatype: 'json',
+                    postData: { filters:filter  }, //发送数据
+                    page: 1
+                }).trigger("reloadGrid"); //重新载入
+            }
+            //console.log(data.selected);
+        });
+
+    })
+    //获取组件返回值
+    var GetCompontentReturnValue=function(){
+        var multi=false;
+        @if (Model.IsMulti)
+           {
+               <text> multi = true;</text>
+           }
+        if(!multi)
+        {
+            return GetCompontentResult();
+        }else {
+            return GetCompontentResults();
+        }
+    }
+    var GetCompontentResult = function () {
+        var id = jQuery("#@gridid").jqGrid('getGridParam', 'selrow');
+        if (id) {
+            var ret = jQuery("#@gridid").jqGrid('getRowData', id);
+            var result = {};
+            @foreach (var item in returnfields.Split(','))
+            {
+                <text>result.@item=ret.@item;</text>
+            }
+            return result;
+        }
+        return "";
+    }
+    var GetCompontentResults=function() {
+        var ids = jQuery("#@gridid").jqGrid('getGridParam', 'selarrrow');
+        var result=[];
+        if (ids) {
+            for (var i = 0; i < ids.length; i++) {
+                var ret = jQuery("#@gridid").jqGrid('getRowData', ids[i]);
+                var selObj = {};
+                @foreach (var item in returnfields.Split(','))
+                {
+                    <text>selObj.@item=ret.@item;</text>
+                }
+                result.push(selObj);
+            }
+        }
+        return result;
+    }
+
+</script>
+
+<div class="row">
+    <div class="col-xs-12 col-sm-4">
+        <div class="widget-box transparent">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">@Model.TreeTitle</h4>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main" style="overflow-x:hidden;overflow-y:auto;height:450px" data-size="270">
+                    <fap-tree id="@Model.TreeGridId" is-async="false" json-data="@Model.JsonData" plugin-dnd="false"></fap-tree>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-8">
+        <div class="widget-box transparent">
+            <div class="widget-header">
+                <h4 class="widget-title lighter">@Model.GridTitle</h4>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    <fap-grid id="@Model.TreeGridId" grid-model="@Model.GridModel" auto-width="true"  search-toolbar="true" view-records="true" multi-box-only="false" multi-select="@Model.IsMulti"></fap-grid>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+

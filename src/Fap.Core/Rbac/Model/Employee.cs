@@ -1,5 +1,5 @@
 ﻿using Dapper.Contrib.Extensions;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Linq;

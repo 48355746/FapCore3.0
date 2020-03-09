@@ -1,0 +1,297 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@using Fap.AspNetCore.Controls.JqGrid
+@{
+    Layout = null;
+    Fap.Workflow.Model.WfBusiness business = ViewBag.WfBusiness;
+    Fap.Workflow.Model.WfProcess wfProcess = ViewBag.WfProcess;
+    string tableName = business.BillEntity;
+    string bizCode = business.BizCode;
+    string businessUid = business.Fid;
+    string title = business.BizName;
+    IEnumerable<Fap.Core.Infrastructure.Metadata.FapDict> billStatus = _dbContext.Dictionarys("BillStatus");
+    //增加操作列
+    Column column = new Column("oper");
+    column.SetLabel("操作");
+    column.SetSortable(false);
+    column.SetWidth(140);
+}
+
+<div class="widget-box">
+    <div class="widget-header widget-header-flat">
+        <h4 class="widget-title smaller">@business.BizName</h4>
+        <div class="widget-toolbar">
+            <button class="btn btn-purple btn-link" id="btnAddApply">
+                <i class="ace-icon fa fa-plus"></i>                
+                <fap-multilang lang-key="apply" default-content="申请"></fap-multilang>
+            </button>
+        </div>
+
+        <div class="widget-toolbar">
+            <label>
+                <i class="ace-icon fa fa-filter icon-on-right"></i>
+                <fap-multilang lang-key="bill_status" default-content="单据状态"></fap-multilang>:
+            </label>
+            <button data-toggle="dropdown" id="filterStatus" data-billstatus="-1" class="btn  btn-link  dropdown-toggle">
+                <fap-multilang lang-key="all_status" default-content="全部状态"></fap-multilang>
+                <i class="ace-icon fa fa-angle-down icon-on-right"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-default" id="btnBillStatus">
+                <li data-billstatus="-1">
+                    <a href="javascript:void(0)"> <fap-multilang lang-key="all_status" default-content="全部状态"></fap-multilang></a>
+                </li>
+                @foreach (var item in billStatus)
+                {
+                    <li data-billstatus="@item.Code">
+                        <a href="javascript:void(0)">@item.Name</a>
+                    </li>
+                }
+            </ul>
+
+        </div>
+    </div>
+
+    <div class="widget-body">
+        <div class="widget-main">
+            <fap-grid id="@tableName" attach-column="@column" grid-model="Model" auto-width="true" shrink-fit="false" view-records="true" oper-import="false" on-grid-complete="initWorkflowMenu"></fap-grid>
+
+        </div>
+    </div>
+</div>
+<script>
+
+    /**
+     * 初始化列表菜单
+     * */
+    function initWorkflowMenu()
+    {
+        var ids = jQuery("#grid-@tableName").jqGrid('getDataIDs');
+        for (var i = 0; i < ids.length; i++) {
+            var de = '';
+            var cl = ids[i];
+            var ret = jQuery('#grid-@tableName').jqGrid('getRowData', cl);
+            var fid = ret.Fid;
+            var status = ret.BillStatus;
+            if (status === 'DRAFT') {
+                //草稿
+                de += "<a  href='javascript:void(0)' onclick='submitDraft(\"" + fid + "\")'>"+$.lang("submit","提交")+"</a>  ";
+                de += "<a  href='javascript:void(0)' onclick='invalidBill(\"" + fid + "\")'>"+$.lang("invalid","作废")+"</a>";
+            } else if (status === 'REVOKED') {
+                //驳回
+                de += "<a  href='javascript:void(0)' onclick='submitDraft(\"" + fid + "\")'>"+$.lang("submit","提交")+"</a>  ";
+                de += "<a  href='javascript:void(0)' onclick='workflowChart(\"" + fid + "\")'>"+$.lang("flow_diagram","流程图")+"</a>  ";
+            } else if (status === 'PROCESSING') {
+                //流程中
+                de += "<a  href='javascript:void(0)' onclick='viewBill(\"" + fid + "\")'>"+$.lang("view","查看")+"</a>  ";
+                de += "<a  href='javascript:void(0)' onclick='recallBill(\"" + fid + "\")'>"+$.lang("recall","撤回")+"</a>  ";
+                de += "<a  href='javascript:void(0)' onclick='workflowChart(\"" + fid + "\")'>"+$.lang("flow_diagram","流程图")+"</a>  ";
+
+            } else if (status !== 'CANCELED') {
+                //其他不为作废的单子
+                de += "<a  href='javascript:void(0)' onclick='viewBill(\"" + fid + "\",\"" + name + "\")'>"+$.lang("view","查看")+"</a> ";
+                de += "<a  href='javascript:void(0)' onclick='workflowChart(\"" + fid + "\")'>"+$.lang("flow_diagram","流程图")+"</a>  ";
+            } else {
+                de += "<a  href='javascript:void(0)' onclick='viewBill(\"" + fid + "\",\"" + name + "\")'>"+$.lang("view","查看")+"</a> ";
+
+            }
+            jQuery('#grid-@tableName').jqGrid('setRowData', ids[i], { oper: de });
+        }
+    }
+        //刷新列表
+    function refreshList() {
+        debugger
+        //var searchText = $("#id-text-search").val();
+        var billstatus = $("#filterStatus").data("billstatus");
+        var filter = { groupOp: "AND", rules: [] };
+        var rules = [];
+        if (billstatus != "-1") {
+            rules.push({ field: "BillStatus", op: "eq", data: billstatus });
+            filter.rules = rules;
+            reloadGrid("grid-@tableName", { filters: JSON.stringify(filter) });
+        } else {
+            reloadGrid("grid-@tableName");
+        }
+    }
+    /**
+     * 提交草稿态单据
+     * @@param fid
+     */
+    function submitDraft(fid)
+    {
+        openBillForm(fid);
+    }
+    function openBillForm(billUid)
+    {
+         var processUid = '@wfProcess.Fid';//流程
+         var frmType = '@wfProcess.FormType';//表单类型
+         var businessUid = '@businessUid';//业务Uid
+
+        var openUrl = $.randomUrl('@Url.Content("~/Workflow/Business/ApplyBill")?businessUid=' + businessUid + '&billUid=' + billUid);
+
+        var dialog = bootbox.dialog({
+            title: '@title',
+            message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+            size: "large",
+            footer: false,
+            buttons: {
+                tempSave: {
+                    label: $.lang("temporary",'暂存'),
+                    className: "btn-link btn-info",
+                    callback: function () {
+                        temporarySave();
+                        refreshList();
+                        //return false;
+                    }
+                }, submit: {
+                    label: $.lang("submit","提交"),
+                    className: "btn-link btn-primary",
+                    callback: function () {
+                        submitBill(function () {
+                            bootbox.hideAll();
+                            refreshList();
+                        });
+                        return false;
+                    }
+                }
+            }
+
+        });
+        dialog.init(function () {
+            $.get(openUrl, function (ev) {
+                dialog.find('.bootbox-body').html(ev);
+
+            });
+        });
+    }
+    /**
+     * 作废单据
+     * @@param fid
+     */
+    function invalidBill(fid) {
+        bootbox.confirm($.lang("confirm_invalid","确认作废单据吗？"), function (result) {
+            if (result) {
+                $.get(basePath + "/Workflow/Api/Business/Invalid/@tableName/" + fid, function (rv) {
+                    if (rv.status === 3) {
+                        bootbox.alert(rv.message);
+
+                    } else {
+                        refreshList();
+                    }
+                })
+            }
+        })
+    }
+    /**
+     * 撤回单据
+     * @@param fid
+     */
+    function recallBill(fid) {
+        bootbox.confirm($.lang("confirm_recall","确认撤销单据吗？"), function (result) {
+            if (result) {
+                var processUid = '@wfProcess.Fid';//流程
+
+                $.get(basePath + "/Workflow/Api/Business/Withdrawn/" + processUid + "/" + fid, function (rv) {
+                    if (rv.status === 3) {
+                        bootbox.alert(rv.message);
+                    } else {
+                        refreshList();
+                    }
+                })
+            }
+        })
+    }
+    /**
+     * 流程图
+     * */
+    function workflowChart(fid) {
+        var processUid = '@wfProcess.Fid';//流程
+        var openUrl = $.randomUrl(basePath + "/Workflow/Business/FlowChart?processUid=" + processUid + "&billUid=" + fid);
+        var width = parseInt($(window).innerWidth() * 0.8) + 'px';
+        var height = parseInt($(window).innerHeight() - 60) + 'px';
+        var index = layer.open({
+            type: 2,
+            title: '@title',
+            shadeClose: true,
+            shade: 0.8,
+            maxmin: true, //开启最大化最小化按钮
+            skin: 'billskin',
+            btnAlign: 'c',
+            area: width,//[width, 'auto'],
+            offset: '100px',
+            content: openUrl,
+            btn: [$.lang("close",'关闭')],
+            success: function (layero, index) {
+                layer.iframeAuto(index);
+            },
+            yes: function (index, layero) {
+                layer.close(index);
+            }
+            , cancel: function () {
+                //右上角关闭回调
+
+                //return false 开启该代码可禁止点击该按钮关闭
+            }
+        });
+    }
+    function viewBill(fid) {
+        var processUid = '@wfProcess.Fid';//流程
+        var frmType = '@wfProcess.FormType';//表单类型
+        var businessUid = '@businessUid';//业务Uid
+        
+        var openUrl = $.randomUrl('@Url.Content("~/Workflow/Business/ApplyViewBill")?processUid=' + processUid + '&businessUid=' + businessUid + '&billUid=' + fid);
+
+
+        var width = parseInt($(window).innerWidth() * 0.8) + 'px';
+        var height = parseInt($(window).innerHeight() - 60) + 'px';
+        var index = layer.open({
+            type: 2,
+            title: '@title',
+            shadeClose: true,
+            shade: 0.8,
+            maxmin: true, //开启最大化最小化按钮
+            skin: 'billskin',
+            btnAlign: 'c',
+            area: [width, height],
+            content: openUrl,
+            btn: [$.lang('print','打印'),$.lang('close','关闭')]
+            , yes: function (index, layero) {
+                //按钮【暂存】的回调
+                var iframeWin = layero.find('iframe')[0];
+                iframeWin.contentWindow.printBill();
+
+                return false;
+            }
+            , btn2: function (index, layero) {
+                //按钮【提交流程】的回调
+                layer.close(index);
+            }
+
+            , cancel: function () {
+                //右上角关闭回调
+
+                //return false 开启该代码可禁止点击该按钮关闭
+            }
+        });
+    }
+
+
+
+    jQuery(function ($) {
+        $("#btnBillStatus>li").off(ace.click_event).on(ace.click_event, function (e) {
+            var tName = $(this).text();
+            var tValue = $(this).data("billstatus");
+            $("#filterStatus").data("billstatus", tValue);
+            $("#filterStatus").html(tName + "<i class=\"ace-icon fa fa-angle-down icon-on-right\"></i>");
+            refreshList();
+        })
+        $(document).one('ajaxloadstart.page', function (e) {
+            //$(document).off(ace.click_event, '.dropdown-menu>li');
+        })
+        //新申请
+        $("#btnAddApply").on(ace.click_event, function () {
+            //流程模板
+            openBillForm('');
+        });
+    });
+
+
+</script>

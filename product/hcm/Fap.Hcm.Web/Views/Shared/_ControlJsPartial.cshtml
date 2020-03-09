@@ -1,0 +1,74 @@
+﻿<environment include="Development">
+    <!-- common scripts -->
+    <script src="~/Content/js/date-time/moment.js" asp-append-version="true"></script>
+    <script src="~/Content/js/bootbox.js" asp-append-version="true"></script>
+    <script src="~/Content/js/jquery.gritter.js" asp-append-version="true"></script>
+    <script src="~/Content/js/jquery-ui.js" asp-append-version="true"></script>
+    <script src="~/Content/js/jquery-ui.custom.js" asp-append-version="true"></script>
+    <script src="~/Content/js/jquery.ui.touch-punch.js" asp-append-version="true"></script>
+    <script src="~/Scripts/Fap/common.js" asp-append-version="true"></script>
+    <script src="~/Scripts/Fap/utils.js" asp-append-version="true"></script>
+    <script src="~/Content/js/date-time/bootstrap-datetimepicker.js" asp-append-version="true"></script>
+    <script src="~/Content/js/jquery.DatePicker.js" asp-append-version="true"></script>
+    <script src="~/Content/js/date-time/locales/bootstrap-datetimepicker.zh-CN.js" asp-append-version="true"></script>
+    <script src="~/Content/js/date-time/bootstrap-datepicker.js" asp-append-version="true"></script>
+    <script src="~/Content/js/jquery.validate.js" asp-append-version="true"></script>
+    <script src="~/Content/js/jquery.bootstrap-duallistbox.js" asp-append-version="true"></script>
+    <script src="~/Content/date-time-h5/js/mobiscroll.core-2.6.2.js" asp-append-version="true"></script>
+    <script src="~/Content/date-time-h5/js/mobiscroll.android-ics-2.6.2.js" asp-append-version="true"></script>
+    <script src="~/Content/date-time-h5/js/mobiscroll.datetime-2.6.2.js" asp-append-version="true"></script>
+    <script src="~/Content/date-time-h5/js/mobiscroll.core-2.6.2-zh.js" asp-append-version="true"></script>
+    <script src="~/Content/fileinput/fileinput.js" asp-append-version="true"></script>
+   
+    <script src="~/Content/js/chosen.jquery.js" asp-append-version="true"></script>
+    <script src="~/Content/js/jquery.bootstrap-touchspin.js" asp-append-version="true"></script>
+    <script src="~/Content/js/jquery.inputlimiter.1.3.1.js" asp-append-version="true"></script>
+    <script src="~/Content/js/bootstrap-wysiwyg.js" asp-append-version="true"></script>
+    <script src="~/Content/js/jquery.hotkeys.js" asp-append-version="true"></script>
+    <script src="~/Content/citypicker/city-picker.data.js" asp-append-version="true"></script>
+    <script src="~/Content/citypicker/city-picker.js" asp-append-version="true"></script>
+    <script src="~/Content/citypicker/jquery.citypicker.js" asp-append-version="true"></script>
+    <script src="~/Content/js/jquery.colorbox.js" asp-append-version="true"></script>
+    <script src="~/Content/js/jquery.raty.js" asp-append-version="true"></script>
+    <script src="~/Content/js/fuelux/fuelux.wizard.js" asp-append-version="true"></script>
+    <script src="~/Scripts/Fap/mainframe.js" asp-append-version="true"></script>
+    <!-- control scripts -->
+    <script src="~/Content/JqGrid/jquery.jqGrid.src.js" asp-append-version="true"></script>
+    <script src="~/Content/JqGrid/i18n/grid.locale-cn.js" asp-append-version="true"></script>
+    <script src="~/Content/js/x-editable/bootstrap-editable.js" asp-append-version="true"></script>
+    <script src="~/Content/js/x-editable/ace-editable.js" asp-append-version="true"></script>
+    <script src="~/Content/js/x-editable/fap-editable.js" asp-append-version="true"></script>
+    <script src="~/Scripts/FapControl/dataGrid.js" asp-append-version="true"></script>
+    <script src="~/Scripts/FapControl/dataForm.js" asp-append-version="true"></script>
+    <script src="~/Content/js/JsTree/jstree.js" asp-append-version="true"></script>
+    <script src="~/Content/Select2/js/select2.full.js" asp-append-version="true"></script>
+    <script src="~/Content/js/jRange/jquery.range.js" asp-append-version="true"></script>
+
+</environment>
+<environment exclude="Development">
+    <script src="~/js/fapcommon.min.js" asp-append-version="true"></script>
+    <script src="~/js/fapcontrol.min.js" asp-append-version="true"></script>
+    <script src="~/Content/js/lodash.min.js" asp-append-version="true"></script>
+</environment>
+
+@if (_applicationContext.Language == Fap.Core.MultiLanguage.MultiLanguageEnum.En)
+{
+    //多语
+    <script src="~/Content/JqGrid/i18n/grid.locale-en.js" asp-append-version="true"></script>
+    <script src="~/Content/fileinput/locales/LANG.js" asp-append-version="true"></script>
+}
+else if (_applicationContext.Language == Fap.Core.MultiLanguage.MultiLanguageEnum.ZhCn)
+{
+    <script src="~/Content/JqGrid/i18n/grid.locale-cn.js" asp-append-version="true"></script>
+    <script src="~/Content/fileinput/locales/zh.js" asp-append-version="true"></script>
+}
+else if (_applicationContext.Language == Fap.Core.MultiLanguage.MultiLanguageEnum.ZhTW)
+{
+    <script src="~/Content/JqGrid/i18n/grid.locale-tw.js" asp-append-version="true"></script>
+    <script src="~/Content/fileinput/locales/zh-TW.js" asp-append-version="true"></script>
+}
+else if (_applicationContext.Language == Fap.Core.MultiLanguage.MultiLanguageEnum.Ja)
+{
+    <script src="~/Content/JqGrid/i18n/grid.locale-ja.js" asp-append-version="true"></script>
+    <script src="~/Content/fileinput/locales/ja.js" asp-append-version="true"></script>
+}

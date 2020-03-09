@@ -3,6 +3,8 @@ using Fap.Core.DataAccess;
 using Fap.Core.DI;
 using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Domain;
+using Fap.Core.Infrastructure.Enums;
+using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.Utility;
 using Microsoft.Extensions.Logging;
 using System;
@@ -29,6 +31,27 @@ namespace Fap.Core.Infrastructure.Config
             _logger = logger;
             _appDomain = appDomain;
         }
+       
+        public IEnumerable<FapConfigGroup> GetAllFapConfigGroup()
+        {
+            return _dbContext.QueryAll<FapConfigGroup>();
+        }
+
+        public long CreateFapConfigGroup(FapConfigGroup configGroup)
+        {
+            return _dbContext.Insert(configGroup);
+        }
+
+        public bool DeleteFapConfigGroup(string fid)
+        {
+           int c= _dbContext.DeleteExec(nameof(FapConfigGroup),"Fid=@Fid", new DynamicParameters(new { Fid = fid }));
+            return c > 0 ? true : false;
+        }
+
+        public bool EditFapConfigGroup(FapConfigGroup configGroup)
+        {
+            return _dbContext.Update(configGroup);
+        }
         /// <summary>
         /// 获取系统配置参数值
         /// </summary>
@@ -37,7 +60,7 @@ namespace Fap.Core.Infrastructure.Config
         public string GetSysParamValue(string paramKey)
         {
             FapConfig config;
-            if (_appDomain.SysParamSet.TryGetValueByKey(paramKey, out config))
+            if (_appDomain.ParamSet.TryGetValueByKey(paramKey, out config))
             {
                 return config.ParamValue;
             }
@@ -133,18 +156,23 @@ namespace Fap.Core.Infrastructure.Config
             else
             {
                 //单据没有配置的时候 返回默认的值
-                if (_appDomain.TableSet.FirstOrDefault(t=>t.TableName==tableName).TableFeature.Contains("BillFeature"))
+                if (_appDomain.TableSet.TryGetValueByName(tableName,out FapTable table))
                 {
-                    //CfgBillCodeRule bc = new CfgBillCodeRule();
-                    //bc.FieldName = "BillCode";
-                    int seq = GetSequence(tableName);
-                    //bc.BillCode = seq.ToString().PadLeft(7, '0');
-                    string billcode = seq.ToString().PadLeft(7, '0');
-                    dictCodes.Add("BillCode", billcode);
+                    if (table.TableFeature.Contains("BillFeature"))
+                    {
+                        //CfgBillCodeRule bc = new CfgBillCodeRule();
+                        //bc.FieldName = "BillCode";
+                        int seq = GetSequence(tableName);
+                        //bc.BillCode = seq.ToString().PadLeft(7, '0');
+                        string billcode = seq.ToString().PadLeft(7, '0');
+                        dictCodes.Add("BillCode", billcode);
+                    }
                 }
 
             }
             return dictCodes;
         }
+
+     
     }
 }

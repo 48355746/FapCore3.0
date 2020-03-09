@@ -1,0 +1,89 @@
+﻿@model Fap.AspNetCore.ViewModel.MultiJqGridViewModel
+@{
+    Layout = null;
+    Fap.AspNetCore.ViewModel.JqGridViewModel modelSetting = Model.JqGridViewModels["setting"];
+    Fap.AspNetCore.ViewModel.JqGridViewModel modelLog = Model.JqGridViewModels["log"];
+}
+<title>实时同步设置</title>
+<div class="row">
+    <div class="col-xs-12 col-sm-12">
+        <!-- #section:elements.tab -->
+        <div class="tabbable">
+            <ul class="nav nav-tabs" id="myTab">
+                <li class="active">
+                    <a data-toggle="tab" href="#home">
+                        <i class="green ace-icon fa fa-cog bigger-120"></i>
+                        同步设置
+                    </a>
+                </li>
+
+                <li>
+                    <a data-toggle="tab" href="#messages">
+                        <i class=" ace-icon fa fa-file-text-o bigger-120"></i>
+                        同步日志
+                        <span class="badge badge-danger"></span>
+                    </a>
+                </li>
+
+
+            </ul>
+
+            <div class="tab-content">
+                <div id="home" class="tab-pane fade in active">
+                    <fap-grid id="setting" grid-model="modelSetting"  auto-width="true" wrapper="myTab,home" oper-cud="true"></fap-grid>
+
+                </div>
+
+                <div id="messages" class="tab-pane fade">
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-12">
+                            <div class="btn-group">
+                                <button type="button" id="btnRealTimeSyn" class="btn  btn-white">
+                                    <i class="ace-icon fa fa-cloud-upload blue"></i>
+                                    同步
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-4"></div>
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-12">
+                            <fap-grid id="log" grid-model="modelLog"  auto-width="true" wrapper="myTab,messages" multi-box-only="true" multi-select="true" oper-cud="true"></fap-grid>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- /section:elements.tab -->
+
+
+    </div>
+</div>
+
+<script>
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            //同步
+            $("#btnRealTimeSyn").off(ace.click_event).on(ace.click_event, function () {
+                var sels = getSelectedRows("grid-log");
+                if (sels) {
+                    $.post(basePath + "/System/Api/Manage/RealtimeSyn", { logs: sels }, function (rv) {
+                        if (rv.success) {
+                            refreshGrid("grid-log");
+                        }
+                    })
+                }
+            })
+
+
+            $(document).one('ajaxloadstart.page', function (e) {
+            })
+
+        })
+    })
+</script>
+
+

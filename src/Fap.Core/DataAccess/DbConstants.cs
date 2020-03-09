@@ -20,7 +20,7 @@ namespace Fap.Core.DataAccess
         internal static string DB_DIALECT_ORACLE = "oracle";
 
     }
-    internal class FapDbConstants
+    public class FapDbConstants
     {
         public const string FAPCOLUMN_FIELD_Id = "Id";
         public const string FAPCOLUMN_FIELD_Fid = "Fid";

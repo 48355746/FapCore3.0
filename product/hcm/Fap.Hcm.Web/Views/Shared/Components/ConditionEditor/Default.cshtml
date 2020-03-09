@@ -1,0 +1,212 @@
+﻿@*<link href="~/Content/css/codemirror/codemirror.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/Content/css/codemirror/theme/xq-light.css"/>
+        <style>
+        .CodeMirror {
+            height: 240px;
+        }
+    </style>
+    <script src="~/Content/js/codemirror/codemirror.js"></script>
+    <script src="~/Content/js/codemirror/mode/sql/sql.js"></script>*@
+@inject Fap.Core.DataAccess.IDbContext _db;
+@{
+    string tn = ViewBag.TableName;
+    var cols = _db.Columns(tn);
+    var options = cols.Where(c => c.IsDefaultCol == 0).Select(c => "<option value='" + c.ColComment + "'>" + c.ColComment + "[" + c.ColName + "]</option>");
+    var columns ="{"+string.Join(",", cols.Where(c => c.IsDefaultCol == 0).Select(c => c.ColName + ":'" + c.ColComment+"'"))+"}";
+}
+<div class="row">
+    <div class="col-xs-12  col-sm-4">
+        <div class="widget-box widget-color-blue3">
+            <div class="widget-header widget-header-small">
+                <h6 class="widget-title">参考项</h6>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main no-padding">
+
+                    <select id="sel_refformulaitems" size="17" multiple class="col-sm-12"></select>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class=" col-xs-12 col-sm-8">
+        <div class="widget-box widget-color-blue3">
+            <div class="widget-header widget-header-small">
+                <h6 class="widget-title">条件设置</h6>
+                <div class="widget-toolbar">
+                    <button id="btnValidate" class="btn btn-xs btn-success">
+                        <i class="ace-icon fa fa-check"></i>
+                        校验
+                    </button>
+                </div>
+                <div class="widget-toolbar no-border">
+                    <button class="btn btn-xs bigger btn-info  dropdown-toggle" data-toggle="dropdown">
+                        常用函数
+                        <i class="ace-icon fa fa-chevron-down icon-on-right"></i>
+                    </button>
+
+                    <ul class="dropdown-menu dropdown-warning dropdown-menu-right dropdown-caret dropdown-close">
+                        <li>
+                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" DATEPART(datepart,字段) ">日期格式</a>
+                        </li>
+                        <li>
+                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" DATEADD (day,天数,字段) ">日期加减</a>
+                        </li>
+
+                        <li>
+                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" DATEDIFF(day , 开始时间 , 结束时间) ">日期间隔</a>
+                        </li>
+
+                        <li>
+                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" GETDATE() ">当前日期</a>
+                        </li>
+                        <li>
+                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" YEAR(字段) ">年</a>
+                        </li>
+                        <li>
+                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" MONTH(字段) ">月</a>
+                        </li>
+                        <li>
+                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" DAY(字段) ">日</a>
+                        </li>
+                        <li class="divider"></li>
+
+                        <li>
+                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" ABS(字段) ">绝对值</a>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main no-padding">
+                    @*顯示*@
+                    <textarea id="formulaDisplay" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="row clearfix" style="margin:0">
+                <div class="col-sm-12">
+                    <h6 class="header smaller lighter blue">运算符</h6>
+
+                    <div class="btn-group">
+                        <button class="btn-primary btn-sm btn btn-round" type="button" title="+" tabindex="-1" data-provider="fap-formula" data-handler="+"><span>+</span> </button>
+                        <button class="btn-primary btn-sm btn btn-round" type="button" title="-" tabindex="-1" data-provider="fap-formula" data-handler="-"><span>-</span> </button>
+                        <button class="btn-primary btn-sm btn btn-round" type="button" title="*" tabindex="-1" data-provider="fap-formula" data-handler="*"><span>*</span> </button>
+                        <button class="btn-primary btn-sm btn btn-round" type="button" title="/" tabindex="-1" data-provider="fap-formula" data-handler="/"><span>/</span> </button>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn-primary btn-sm btn btn-round" type="button" title=">" tabindex="-1" data-provider="fap-formula" data-handler=">"><span>></span> </button>
+                        <button class="btn-primary btn-sm btn btn-round" type="button" title=">=" tabindex="-1" data-provider="fap-formula" data-handler=">="><span>>=</span> </button>
+                        <button class="btn-primary btn-sm btn btn-round" type="button" title="<" tabindex="-1" data-provider="fap-formula" data-handler="<"><span><</span> </button>
+                        <button class="btn-primary btn-sm btn btn-round" type="button" title="<=" tabindex="-1" data-provider="fap-formula" data-handler="<="><span><=</span> </button>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn-primary btn-sm btn btn-round" type="button" title="=" tabindex="-1" data-provider="fap-formula" data-handler="="><span>=</span> </button>
+                        <button class="btn-primary btn-sm btn btn-round" type="button" title="!=" tabindex="-1" data-provider="fap-formula" data-handler="!="><span>!=</span> </button>
+                        <button class="btn-primary btn-sm btn btn-round" type="button" title="(" tabindex="-1" data-provider="fap-formula" data-handler="("><span>(</span> </button>
+                        <button class="btn-primary btn-sm btn btn-round" type="button" title=")" tabindex="-1" data-provider="fap-formula" data-handler=")"><span>)</span> </button>
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-primary btn-sm btn-round" data-provider="fap-formula" data-handler="1">1</button>
+                        <button type="button" class="btn btn-primary btn-sm btn-round" data-provider="fap-formula" data-handler="2">2</button>
+                        <button type="button" class="btn btn-primary btn-sm btn-round" data-provider="fap-formula" data-handler="3">3</button>
+                        <button type="button" class="btn btn-primary btn-sm btn-round" data-provider="fap-formula" data-handler="4">4</button>
+                    </div>
+                    <div class="space-2"></div>
+                    <div class="btn-group">
+
+                        <button type="button" class="btn btn-primary btn-sm btn-round" data-provider="fap-formula" data-handler="5">5</button>
+                        <button type="button" class="btn btn-primary btn-sm btn-round" data-provider="fap-formula" data-handler="6">6</button>
+                        <button type="button" class="btn btn-primary btn-sm btn-round" data-provider="fap-formula" data-handler="7">7</button>
+                        <button type="button" class="btn btn-primary btn-sm btn-round" data-provider="fap-formula" data-handler="8">8</button>
+                        <button type="button" class="btn btn-primary btn-sm btn-round" data-provider="fap-formula" data-handler="9">9</button>
+                        <button type="button" class="btn btn-primary btn-sm btn-round" data-provider="fap-formula" data-handler="0">0</button>
+                        <button class="btn-primary btn-sm btn btn-round" type="button" title=">" tabindex="-1" data-provider="fap-formula" data-handler=" AND "><span>and</span> </button>
+                        <button class="btn-primary btn-sm btn btn-round" type="button" title=">=" tabindex="-1" data-provider="fap-formula" data-handler=" OR "><span>or</span> </button>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn-primary btn-sm btn btn-round" type="button" title="=" tabindex="-1" data-provider="fap-formula" data-handler=" CASE  WHEN 条件 THEN 结果 ELSE 结果 END "><span>case when</span> </button>
+                        <button class="btn-primary btn-sm btn btn-round" type="button" title="<" tabindex="-1" data-provider="fap-formula" data-handler=" WHERE 条件"><span>where</span> </button>
+                        <button class="btn-primary btn-sm btn btn-round" type="button" title="<=" tabindex="-1" data-provider="fap-formula" data-handler=" NOT "><span>not</span> </button>
+                        <button class="btn-primary btn-sm btn btn-round" type="button" title="<=" tabindex="-1" data-provider="fap-formula" data-handler=" ISNULL(字段,0) "><span>isnull</span> </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<script>
+    //window.conditionDisplay={};
+    var conditionEditor;
+    var objFields =@Html.Raw(columns);
+    function findKey(value,data) {
+        return Object.keys(data).find(function (k) {
+            return data[k]==value;
+        });
+    }
+    function getConditionObject() { 
+        debugger
+        var ttext = conditionEditor.getValue();     
+        var patt = new RegExp(/\$\{\S+?\}/, "g");
+        var tvalue;
+        var tdesc;
+        while ((result = patt.exec(ttext)) != null)
+        { 
+            var col = result[0].slice(2, -1);
+            tvalue = ttext.replace(result,'${'+findKey(col, objFields)+'}');
+            tdesc = ttext.replace(result, col);
+            patt.lastIndex;
+        }
+
+        return { text: ttext, value: tvalue, desc:tdesc };
+
+    }
+    $(function () {
+        //公式编辑器
+        conditionEditor = CodeMirror.fromTextArea(document.getElementById("formulaDisplay"), {
+            mode: 'text/x-mssql',
+            theme: 'xq-light',
+            indentWithTabs: true,
+            smartIndent: true,
+            lineNumbers: true,
+            matchBrackets: true,
+            autofocus: true,
+
+        });
+      //设置值
+        //conditionEditor.getDoc().setValue(window.conditionDisplay);
+
+        //校验公式项
+        $("#btnValidate").on(ace.click_event, function () {
+            var cv = conditionEditor.getValue();
+            $.post("@Url.Content("~/api/commctrlsapi/valideSqlCondition/")", { tableName: '@ViewBag.TableName', conditionSql: cv }, function (data) {
+                if (data.success == true) {
+                    layer.msg("条件校验合法！");
+                } else {
+                    layer.msg("条件校验失败！" + data.message);
+                }
+            });
+        });
+        //操作符插入
+        $(":button[data-provider='fap-formula']").on(ace.click_event, function () {
+            conditionEditor.replaceSelection($(this).data("handler").toString());
+        });
+        $("a[data-provider='fap-formula']").on(ace.click_event, function () {
+            conditionEditor.replaceSelection($(this).data("handler").toString());
+        });
+        $("#sel_refformulaitems").append($("@Html.Raw(string.Join("", options))"));
+
+        //公式项字段设置
+        $("#sel_refformulaitems").on(ace.click_event, function () {
+            conditionEditor.replaceSelection("${" + $(this).val() + "}");
+        });
+    })
+</script>

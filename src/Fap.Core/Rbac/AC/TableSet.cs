@@ -1,6 +1,6 @@
 ﻿using Fap.Core.DataAccess;
 using Fap.Core.DI;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,7 +31,7 @@ namespace Fap.Core.Rbac.AC
             lock (Locker)
             {
 
-                _allTables = _dbSession.Query<FapTable>($"select * from FapTable where ProductUid in('FAP','HCM')").ToList();
+                _allTables = _dbSession.Query<FapTable>($"select * from FapTable where Dr=0 and ProductUid in('FAP','HCM')").ToList();
 
                 _initialized = true;
             }
@@ -85,6 +85,32 @@ namespace Fap.Core.Rbac.AC
             }
             fapTable = null;
             return false;
+        }
+
+        public bool TryGetValueByCategory(string category, out IEnumerable<FapTable> tables)
+        {
+            if (!_initialized)
+            {
+                Init();
+            }
+            var result = _allTables.Where<FapTable>(f => f.TableCategory.Equals(category, StringComparison.CurrentCultureIgnoreCase));
+            if (result != null)
+            {
+                tables = result;
+                return true;
+            }
+            tables = null;
+            return false;
+        }
+       
+        public IEnumerable<FapTable> TryGetValue(Func<FapTable, bool> predicate)
+        {
+            if (!_initialized)
+            {
+                Init();
+            }
+            var result = _allTables.Where(predicate);
+            return result;
         }
     }
 }

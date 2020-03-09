@@ -1,0 +1,38 @@
+﻿@using Fap.AspNetCore.Controls
+@model Fap.AspNetCore.ViewModel.JsTreeViewModel
+@{
+    Layout = null;
+    string frmCols=Model.TempData["frmCols"];
+}
+<script>
+    function GetRefResult() {
+        var ref = $('#tree-@Model.CtrlName').jstree(true),
+                        sel = ref.get_selected();
+
+        if (!sel.length) { return false; }
+        sel = sel[0];
+        if (ref.get_node(sel).data.selectable == false)
+        {
+            bootbox.alert("你没有权限选择此项！");
+            return;
+        }
+        var ext = "";
+        debugger
+        if (ref.get_node(sel).data!=null&&ref.get_node(sel).data.ext != undefined)
+        {
+            ext = ref.get_node(sel).data.ext;
+        }
+        var code = sel;
+        var name = ref.get_text(sel);
+        var result = { "code": code, "name": name,"ext":ext,"frmcols":'@frmCols' };
+        return result;
+    }
+</script>
+
+
+<div class="row">
+    <div class="col-xs-12 treeScrollable">
+        <fap-tree id="@Model.CtrlName" is-async="false" json-data="@Model.JsonData" plugin-dnd="false" > </fap-tree>
+    </div>
+</div>
+

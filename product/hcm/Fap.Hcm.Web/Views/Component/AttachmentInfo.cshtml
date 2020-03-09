@@ -1,0 +1,214 @@
+﻿@using Fap.Core.Infrastructure.Model
+@model   IEnumerable<FapAttachment>
+@{
+    Layout = null;
+    int fileCount = 0;
+    double Modelize = 0.0;
+    string bid = "";
+    if (Model.Any())
+    {
+        fileCount = Model.Count();
+        Modelize = Math.Round(Model.Sum(f => f.FileSize) / 1024.0, 2);
+        bid = Model.First().Bid;
+    }
+}
+
+<script type="text/javascript">
+    jQuery(function ($) {
+        var $overflow = '';
+        var colorbox_params = {
+            rel: 'colorbox',
+            reposition: true,
+            scalePhotos: true,
+            scrolling: false,
+            photo: true,
+            previous: '<i class="ace-icon fa fa-arrow-left"></i>',
+            next: '<i class="ace-icon fa fa-arrow-right"></i>',
+            close: '&times;',
+            current: '{current} of {total}',
+            maxWidth: '100%',
+            maxHeight: '100%',
+            showImage: true,  //显示图片  add by suncht
+            onOpen: function () {
+                $overflow = document.body.style.overflow;
+                document.body.style.overflow = 'hidden';
+            },
+            onClosed: function () {
+                document.body.style.overflow = $overflow;
+            },
+            onComplete: function () {
+                $.colorbox.resize();
+            }
+        };
+
+        $('.ace-thumbnails [data-rel="colorbox"]').colorbox(colorbox_params);
+        $("#cboxLoadingGraphic").html("<i class='ace-icon fa fa-spinner orange fa-spin'></i>");//let's add a custom loading icon
+
+
+        $(document).one('ajaxloadstart.page', function (e) {
+            $('#colorbox, #cboxOverlay').remove();
+        });
+        $('[data-rel=tooltip]').tooltip();
+        //预览
+        $(".attached-file").on(ace.click_event, function (e) {
+            e.preventDefault();
+
+            var fid = $(this).data("filefid");
+            $.get("@Url.Content("~/Api/Core/viewfile/")" + fid, function (data) {
+                if (data.success) {
+                    if (data.id == 'img') {
+                        openNewWindow("@Url.Content("~/UploadFiles/View/")" + data.msg);
+                    } else if (data.id == "0") {
+                        $.msg($.lang("not_support_view","不支持预览"));
+                    } else {
+                        openNewWindow("@Url.Content("~/Content/Pdf/web/viewer.html")?file=/UploadFiles/View/" + data.msg);
+                    }
+                } else {
+                    bootbox.alert(data.msg);
+                }
+            })
+        })
+        @*//删除
+        $(".deletefile").on(ace.click_event, function (e) {
+            debugger
+            e.preventDefault();
+            var fid = $(this).data("filefid");
+            var df = $(this);
+            bootbox.confirm("确定删除此附件?", function (result) {
+                if (result) {
+                    //
+                    $.post("@Url.Content("~/Api/Core/deletefile/")", { key: fid }, function (rv) {
+                        if (rv == "1") {
+                            df.parent().parent().remove();
+                        }
+                    })
+                }
+            });
+        })*@
+
+    })
+</script>
+
+
+<div class="row">
+    <div class="col-xs-12">
+        <div>
+            <ul class="ace-thumbnails clearfix">
+                <!-- #section:pages/gallery -->
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var file in Model)
+                    {
+                        if (file.FileType.Contains("image"))
+                        {
+                            <li>
+                                <a href="@Url.Content("~/Component/AttachmentImg/")@file.Fid" data-rel="colorbox">
+
+
+                                    <img width="150" height="150" alt="150x150" src="@Url.Content("~/Component/AttachmentImg/")@file.Fid" />
+
+
+                                    <div class="text">
+                                        <div class="inner">@file.FileName</div>
+                                    </div>
+                                </a>
+
+                                <div class="tools tools-bottom">
+
+                                    <a href="@Url.Content("~/Component/DownloadFile/")@file.Fid">
+                                        <i class="ace-icon fa fa fa-download"></i>
+                                    </a>
+
+
+                                </div>
+                            </li>
+                        }
+                    }
+                }
+                
+
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="space-6"></div>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="message-attachment clearfix">
+            <div class="attachment-title">
+                <span class="blue bolder bigger-110"><fap-multilang lang-key="annex_list" default-content="附件列表"/></span>
+                &nbsp;
+                <span class="grey">(@fileCount <fap-multilang lang-key="files" default-content="个文件"></fap-multilang>, @Modelize MB)</span>
+
+                <div class="inline position-relative">
+                    <a href="#" data-toggle="dropdown" class="dropdown-toggle">
+                        &nbsp;
+                        <i class="ace-icon fa fa-caret-down bigger-125 middle"></i>
+                    </a>
+
+                    <ul class="dropdown-menu dropdown-lighter">
+                        @if (bid != "")
+                        {
+
+                            <li>
+                                <a href="@Url.Content("~/Component/DownloadZipFile/")@bid">
+                                    <fap-multilang lang-key="download_zip" default-content="打包压缩文件下载"></fap-multilang>
+                                </a>
+                            </li>
+                        }
+
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+        &nbsp;
+
+        <ul class="attachment-list pull-left list-unstyled">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var file in Model)
+                {
+                    <li>
+                        <a href="#" class="attached-file" data-filefid="@file.Fid" data-rel="tooltip" title="@file.FileName">
+                            @if (file.FileType.Contains("image"))
+                            {
+                                <i class="ace-icon fa fa-file-image-o bigger-110 purple"></i>
+
+                            }
+                            else if (file.FileType.Contains("word"))
+                            {
+                                <i class="ace-icon fa fa-file-word-o bigger-110 blue"></i>
+                            }
+                            else if (file.FileType.Contains("excel"))
+                            {
+                                <i class="ace-icon fa fa-file-excel-o bigger-110 green"></i>
+                            }
+                            else
+                            {
+                                <i class="ace-icon fa fa-file-o bigger-110 orange"></i>
+                            }
+                            <span class="attached-name">@file.FileName</span>
+                        </a>
+                        <span class="action-buttons">
+                            <a href="@Url.Content("~/Component/DownloadFile/")@file.Fid">
+                                <i class="ace-icon fa fa-download bigger-125 blue"></i>
+                            </a>
+
+                            @*<a href="#" data-filefid="@file.Fid" class="deletefile">
+                                <i class="ace-icon fa fa-trash-o bigger-125 red"></i>
+                            </a>*@
+                        </span>
+                    </li>
+                }
+            }
+            else
+            {
+                <li>
+                    <fap-multilang lang-key="no_annex" default-content="无附件"></fap-multilang>                    
+                </li>
+            }
+
+        </ul>
+    </div>
+</div>

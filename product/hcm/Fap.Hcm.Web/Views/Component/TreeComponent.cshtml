@@ -1,0 +1,75 @@
+﻿@model Fap.AspNetCore.ViewModel.JsTreeViewModel
+@{
+    Layout = null;
+    string treeid = "tree-" + Model.JsTreeId;
+    string returnfields = Model.TempData["returnfields"];
+    string[] returnfieldarr = returnfields.Split(',');
+    string fid = "Fid";
+    string fidMc = "";
+    if(returnfieldarr.Length>1)
+    {
+        fidMc = returnfieldarr[1];
+    }
+}
+
+
+<script>
+    ////获取组件返回值
+    var GetCompontentReturnValue=function(){
+        var multi=false;
+       @if (Model.IsMulti)
+       {
+           <text> multi = true;</text>
+       }
+        if(!multi)
+        {
+            return GetCompontentResult();
+        }else {
+            return GetCompontentResults();
+        }
+    }
+    var GetRefResult=GetCompontentReturnValue;
+    var GetCompontentResult = function () {
+        var ref = $('#@treeid').jstree(true);
+        var sel = ref.get_selected();
+        
+        if (!sel.length) { return false; }
+        sel = sel[0];
+        if (ref.get_node(sel).data.selectable == false)
+        {
+            bootbox.alert("你没有权限选择此项！");
+            return;
+        }
+        var result={};
+        var code = sel;
+        var name = ref.get_text(sel);
+        
+        var result = { @fid: code, @fidMc: name };
+        return result;
+    }
+    var GetCompontentResults = function () {
+        var ref = $('#@treeid').jstree(true);
+        var sel = ref.get_checked();
+        if (!sel.length) { return false; }
+        //过滤可操作部门
+        var sels = $.grep(sel, function (d, i) {
+
+            return treeDept.get_node(d).data.selectable == false;
+
+        });
+        var data=[];
+        $.each(sels, function (i, v) {
+            data.push({ @fid: v, @fidMc: ref.get_text(v) });
+        });
+        return data;
+    }
+</script>
+
+<div class="row">
+    <div class="col-xs-12">
+        <fap-tree id="@Model.JsTreeId" is-async="false" json-data="@Model.JsonData" plugin-dnd="true" plugin-checkbox="@Model.IsMulti"></fap-tree> 
+    </div>
+</div>
+
+
+

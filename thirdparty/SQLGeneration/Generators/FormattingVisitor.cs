@@ -829,14 +829,10 @@ namespace SQLGeneration.Generators
                 NullPlacementConverter converter = new NullPlacementConverter();
                 writer.Write(converter.ToString(item.NullPlacement));
             }
-            //sql2012分页
-            if(!string.IsNullOrEmpty(item.OffsetFetch))
+            //分页
+            if(!string.IsNullOrEmpty(item.Pagination))
             {
-                writer.Write(" " + item.OffsetFetch);
-            }
-            if(!string.IsNullOrEmpty(item.Limit))
-            {
-                writer.Write(" " + item.Limit);
+                writer.Write(" " + item.Pagination);
             }
         }
 
