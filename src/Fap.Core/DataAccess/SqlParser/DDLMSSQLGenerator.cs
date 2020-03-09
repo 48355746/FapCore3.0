@@ -190,7 +190,7 @@ namespace Fap.Core.DataAccess.SqlParser
             else if (FapColumn.COL_TYPE_BLOB.Equals(fapColumn.ColType))
             {
                 //sqlBuilder.Append(" BINARY");
-                sqlBuilder.Append(" VARBINARY(MAX)");
+                sqlBuilder.Append(" VARCHAR(MAX)");
             }
             else if (FapColumn.COL_TYPE_CLOB.Equals(fapColumn.ColType))
             {
