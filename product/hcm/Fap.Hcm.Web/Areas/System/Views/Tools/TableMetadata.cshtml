@@ -1,6 +1,6 @@
 ﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
 @{
-    IEnumerable<Fap.Core.Infrastructure.Metadata.FapDict> tableCategorys= _dbContext.Dictionarys("TableCategory");
+    IEnumerable<Fap.Core.Infrastructure.Metadata.FapDict> tableCategorys= _dbContext.Dictionarys("TableCategory").OrderBy(d=>d.SortBy);
 }
 <title><fap-multilang lang-key="system_tools_tablemetadata_title" default-content="表元数据"></fap-multilang>    </title>
 <link href="~/Content/css/chosen.css" rel="stylesheet" />
@@ -161,17 +161,23 @@
             <div class="checkbox">
                 <label>
                     <input name="form-field-option" type="checkbox" value="1"  class="ace" />
-                    <span class="lbl">当前选中表的元数据</span>
+                    <span class="lbl">当前选中表的脚本</span>
                 </label>
             </div>
 
             <div class="checkbox">
                 <label>
                     <input name="form-field-option" type="checkbox" value="2" checked class="ace" />
-                    <span class="lbl"> 当前选中表分类的元数据</span>
+                    <span class="lbl"> 当前选中表分类的脚本</span>
                 </label>
             </div>
 
+            <div class="checkbox">
+                <label>
+                    <input name="form-field-option" type="checkbox" value="5"  class="ace" />
+                    <span class="lbl"> 整个库的脚本</span>
+                </label>
+            </div>
             <div class="checkbox">
                 <label>
                     <input name="form-field-option" class="ace ace-checkbox-2" value="3" checked type="checkbox" />
@@ -224,15 +230,25 @@
                                      result.push($(item).val());
                                  });
                                  var data = {};
+                                 var isvalid = true;
                                  $.each(result, function (i, d) {
                                      if (d === "1") {
                                          var rowData = getSelectedRow("grid-faptable");
                                          if (rowData != null) {
                                              data.tableName = rowData.TableName;
+                                         } else {
+                                             isvalid = false;
+                                             return;
                                          }
                                      }
                                      if (d === "2") {
-                                         data.tableCategory = $("#selTableCategory").val();
+                                         var category = $("#selTableCategory").val();
+                                         if (category === "") {
+                                             isvalid = false;
+                                             $.msg($.lang("tablecategory_required", "请选中表分类"));
+                                             return;
+                                         }
+                                         data.tableCategory = category;
                                      }
                                      if (d === "3") {
                                          data.includCreate = true;
@@ -240,17 +256,20 @@
                                      if (d === "4") {
                                          data.includInsert = true;
                                      }
+                                     if (d === "5") {
+                                         data.isAllTable = true;
+                                     }
                                  });
+                                 if (!isvalid) {
+                                     return;
+                                 }
                                  var database = $html.find("input[name='form-field-database']:checked").val();
                                  data.database = database;
-                                 if (data.tableName == null && data.tableCategory == null) {
-                                     $.msg("至少选择一张表或一种表分类元数据");
+                                 if (data.tableName == null && data.tableCategory == null&&data.isAllTable==null) {
+                                     $.msg("至少选择一种导出类型");
                                      return false;
                                  }
-                                 var index=layer.msg('脚本生成中...', {
-                                     icon: 16,
-                                     shade: 0.01
-                                 });
+                                 var index=layer.load();
                                  $.post(basePath + "/System/Api/Tools/ExportSql", data, function (rv) {
                                      if (rv.success) {
                                          if (data.tableName != null) {

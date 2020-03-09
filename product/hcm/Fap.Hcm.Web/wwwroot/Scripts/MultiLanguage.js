@@ -70,7 +70,8 @@ var MultiLangHelper = (function () {
       'form_validation_failed': { 'ZhCn': '表单校验失败', 'ZhTW': '', 'En': '', 'Ja': '' },
       'download': { 'ZhCn': '下载', 'ZhTW': '', 'En': '', 'Ja': '' },
       'download': { 'ZhCn': '下载', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'download': { 'ZhCn': '下载', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'download': { 'ZhCn': '下载', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'tablecategory_required': { 'ZhCn': '请选中表分类', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

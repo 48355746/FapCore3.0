@@ -36,7 +36,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         private readonly IExcelReportService _reportService;
         private IFapFileService _fileService;
         private IDbMetadataContext _dbMetadataContext;
-        public ToolsApiController(IServiceProvider serviceProvider, IFapFileService fileService, IDbMetadataContext dbMetadataContext,IExcelReportService reportService) : base(serviceProvider)
+        public ToolsApiController(IServiceProvider serviceProvider, IFapFileService fileService, IDbMetadataContext dbMetadataContext, IExcelReportService reportService) : base(serviceProvider)
         {
             _fileService = fileService;
             _dbMetadataContext = dbMetadataContext;
@@ -68,27 +68,27 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
 
             return Json(tree);
         }
-    
+
         [Route("DeleteDict/{cat=''}")]
         public JsonResult GetDeleteDict(string cat)
         {
-            ResponseViewModel rvm=new ResponseViewModel();
-            if(cat.IsMissing())
+            ResponseViewModel rvm = new ResponseViewModel();
+            if (cat.IsMissing())
             {
-                rvm.success=false;
-                rvm.msg="字典分类为空，不能删除！";
+                rvm.success = false;
+                rvm.msg = "字典分类为空，不能删除！";
                 return Json(rvm);
             }
-            DynamicParameters param=new DynamicParameters();
-            param.Add("Category",cat);
-            int count= _dbContext.Count("FapColumn", " CtrlType='COMBOBOX' and RefTable=@Category", param);
-            if(count>0)
+            DynamicParameters param = new DynamicParameters();
+            param.Add("Category", cat);
+            int count = _dbContext.Count("FapColumn", " CtrlType='COMBOBOX' and RefTable=@Category", param);
+            if (count > 0)
             {
                 rvm.success = false;
                 rvm.msg = "此编码已经被使用，不能删除！";
                 return Json(rvm);
             }
-            _dbContext.Execute("delete from FapDict where category=@Category",new DynamicParameters(new { Category = cat }));
+            _dbContext.Execute("delete from FapDict where category=@Category", new DynamicParameters(new { Category = cat }));
             rvm.success = true;
             rvm.msg = "删除成功";
             return Json(rvm);
@@ -117,12 +117,12 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
                     {
                         return "0";
                     }
-                   
+
                     if (string.IsNullOrWhiteSpace(employee.EmpPhoto))
                     {
-                        employee.EmpPhoto =UUIDUtils.Fid;
+                        employee.EmpPhoto = UUIDUtils.Fid;
                         string sql = "update Employee set EmpPhoto=@EmpPhoto where id=@Id";
-                        _dbContext.Execute(sql,new DynamicParameters(new { EmpPhoto = employee.EmpPhoto ,Id= employee.Id }));
+                        _dbContext.Execute(sql, new DynamicParameters(new { EmpPhoto = employee.EmpPhoto, Id = employee.Id }));
                     }
                     FapAttachment attachment = new FapAttachment();
 
@@ -165,33 +165,53 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             _multiLangService.CreateMultilanguageJsFile();
             return Json(ResponseViewModelUtils.Sueecss());
         }
-       
+
         [HttpPost("ExportSql")]
-        public JsonResult ExportSql(string database,string tableName, string tableCategory, bool includCreate, bool includInsert)
+        public JsonResult ExportSql(string database, string tableName, string tableCategory, bool isAllTable, bool includCreate, bool includInsert)
         {
+            DatabaseDialectEnum dialect = (DatabaseDialectEnum)Enum.Parse(typeof(DatabaseDialectEnum), database);
+            //优先级最高
+            if (isAllTable)
+            {
+                var dics = _dbContext.Dictionarys("TableCategory").OrderBy(d => d.SortBy);
+                StringBuilder sbALLSql = new StringBuilder();
+                foreach (var dic in dics)
+                {
+                    sbALLSql.AppendLine(_dbMetadataContext.ExportSql(dialect, string.Empty, dic.Code, includCreate, includInsert));
+                }
+                string allFileName = $"{database}.sql";
+                string allFilePath = Path.Combine(Environment.CurrentDirectory, FapPlatformConstants.TemporaryFolder, allFileName);
+                return ZipSql(sbALLSql.ToString(), allFileName, allFilePath);
+
+            }
             if (tableName.IsMissing() && tableCategory.IsMissing())
             {
-                return Json(ResponseViewModelUtils.Failure("请选择导出的表获分类"));
+                return Json(ResponseViewModelUtils.Failure("请选择导出的表或分类"));
             }
-            DatabaseDialectEnum dialect= (DatabaseDialectEnum)Enum.Parse(typeof(DatabaseDialectEnum), database);
-            string sql= _dbMetadataContext.ExportSql(dialect, tableName, tableCategory, includCreate, includInsert);
-            string fileName =(tableName.IsPresent()?tableName:tableCategory)+$"{database}.sql";
+            string sql = _dbMetadataContext.ExportSql(dialect, tableName, tableCategory, includCreate, includInsert);
+            string fileName = (tableName.IsPresent() ? tableName : tableCategory) + $"{database}.sql";
             string filePath = Path.Combine(Environment.CurrentDirectory, FapPlatformConstants.TemporaryFolder, fileName);
             if (tableName.IsPresent())
             {
                 return Json(new ResponseViewModel { success = true, data = sql });
             }
-            SysIO.File.WriteAllText(filePath, sql,Encoding.UTF8);
-            ZipHelper zipHelper = new ZipHelper();
-            zipHelper.ZipMultiFiles(new[] { filePath}, filePath.Replace(".sql",".zip"));
-            return Json(new ResponseViewModel { success = true, data = $"{FapPlatformConstants.TemporaryFolder}/{fileName.Replace(".sql", ".zip")}" } );
+            return ZipSql(sql, fileName, filePath);
         }
+
+        private JsonResult ZipSql(string sql, string fileName, string filePath)
+        {
+            SysIO.File.WriteAllText(filePath, sql, Encoding.UTF8);
+            ZipHelper zipHelper = new ZipHelper();
+            zipHelper.ZipMultiFiles(new[] { filePath }, filePath.Replace(".sql", ".zip"));
+            return Json(new ResponseViewModel { success = true, data = $"{FapPlatformConstants.TemporaryFolder}/{fileName.Replace(".sql", ".zip")}" });
+        }
+
         [HttpGet("ExportModelClass/{fid}")]
         public JsonResult ExportModeClass(string fid)
         {
-            FapTable table= _dbContext.Get<FapTable>(fid);
+            FapTable table = _dbContext.Get<FapTable>(fid);
             var columns = _dbContext.QueryWhere<FapColumn>($"TableName='{table.TableName}'").Where(c => c.IsDefaultCol == 0);
-            string modelClass= _dbMetadataContext.GeneraterModelClass(table, columns);
+            string modelClass = _dbMetadataContext.GeneraterModelClass(table, columns);
             return Json(new ResponseViewModel { success = true, data = modelClass });
         }
         [HttpGet("ReportRender/{fid}")]
