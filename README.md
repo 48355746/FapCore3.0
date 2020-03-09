@@ -20,7 +20,7 @@ C#代码
             return View(model);
         }
 ```
-![自动生成表格](https://img-blog.csdnimg.cn/20200309121830613.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dsMTEyMQ==,size_16,color_FFFFFF,t_70)
+![自动生成表格](https://img2020.cnblogs.com/blog/1852668/202003/1852668-20200309125612020-1464387791.png)
 表格基础操作：新增，编辑，批量编辑，删除，查看，搜索，刷新，导出Excel，导入数据，打印等。
 表格列基础功能：排序，筛选，分类，冻结等。
 ### 2、表单
@@ -36,7 +36,7 @@ C#代码
                         });
                          return View(fd);
 ```
-![表单](https://img-blog.csdnimg.cn/20200309122604588.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dsMTEyMQ==,size_16,color_FFFFFF,t_70)
+![表单](https://img2020.cnblogs.com/blog/1852668/202003/1852668-20200309125622256-2012512280.png)
 表单包括的控件：文本框，日期，时间，参照，下拉框，数字，附件，多语言，复选框，多选列表，数值范围，星，富文本，多行文本等。
 以上控件在元数据配置完毕自动生成。
 ### 3、树
