@@ -493,6 +493,9 @@ namespace Fap.Hcm.Service.System
 
             var tree = GetModuleAndMenuTree();
             var mmtor = tree.GetEnumerator();
+            var opers = typeof(OperEnum).EnumItems(_multiLangService).ToList();
+            //权限中获取
+            var roleButtons = _rbacService.GetRoleButtonList(_applicationContext.CurrentRoleUid);
             AddMenuButton(mmtor);
             return tree;
             void AddMenuButton(IEnumerator<TreeDataView> menuEmumertor)
@@ -516,12 +519,11 @@ namespace Fap.Hcm.Service.System
             }
             IEnumerable<TreeDataView> AddOperNode(TreeDataView menuNode)
             {
-                var opers = typeof(OperEnum).EnumItems(_multiLangService);
+               
                 string menuUid = menuNode.Id;
                 if (!_applicationContext.IsAdministrator)
                 {
-                    //权限中获取
-                    var roleButtons = _rbacService.GetRoleButtonList(_applicationContext.CurrentRoleUid);
+                   
                     if (roleButtons.Any())
                     {
                         var rbtns = roleButtons.Where(r => r.MenuUid == menuUid);
