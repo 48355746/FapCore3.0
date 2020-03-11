@@ -35,7 +35,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             if (!_applicationContext.IsAdministrator)
             {
                 strWhere = "UserIdentity in (select fid from Employee where DeptUid in(" + FapPlatformConstants.DepartmentAuthority + ") )";
-                
+
             }
             JqGridViewModel model = this.GetJqGridModel("FapUser", (qs) =>
             {
@@ -54,7 +54,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             string initWhere = string.Empty;
             if (!_applicationContext.IsAdministrator)
             {
-                initWhere = "CreateBy='" + _applicationContext.EmpUid+ "' ";
+                initWhere = "CreateBy='" + _applicationContext.EmpUid + "' ";
                 List<FapRole> roles = new List<FapRole>();
                 IEnumerable<FapRoleRole> rrs = null;
                 //授予的角色
@@ -160,6 +160,21 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             return View(model);
         }
         /// <summary>
+        /// Job日志
+        /// </summary>
+        /// <param name="fid"></param>
+        /// <returns></returns>
+        public PartialViewResult JobLog(string fid)
+        {
+            JqGridViewModel model = this.GetJqGridModel("FapJobLog", (q) =>
+            {
+                q.GlobalWhere = $"JobId=@JobId";
+                q.AddParameter("JobId", fid);
+                q.AddOrderBy("ExecuteTime", "desc");
+            });
+            return PartialView(model);
+        }
+        /// <summary>
         /// 隐私设置
         /// </summary>
         /// <returns></returns>
@@ -205,7 +220,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         public IActionResult FreeFormSet(string fid)
         {
             CfgFreeForm ffModel = _dbContext.Get<CfgFreeForm>(fid);
-            IEnumerable<FapTable> childTables=  _platformDomain.TableSet.Where(t => t.MainTable == ffModel.BillTable);
+            IEnumerable<FapTable> childTables = _platformDomain.TableSet.Where(t => t.MainTable == ffModel.BillTable);
             ViewBag.DbFields = _dbContext.Columns(ffModel.BillTable);
             ViewBag.ChildTables = childTables;
             return View(ffModel);
@@ -252,7 +267,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
                 //    strWhere = "1=2";
                 //}
                 strWhere = "UserIdentity in (select fid from Employee where DeptUid in(" + FapPlatformConstants.DepartmentAuthority + "))";
-                
+
             }
             JqGridViewModel model = this.GetJqGridModel("FapUser", (qs) =>
             {
@@ -297,7 +312,8 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         public IActionResult RealtimeSetting()
         {
             JqGridViewModel modelSetting = this.GetJqGridModel("CfgRTSynchSetting");
-            JqGridViewModel modelLog = this.GetJqGridModel("FapRealtimeSynLog", (qs) => {
+            JqGridViewModel modelLog = this.GetJqGridModel("FapRealtimeSynLog", (qs) =>
+            {
                 qs.InitWhere = "SynState=0";
             });
             MultiJqGridViewModel model = new MultiJqGridViewModel();
