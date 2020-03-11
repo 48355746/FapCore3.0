@@ -134,7 +134,7 @@
                 if (rowData == null) {
                     return;
                 }
-                var url = "@Url.Content("~/System/Manage/JobLog")/" + rowData.JobCode;
+                var url = "@Url.Content("~/System/Manage/JobLog")/" + rowData.JobCode+"?menuUrl=~/System/Manage/JobMgt";
 
                 var dialog = bootbox.dialog({
                     title: $.lang('job_log',"调度日志"),
