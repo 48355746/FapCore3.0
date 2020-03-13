@@ -3,7 +3,6 @@
     IEnumerable<Fap.Core.Infrastructure.Metadata.FapDict> dictCategorys = _dbContext.Dictionarys("FapDict");
 }
 <title>字典管理</title>
-<link href="~/Content/css/chosen.css" rel="stylesheet" />
 <div class="row"> 
     <div class="col-xs-12">
         <div class="widget-box">
@@ -55,7 +54,7 @@
             $("#CategoryName").val(name);
         }
     }
-    var scripts = [null,"/Content/js/chosen.jquery.js", null]
+    var scripts = [null, null]
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
 

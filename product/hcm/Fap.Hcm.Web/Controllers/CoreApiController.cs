@@ -21,6 +21,9 @@ using Fap.AspNetCore.Binder;
 using Fap.AspNetCore.Serivce;
 using Fap.Core.Infrastructure.Model;
 using System.Text.RegularExpressions;
+using Fap.AspNetCore.Model;
+using System.Data;
+using System.Collections.Generic;
 
 namespace Fap.Hcm.Web.Controllers
 {
@@ -40,7 +43,7 @@ namespace Fap.Hcm.Web.Controllers
         // POST: api/Common
         public async Task<JsonResult> Persistence(FormModel frmModel)
         {
-            Guard.Against.Null(frmModel,nameof(frmModel));
+            Guard.Against.Null(frmModel, nameof(frmModel));
             var rv = await _gridFormService.PersistenceAsync(frmModel);
             return Json(rv);
         }
@@ -54,6 +57,8 @@ namespace Fap.Hcm.Web.Controllers
         {
             Guard.Against.Null(postDataModel, nameof(postDataModel));
             var result = _gridFormService.QueryPageDataResultView(postDataModel);
+            //加密敏感字段
+
             return Json(result.GetJqGridJsonData());
         }
         /// <summary>
@@ -146,8 +151,8 @@ namespace Fap.Hcm.Web.Controllers
             {
                 return Json(ResponseViewModelUtils.Failure());
             }
-            fileName=_gridFormService.PrintWordTemplate(gridModel);
-            return Json(new ResponseViewModel() {success=true,data= $"{FapPlatformConstants.TemporaryFolder}/{fileName}" });
+            fileName = _gridFormService.PrintWordTemplate(gridModel);
+            return Json(new ResponseViewModel() { success = true, data = $"{FapPlatformConstants.TemporaryFolder}/{fileName}" });
 
         }
         /// <summary>
@@ -168,9 +173,9 @@ namespace Fap.Hcm.Web.Controllers
             return Json(colCacheList);
         }
         [HttpPost("MultiLanguage")]
-        public JsonResult RegisterMultiLanguage(string langKey,string langValue)
+        public JsonResult RegisterMultiLanguage(string langKey, string langValue)
         {
-           string rv= _multiLangService.GetOrAndMultiLangValue(Core.MultiLanguage.MultiLanguageOriginEnum.Javascript, langKey, langValue);
+            string rv = _multiLangService.GetOrAndMultiLangValue(Core.MultiLanguage.MultiLanguageOriginEnum.Javascript, langKey, langValue);
             return Json(new ResponseViewModel { success = true, data = rv });
         }
         #region QueryProgram
@@ -180,9 +185,9 @@ namespace Fap.Hcm.Web.Controllers
             model.Owner = _applicationContext.EmpUid;
             model.IsGlobal = 0;
             model.UseEmployee = _applicationContext.EmpUid;
-            long id= _dbContext.Insert<CfgQueryProgram>(model);
-            bool success =id>0?true:false;
-            return Json(new ResponseViewModel() { success=success,data=model});
+            long id = _dbContext.Insert<CfgQueryProgram>(model);
+            bool success = id > 0 ? true : false;
+            return Json(new ResponseViewModel() { success = success, data = model });
         }
         [HttpGet("QueryProgram/{tableName}")]
         public JsonResult QueryProgram(string tableName)
@@ -191,10 +196,45 @@ namespace Fap.Hcm.Web.Controllers
             DynamicParameters parameters = new DynamicParameters();
             parameters.Add("TableName", tableName);
             parameters.Add("EmpUid", _applicationContext.EmpUid);
-            var qryList= _dbContext.QueryWhere<CfgQueryProgram>(where, parameters);
+            var qryList = _dbContext.QueryWhere<CfgQueryProgram>(where, parameters);
             return Json(new ResponseViewModel() { success = true, data = qryList });
         }
         #endregion
+
+        #region SimpleCharts
+        [HttpPost("SimpleChart")]
+        public JsonResult SimpleChart(string colName, JqGridPostData jqGridPostData)
+        {
+            string tableName = jqGridPostData.QuerySet.TableName;
+            //页面级条件
+            JsonFilterToSql jfs = new JsonFilterToSql(_dbContext);
+            List<string> lwhere=new List<string>();
+            if (jqGridPostData.PageCondition.IsPresent())
+            {
+                lwhere.Add(jfs.BuilderFilter(tableName, jqGridPostData.PageCondition));
+            }
+            //构造jqgrid过滤条件
+            if (jqGridPostData.Filters.IsPresent())
+            {
+                lwhere.Add(jfs.BuilderFilter(tableName, jqGridPostData.Filters));
+            }
+            string where = string.Empty;
+            if (lwhere.Count > 0)
+            {
+                where =" where "+ string.Join(" and ", lwhere);
+            }
+            string sql = $"select {colName} as name,count(0) as value from {tableName} {where} group by {colName}";
+            var dataList = _dbContext.Query(sql);
+            string category = _dbContext.Column(tableName, colName).ComboxSource;
+            var dics = _dbContext.Dictionarys(category);
+            dataList.ToList().ForEach((di) =>
+            {
+                di.name = dics.FirstOrDefault(d => d.Code == di.name)?.Name ?? "未知";
+            });
+            return Json(new ResponseViewModel() { success = true, data = dataList });
+        }
+        #endregion
+
         #region validateForm
         /// <summary>
         /// 校验唯一
@@ -233,13 +273,13 @@ namespace Fap.Hcm.Web.Controllers
         #endregion
 
         #region 校验条件sql设置
-        
+
         [HttpPost("ValideSqlCondition")]
         // POST: api/Common
-        public JsonResult PostValideSqlCondition(string tableName,string conditionSql)
+        public JsonResult PostValideSqlCondition(string tableName, string conditionSql)
         {
             bool success = true;
-            string msg = string.Empty;          
+            string msg = string.Empty;
             Regex rgx = new Regex(FapPlatformConstants.VariablePattern);
             MatchCollection matchs = rgx.Matches(conditionSql);
             foreach (var mtch in matchs)
@@ -257,7 +297,7 @@ namespace Fap.Hcm.Web.Controllers
                 success = false;
                 msg = ex.Message;
             }
-            return Json(new ResponseViewModel{ success = success, msg = msg });
+            return Json(new ResponseViewModel { success = success, msg = msg });
         }
         #endregion
     }

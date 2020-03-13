@@ -3,7 +3,6 @@
     IEnumerable<Fap.Core.Infrastructure.Metadata.FapDict> tableCategorys= _dbContext.Dictionarys("TableCategory").OrderBy(d=>d.SortBy);
 }
 <title><fap-multilang lang-key="system_tools_tablemetadata_title" default-content="表元数据"></fap-multilang>    </title>
-<link href="~/Content/css/chosen.css" rel="stylesheet" />
 <link href="~/Content/css/codemirror/codemirror.css" rel="stylesheet" />
 <link href="~/Content/css/codemirror/theme/xq-light.css" rel="stylesheet" />
 
@@ -49,7 +48,7 @@
 
 <script>
     //导出数据需要的js
-    var scripts = [null, "/Content/js/chosen.jquery.js","/Content/js/codemirror/codemirror.js","/Content/js/codemirror/mode/sql/sql.js","/Content/js/codemirror/mode/clike/clike.js", null]
+    var scripts = [null, "/Content/js/codemirror/codemirror.js","/Content/js/codemirror/mode/sql/sql.js","/Content/js/codemirror/mode/clike/clike.js", null]
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
             $(document).one('ajaxloadstart.page', function (e) {

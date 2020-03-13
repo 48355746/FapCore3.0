@@ -485,7 +485,7 @@ namespace Fap.Hcm.Web.Controllers
         /// <returns></returns>
         public IActionResult FreeForm(string fid = "", string tn = "", string frm = "")
         {
-            if (frm == "")
+            if (frm.IsMissing())
             {
                 //jqgrid弹出窗口，统一设置为这个值，frmname即为frm-tablename
                 frm = "jqgriddataform";
@@ -522,7 +522,7 @@ namespace Fap.Hcm.Web.Controllers
         /// <returns></returns>
         public IActionResult FreeFormView(string fid, string tn = "", string frm = "")
         {
-            if (frm == "")
+            if (frm.IsMissing())
             {
                 //jqgrid弹出窗口，统一设置为这个值，frmname即为frm-tablename
                 frm = "jqgriddataform";
@@ -933,6 +933,12 @@ namespace Fap.Hcm.Web.Controllers
         }
         #endregion
 
-     
+        #region echarts
+        public PartialViewResult SimpleEcharts(string tableName)
+        {
+            var columns=_dbContext.Columns(tableName).Where(f => f.ComboxSource.IsPresent());
+            return PartialView(columns);
+        }
+        #endregion
     }
 }

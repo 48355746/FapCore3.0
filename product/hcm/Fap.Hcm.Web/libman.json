@@ -1,5 +1,32 @@
 {
   "version": "1.0",
   "defaultProvider": "cdnjs",
-  "libraries": []
+  "libraries": [
+    {
+      "library": "echarts@4.6.0",
+      "destination": "wwwroot/lib/echarts/",
+      "files": [
+        "extension/bmap.js",
+        "extension/bmap.js.map",
+        "extension/bmap.min.js",
+        "extension/dataTool.js",
+        "extension/dataTool.js.map",
+        "extension/dataTool.min.js",
+        "echarts-en.common.js",
+        "echarts-en.common.min.js",
+        "echarts-en.js",
+        "echarts-en.js.map",
+        "echarts-en.min.js",
+        "echarts-en.simple.js",
+        "echarts-en.simple.min.js",
+        "echarts.common.js",
+        "echarts.common.min.js",
+        "echarts.js",
+        "echarts.js.map",
+        "echarts.min.js",
+        "echarts.simple.js",
+        "echarts.simple.min.js"
+      ]
+    }
+  ]
 }

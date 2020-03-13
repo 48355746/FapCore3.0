@@ -11,40 +11,36 @@ namespace Fap.AspNetCore.Model
     /// </summary>
     public class FapDataEncrypt : BaseModel
     {
-        /// <summary>
-        /// 实体
-        /// </summary>
-        public string TableUid { get; set; }
-        /// <summary>
-        /// 实体 的显性字段MC
-        /// </summary>
-        [ComputedAttribute]
-        public string TableUidMC { get; set; }
-        /// <summary>
-        /// 属性列
-        /// </summary>
-        public string ColumnUid { get; set; }
-        /// <summary>
-        /// 属性列 的显性字段MC
-        /// </summary>
-        [ComputedAttribute]
-        public string ColumnUidMC { get; set; }
-        /// <summary>
-        /// 属性
-        /// </summary>
-        public string ColumnName { get; set; }
-        /// <summary>
-        /// 数据UID
-        /// </summary>
-        public string FidValue { get; set; }
-        /// <summary>
-        /// 备注
-        /// </summary>
-        public string Remarks { get; set; }
-        /// <summary>
-        /// 替换字符
-        /// </summary>
-        public string ReplaceChart { get; set; }
+		/// <summary>
+		/// 实体
+		/// </summary>
+		public string RefTable { get; set; }
+		/// <summary>
+		/// 实体 的显性字段MC
+		/// </summary>
+		[Computed]
+		public string RefTableMC { get; set; }
+		/// <summary>
+		/// 属性
+		/// </summary>
+		public string ColumnName { get; set; }
+		/// <summary>
+		/// 属性 的显性字段MC
+		/// </summary>
+		[Computed]
+		public string ColumnNameMC { get; set; }
+		/// <summary>
+		/// 条件
+		/// </summary>
+		public string Condition { get; set; }
+		/// <summary>
+		/// 备注
+		/// </summary>
+		public string Remarks { get; set; }
+		/// <summary>
+		/// 替换字符
+		/// </summary>
+		public string ReplaceChart { get; set; }
 
-    }
+	}
 }

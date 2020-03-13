@@ -53,7 +53,7 @@ namespace Fap.AspNetCore.Serivce
             IDbContext dbContext,
             IRbacService rbacService,
             IAntiforgery antiforgery,
-            IMemoryCache memoryCache,IMultiLangService multiLangService)
+            IMemoryCache memoryCache, IMultiLangService multiLangService)
         {
             _dbContext = dbContext;
             _applicationContext = fapApplicationContext;
@@ -92,7 +92,7 @@ namespace Fap.AspNetCore.Serivce
                     dataResultView.TotalCount = pi.TotalCount;
                     dataResultView.CurrentPage = pi.CurrentPage;
                     dataResultView.OrginData = pi.Items;
-                    dataResultView.DataListForJqGrid = pi.Items;// as IEnumerable<IDictionary<string, object>>;
+                    dataResultView.DataListForJqGrid = pi.Items;//暂不启用加密设置 GetEncryptData(jqGridPostData.QuerySet.TableName, pi.Items as IEnumerable<IDictionary<string, object>>);
                     dataResultView.PageSize = pi.PageSize;
                     //统计字段
                     dataResultView.StatFieldData = pi.StatFieldData;
@@ -109,6 +109,47 @@ namespace Fap.AspNetCore.Serivce
             }
         }
         #region private
+        private IEnumerable<IDictionary<string, object>> GetEncryptData(string tn, IEnumerable<IDictionary<string, object>> dataList)
+        {
+            string encrypt_key = $"encrypt_{tn}";
+            var encryptCache = _memoryCache.GetOrCreate(encrypt_key, (ce) =>
+            {
+                ce.SetSlidingExpiration(TimeSpan.FromMinutes(60));
+                DynamicParameters param = new DynamicParameters();
+                param.Add("TableName", tn);
+                var elist = _dbContext.QueryWhere<FapDataEncrypt>($"{nameof(FapDataEncrypt.RefTable)}=@TableName", param);
+                return elist;
+            });
+            if (encryptCache.Any())
+            {
+                IDictionary<string, IEnumerable<string>> keyValues = new Dictionary<string, IEnumerable<string>>();
+                foreach (var et in encryptCache)
+                {
+                    string dataKey = $"encrypt_{et.Fid}";
+                    var fids = _memoryCache.GetOrCreate(dataKey, (ce) =>
+                    {
+                        ce.SetSlidingExpiration(TimeSpan.FromMinutes(60));
+                        string sql = $"select Fid from {et.RefTable} where {et.Condition}";
+                        return _dbContext.Query<string>(sql);
+
+                    });
+                    if (fids.Any())
+                    {
+                        var tmpList = dataList.Where(d => fids.Contains(d["Fid"]));
+                        foreach (var di in tmpList)
+                        {
+                            if (di.ContainsKey(et.ColumnName))
+                            {
+                                di[et.ColumnName] = et.ReplaceChart;
+                            }
+                        }
+                    }
+
+                }
+            }
+            return dataList;
+
+        }
         private Pageable AnalysisPostData(JqGridPostData jqGridPostData)
         {
             IEnumerable<FapColumn> fapColumns = _dbContext.Columns(jqGridPostData.QuerySet.TableName);
@@ -257,7 +298,8 @@ namespace Fap.AspNetCore.Serivce
                             if (colName.EqualsWithIgnoreCase("DeptUid"))
                             {
                                 where = where.Replace(mtch.ToString(), _applicationContext.DeptUid);
-                            }else if (colName.EqualsWithIgnoreCase("CurrentRoleUid"))
+                            }
+                            else if (colName.EqualsWithIgnoreCase("CurrentRoleUid"))
                             {
                                 where = where.Replace(mtch.ToString(), _applicationContext.CurrentRoleUid);
                             }
@@ -339,7 +381,7 @@ namespace Fap.AspNetCore.Serivce
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return ResponseViewModelUtils.Failure("操作失败:"+ex.Message);
+                return ResponseViewModelUtils.Failure("操作失败:" + ex.Message);
             }
 
         }
@@ -354,7 +396,7 @@ namespace Fap.AspNetCore.Serivce
             {
                 _dbContext.InsertDynamicData(mainData);
                 SaveChildData(mainData, childDataList);
-                return ResponseViewModelUtils.Sueecss(mainData,_multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page,"insert_success", "创建成功"));
+                return ResponseViewModelUtils.Sueecss(mainData, _multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page, "insert_success", "创建成功"));
             }
             else if (formModel.Oper == FormOperEnum.edit)
             {
@@ -363,7 +405,7 @@ namespace Fap.AspNetCore.Serivce
                 SaveChildData(mainData, childDataList);
                 rvm.data = mainData;
                 rvm.success = rv;
-                rvm.msg = rv ?_multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page,"update_success", "更新成功") :_multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page,"update_failure", "更新失败，请重试");
+                rvm.msg = rv ? _multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page, "update_success", "更新成功") : _multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page, "update_failure", "更新失败，请重试");
                 return rvm;
             }
             else if (formModel.Oper == FormOperEnum.del)
@@ -372,7 +414,7 @@ namespace Fap.AspNetCore.Serivce
                 bool rv = _dbContext.DeleteDynamicData(mainData);
                 DeleteChildData(mainData);
                 rvm.success = rv;
-                rvm.msg = rv ?_multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page,"delete_success", "删除成功") :_multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page,"delete_failure", "删除失败，请重试");
+                rvm.msg = rv ? _multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page, "delete_success", "删除成功") : _multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page, "delete_failure", "删除失败，请重试");
                 return rvm;
             }
             else if (formModel.Oper == FormOperEnum.batch_edit)
@@ -384,7 +426,7 @@ namespace Fap.AspNetCore.Serivce
                     _dbContext.UpdateDynamicData(mainData);
                 }
                 rvm.success = true;
-                rvm.msg =_multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page,"batch_update_success", "批量更新成功！");
+                rvm.msg = _multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page, "batch_update_success", "批量更新成功！");
                 return rvm;
             }
             return ResponseViewModelUtils.Sueecss();
@@ -533,7 +575,7 @@ namespace Fap.AspNetCore.Serivce
             try
             {
                 var files = _applicationContext.Request.Form.Files;
-               // List<string> excelFiles = new List<string>();
+                // List<string> excelFiles = new List<string>();
                 if (files != null && files.Count > 0)
                 {
                     foreach (var file in files)
@@ -544,7 +586,7 @@ namespace Fap.AspNetCore.Serivce
                         {
                             files[0].CopyTo(fs);
                         }
-                       // excelFiles.Add(fullPath);
+                        // excelFiles.Add(fullPath);
                     }
                 }
                 return true;

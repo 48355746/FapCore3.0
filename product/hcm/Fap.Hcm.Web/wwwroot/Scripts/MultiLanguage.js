@@ -72,7 +72,8 @@ var MultiLangHelper = (function () {
       'download': { 'ZhCn': '下载', 'ZhTW': '', 'En': '', 'Ja': '' },
       'download': { 'ZhCn': '下载', 'ZhTW': '', 'En': '', 'Ja': '' },
       'tablecategory_required': { 'ZhCn': '请选中表分类', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'job_log': { 'ZhCn': '调度日志', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'job_log': { 'ZhCn': '调度日志', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'simple_chart': { 'ZhCn': '简单图表', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

@@ -55,6 +55,7 @@
 
                 </div>
                 <div class="widget-toolbar no-border">
+                    <fap-button id="btnSimpleChart" btn-tag="link" content="简单图表" icon-before="fa  fa-tachometer blue" class-name="info"></fap-button>
                     <fap-button id="btnSubInfo" btn-tag="link" content="附属信息" icon-before="fa  fa-eye blue" class-name="info"></fap-button>
                     <fap-button id="btnEmployeeHistory" btn-tag="link" content="历史" icon-before="fa fa-history blue" class-name="info"></fap-button>
                     <fap-button id="btnPartJob" btn-tag="link" content="兼职" icon-before="fa fa-fire blue" class-name="info"></fap-button>
@@ -297,6 +298,27 @@
                     }
                 })
             });
+            $("#btnSimpleChart").on(ace.click_event, function () {
+                   var dialog = bootbox.dialog({
+                    title: $.lang("simple_chart","简单图表"),
+                    size:'large',
+                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                    buttons: {
+                        cancel: {
+                            label: "关闭", className: "btn-default"
+                        }
+                    }
+                   });
+                  dialog.init(function () {
+                    var url = "@Html.Raw(Url.Action("SimpleEcharts", "Component", new { area = "",tableName="Employee" }))"+"&menuUrl=~/Employee/Manage/EmpIndex";
+                    $.post(url,  function (ev) {
+                        dialog.find('.bootbox-body').html(ev);
+                        $("#selCategory").chosen({ width:"300px" });
+                        var jqPostData = $('#grid-employee').jqGrid("getGridParam", "postData");
+                        $("#selCategory").data("postdata", jqPostData);
+                    })
+                });
+            })
             $("#btnSubInfo").on(ace.click_event, function () {
                 var rowData = getSelectedRow("grid-employee");
                 if (rowData === null) {

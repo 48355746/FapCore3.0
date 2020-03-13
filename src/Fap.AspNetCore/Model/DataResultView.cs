@@ -16,7 +16,7 @@ namespace Fap.AspNetCore.Model
         /// <summary>
         /// 查询结果数据集合（动态对象）
         /// </summary>
-        public IEnumerable<dynamic> Data { get; set; }
+        public IEnumerable<FapDynamicObject> Data { get; set; }
 
         /// <summary>
         /// 查询结果数据集合的JSON字符串

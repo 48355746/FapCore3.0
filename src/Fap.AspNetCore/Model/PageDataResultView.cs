@@ -82,8 +82,7 @@ namespace Fap.AspNetCore.Model
             if (DataListForJqGrid == null || !DataListForJqGrid.Any())
             {
                 return new JqGridData { Total = 0, Page = 0, Records = 0, Rows =Enumerable.Empty<IDictionary<string,object>>(), Userdata = StatFieldData };
-            }
-
+            }          
             var jsonObj = new JqGridData
             {
                 Total = this.PageCount,

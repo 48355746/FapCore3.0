@@ -34,15 +34,15 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
         //合并部门
         //Get:/Organization/OrgDept/MergeDept
         public PartialViewResult MergeDept()
-        {   
+        {
             FormViewModel fd = new FormViewModel();
-            QuerySet  sq = new QuerySet();
+            QuerySet sq = new QuerySet();
             sq.TableName = "OrgDept";
             sq.QueryCols = "*";
             sq.InitWhere = "Id=@Id";
             sq.Parameters.Add(new Parameter("Id", "-1"));
             fd.QueryOption = sq;
-            fd.TableName = "OrgDept";           
+            fd.TableName = "OrgDept";
             return PartialView(fd);
         }
         //移动部门
@@ -70,39 +70,35 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
             return View();
         }
         /// <summary>
-        /// 岗位图
+        /// 职位族群
         /// </summary>
         /// <returns></returns>
-        public ViewResult PositionChart(string id)
+        public IActionResult OrgJobGroup()
         {
-            //部门Uid
-            ViewBag.DeptUid = id;
-            string historyDate = "";
-            if (Request.Query.ContainsKey("date"))
-            {
-                historyDate = Request.Query["date"].ToString();
-            }
-            ViewBag.HistoryDate = historyDate;
-            return View();
-        }
-        private void BiuldOrgDept(IEnumerable<OrgDept> cOrgDepts, IEnumerable<OrgDept> allOrgDept, OrgDept pOrgDept)
-        {
-            if (cOrgDepts != null && cOrgDepts.Any())
-            {
-                pOrgDept.Children = cOrgDepts;
-                foreach (OrgDept dept in cOrgDepts)
-                {
-                    var tempDepts = allOrgDept.Where(d => d.Pid == dept.Fid);
-                    BiuldOrgDept(tempDepts, allOrgDept, dept);
-                }
-            }
-
+            var model = GetJqGridModel("OrgJobGroup");
+            return View(model);
         }
         /// <summary>
-        /// 职务岗位
+        /// 职位族群等级
         /// </summary>
         /// <returns></returns>
-        public ActionResult OrgJob()
+        public PartialViewResult OrgJobGroupGrade(int id)
+        {
+            dynamic jobGroup= _dbContext.Get("OrgJobGroup", id);
+            var model = GetJqGridModel("OrgJobGroupGrade", qs =>
+            {
+                qs.GlobalWhere = "JobGroup=@Fid";
+                qs.AddParameter("Fid", jobGroup.Fid);
+                qs.AddDefaultValue("JobGroup", jobGroup.Fid);
+                qs.AddDefaultValue("JobGroupMC", jobGroup.Name);
+            });
+            return PartialView(model);
+        }
+        /// <summary>
+        /// 职务头衔
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult OrgJobTitle()
         {
             JqGridViewModel model = this.GetJqGridModel("OrgPosition");
             return View(model);

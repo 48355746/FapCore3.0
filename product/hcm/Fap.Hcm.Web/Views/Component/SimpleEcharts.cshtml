@@ -1,0 +1,98 @@
+﻿@model IEnumerable<Fap.Core.Infrastructure.Metadata.FapColumn>
+    <script src="~/lib/echarts/echarts.common.min.js"></script>
+<script>
+    var simpleChart = echarts.init(document.getElementById('simpleChart'));
+    $("#selCategory").on("change", function () {
+        var c = $(this).val();
+        var title = $("#selCategory option:selected").text();
+        if (c === "") {
+            return;
+        }
+        simpleChart.showLoading();
+        //弹出dialog页面设置，参考EmpIndex
+        var postData = $("#selCategory").data("postdata");
+        $.post(basePath + '/Api/Core/SimpleChart', {colName: c,jqGridPostData:postData }, function (rv) {
+            simpleChart.hideLoading();
+            var legendData= $.map(rv.data, function (d,i) {
+                return d.name;
+            });
+            debugger
+            var option = {
+                title: {
+                    text: title,
+                    left: 'center'
+                },
+                toolbox: {
+                    show: true,
+                    orient: 'horizontal',
+                    left: 'right',
+                    top: 'center',
+                    feature: {
+                        mark: { show: true },
+                        dataView: { show: true, readOnly: false },
+                        saveAsImage: {
+                            show:true
+                        }
+                    }
+                }
+,                tooltip: {
+                    trigger: 'item',
+                    formatter: '{a} <br/>{b} : {c} ({d}%)'
+                },
+                legend: {
+                    orient: 'vertical',
+                    left: 'right',
+                    data: legendData
+                },
+                series: [{
+                    name: '访问来源',
+                    type: 'pie',
+                    radius: '55%',
+                    center: ['50%', '60%'],
+                    data: rv.data,
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }]
+            };       
+            simpleChart.setOption(option);
+
+        });
+    })
+</script>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">
+                    <i class="ace-icon fa fa-tachometer"></i>
+                    <fap-multilang lang-key="chart" default-content="图表"></fap-multilang>
+                </h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar">
+                    <select class="chosen-select form-control" style="width:300px" id="selCategory" multi-placeholder="分类...">
+                        <option value="">  </option>
+                        @foreach (var column in Model)
+                        {
+                            <option value="@column.ColName">@column.ColComment</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    <div id="simpleChart" style="width: 600px;height:350px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

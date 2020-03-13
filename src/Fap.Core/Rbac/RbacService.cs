@@ -329,7 +329,6 @@ namespace Fap.Core.Rbac
             _dbContext.DeleteExec(nameof(FapRoleButton), "RoleUid=@RoleUid", new DynamicParameters(new { RoleUid = roleUid }));
             _dbContext.InsertBatch(roleButtons);
         }
-        [Transactional]
         public string GetMenuColumnAuthority(string roleUid, FapMenuColumn menuColumn)
         {
             bool isAdministrator = _applicationContext.IsAdministrator;

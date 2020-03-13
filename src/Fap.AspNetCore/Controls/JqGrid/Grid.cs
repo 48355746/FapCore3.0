@@ -1889,31 +1889,31 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 script.AppendFormat("loadBeforeSend: function(xhr, settings) {{{0}}},", _onLoadBeforeSend).AppendLine();
             #region 加密数据
 
-            DynamicParameters param = new DynamicParameters();
-            param.Add("TableName", TableName);
-            var dataEncrypt = _dataAccessor.QueryWhere<FapDataEncrypt>("TableUid=@TableName", param);
-            StringBuilder encryptJs = new StringBuilder();
-            if (dataEncrypt != null && dataEncrypt.Any())
-            {
-                encryptJs.AppendLine(@"
-                var ids = jQuery('###gridid##').jqGrid('getDataIDs');  
-                for(var i=0;i < ids.length;i++){  
-                    var ret = jQuery('###gridid##').jqGrid('getRowData',ids[i]); ");
-                foreach (var data in dataEncrypt)
-                {
-                    encryptJs.AppendLine("if(ret.Fid=='" + data.FidValue + "'){ debugger");
-                    encryptJs.AppendLine("jQuery('###gridid##').jqGrid('setRowData',ret.Id,{" + data.ColumnName + ":'******'}) ;  ");
-                    encryptJs.AppendLine("}");
-                }
-                encryptJs.AppendLine("}");
-            }
+            //DynamicParameters param = new DynamicParameters();
+            //param.Add("TableName", TableName);
+            //var dataEncrypt = _dataAccessor.QueryWhere<FapDataEncrypt>($"{nameof(FapDataEncrypt.RefTable)}=@TableName", param);
+            //StringBuilder encryptJs = new StringBuilder();
+            //if (dataEncrypt.Any())
+            //{
+            //    encryptJs.AppendLine(@"
+            //    var ids = jQuery('###gridid##').jqGrid('getDataIDs');  
+            //    for(var i=0;i < ids.length;i++){  
+            //        var ret = jQuery('###gridid##').jqGrid('getRowData',ids[i]); ");
+            //    foreach (var data in dataEncrypt)
+            //    {
+            //        encryptJs.AppendLine("if(ret.Fid=='" + data.FidValue + "'){ ");
+            //        encryptJs.AppendLine("jQuery('###gridid##').jqGrid('setRowData',ret.Id,{" + data.ColumnName + ":'******'}) ;  ");
+            //        encryptJs.AppendLine("}");
+            //    }
+            //    encryptJs.AppendLine("}");
+            //}
 
             #endregion
             // onLoadComplete，默认适应ACE
 
             script.AppendFormat(@"
                     loadComplete: function(xhr) {{
-                        var table = this;" + encryptJs.ToString() + @";
+                        var table = this;
                         resetGridSize(table,'.##wrapper##'); 
                         setTimeout(function(){{
                            updatePagerIcons(table);
