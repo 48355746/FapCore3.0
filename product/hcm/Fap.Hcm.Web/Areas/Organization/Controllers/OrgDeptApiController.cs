@@ -30,19 +30,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
             _logger = _loggerFactory.CreateLogger<OrgDeptApiController>();
             _organizationService = organizationService;
         }
-        [HttpGet("OrgJob")]
-        public JsonResult GetUserGroup()
-        {
-            var tree = _organizationService.GetOrgJobTree();
-            return Json(tree);
-        }
-
-        [HttpPost("OrgJob")]
-        public JsonResult OperUserGroup(TreePostData postData)
-        {
-            var result = _organizationService.OperOrgJob(postData);
-            return Json(result);
-        }
+       
         [Route("~/api/orgdept/orgdepts/{pid=''}")]
         // POST: api/Common
         public JsonResult GetOrgDepts(string pid)
@@ -305,6 +293,12 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
             return Json(nodeList);
         }
 
+        [HttpGet("OrgJobGroup")]
+        public JsonResult OrgJobGroupTree()
+        {
+            var tree = _organizationService.GetOrgJobGroupTree();
+            return Json(tree);
+        }
         /// <summary>
         /// 岗位图
         /// </summary>
@@ -439,28 +433,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
             }
 
         }
-        /// <summary>
-        /// 查找说明书
-        /// </summary>
-        /// <param name="pstid"></param>
-        /// <returns></returns>
-        [HttpGet]
-        [Route("~/api/orgdept/positionmanual/{pstid=''}")]
-        public JsonResult GetPositionManual(string pstid)
-        {
-
-            DynamicParameters param = new DynamicParameters();
-            param.Add("PositionUid", pstid);
-            OrgPositionManual model = _dbContext.QueryFirstOrDefaultWhere<OrgPositionManual>("PositionUid=@PositionUid", param);
-            if (model == null)
-            {
-                return Json(new OrgPositionManual { ManualContent = "" });
-            }
-            else
-            {
-                return Json(model);
-            }
-        }
+        
         [Route("~/api/orgdept/depts/{power}")]
         // POST: api/Common
         public JsonResult GetOrgDeptsPower(string power)

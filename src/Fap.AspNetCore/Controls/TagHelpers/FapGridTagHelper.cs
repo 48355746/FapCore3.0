@@ -215,7 +215,10 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// 是否注册表格权限
         /// </summary>
         public bool RegisterAuthority { get; set; } = true;
-
+        /// <summary>
+        /// 是否为子表格
+        /// </summary>
+        public bool IsSubgrid { get; set; }
         /// <summary>
         /// subGrid设置展开内容
         /// function showChildGrid(parentRowID, parentRowKey) {
@@ -436,9 +439,14 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         {
             if (RegisterAuthority)
             {
+                string btnId = Id;
+                if (IsSubgrid)
+                {
+                    btnId = Id.Substring(0, Id.LastIndexOf("_"));
+                }
                 FapMenuButton menuButton = new FapMenuButton()
                 {
-                    ButtonID = Id,
+                    ButtonID = btnId,
                     ButtonName = "表格按钮",
                     ButtonType = FapMenuButtonType.Grid,
                     Description = _dbContext.Table(querySet.TableName).TableComment
@@ -452,9 +460,14 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         {
             if (RegisterAuthority)
             {
+                string btnId = Id;
+                if (IsSubgrid)
+                {
+                    btnId = Id.Substring(0, Id.LastIndexOf("_"));
+                }
                 FapMenuColumn menuColumn = new FapMenuColumn()
                 {
-                    GridId = Id,
+                    GridId = btnId,
                     TableName = querySet.TableName,
                     GridColumn = querySet.QueryCols,
                     Enabled = 1,

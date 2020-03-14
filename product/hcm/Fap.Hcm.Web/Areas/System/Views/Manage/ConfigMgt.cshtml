@@ -174,7 +174,7 @@
 
             //增加配置项
             $("#btnAddConfigItem").on(ace.click_event, function () {
-                var url = $.randomUrl(basePath + '/Component/Dataform/0?tn=FapConfig&frm=frmfapconfig');
+                var url = $.randomUrl(basePath + '/Component/DataFormNoAuthority/0?tn=FapConfig&frm=frmfapconfig');
                 $.get(url, function (rv) {
                     bootbox.dialog({
                         title: "添加配置项",
@@ -222,7 +222,6 @@
                     }
                     configData.push(configItem);
                 })
-                debugger
                 $.post("@Url.Content("~/System/Api/Manage/ConfigSet")", {configs: configData }, function (data) {
                     if(data.success==true)
                     {

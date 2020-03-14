@@ -65,7 +65,7 @@ namespace Fap.Hcm.Web
             });
             services.AddMiniProfiler(options =>
             {
-                options.PopupRenderPosition = StackExchange.Profiling.RenderPosition.BottomLeft;
+                options.PopupRenderPosition = StackExchange.Profiling.RenderPosition.BottomRight;
                 options.PopupShowTimeWithChildren = true;
                 options.RouteBasePath = "/profiler";
             });

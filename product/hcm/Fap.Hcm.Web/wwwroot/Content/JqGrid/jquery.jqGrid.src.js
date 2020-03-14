@@ -14051,6 +14051,8 @@ addSubGrid : function( pos, sind ) {
 								}
 							} else {
 								$r.show().removeClass("ui-sg-collapsed").addClass("ui-sg-expanded");
+								//wyf trigger size
+								$(window).triggerHandler('resize.jqGrid');
 							}
 							$(this).html("<a style='cursor:pointer;' class='ui-sghref'><span class='" + common.icon_base +" "+ts.p.subGridOptions.minusicon+"'></span></a>").removeClass("sgcollapsed").addClass("sgexpanded");
 							if(ts.p.subGridOptions.selectOnExpand) {

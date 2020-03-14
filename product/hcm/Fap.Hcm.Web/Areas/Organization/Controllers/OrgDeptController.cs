@@ -92,6 +92,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
                 qs.AddDefaultValue("JobGroup", jobGroup.Fid);
                 qs.AddDefaultValue("JobGroupMC", jobGroup.Name);
             });
+            model.JqgridId = $"jobgroupgrade_{id}";
             return PartialView(model);
         }
         /// <summary>
@@ -100,7 +101,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
         /// <returns></returns>
         public IActionResult OrgJobTitle()
         {
-            JqGridViewModel model = this.GetJqGridModel("OrgPosition");
+            JqGridViewModel model = this.GetJqGridModel("OrgJobTitle");
             return View(model);
         }
         /// <summary>
@@ -109,13 +110,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
         /// <returns></returns>
         public ActionResult OrgHistroy()
         {
-            JqGridViewModel model = GetJqGridModel("OrgPosition", (qs) =>
-            {
-                qs.InitWhere = "1=2";
-                //增加统计
-                qs.AddStatSet(StatSymbolEnum.SUM, "Preparation");
-                qs.AddStatSet(StatSymbolEnum.SUM, "Actual");
-            });
+            JqGridViewModel model = GetJqGridModel("OrgDept");
             return View(model);
         }
     }

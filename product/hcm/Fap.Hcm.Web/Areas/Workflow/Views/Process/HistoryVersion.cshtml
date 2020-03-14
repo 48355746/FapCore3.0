@@ -7,7 +7,7 @@
     colOper.SetSortable(false);
 }
 
- <fap-grid id="historytemplate_@(ViewBag.Id)" attach-column="@colOper" grid-model="Model" wrapper="subgrid-data"  on-grid-complete="initHistoryOperateColumn" multi-select="false"></fap-grid>
+ <fap-grid id="historytemplate_@(ViewBag.Id)" attach-column="@colOper" grid-model="Model" wrapper="subgrid-data" is-subgrid="true" register-authority="false"  on-grid-complete="initHistoryOperateColumn" multi-select="false"></fap-grid>
 
 
 <script>

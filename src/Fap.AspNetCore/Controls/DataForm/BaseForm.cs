@@ -808,7 +808,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             builder.AppendLine(CreateHiddenControl(FapDbConstants.FAPCOLUMN_FIELD_Id, idv));
             builder.AppendLine(CreateHiddenControl(FapDbConstants.FAPCOLUMN_FIELD_Fid, fidv));
             builder.AppendLine(CreateHiddenControl(FapDbConstants.FAPCOLUMN_FIELD_Ts, tsv));
-            builder.AppendLine(CreateHiddenControl(FapWebConstants.FORM_TABLENAME, _fapTable.TableName));
+            //builder.AppendLine(CreateHiddenControl(FapWebConstants.FORM_TABLENAME, _fapTable.TableName));
             return builder.ToString();
         }
         /// <summary>

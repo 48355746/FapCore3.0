@@ -10,7 +10,7 @@ namespace Fap.Hcm.Service.Organization
     {
         ResponseViewModel MoveDepartment(TreePostData postData);
         ResponseViewModel MergeDepartment(MergeDeptModel mergeDept);
-        List<TreeDataView> GetOrgJobTree();
-        ResponseViewModel OperOrgJob(TreePostData postData);
+        List<TreeDataView> GetOrgJobGroupTree();
+        //ResponseViewModel OperOrgJob(TreePostData postData);
     }
 }

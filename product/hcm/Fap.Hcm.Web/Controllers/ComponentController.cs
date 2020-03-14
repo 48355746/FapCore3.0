@@ -238,7 +238,7 @@ namespace Fap.Hcm.Web.Controllers
             }
 
             string icon = "icon-folder  ace-icon fa fa-folder blue";
-          
+
             List<string> refCols = new List<string>();
             List<string> frmCols = new List<string>();
             //参照名称
@@ -389,7 +389,8 @@ namespace Fap.Hcm.Web.Controllers
         }
         public IActionResult DataGrid(GridViewModel gridView)
         {
-            JqGridViewModel model = GetJqGridModel(gridView.TableName, qs=> {
+            JqGridViewModel model = GetJqGridModel(gridView.TableName, qs =>
+            {
                 qs.QueryCols = gridView.Cols.IsMissing() ? "*" : gridView.Cols;
                 qs.GlobalWhere = gridView.Condition;
             });
@@ -407,11 +408,11 @@ namespace Fap.Hcm.Web.Controllers
             MultiJqGridViewModel multiModels = new MultiJqGridViewModel();
             foreach (var gridView in gridViews)
             {
-                var model=GetJqGridModel(gridView.TableName, qs =>
-                {
-                    qs.GlobalWhere = gridView.Condition;
-                    qs.DefaultValues = gridView.DefaultValues;
-                });
+                var model = GetJqGridModel(gridView.TableName, qs =>
+                  {
+                      qs.GlobalWhere = gridView.Condition;
+                      qs.DefaultValues = gridView.DefaultValues;
+                  });
                 model.Title = gridView.TableLabel;
                 multiModels.JqGridViewModels.Add(gridView.TableName, model);
             }
@@ -427,11 +428,11 @@ namespace Fap.Hcm.Web.Controllers
         /// <param name="fs">单据状态</param>
         /// <param name="qrycols">优先级高，指定的col</param>
         /// <returns></returns>
-        public IActionResult DataForm(string fid, string gid, string menuid,int fs,string qrycols)
+        public IActionResult DataForm(string fid, string gid, string menuid, int fs, string qrycols)
         {
             if (_platformDomain.MenuColumnSet.TryGetValue(menuid, out IEnumerable<FapMenuColumn> menuColumns))
             {
-                var menuColumn = menuColumns.Where(r => r.GridId == gid).FirstOrDefault();
+                var menuColumn = menuColumns.Where(r => gid.StartsWith(r.GridId)).FirstOrDefault();
                 if (menuColumn != null)
                 {
                     //检查权限
@@ -439,7 +440,7 @@ namespace Fap.Hcm.Web.Controllers
                     if (roleCols.Any())
                     {
                         var allColumn = _dbContext.Columns(menuColumn.TableName);
-                        string queryCols =string.Join(',', allColumn.Where(c => roleCols.Select(r => r.ColumnUid).Distinct().Contains(c.Fid)).Select(c => c.ColName));
+                        string queryCols = string.Join(',', allColumn.Where(c => roleCols.Select(r => r.ColumnUid).Distinct().Contains(c.Fid)).Select(c => c.ColName));
                         string readonlyCols = string.Join(',', allColumn.Where(c => roleCols.Where(r => r.ViewAble == 1).Select(r => r.ColumnUid).Contains(c.Fid)).Select(c => c.ColName));
                         FormViewModel fd = this.GetFormViewModel(menuColumn.TableName, menuColumn.GridId, fid, qs =>
                          {
@@ -474,7 +475,12 @@ namespace Fap.Hcm.Web.Controllers
             }
             return Content("未授权");
         }
-        
+        public IActionResult DataFormNoAuthority(string fid, string tn, string frm)
+        {
+            FormViewModel fd = this.GetFormViewModel(tn, frm, fid);
+
+            return View("DataForm",fd);
+        }
         /// <summary>
         /// 自由表单
         /// </summary>
@@ -936,7 +942,7 @@ namespace Fap.Hcm.Web.Controllers
         #region echarts
         public PartialViewResult SimpleEcharts(string tableName)
         {
-            var columns=_dbContext.Columns(tableName).Where(f => f.ComboxSource.IsPresent());
+            var columns = _dbContext.Columns(tableName).Where(f => f.ComboxSource.IsPresent());
             return PartialView(columns);
         }
         #endregion

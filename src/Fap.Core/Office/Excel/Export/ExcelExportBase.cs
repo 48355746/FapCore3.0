@@ -139,29 +139,29 @@ namespace Fap.Core.Office.Excel.Export
             {
                 using (FileStream fs = new FileStream(fileName, FileMode.Create, FileAccess.ReadWrite))
                 {
-                    IWorkbook workbook = WorkbookFactory.Create((Stream)fs); 
-                    if(workbook is HSSFWorkbook)
-                    {
-                        excelVersion = ExcelVersion.XLS;
-                    }
-                    else
-                    {
-                        excelVersion = ExcelVersion.XLSX;
-                    }
-                    //if (fileName.IndexOf(".xlsx") > 0) // 2007版本
+                    IWorkbook workbook;// = WorkbookFactory.Create((Stream)fs); 
+                    //if(workbook is HSSFWorkbook)
                     //{
-                    //    workbook = new XSSFWorkbook();
-                    //    excelVersion = ExcelVersion.XLSX;
-                    //}
-                    //else if (fileName.IndexOf(".xls") > 0) // 2003版本
-                    //{
-                    //    workbook = new HSSFWorkbook();
                     //    excelVersion = ExcelVersion.XLS;
                     //}
                     //else
                     //{
-                    //    throw new FapException("该文件不是EXCEL文件");
+                    //    excelVersion = ExcelVersion.XLSX;
                     //}
+                    if (fileName.IndexOf(".xlsx") > 0) // 2007版本
+                    {
+                        workbook = new XSSFWorkbook();
+                        excelVersion = ExcelVersion.XLSX;
+                    }
+                    else if (fileName.IndexOf(".xls") > 0) // 2003版本
+                    {
+                        workbook = new HSSFWorkbook();
+                        excelVersion = ExcelVersion.XLS;
+                    }
+                    else
+                    {
+                        throw new FapException("该文件不是EXCEL文件");
+                    }
 
                     //导出主表数据
                     foreach (var data in dataToExport)
