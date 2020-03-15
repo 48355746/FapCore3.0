@@ -97,6 +97,7 @@
     <Folder Include="Areas\Organization\Data\" />
     <Folder Include="Areas\Organization\Models\" />
     <Folder Include="Areas\System\Data\" />
+    <Folder Include="Areas\Time\Data\" />
     <Folder Include="Areas\Workflow\Data\" />
     <Folder Include="Areas\Workflow\Models\" />
     <Folder Include="Temporary\679175051240538112\" />

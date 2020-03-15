@@ -1,0 +1,315 @@
+﻿@using Fap.AspNetCore.Controls
+@{
+    Layout = null;
+    Select2Model selModel = new Select2Model { IdField = "Fid", NameField = "CaseName", GroupField = "CaseGroup", SortBy = "CaseGroup desc", TableName = "TmHolidayCase" };
+}
+<title><fap-multilang default-content="休息日" lang-key="holiday"></fap-multilang></title>
+<link href="~/Content/css/bootstrap-year-calendar.css" rel="stylesheet" />
+
+<style>
+    .holidy {
+        background-color: green;
+        color: white;
+        border-radius: 15px !important;
+    }
+
+    .calendar .months-container {
+        display: block;
+    }
+
+    .widget-main {
+        padding: 25px;
+    }
+</style>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title"><fap-multilang default-content="休息日" lang-key="holiday"></fap-multilang></h4>
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar">
+                    <fap-button id="btnSaveHoliday" btn-tag="link" content="保存休息日" icon-before="fa fa-floppy-o blue" class-name="info"></fap-button>
+                </div>
+                <div class="widget-toolbar">
+                    <label>
+                        <input type="checkbox" id="chkselWeekend" class="ace ace-switch ace-switch-6" />
+                        <span class="lbl middle"><fap-multilang default-content="周末" lang-key="weekend"></fap-multilang></span>
+                    </label>
+                </div>
+                <div class="widget-toolbar">
+                    <fap-multilang lang-key="holiday_case" default-content="休息日套"></fap-multilang>:
+                    <div style="display:inline-block;">
+                        <fap-select id="holidayset" placeholder="休息日套" select-model="@selModel" on-change="holidayCaseChange"></fap-select>
+                    </div>
+                    <a href="javascript:void(0)" id="btnAddCase"  title="新增" >
+                        <i class="ace-icon fa fa-plus-circle purple"></i>
+                    </a>
+
+                    <a href="javascript:void(0)" id="btnEditCase" title="修改" >
+                        <i class="ace-icon  fa fa-pencil blue"></i>
+                    </a>
+
+                    <a href="javascript:void(0)" id="btnDeleteCase" title="删除">
+                        <i class="ace-icon  fa fa-trash-o red"></i>
+                    </a>                 
+                </div>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main">
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div id="calendar"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var holidays = [];
+    var scripts = [null, "/Content/js/bootstrap-year-calendar.js", "/Content/js/languages/bootstrap-year-calendar.zh.js", null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            var sel = $('#sel-holidayset').find('option');
+            if (sel.length > 1) {
+                $('#sel-holidayset').val(sel[1].value).change();
+            }
+            $(document).one('ajaxloadstart.page', function (e) {
+                //销毁js
+                holidays = null;
+            })
+            $('#calendar').calendar({
+                language: 'zh',
+                displayWeekNumber: true,
+                enableRangeSelection: true,
+                clickDay: function (e) {
+                    debugger
+                    if ($(e.element).find(".day-content").hasClass("holidy")) {
+                        $(e.element).find(".day-content").removeClass("holidy");
+                        holidays.splice($.inArray(moment(e.date).format("YYYY-MM-DD"), holidays), 1);
+
+                    } else {
+                        $(e.element).find(".day-content").addClass("holidy");
+                        holidays.push(moment(e.date).format("YYYY-MM-DD"));
+                    }
+
+                }
+
+            });
+
+            //添加休息日套
+            $("#btnAddCase").on(ace.click_event, function () {
+                var url = $.randomUrl(basePath + '/Component/DataFormNoAuthority/0?tn=TmHolidayCase&frm=frmtmholidaycase');
+                $.get(url, function (rv) {
+                    bootbox.dialog({
+                        title:$.lang("add", "添加"),
+                        message: rv,
+                        buttons: {
+                            success: {
+                                label: $.lang("save", "保存"),
+                                className: "btn-primary",
+                                callback: function () {
+                                    var formid = "frmtmholidaycase";
+                                    //持久化
+                                    var res = Persistence("frm-frmtmholidaycase", 'TmHolidayCase');
+                                    if (res == false) {
+                                        return false;
+                                    }
+                                    if (res.success == true) {
+                                        var d = res.data;
+                                        if (d.CaseGroup == "") {
+                                            $("#sel-holidayset").append("<option value='" + d.Fid + "'>" + d.CaseName + "</option>")
+                                        } else {
+                                            var optgrp = $("#sel-holidayset").find("[label='" + d.CaseGroup + "']");
+                                            if (optgrp.length > 0) {
+                                                optgrp.append("<option value='" + d.Fid + "'>" + d.CaseName + "</option>");
+                                            } else {
+                                                $("#sel-holidayset").append("<optgroup label='" + d.CaseGroup + "'><option value='" + d.Fid + "'>" + d.CaseName + "</option></optgroup>");
+
+                                            }
+                                        }
+                                        $("#sel-holidayset").select2("destroy");
+                                        $("#sel-holidayset").select2();
+                                    } else {
+                                        return false;
+                                    }
+                                }
+                            },
+                            cancel: {
+                                label: $.lang("cancel", "取消"), className: "btn-default"
+                            }
+                        }
+                    })
+
+                })
+            })
+            //修改休息日套
+            $("#btnEditCase").on(ace.click_event, function () {
+                var fid = $("#sel-holidayset").val();
+                if (fid == '') {
+                    bootbox.alert($.lang("please_select_holidaycase", "请选择休息日套") + "！");
+                    return;
+                }
+                var url = $.randomUrl(basePath + '/Component/DataFormNoAuthority/' + fid + '?tn=TmHolidayCase&frm=frmtmholidaycase');
+                $.get(url, function (rv) {
+                    bootbox.dialog({
+                        title: $.lang("edit",'修改'),
+                        message: rv,
+                        buttons: {
+                            success: {
+                                label:$.lang("save", "保存"),
+                                className: "btn-success",
+                                callback: function () {
+                                    var formid = "frmtmholidaycase";
+                                    //持久化
+                                    var res = Persistence("frm-frmtmholidaycase", 'TmHolidayCase');
+                                    if (res == false) {
+                                        return false;
+                                    }
+                                    if (res.success == true) {
+                                        var d =res.data;
+                                        $("#sel-holidayset").find("option:selected").remove();
+
+                                        if (d.CaseGroup == "") {
+                                            $("#sel-holidayset").append("<option value='" + d.Fid + "'>" + d.CaseName + "</option>")
+                                        } else {
+                                            var optgrp = $("#sel-holidayset").find("[label='" + d.CaseGroup + "']");
+                                            if (optgrp.length > 0) {
+                                                optgrp.append("<option value='" + d.Fid + "'>" + d.CaseName + "</option>");
+                                            } else {
+                                                $("#sel-holidayset").append("<optgroup label='" + d.CaseGroup + "'><option value='" + d.Fid + "'>" + d.CaseName + "</option></optgroup>");
+
+                                            }
+                                        }
+                                        $("#sel-holidayset").select2("destroy");
+                                        $("#sel-holidayset").select2();
+                                        $("#sel-holidayset").val(d.Fid).trigger('change');
+                                    } else {
+                                        return false;
+                                    }
+                                }
+                            },
+                            cancel: {
+                                label: $.lang("cancel", "取消"), className: "btn-default"
+                            }
+                        }
+                    })
+                })
+            })
+            //删除休息日套
+            $("#btnDeleteCase").on(ace.click_event, function () {
+                var fid = $("#sel-holidayset").val();
+                if (fid == '') {
+                    bootbox.alert($.lang("please_select_holidaycase", "请选择休息日套"));
+                    return;
+                }
+                bootbox.confirm($.lang("confirm_delete","确认删除吗？"), function (result) {
+                    if (result) {
+                        $.post(basePath + "/Api/Core/Persistence",
+                            { "oper": "del", "tableName": "TmHolidayCase", maindata: { "Fid": fid } }, function (rv) {
+                                if (rv.success) {
+                                    $.msg($.lang("success", "操作成功"));
+                                    $("#sel-holidayset").find("option:selected").remove();
+                                    $("#sel-holidayset").val("").trigger('change');
+                                    $("#sel-holidayset").select2("destroy");
+                                    $("#sel-holidayset").select2();
+                                } else {
+                                    bootbox.alert(rv.msg);
+                                }
+                            });
+                    }
+
+                })
+
+            })
+            //保存假日设置
+            $("#btnSaveHoliday").on(ace.click_event, function () {
+                var fid = $("#sel-holidayset").val();
+                if (fid == '') {
+                   bootbox.alert($.lang("please_select_holidaycase", "请选择休息日套"));
+                    return;
+                }
+                var frmData = { caseUid: fid };
+                frmData.holidays = holidays;
+                $.post("@Url.Content("~/Time/Api/Holiday")", frmData, function (rv) {
+                    if (rv.success) {
+                        $.msg($.lang("success", "操作成功"));
+                    } else {
+                        bootbox.alert(rv.msg);
+                    }
+                })
+
+            })
+            $("#chkselWeekend").on(ace.click_event, function () {
+                var rv = this.checked;
+                var currYear = $('#calendar').data('calendar').getYear();
+                var date = new Date(currYear, 0, 1);
+                if (rv) {
+                    for (i = 0; i < 365; i++) {
+                        var currDay = moment(date).add(i, "days");
+                        var d = moment(currDay).format("YYYY-MM-DD");
+                        var week = currDay.day();
+                        if (week == 0 || week == 6) {
+                            if ($.inArray(d, holidays) < 0) {
+                                holidays.push(d);
+                            }
+                        }
+                    }
+
+                } else {
+                    for (i = 0; i < 365; i++) {
+                        var currDay = moment(date).add(i, "days");
+                        var d = moment(currDay).format("YYYY-MM-DD");
+                        var week = currDay.day();
+                        if (week == 0 || week == 6) {
+                            if ($.inArray(d, holidays) > -1) {
+                                holidays.splice($.inArray(d, holidays), 1);
+                            }
+                        }
+                    }
+                }
+                $('#calendar').data('calendar').setCustomDayRenderer(function (element, date) {
+                    var d = moment(date).format("YYYY-MM-DD");
+                    if ($.inArray(d, holidays) > -1) {
+                        $(element).addClass("holidy");
+                    } else {
+                        $(element).removeClass("holidy");
+                    }
+
+                });
+
+            })
+        })
+    });
+
+    var holidayCaseChange = function (e) {
+        var hc = $(e.currentTarget).val();
+        if (hc === '') {
+            return;
+        }
+        $.get("@Url.Content("~/Time/Api/Holiday/")" + hc, function (data) {
+            //if (data.length > 0) {
+            //    $("#chkselWeekend").attr("disabled", true);
+            //} else {
+            //    $("#chkselWeekend").removeAttr("disabled");
+            //}
+            holidays = data;
+            $('#calendar').data('calendar').setCustomDayRenderer(function (element, date) {
+                var d = moment(date).format("YYYY-MM-DD");
+                if ($.inArray(d, data) > -1) {
+                    $(element).addClass("holidy");
+                } else {
+                    $(element).removeClass("holidy");
+                }
+
+            });
+        })
+    }
+</script>

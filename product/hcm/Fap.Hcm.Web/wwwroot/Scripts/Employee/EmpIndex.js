@@ -70,7 +70,7 @@ $(document).on(ace.click_event, ".gritter-image", function () {
         e.preventDefault();
         working = true;
         var files = file.data('ace_input_files');
-        if (!files || files.length == 0) return false;//no files selected
+        if (!files || files.length === 0) return false;//no files selected
         file.ace_file_input('disable');
         form.find('button').attr('disabled', 'disabled');
         form.find('.modal-body').append("<div class='center'><i class='ace-icon fa fa-spinner fa-spin bigger-150 orange'></i></div>");
