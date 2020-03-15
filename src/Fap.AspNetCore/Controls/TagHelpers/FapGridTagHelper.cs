@@ -231,7 +231,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             QuerySet querySet = GridModel.QuerySet;
             output.TagName = "div";
             output.Content.Clear();
-            string id = querySet.TableName;
+            string id =GridModel.JqgridId;
             if (Id.IsPresent())
             {
                 id = Id;

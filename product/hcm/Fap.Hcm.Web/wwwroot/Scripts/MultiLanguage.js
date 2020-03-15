@@ -73,7 +73,10 @@ var MultiLangHelper = (function () {
       'download': { 'ZhCn': '下载', 'ZhTW': '', 'En': '', 'Ja': '' },
       'tablecategory_required': { 'ZhCn': '请选中表分类', 'ZhTW': '', 'En': '', 'Ja': '' },
       'job_log': { 'ZhCn': '调度日志', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'simple_chart': { 'ZhCn': '简单图表', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'simple_chart': { 'ZhCn': '简单图表', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'part_time': { 'ZhCn': '兼职信息', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'global_oper_close': { 'ZhCn': '关闭', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'please_select_mainjob': { 'ZhCn': '请选择主职位查看', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

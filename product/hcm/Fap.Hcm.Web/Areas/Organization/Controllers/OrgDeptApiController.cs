@@ -30,108 +30,53 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
             _logger = _loggerFactory.CreateLogger<OrgDeptApiController>();
             _organizationService = organizationService;
         }
-       
-        [Route("~/api/orgdept/orgdepts/{pid=''}")]
-        // POST: api/Common
-        public JsonResult GetOrgDepts(string pid)
-        {
-
-            IEnumerable<OrgDept> listDepts = null;
-            OrgDept pDept = null;
-            if (pid.IsMissing())
-            {
-                pDept = _dbContext.QueryFirstOrDefaultWhere<OrgDept>("(Pid='' or Pid='~' or Pid='0')");
-                var listDept = _dbContext.QueryAll<OrgDept>().AsList();
-                listDept.Remove(pDept);
-                listDepts = listDept;
-            }
-            else
-            {
-                pDept = _dbContext.Get<OrgDept>(pid);
-                listDepts = _dbContext.QueryWhere<OrgDept>("DeptCode like '" + pDept.DeptCode + "%'");
-            }
-
-            List<TreeDataView> oriList = listDepts.Select(t => new TreeDataView { Id = t.Fid.ToString(), Pid = t.Pid.ToString(), Data = new { deptCode = t.DeptCode }, Text = t.DeptName, Icon = "icon-folder orange ace-icon fa fa-folder" }).ToList<TreeDataView>();
-
-            List<TreeDataView> tree = new List<TreeDataView>();
-
-            TreeDataView treeRoot = new TreeDataView()
-            {
-                Id = pDept.Fid,
-                Text = pDept.DeptName,
-                Data = new { deptCode = pDept.DeptCode },
-                State = new NodeState { Opened = true },
-                Icon = "icon-folder orange ace-icon fa fa-folder",
-            };
-            tree.Add(treeRoot);
-            TreeViewHelper.MakeTree(treeRoot.Children, oriList, treeRoot.Id);
-            return JsonIgnoreNull(tree);
-        }
         /// <summary>
         /// 历史部门
         /// </summary>
         /// <param name="pid"></param>
         /// <returns></returns>
-        [Route("~/api/orgdept/historyorgdepts/{date}")]
+        [Route("History/{date}")]
         // POST: api/Common
         public JsonResult GetHistoryOrgDepts(string date)
         {
-            //权限
-            IEnumerable<OrgDept> powerDepts = _rbacService.GetDeptInfoAuthority(_applicationContext.CurrentRoleUid);// _dbContext.QueryEntityByWhere<OrgDept>(where, null, null, false, date);
-            if (powerDepts != null && powerDepts.Any())
+            _dbContext.HistoryDateTime = date;
+            IEnumerable<OrgDept> powerDepts = _dbContext.QueryAll<OrgDept>();
+            _dbContext.HistoryDateTime = string.Empty;
+            //将List<dynamic>转换成List<TreeDataView>
+            List<TreeDataView> treeList = new List<TreeDataView>();
+            foreach (var data in powerDepts)
             {
-                //将List<dynamic>转换成List<TreeDataView>
-                List<TreeDataView> treeList = new List<TreeDataView>();
-                foreach (var data in powerDepts)
-                {
-                    treeList.Add(new TreeDataView() { Id = data.Fid, Text = data.DeptName, Pid = data.Pid, Data = new { Code = data.DeptCode, selectable = !data.HasPartPower }, Icon = "icon-folder  ace-icon fa fa-folder orange" });
-                }
+                treeList.Add(new TreeDataView() { Id = data.Fid, Text = data.DeptName, Pid = data.Pid, Data = new { Code = data.DeptCode, selectable = !data.HasPartPower }, Icon = "icon-folder  ace-icon fa fa-folder orange" });
+            }
+            List<TreeDataView> tree = new List<TreeDataView>();
+            string parentID = "0";
+            string _rootText = "";
+            var pt = powerDepts.FirstOrDefault<OrgDept>(t => t.Pid == "0" || t.Pid.IsMissing() || t.Pid == "#" || t.Pid == "~");
+            if (pt != null)
+            {
+                parentID = pt.Fid;
+                _rootText = pt.DeptName;
+            }
+            TreeDataView treeRoot = new TreeDataView()
+            {
+                Id = parentID,
+                Text = _rootText,
+                State = new NodeState { Opened = true },
+                Icon = "icon-folder purple ace-icon fa fa-sitemap",
 
-                List<TreeDataView> tree = new List<TreeDataView>();
-                string parentID = "0";
-                string _rootText = "";
-                var pt = powerDepts.FirstOrDefault<OrgDept>(t => t.Pid == "0" || t.Pid.IsMissing() || t.Pid == "#" || t.Pid == "~");
-                if (pt != null)
-                {
-                    parentID = pt.Fid;
-                    _rootText = pt.DeptName;
-                }
-                TreeDataView treeRoot = new TreeDataView()
-                {
-                    Id = parentID,
-                    Text = _rootText,
-                    State = new NodeState { Opened = true },
-                    Icon = "icon-folder purple ace-icon fa fa-sitemap",
-
-                };
-
-                if (parentID == "0")
-                {
-                    treeRoot.Data = new { Code = "", selectable = false };
-                }
-                else
-                {
-                    treeRoot.Data = new { Code = pt.DeptCode, selectable = !pt.HasPartPower };
-                }
-                TreeViewHelper.MakeTree(treeRoot.Children, treeList, treeRoot.Id);
-                tree.Add(treeRoot);
-
-                return JsonIgnoreNull(tree);
+            };
+            if (parentID == "0")
+            {
+                treeRoot.Data = new { Code = "", selectable = false };
             }
             else
             {
-                List<TreeDataView> tree = new List<TreeDataView>();
-                TreeDataView treeRoot = new TreeDataView()
-                {
-                    Id = "0",
-                    Text = "部门未建立或无权限",
-                    Data = new { selectable = false },
-                    State = new NodeState { Opened = true },
-                    Icon = "icon-folder orange ace-icon fa  fa-ban",
-                };
-                tree.Add(treeRoot);
-                return JsonIgnoreNull(tree);
+                treeRoot.Data = new { Code = pt.DeptCode, selectable = !pt.HasPartPower };
             }
+            TreeViewHelper.MakeTree(treeRoot.Children, treeList, treeRoot.Id);
+            tree.Add(treeRoot);
+
+            return JsonIgnoreNull(tree);
         }
         //[HttpGet]
         //[Route("~/api/orgdept/validedeptpermission/{fid=''}")]
@@ -433,7 +378,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
             }
 
         }
-        
+
         [Route("~/api/orgdept/depts/{power}")]
         // POST: api/Common
         public JsonResult GetOrgDeptsPower(string power)

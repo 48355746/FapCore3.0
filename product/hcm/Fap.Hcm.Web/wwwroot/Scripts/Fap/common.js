@@ -36,8 +36,8 @@ var layerWindow = function (url) {
     layer.full(index);
 };
 //打开模态页面
-var bootboxWindow = function (title, url, buttons) {
-    if (buttons === undefined) {
+var bootboxWindow = function (title, url, buttons, data,onBeforeShow) {
+    if (buttons === undefined || buttons === null) {
         buttons = {
             cancel: {
                 label: $.lang("global_oper_close", "关闭"), className: "btn-default"
@@ -50,8 +50,13 @@ var bootboxWindow = function (title, url, buttons) {
         size: "large",
         buttons: buttons       
     });
+    dialog.on("shown.bs.modal", function () {
+        if ($.isFunction(onBeforeShow)) {
+            onBeforeShow();
+        } 
+    });    
     dialog.init(function () {       
-        $.get(url, function (ev) {
+        $.get(url,data, function (ev) {
             dialog.find('.bootbox-body').html(ev);
         });
     });

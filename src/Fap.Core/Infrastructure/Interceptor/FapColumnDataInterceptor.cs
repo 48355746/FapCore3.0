@@ -104,7 +104,7 @@ namespace Fap.Core.Infrastructure.Interceptor
             {
                 string oriLangkey = $"{oriColumn.TableName}_{oriColumn.ColName}";
                 string newLangkey = $"{newColumn.TableName}_{newColumn.ColName}";
-                string updateMultisql = $"Update {nameof(FapMultiLanguage)} set {nameof(FapMultiLanguage.LangKey)}=@NewLangKey,{nameof(FapMultiLanguage.LangValue)}=@LangValue where Qualifier=@Qualifier and LangKey=@LangKey";
+                string updateMultisql = $"Update {nameof(FapMultiLanguage)} set {nameof(FapMultiLanguage.LangKey)}=@NewLangKey,{nameof(FapMultiLanguage.LangValue)}=@LangValue,{nameof(FapMultiLanguage.LangValueZhCn)}=@LangValue where Qualifier=@Qualifier and LangKey=@LangKey";
                 var param = new Dapper.DynamicParameters(new { Qualifier = MultiLanguageOriginEnum.FapColumn.ToString(), LangKey = oriLangkey,NewLangKey= newLangkey, LangValue = newColumn.ColComment });
                 _dbContext.Execute(updateMultisql, param);
             }

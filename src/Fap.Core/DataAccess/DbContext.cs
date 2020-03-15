@@ -2196,6 +2196,14 @@ namespace Fap.Core.DataAccess
         }
         public PageInfo<dynamic> QueryPage(Pageable pageable)
         {
+            if (pageable.HistoryTimePoint.IsPresent())
+            {
+                HistoryDateTime = pageable.HistoryTimePoint;
+            }
+            else
+            {
+                HistoryDateTime = string.Empty;
+            }
             DynamicParameters dynamicParameters = new DynamicParameters();
             InitParamers(dynamicParameters);
             string sql = string.Empty;

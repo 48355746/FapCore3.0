@@ -1,36 +1,55 @@
-﻿$(document).on(ace.click_event,".gritter-image", function () {
+﻿
+//显示照片
+var ShowPhoto = function (rid) {
+    if ($('#chkphoto').get(0).checked) {
+        var rowData = jQuery("#grid-employee").jqGrid('getRowData', rid);
+        $.gritter.add({
+            title: rowData.EmpName,
+            text: $.lang("department", "部门") + '：' + rowData.DeptUidMC,
+            image: $.randomUrl(basePath + "/Component/Photo/" + rowData.Fid),
+            dataimage: rowData.EmpPhoto,
+            sticky: false,
+            time: '',
+            class_name: 'gritter-light' + (rowData.Gender === 'male' ? "" : " gritter-warning")
+        });
+    }
+    return false;
+};
+
+
+$(document).on(ace.click_event, ".gritter-image", function () {
     var empphoto = $(this).data("image");
     var modal =
                         '<div class="modal fade">\
-					  <div class="modal-dialog">\
-					   <div class="modal-content">\
+	<div class="modal-dialog">\
+	<div class="modal-content">\
 						<div class="modal-header">\
 							<button type="button" class="close" data-dismiss="modal">&times;</button>\
 							<h4 class="blue">改变头像</h4>\
 						</div>\
 						\
 						<form class="no-margin">\
-						 <div class="modal-body">\
+<div class="modal-body">\
 							<div class="space-4"></div>\
 							<div style="width:75%;margin-left:12%;"><input type="file" name="file-input" /></div>\
-						 </div>\
+</div>\
 						\
-						 <div class="modal-footer center">\
+<div class="modal-footer center">\
 							<button type="submit" class="btn btn-sm btn-success"><i class="ace-icon fa fa-check"></i> 提交</button>\
 							<button type="button" class="btn btn-sm" data-dismiss="modal"><i class="ace-icon fa fa-times"></i> 取消</button>\
-						 </div>\
+</div>\
 						</form>\
-					  </div>\
-					 </div>\
+</div>\
+</div>\
 					</div>';
 
 
-    var modal = $(modal);
-    modal.modal("show").on("hidden", function () {
-        modal.remove();
+    var $modal = $(modal);
+    $modal.modal("show").on("hidden", function () {
+        $modal.remove();
     });
     var working = false;
-    var form = modal.find('form:eq(0)');
+    var form = $modal.find('form:eq(0)');
     var file = form.find('input[type=file]').eq(0);
     file.ace_file_input({
         style: 'well',
@@ -98,32 +117,32 @@
                 contentType: false,//important
                 dataType: 'json',
                 data: formData_object
-                
+
                 ,
-                xhr: function() {
+                xhr: function () {
                     var req = $.ajaxSettings.xhr();
                     if (req && req.upload) {
-                        req.upload.addEventListener('progress', function(e) {
-                            if(e.lengthComputable) {	
+                        req.upload.addEventListener('progress', function (e) {
+                            if (e.lengthComputable) {
                                 var done = e.loaded || e.position, total = e.total || e.totalSize;
-                                var percent = parseInt((done/total)*100) + '%';
+                                var percent = parseInt((done / total) * 100) + '%';
                                 //percentage of uploaded file
                             }
                         }, false);
                     }
                     return req;
                 },
-                beforeSend : function() {
+                beforeSend: function () {
                 },
                 success: function () {
                     form.find('button').removeAttr('disabled');
                     form.find('input[type=file]').ace_file_input('enable');
                     form.find('.modal-body > :last-child').remove();
 
-                    modal.modal("hide");
+                    $modal.modal("hide");
                     working = false;
                 }
-            })
+            });
         }
         else {
             bootbox.alert("请使用新版本浏览器");
