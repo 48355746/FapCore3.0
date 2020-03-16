@@ -1799,6 +1799,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
             if (_editUrl.IsPresent())
             {
                 script.AppendFormat("editurl:'{0}',", _editUrl).AppendLine();
+                script.AppendLine("serializeRowData:function(rd){return {tableName:'"+TableName+ "',oper:rd.oper,mainData:rd,avoid_repeat_token:'"+UUIDUtils.Fid+"'};},");
             }
             // View records
             if (_viewRecords.HasValue)
@@ -2491,9 +2492,10 @@ namespace Fap.AspNetCore.Controls.JqGrid
             // Start script
             script.AppendLine("<script type=\"text/javascript\">");
             //压缩js
-            JavaScriptCompressor compressor = new JavaScriptCompressor();
-            compressor.Encoding = Encoding.UTF8;
-            script.Append(compressor.Compress(RenderJavascript()));
+            //JavaScriptCompressor compressor = new JavaScriptCompressor();
+            //compressor.Encoding = Encoding.UTF8;
+            //script.Append(compressor.Compress(RenderJavascript()));
+            script.AppendLine(RenderJavascript());
             script.AppendLine("</script>");
 
             // Return script + required elements

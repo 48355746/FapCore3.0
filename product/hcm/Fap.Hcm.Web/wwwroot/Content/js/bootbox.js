@@ -686,6 +686,7 @@
         dialog.on("shown.bs.modal", function () {
             dialog.find(".btn-primary:first").focus();
             setBodyHeight();
+            $(".modal-dialog").draggable();
         });
         //wyf增加滚动条
         function setBodyHeight() {

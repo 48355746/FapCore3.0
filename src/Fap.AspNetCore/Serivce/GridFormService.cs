@@ -386,6 +386,58 @@ namespace Fap.AspNetCore.Serivce
 
         }
 
+        [Transactional]
+        public ResponseViewModel Persistence(FormModel frmModel)
+        {
+            //操作符 
+            if (frmModel.Oper == FormOperEnum.none)
+            {
+                return ResponseViewModelUtils.Failure("未知的持久化操作符");
+            }
+            if (frmModel.TableName.IsMissing())
+            {
+                return ResponseViewModelUtils.Failure("未知的持久化实体");
+            }
+            #region 防止多次点击重复保存以及CSRF攻击
+            if (frmModel.Oper != FormOperEnum.del)
+            {
+                if (frmModel.AvoidDuplicateKey.IsMissing())
+                {
+                    return ResponseViewModelUtils.Failure("不存在防重复提交令牌");
+                }
+
+                //对比缓存中是否存在次key，不存在加入
+                string avoid_repeat_tokenKey = $"{frmModel.TableName}_{_applicationContext.UserUid}_{FapWebConstants.AVOID_REPEAT_TOKEN}";
+                if (_memoryCache.TryGetValue(avoid_repeat_tokenKey, out string cv))
+                {
+                    if (cv == frmModel.AvoidDuplicateKey)
+                    {
+                        return ResponseViewModelUtils.Failure("请勿重复提交数据");
+                    }
+                    else
+                    {
+                        //_memoryCache.Remove(avoid_repeat_tokenKey);
+                        _memoryCache.Set(avoid_repeat_tokenKey, frmModel.AvoidDuplicateKey, DateTimeOffset.Now.AddMinutes(30));
+                    }
+                }
+                else
+                {
+                    _memoryCache.Set(avoid_repeat_tokenKey, frmModel.AvoidDuplicateKey, DateTimeOffset.Now.AddMinutes(30));
+                }               
+            }
+
+            #endregion
+            try
+            {
+                return SaveChange(frmModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return ResponseViewModelUtils.Failure("操作失败:" + ex.Message);
+            }
+
+        }
 
         private ResponseViewModel SaveChange(FormModel formModel)
         {

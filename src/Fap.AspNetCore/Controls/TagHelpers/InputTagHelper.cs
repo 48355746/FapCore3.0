@@ -24,7 +24,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             if (MultiPlaceholder.IsPresent())
             {
                 string id = output.Attributes["id"].Value?.ToString()?? (output.Attributes["name"].Value?.ToString()??"");
-                string langkey = _rbacService.GetCurrentMenu()?.Fid??"" + "_" + id;
+                string langkey = (_rbacService.GetCurrentMenu()?.Fid??"") + "_" + id;
                 string placeholder = _multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.MultiLangTag, langkey, MultiPlaceholder);
                 output.Attributes.Add("placeholder", placeholder);
 

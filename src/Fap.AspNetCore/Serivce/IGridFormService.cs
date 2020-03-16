@@ -13,6 +13,7 @@ namespace Fap.AspNetCore.Serivce
     public interface IGridFormService
     {
         Task<ResponseViewModel> PersistenceAsync(FormModel formModel);
+        ResponseViewModel Persistence(FormModel frmModel);
         PageDataResultView QueryPageDataResultView(JqGridPostData jqGridPostData);
         string ExportExcelData(JqGridPostData model);
         string ExportExcelTemplate(QuerySet querySet);

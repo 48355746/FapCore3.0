@@ -44,7 +44,14 @@ namespace Fap.Hcm.Web.Controllers
         public async Task<JsonResult> Persistence(FormModel frmModel)
         {
             Guard.Against.Null(frmModel, nameof(frmModel));
-            var rv = await _gridFormService.PersistenceAsync(frmModel);
+            var rv = await _gridFormService.PersistenceAsync(frmModel).ConfigureAwait(false);
+            return Json(rv);
+        }
+        [HttpPost("Inline/Persistence")]
+        public JsonResult InlinePersistence(FormModel frmModel)
+        {
+            Guard.Against.Null(frmModel, nameof(frmModel));
+            var rv = _gridFormService.Persistence(frmModel);
             return Json(rv);
         }
         /// <summary>

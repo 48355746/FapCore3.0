@@ -12615,7 +12615,7 @@ $.jgrid.extend({
                                 }                                 
                                 bootbox.confirm(o.deltitle+'?', function (result) {
                                     if (result) {
-                                        $.post($t.p.editurl, { "oper": "del", "logicdelete": false, "Id": sr }, function (rv) {
+										$.post($t.p.editurl, { "oper": "del", "tableName": $t.p.tn, maindata: { "Id": sr } }, function (rv) {
                                             if (rv.success) {                                              
                                                 $($t).jqGrid('delRowData', sr);
                                             }

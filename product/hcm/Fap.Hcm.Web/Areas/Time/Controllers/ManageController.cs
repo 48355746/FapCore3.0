@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Fap.AspNetCore.Infrastructure;
 using Fap.AspNetCore.ViewModel;
+using Fap.Core.Infrastructure.Domain;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Fap.Hcm.Web.Areas.Time.Controllers
@@ -47,6 +48,34 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
             mmodel.JqGridViewModels.Add("overtime", om);
             return View(mmodel);
         }
+        public ActionResult Period()
+        {
+            var model = this.GetJqGridModel("TmPeriod", (qs) =>
+            {
+                qs.AddOrderBy("CurrMonth", "desc");
+            });
+            return View(model);
+
+        }
         #endregion
+
+        //GET: /Time/Manage/Schedule
+        /// <summary>
+        /// 排班计划表
+        /// 管理员工一年的排班情况
+        /// </summary>
+        /// <returns></returns>
+        public ActionResult Schedule()
+        {
+            MultiJqGridViewModel model = new MultiJqGridViewModel();
+            JqGridViewModel scheduleModel = this.GetJqGridModel("TmSchedule");
+            model.JqGridViewModels.Add("TmSchedule", scheduleModel);
+            JqGridViewModel empModel = this.GetJqGridModel("Employee", (q) => {
+                q.QueryCols = "Id,Fid,EmpCode,EmpName,EmpCategory,DeptUid,Gender,IDCard";
+                q.GlobalWhere = "IsMainJob=1";
+            });
+            model.JqGridViewModels.Add("Employee", empModel);
+            return View(model);
+        }
     }
 }

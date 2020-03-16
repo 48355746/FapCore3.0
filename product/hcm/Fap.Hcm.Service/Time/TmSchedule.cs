@@ -29,8 +29,17 @@ namespace Fap.Hcm.Service.Time
         /// <summary>
         /// 班次 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string ShiftUidMC { get; set; }
+        /// <summary>
+		/// 部门
+		/// </summary>
+		public string DeptUid { get; set; }
+        /// <summary>
+        /// 部门 的显性字段MC
+        /// </summary>
+        [Computed]
+        public string DeptUidMC { get; set; }
         /// <summary>
         /// 工作日期
         /// </summary>

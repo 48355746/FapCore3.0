@@ -140,60 +140,55 @@ namespace Fap.AspNetCore.Model
                         string colName = o.GetValue("field").ToString();
                         string op = o.GetValue("op").ToString();
                         string data = o.GetValue("data").ToString();
-                        if (colName.EndsWith("MC", false, System.Globalization.CultureInfo.CurrentCulture))
+                        var fcol = _dbContext.Column(tableName, colName);
+                        if (fcol != null && fcol.CtrlType == FapColumn.CTRL_TYPE_REFERENCE && !op.EqualsWithIgnoreCase("in") && !op.EqualsWithIgnoreCase("ni"))
                         {
-                            string tempCol = colName.Substring(0, colName.Length - 2);
-                            FapColumn col = cols.FirstOrDefault(c => c.ColName == tempCol);
-                            if (col != null)
+                            if (!string.IsNullOrEmpty(op))// && !string.IsNullOrEmpty(data))
                             {
-                                if (col.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
+                                i++;
+                                //部门特殊处理,开始于
+                                if (fcol.RefTable.EqualsWithIgnoreCase("orgdept") && op.Trim().EqualsWithIgnoreCase("bw") && !data.StartsWith("("))
                                 {
-                                    if (!string.IsNullOrEmpty(op))// && !string.IsNullOrEmpty(data))
+                                    DynamicParameters param = new DynamicParameters();
+                                    param.Add("DeptName", data);
+                                    var dept = _dbContext.QueryFirstOrDefaultWhere<OrgDept>("DeptName=@DeptName", param);
+                                    if (dept == null)
+                                        continue;
+                                    if (i != 1)
+                                        empSb.Append(" ").Append(group).Append(" ");
+                                    empSb.Append(tableName).Append(".").Append(colName).Append(" in (select fid from orgdept where deptcode like ").Append("'" + dept.DeptCode + "%'").Append(") ");
+                                }
+                                else
+                                {
+                                    //field = executeField(field);
+                                    data = ExecuteData(colName, op, data);
+                                    if (i != 1)
+                                        empSb.Append(" ").Append(group).Append(" ");
+                                    if (op.Equals("in") || op.Equals("ni"))
                                     {
-                                        i++;
-                                        //部门特殊处理,开始于
-                                        if (col.RefTable.EqualsWithIgnoreCase("orgdept") && op.Trim().EqualsWithIgnoreCase("bw") && !data.StartsWith("("))
-                                        {
-                                            DynamicParameters param = new DynamicParameters();
-                                            param.Add("DeptName", data);
-                                            var dept = _dbContext.QueryFirstOrDefaultWhere<OrgDept>("DeptName=@DeptName", param);
-                                            if (dept == null)
-                                                continue;
-                                            if (i != 1)
-                                                empSb.Append(" ").Append(group).Append(" ");
-                                            empSb.Append(tableName).Append(".").Append(tempCol).Append(" in (select fid from orgdept where deptcode like ").Append("'" + dept.DeptCode + "%'").Append(") ");
-                                        }
-                                        else
-                                        {
-                                            //field = executeField(field);
-                                            data = ExecuteData(colName, op, data);
-                                            if (i != 1)
-                                                empSb.Append(" ").Append(group).Append(" ");
-                                            if (op.Equals("in") || op.Equals("ni"))
-                                            {
-                                                empSb.Append(tableName).Append(".").Append(tempCol).Append(" in (select ").Append(col.RefID).Append(" from ").Append(col.RefTable).Append(" where ").Append(col.RefName).Append(Q2Oper[op]).Append(" (").Append(data).Append(")) ");
+                                        empSb.Append(tableName).Append(".").Append(colName).Append(" in (select ").Append(fcol.RefID).Append(" from ").Append(fcol.RefTable).Append(" where ").Append(fcol.RefName).Append(Q2Oper[op]).Append(" (").Append(data).Append(")) ");
 
-                                            }
-                                            else
-                                            {
-                                                empSb.Append(tableName).Append(".").Append(tempCol).Append(" in (select ").Append(col.RefID).Append(" from ").Append(col.RefTable).Append(" where ").Append(col.RefName).Append(Q2Oper[op]).Append(data).Append(") ");
-                                            }
-                                        }
                                     }
-                                    continue;
+                                    else
+                                    {
+                                        empSb.Append(tableName).Append(".").Append(colName).Append(" in (select ").Append(fcol.RefID).Append(" from ").Append(fcol.RefTable).Append(" where ").Append(fcol.RefName).Append(Q2Oper[op]).Append(data).Append(") ");
+                                    }
                                 }
                             }
                         }
-                        string field = tableName + "." + colName;
-
-                        if (!string.IsNullOrEmpty(op))// && !string.IsNullOrEmpty(data))
+                        else
                         {
-                            i++;
-                            //field = executeField(field);
-                            data = ExecuteData(field, op, data);
-                            if (i != 1)
-                                empSb.Append(" ").Append(group).Append(" ");
-                            empSb.Append(field).Append(Q2Oper[op]).Append(data);
+                            string field = tableName + "." + colName;
+
+                            if (!string.IsNullOrEmpty(op))// && !string.IsNullOrEmpty(data))
+                            {
+                                i++;
+                                //field = executeField(field);
+                                data = ExecuteData(field, op, data);
+                                if (i != 1)
+                                    empSb.Append(" ").Append(group).Append(" ");
+                                empSb.Append(field).Append(Q2Oper[op]).Append(data);
+                            }
                         }
                     }
                     if (empSb.Length > 0)
@@ -220,7 +215,7 @@ namespace Fap.AspNetCore.Model
             }
         }
 
-       
+
 
         #region 构造条件描述
         /// <summary>
@@ -309,7 +304,7 @@ namespace Fap.AspNetCore.Model
 
         #endregion
 
-   
+
 
     }
     public class FilterDescModel
@@ -332,5 +327,5 @@ namespace Fap.AspNetCore.Model
 
         public string FilterResult { get; set; }
     }
-   
+
 }
