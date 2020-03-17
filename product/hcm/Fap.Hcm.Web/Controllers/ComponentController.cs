@@ -61,18 +61,8 @@ namespace Fap.Hcm.Web.Controllers
         /// 表格参照
         /// </summary>
         /// <returns></returns>
-        public IActionResult GridReference(string fid)
-        {
-            string formid = "frm";
-            string ctrlid = "ctrl";
-            if (Request.Query.ContainsKey("frmid"))
-            {
-                formid = Request.Query["frmid"].ToString();
-            }
-            if (Request.Query.ContainsKey("ctrlid"))
-            {
-                ctrlid = Request.Query["ctrlid"].ToString();
-            }
+        public IActionResult GridReference(string fid,int isSearch=0)
+        {            
             string refcondition = string.Empty;
             _platformDomain.ColumnSet.TryGetValue(fid, out FapColumn fc);
             //fc.RefCondition替换参数的值
@@ -172,6 +162,10 @@ namespace Fap.Hcm.Web.Controllers
 
             });
             model.JqgridId = $"ref{model.JqgridId}";
+            if (isSearch == 1)
+            {
+                model.IsMulti = true;
+            }
             if (refRefCols.Any())
             {
                 refCols.AddRange(refRefCols);
@@ -192,34 +186,14 @@ namespace Fap.Hcm.Web.Controllers
         /// <returns></returns>
         public IActionResult TreeGridReference()
         {
-            string formid = "frm";
-            string ctrlid = "ctrl";
-            if (Request.Query.ContainsKey("frmid"))
-            {
-                formid = Request.Query["frmid"].ToString();
-            }
-            if (Request.Query.ContainsKey("ctrlid"))
-            {
-                ctrlid = Request.Query["ctrlid"].ToString();
-            }
             return View();
         }
         /// <summary>
         /// 树参照
         /// </summary>
         /// <returns></returns>
-        public IActionResult TreeReference(string fid)
+        public IActionResult TreeReference(string fid,int isSearch=0)
         {
-            string formid = "frm";
-            string ctrlid = "ctrl";
-            if (Request.Query.ContainsKey("frmid"))
-            {
-                formid = Request.Query["frmid"].ToString();
-            }
-            if (Request.Query.ContainsKey("ctrlid"))
-            {
-                ctrlid = Request.Query["ctrlid"].ToString();
-            }
             string refcondition = string.Empty;
             _platformDomain.ColumnSet.TryGetValue(fid, out FapColumn fc);
             //fc.RefCondition替换参数的值
@@ -378,7 +352,11 @@ namespace Fap.Hcm.Web.Controllers
                 frmCols.AddRange(frmRefCols);
             }
             JsTreeViewModel treeModel = new JsTreeViewModel();
-            treeModel.CtrlName = formid + ctrlid + fc.TableName + fc.ColName;
+            if (isSearch == 1)
+            {
+                treeModel.IsMulti = true;
+            }
+            treeModel.CtrlName = fc.TableName+"-"+ fc.ColName;
             treeModel.JsonData = rej;
             treeModel.TempData.Add("refid", fc.RefID);
             treeModel.TempData.Add("refcode", fc.RefCode);

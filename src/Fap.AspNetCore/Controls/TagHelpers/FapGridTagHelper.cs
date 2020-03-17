@@ -327,13 +327,21 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             {
                 grid.SetInsideWidget();
             }
-            if (MultiSelect)
+            if (GridModel.IsMulti)
             {
-                grid.SetMultiSelect(MultiSelect);
+                grid.SetMultiSelect(true);
+                //grid.SetMultiBoxOnly(true);
             }
-            if (MultiBoxOnly)
+            else
             {
-                grid.SetMultiBoxOnly(MultiBoxOnly);
+                if (MultiSelect)
+                {
+                    grid.SetMultiSelect(MultiSelect);
+                }
+                if (MultiBoxOnly)
+                {
+                    grid.SetMultiBoxOnly(MultiBoxOnly);
+                }
             }
             if (RowNum != 10)
             {

@@ -10,7 +10,6 @@
 <title>
     <fap-multilang default-content="排班管理" lang-key="time_schedule_management"></fap-multilang>
 </title>
-<link href="~/Content/waiting/waiting.css" rel="stylesheet" />
 <div class="row">
     <div class="col-xs-12 col-sm-12">
         <div class="widget-box">
@@ -167,7 +166,7 @@
                                         上一步
                                     </button>
 
-                                    <button class="btn btn-success btn-next" data-last="Finish">
+                                    <button class="btn btn-success btn-next" data-last="完成">
                                         下一步
                                         <i class="ace-icon fa fa-arrow-right icon-on-right"></i>
                                     </button>
@@ -190,7 +189,7 @@
                             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
                                 <span class="white">&times;</span>
                             </button>
-                            组织机构
+                            <fap-multilang lang-key="department" default-content="部门"></fap-multilang>
                         </div>
                     </div>
 
@@ -212,7 +211,7 @@
 </div>
 
 <script>
-    var scripts = [null, "/Content/js/fuelux/fuelux.wizard.js","/Content/waiting/jquery.waiting.js", null]
+    var scripts = [null, "/Content/js/fuelux/fuelux.wizard.js", null]
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
             $("#grid-tmschedule").jqGrid('setGridParam',{datatype:'json'})
@@ -232,7 +231,7 @@
                         if (jqPostData.filters == undefined) {
                             $("#schdulecontent").append("<p>员工:全部</p>");
                         } else {
-                            $("#schdulecontent").append("<p>员工:" + jqPostData.filters+"</p>");
+                            $("#schdulecontent").append("<p style='word-wrap:break-word;'>员工:" + getStringForGroup(JSON.parse(jqPostData.filters)) + "</p>");
                         }
                         var startDatepicker = $("#startDatepicker").val();
                         var endDatepicker = $("#endDatepicker").val();
@@ -262,19 +261,19 @@
                 var shiftUid = $("#sel-selshift").val();
                 var holiday = $("#sel-selholidaycase").val();
                 if (startDatepicker == '') {
-                    bootbox.alert("排班开始时间不能为空！");
+                    bootbox.alert($.lang("starttime_required","排班开始时间不能为空"));
                     return;
                 }
                 if (endDatepicker == '') {
-                    bootbox.alert("排班结束时间不能为空！");
+                    bootbox.alert($.lang("endtime_required","排班结束时间不能为空"));
                     return;
                 }
                 if (shiftUid == '') {
-                    bootbox.alert(MultiLangHelper.getResName("time_schedule_page_shifitnotempty", "班次不能为空"));
+                    bootbox.alert($.lang("shift_required", "班次不能为空"));
                     return;
                 }
                 if (holiday == '') {
-                    bootbox.alert(MultiLangHelper.getResName("time_schedule_page_restdaynotempty", "休息日套不能为空"));
+                    bootbox.alert($.lang("holidaycase_required", "休息日套不能为空"));
                     return;
                 }
                 var sqlRv;
@@ -284,11 +283,11 @@
                 } else {
                     sqlRv = jqPostData.filters;
                 }
-                $(".page-content").waiting({ loadingtext: MultiLangHelper.getResName("global_txt_createsuccess", "生成成功"), fixed: true })
+                var index = layer.load();
                 $.post("@Url.Content("~/api/time/initSchedule")", { shiftUid: shiftUid, holidayUid: holiday, startDate: startDatepicker, endDate: endDatepicker, empCondition: sqlRv }, function (rv) {
-                    $(".page-content").waiting('done');
+                    layer.close(index);
                     if (rv.success == true) {
-                        bootbox.alert(MultiLangHelper.getResName("global_txt_createsuccess", "生成成功"));
+                        $.msg($.lang("success", "生成成功"));
                     } else {
                         bootbox.alert(rv.msg);
                     }

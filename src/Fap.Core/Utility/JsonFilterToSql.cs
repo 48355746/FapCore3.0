@@ -136,59 +136,24 @@ namespace Fap.AspNetCore.Model
                     StringBuilder empSb = new StringBuilder();
                     foreach (JObject o in rules)
                     {
-                        //特殊处理MC参照字段
                         string colName = o.GetValue("field").ToString();
                         string op = o.GetValue("op").ToString();
                         string data = o.GetValue("data").ToString();
-                        var fcol = _dbContext.Column(tableName, colName);
-                        if (fcol != null && fcol.CtrlType == FapColumn.CTRL_TYPE_REFERENCE && !op.EqualsWithIgnoreCase("in") && !op.EqualsWithIgnoreCase("ni"))
+                        //下拉框 任意 跳过此条件
+                        if (data.EqualsWithIgnoreCase("fapany"))
                         {
-                            if (!string.IsNullOrEmpty(op))// && !string.IsNullOrEmpty(data))
-                            {
-                                i++;
-                                //部门特殊处理,开始于
-                                if (fcol.RefTable.EqualsWithIgnoreCase("orgdept") && op.Trim().EqualsWithIgnoreCase("bw") && !data.StartsWith("("))
-                                {
-                                    DynamicParameters param = new DynamicParameters();
-                                    param.Add("DeptName", data);
-                                    var dept = _dbContext.QueryFirstOrDefaultWhere<OrgDept>("DeptName=@DeptName", param);
-                                    if (dept == null)
-                                        continue;
-                                    if (i != 1)
-                                        empSb.Append(" ").Append(group).Append(" ");
-                                    empSb.Append(tableName).Append(".").Append(colName).Append(" in (select fid from orgdept where deptcode like ").Append("'" + dept.DeptCode + "%'").Append(") ");
-                                }
-                                else
-                                {
-                                    //field = executeField(field);
-                                    data = ExecuteData(colName, op, data);
-                                    if (i != 1)
-                                        empSb.Append(" ").Append(group).Append(" ");
-                                    if (op.Equals("in") || op.Equals("ni"))
-                                    {
-                                        empSb.Append(tableName).Append(".").Append(colName).Append(" in (select ").Append(fcol.RefID).Append(" from ").Append(fcol.RefTable).Append(" where ").Append(fcol.RefName).Append(Q2Oper[op]).Append(" (").Append(data).Append(")) ");
-
-                                    }
-                                    else
-                                    {
-                                        empSb.Append(tableName).Append(".").Append(colName).Append(" in (select ").Append(fcol.RefID).Append(" from ").Append(fcol.RefTable).Append(" where ").Append(fcol.RefName).Append(Q2Oper[op]).Append(data).Append(") ");
-                                    }
-                                }
-                            }
+                            continue;
                         }
-                        else
+                        var fcol = _dbContext.Column(tableName, colName);                     
+                        string field = tableName + "." + colName;
+                        if (!string.IsNullOrEmpty(op))// && !string.IsNullOrEmpty(data))
                         {
-                            string field = tableName + "." + colName;
-
-                            if (!string.IsNullOrEmpty(op))// && !string.IsNullOrEmpty(data))
-                            {
-                                i++;
-                                //field = executeField(field);
-                                data = ExecuteData(field, op, data);
-                                if (i != 1)
-                                    empSb.Append(" ").Append(group).Append(" ");
-                                empSb.Append(field).Append(Q2Oper[op]).Append(data);
-                            }
+                            i++;
+                            //field = executeField(field);
+                            data = ExecuteData(field, op, data);
+                            if (i != 1)
+                                empSb.Append(" ").Append(group).Append(" ");
+                            empSb.Append(field).Append(Q2Oper[op]).Append(data);
                         }
                     }
                     if (empSb.Length > 0)

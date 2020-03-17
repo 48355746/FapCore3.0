@@ -1,5 +1,7 @@
-﻿using Fap.AspNetCore.Controls.JqGrid.Enums;
+﻿using Ardalis.GuardClauses;
+using Fap.AspNetCore.Controls.JqGrid.Enums;
 using Fap.Core.Extensions;
+using Fap.Core.Infrastructure.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,8 +11,8 @@ namespace Fap.AspNetCore.Controls.JqGrid
 {
     public class Column
     {
-        private  List<string> _classes = new List<string>();
-        private  string _columnName;
+        private List<string> _classes = new List<string>();
+        private FapColumn _fapColumn;
         private Align? _align;
         private string _customFormatter;
         private List<OperButton> _operButtons = new List<OperButton>();
@@ -63,29 +65,36 @@ namespace Fap.AspNetCore.Controls.JqGrid
         ///     Constructor
         /// </summary>
         /// <param name = "columnName">Name of column, cannot be blank or set to 'subgrid', 'cb', and 'rn'</param>
-        public Column(string columnName)
+        public Column(FapColumn fapColumn)
         {
-            // Make sure columnname is not left blank
-            if (columnName.IsMissing())
-            {
-                throw new ArgumentException("No columnname specified");
-            }
-
+            Guard.Against.Null(fapColumn, nameof(fapColumn));           
             // Make sure columnname is not part of the reserved names collection
             var reservedNames = new[] { "subgrid", "cb", "rn" };
 
-            if (reservedNames.Contains(columnName))
+            if (reservedNames.Contains(fapColumn.ColName))
             {
-                throw new ArgumentException("Columnname '" + columnName + "' is reserved");
+                throw new ArgumentException("Columnname '" + fapColumn.ColName + "' is reserved");
             }
+            _fapColumn = fapColumn;
+            
+            // Set index equal to columnname by default, can be overriden by setter
+            _index = fapColumn.ColName;
+        }
+        public Column(string colname)
+        {
+            Guard.Against.Null(colname, nameof(colname));
+            // Make sure columnname is not part of the reserved names collection
+            var reservedNames = new[] { "subgrid", "cb", "rn" };
 
-            // Set columnname
-            _columnName = columnName;
+            if (reservedNames.Contains(colname))
+            {
+                throw new ArgumentException("Columnname '" + colname + "' is reserved");
+            }
+            _fapColumn = null; ;
 
             // Set index equal to columnname by default, can be overriden by setter
-            _index = columnName;
+            _index = colname;
         }
-
         /// <summary>
         ///     This option allow to add a class to to every cell on that column. In the grid css 
         ///     there is a predefined class ui-ellipsis which allow to attach ellipsis to a 
@@ -429,7 +438,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
 
         public string Name
         {
-            get { return _columnName; }
+            get { return _fapColumn.ColName; }
         }
 
         /// <summary>
@@ -590,7 +599,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                     AppendLine();
 
             // Columnname
-            script.AppendFormat("name:'{0}',", _columnName).AppendLine();
+            script.AppendFormat("name:'{0}',", _fapColumn.ColName).AppendLine();
 
             // FirstSortOrder
             if (_firstSortOrder.HasValue) script.AppendFormat("firstsortorder:'{0}',", _firstSortOrder.ToString().ToLower()).AppendLine();
@@ -660,7 +669,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
             // SearchType
             if (_searchType.HasValue)
             {
-                if (_searchType.Value == Searchtype.Text)
+                if (_searchType.Value == Searchtype.Text || _searchType.Value == Searchtype.Reference)
                 {
                     script.AppendLine("stype:'text',");
                 }
@@ -679,63 +688,61 @@ namespace Fap.AspNetCore.Controls.JqGrid
                     searchOptions.Add("sopt", "['bw']");
                 }
             }
-
-            // Searchoptions
-            if (_searchType == Searchtype.Select || _searchType == Searchtype.Datepicker||_searchType==Searchtype.Datetimepicker)
+            // SearchType select
+            if (_searchType == Searchtype.Select)
             {
-                // SearchType select
-                if (_searchType == Searchtype.Select)
+                if (_searchTerms != null)
                 {
-                    if (_searchTerms != null)
-                    {
-                        var emtpyOption = (_searchTerms.Any()) ? ":任意;" : ":";
-                        searchOptions.Add("value", "\"" + string.Format("{0}{1}", emtpyOption, string.Join(";", _searchTerms.Select(s => s.Key + ":" + s.Value).ToArray())) + "\"");
-                    }
-                    else
-                    {
-                        searchOptions.Add("value", "':'");
-                    }
+                    var emtpyOption = (_searchTerms.Any()) ? "fapany:任意;" : ":";
+                    searchOptions.Add("value", "\"" + string.Format("{0}{1}", emtpyOption, string.Join(";", _searchTerms.Select(s => s.Key + ":" + s.Value).ToArray())) + "\"");
                 }
-
-                // SearchType datepicker
-                else if (_searchType == Searchtype.Datepicker)
+                else
                 {
-                    string format = _searchDateFormat.IsMissing() ? "YYYY-MM-DD" : _searchDateFormat;
-                    if (format.EqualsWithIgnoreCase("yyyy-mm"))
-                    {
-                        //format = "YYYY-MM";
-                        searchOptions.Add("dataInit", "function(el){$(el).datetimepicker({language:'zh-CN',startView: 4,minView:3,format:'yyyy-mm'})}");
-                    }
-                    else
-                    {
-                        //format = "YYYY-MM-DD";
-                        //searchOptions.Add("dataInit", "function(el){$(el).datepicker({changeYear:true, onSelect: function() {var sgrid = $('###gridid##')[0]; sgrid.triggerToolbar();},dateFormat:'dd-mm-yy'});}");
-                        searchOptions.Add("dataInit", "function(el){$(el).datetimepicker({language:'zh-CN',minView:2, format:'yyyy-mm-dd'})}");
-                    }
+                    searchOptions.Add("value", "'fapany:任意'");
                 }
-                else if (_searchType == Searchtype.Datetimepicker)
+            }else if (_searchType == Searchtype.Reference)
+            {
+                searchOptions.Add("dataInit", "function(el){searchOptionReference(el,'"+_fapColumn.ColComment+"','"+_fapColumn.Fid+"','"+_fapColumn.RefType+"');}");
+            }
+            // SearchType datepicker
+            else if (_searchType == Searchtype.Datepicker)
+            {
+                string format = _searchDateFormat.IsMissing() ? "YYYY-MM-DD" : _searchDateFormat;
+                if (format.EqualsWithIgnoreCase("yyyy-mm"))
                 {
-                    string format = _searchDateFormat.IsMissing() ? "YYYY-MM-DD HH:mm:ss" : _searchDateFormat; 
-                    if (format.EqualsWithIgnoreCase("HH:mm"))
-                    {
-                        searchOptions.Add("dataInit", @"function(el){$(el).datetimepicker({language:'zh-CN',startView:1,maxView:1,format:'hh:ii'});
-//                            $(el).on('dp.change',
-//                            function (e) {
-//                            var sgrid = $('###gridid##')[0];
-//                            sgrid.triggerToolbar();});
-                            }");
-                    }
-                    else
-                    {
-                        searchOptions.Add("dataInit", @"function(el){$(el).datetimepicker({language:'zh-CN',format:'yyyy-mm-dd hh:ii:ss'});
-//                            $(el).on('dp.change',
-//                            function (e) {
-//                            var sgrid = $('###gridid##')[0];
-//                            sgrid.triggerToolbar();});
-                            }");
-                    }
+                    //format = "YYYY-MM";
+                    searchOptions.Add("dataInit", "function(el){$(el).datetimepicker({language:'zh-CN',startView: 4,minView:3,format:'yyyy-mm'})}");
+                }
+                else
+                {
+                    //format = "YYYY-MM-DD";
+                    //searchOptions.Add("dataInit", "function(el){$(el).datepicker({changeYear:true, onSelect: function() {var sgrid = $('###gridid##')[0]; sgrid.triggerToolbar();},dateFormat:'dd-mm-yy'});}");
+                    searchOptions.Add("dataInit", "function(el){$(el).datetimepicker({language:'zh-CN',minView:2, format:'yyyy-mm-dd'})}");
                 }
             }
+            else if (_searchType == Searchtype.Datetimepicker)
+            {
+                string format = _searchDateFormat.IsMissing() ? "YYYY-MM-DD HH:mm:ss" : _searchDateFormat;
+                if (format.EqualsWithIgnoreCase("HH:mm"))
+                {
+                    searchOptions.Add("dataInit", @"function(el){$(el).datetimepicker({language:'zh-CN',startView:1,maxView:1,format:'hh:ii'});
+//                            $(el).on('dp.change',
+//                            function (e) {
+//                            var sgrid = $('###gridid##')[0];
+//                            sgrid.triggerToolbar();});
+                            }");
+                }
+                else
+                {
+                    searchOptions.Add("dataInit", @"function(el){$(el).datetimepicker({language:'zh-CN',format:'yyyy-mm-dd hh:ii:ss'});
+//                            $(el).on('dp.change',
+//                            function (e) {
+//                            var sgrid = $('###gridid##')[0];
+//                            sgrid.triggerToolbar();});
+                            }");
+                }
+            }
+
 
             // SearchType
             if (_searchType.HasValue && !_defaultSearchValue.IsMissing())

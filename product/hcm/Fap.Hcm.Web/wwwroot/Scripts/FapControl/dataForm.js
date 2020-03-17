@@ -293,10 +293,10 @@ var loadRefMessageBox = function (title, frmid, colfid, ctrlid, refurl, extra) {
             $(window).triggerHandler('resize.jqGrid');//触发窗口调整,使Grid得到正确的大小
     });
     dialog.init(function () {
-        var url = basePath + '/Component/' + refurl + '/' + colfid + '?frmid=' + frmid + '&ctrlid=' + ctrlid;
+        var url = basePath + '/Component/' + refurl + '/' + colfid ;
         if (extra !== '') {
             var param = extra.join("&");
-            url += "&" + param;
+            url += "?" + param;
         }
         $.get(url, function (ev) {
             dialog.find('.bootbox-body').html(ev);

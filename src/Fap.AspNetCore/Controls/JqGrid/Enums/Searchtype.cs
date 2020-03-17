@@ -3,6 +3,7 @@
     public enum Searchtype
     {
         Text,
+        Reference,
         Select,
         Datepicker,
         Datetimepicker

@@ -4,7 +4,7 @@
     Layout = null;
     string frmCols=Model.TempData["frmCols"];
 }
-<script>
+    <script>
     function GetRefResult() {
         var ref = $('#tree-@Model.CtrlName').jstree(true),
                         sel = ref.get_selected();
@@ -27,12 +27,25 @@
         var result = { "code": code, "name": name,"ext":ext,"frmcols":'@frmCols' };
         return result;
     }
-</script>
+    function GetRefResults() {
+        var ref = $('#tree-@Model.CtrlName').jstree(true),
+            checks = ref.get_checked();
+        var result = [];
+        $.each(checks, function (i, d) {
+            let name = ref.get_text(d);
+            if (ref.get_node(d).data != null && ref.get_node(d).data.ext != undefined) {
+                ext = ref.get_node(d).data.ext;
+            }
+            result.push({ "code": d, "name": name,"ext":ext,"frmcols":'@frmCols' });
+        });        
+        return result;
+    }
+    </script>
 
 
 <div class="row">
     <div class="col-xs-12 treeScrollable">
-        <fap-tree id="@Model.CtrlName" is-async="false" json-data="@Model.JsonData" plugin-dnd="false" > </fap-tree>
+        <fap-tree id="@Model.CtrlName" is-async="false" plugin-checkbox="@Model.IsMulti" json-data="@Model.JsonData" plugin-dnd="false" > </fap-tree>
     </div>
 </div>
 

@@ -266,3 +266,48 @@ var HtmlUtil = {
 //    max: $.validator.format("请输入不大于 {0} 的数值"),
 //    min: $.validator.format("请输入不小于 {0} 的数值")
 //});
+
+//获取jqgrid sql
+var getStringForGroup = function (group) {
+    var s = "(", index;
+    if (group.groups !== undefined) {
+        for (index = 0; index < group.groups.length; index++) {
+            if (s.length > 1) {
+                s += " " + group.groupOp + " ";
+            }
+            try {
+                s += this.getStringForGroup(group.groups[index]);
+            } catch (eg) { alert(eg); }
+        }
+    }
+
+    if (group.rules !== undefined) {
+        try {
+            for (index = 0; index < group.rules.length; index++) {
+                if (s.length > 1) {
+                    s += " " + group.groupOp + " ";
+                }
+                s += this.getStringForRule(group.rules[index]);
+            }
+        } catch (e) { alert(e); }
+    }
+
+    s += ")";
+
+    if (s === "()") {
+        return ""; // ignore groups that don't have rules
+    }
+    return s;
+};
+var getStringForRule = function (rule) {
+    var opUF = "", opC =rule.op,  ret, val,     
+    val = rule.data;
+    if (opC === 'bw' || opC === 'bn') { val = val + "%"; }
+    if (opC === 'ew' || opC === 'en') { val = "%" + val; }
+    if (opC === 'cn' || opC === 'nc') { val = "%" + val + "%"; }
+    if (opC === 'in' || opC === 'ni') { val = " (" + val + ")"; }
+    var operands = { "eq": "=", "ne": "<>", "lt": "<", "le": "<=", "gt": ">", "ge": ">=", "bw": "LIKE", "bn": "NOT LIKE", "in": "IN", "ni": "NOT IN", "ew": "LIKE", "en": "NOT LIKE", "cn": "LIKE", "nc": "NOT LIKE", "nu": "IS NULL", "nn": "ISNOT NULL" };
+    opUF = operands[opC];
+    ret = rule.field + " " + opUF + " \"" + val + "\""; 
+    return ret;
+};

@@ -29,7 +29,7 @@
         }
         return "";
     }
-    function GetResults() {
+    function GetRefResults() {
         var ids = jQuery("#grid-@Model.JqgridId").jqGrid('getGridParam', 'selarrrow');
         var result=[];
         if (ids) {

@@ -71,7 +71,7 @@ namespace Fap.AspNetCore.Controls.JqGrid.Extensions
                 }
             }
             //fapColumn.CtrlType
-            Column col = new Column(columnName);
+            Column col = new Column(fapColumn);
             string label = multiLang.GetMultiLangValue(MultiLanguageOriginEnum.FapColumn, $"{fapColumn.TableName}_{fapColumn.ColName}");
             col.SetLabel(label);
             col.SetKey(fapColumn.ColType == FapColumn.COL_TYPE_PK);
@@ -272,8 +272,11 @@ namespace Fap.AspNetCore.Controls.JqGrid.Extensions
             }
             else if (fapColumn.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
             {
-                col.SetSearchType(Enums.Searchtype.Text);
-                SetTextSearchOption(col);
+                col.SetSearchType(Enums.Searchtype.Reference);
+                col.SetSearchOption(Enums.SearchOptions.IsIn);
+                col.SetSearchOption(Enums.SearchOptions.IsNotIn);
+                
+
                 col.SetCustomFormatter("formatReference");
                 col.SetUnFormat("unformatReference");
                 col.SetEditType(Enums.EditType.Custom);
