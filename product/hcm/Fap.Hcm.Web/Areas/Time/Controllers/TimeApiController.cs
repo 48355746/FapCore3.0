@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc;
 using Fap.AspNetCore.ViewModel;
 using Dapper;
+using Fap.AspNetCore.Serivce;
 
 namespace Fap.Hcm.Web.Areas.Time.Controllers
 {
@@ -20,9 +21,11 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
     public class TimeApiController : FapController
     {
         private readonly ITimeService _timeService;
+        private readonly IGridFormService _gridFormService;
         public TimeApiController(IServiceProvider serviceProvider) : base(serviceProvider)
         {
             _timeService = serviceProvider.GetService<ITimeService>();
+            _gridFormService = serviceProvider.GetService<IGridFormService>();
         }
         [HttpPost("Holiday")]
         public JsonResult PostHoliday(HolidayViewModel holiday)
@@ -68,6 +71,14 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
             IEnumerable<TmHoliday> list = _dbContext.QueryWhere<TmHoliday>("CaseUid=@CaseUid", param);
             var holiday = list.Select(l => l.Holiday);
             return Json(holiday);
+        }
+        [HttpPost("Schedule")]
+        public JsonResult PostInitSchedule(ScheduleViewModel schedule)
+        {
+            var pageable= _gridFormService.AnalysisPostData(schedule.PostData);
+            var empList = _dbContext.Query(pageable.ToString());
+            //ReturnMsg rmsg = _timeService.InitSchedule(strWhere, schedule.ShiftUid, schedule.HolidayUid, schedule.StartDate, schedule.EndDate);
+            return Json(ResponseViewModelUtils.Sueecss());
         }
     }
 }

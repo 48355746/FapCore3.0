@@ -14,14 +14,9 @@ namespace Fap.Hcm.Service.Time
     public class TmSchedule : BaseModel
     {
         /// <summary>
-        /// 员工
+        /// 排班UID
         /// </summary>
-        public string EmpUid { get; set; }
-        /// <summary>
-        /// 员工 的显性字段MC
-        /// </summary>
-        [ComputedAttribute]
-        public string EmpUidMC { get; set; }
+        public string ScheduleUid { get; set; }       
         /// <summary>
         /// 班次
         /// </summary>
@@ -30,16 +25,7 @@ namespace Fap.Hcm.Service.Time
         /// 班次 的显性字段MC
         /// </summary>
         [Computed]
-        public string ShiftUidMC { get; set; }
-        /// <summary>
-		/// 部门
-		/// </summary>
-		public string DeptUid { get; set; }
-        /// <summary>
-        /// 部门 的显性字段MC
-        /// </summary>
-        [Computed]
-        public string DeptUidMC { get; set; }
+        public string ShiftUidMC { get; set; }        
         /// <summary>
         /// 工作日期
         /// </summary>

@@ -163,7 +163,31 @@ namespace Fap.Core.Infrastructure.Query
 
         #endregion
 
+        public override string ToString()
+        {
+            //Orderby条件
+            string orderBy = this.Wraper.MakeOrderBySql();
+            if (!string.IsNullOrEmpty(orderBy))
+            {
+                orderBy = $" ORDER BY {orderBy} ";
+            }
+            else
+            {
+                orderBy = " order by Id ";
+            }
 
+            //Join条件
+            string join = string.Empty;// pageable.Wraper.MakeJoinSql();
+
+            if (this.MaxId != null)
+            {
+                this.AddWhere($"Id>{this.MaxId}");
+            }
+            string where = this.Wraper.MakeWhere();
+
+            return $"select {this.Wraper.MakeSelectSql()} from {this.Wraper.MakeFromSql()} {join} {where} {orderBy} ";
+
+        }
 
         [NonSerialized]
         private SimpleQueryOptionBuilder _wraper;

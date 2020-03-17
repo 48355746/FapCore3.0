@@ -150,7 +150,7 @@ namespace Fap.AspNetCore.Serivce
             return dataList;
 
         }
-        private Pageable AnalysisPostData(JqGridPostData jqGridPostData)
+        public Pageable AnalysisPostData(JqGridPostData jqGridPostData)
         {
             IEnumerable<FapColumn> fapColumns = _dbContext.Columns(jqGridPostData.QuerySet.TableName);
             jqGridPostData.Filters = jqGridPostData.Filters.IsPresent() ? jqGridPostData.Filters.Replace("query ", "select ") : "";

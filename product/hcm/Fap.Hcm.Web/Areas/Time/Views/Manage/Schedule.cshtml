@@ -276,15 +276,10 @@
                     bootbox.alert($.lang("holidaycase_required", "休息日套不能为空"));
                     return;
                 }
-                var sqlRv;
                 var jqPostData = $('#grid-Employee').jqGrid("getGridParam", "postData");
-                if (jqPostData.filters == undefined) {
-                    sqlRv = '';
-                } else {
-                    sqlRv = jqPostData.filters;
-                }
+             
                 var index = layer.load();
-                $.post("@Url.Content("~/api/time/initSchedule")", { shiftUid: shiftUid, holidayUid: holiday, startDate: startDatepicker, endDate: endDatepicker, empCondition: sqlRv }, function (rv) {
+                $.post("@Url.Content("~/Time/Api/Schedule")", { shiftUid: shiftUid, holidayUid: holiday, startDate: startDatepicker, endDate: endDatepicker, postData: jqPostData }, function (rv) {
                     layer.close(index);
                     if (rv.success == true) {
                         $.msg($.lang("success", "生成成功"));

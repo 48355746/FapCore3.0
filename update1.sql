@@ -1,703 +1,263 @@
-﻿
-EXEC sp_rename 'FapTable.ExtTable', 'MainTable' , 'COLUMN';
-update Fapcolumn set ColName='MainTable',colComment='主表', [CtrlType]='REFERENCE', [RefTable]='FapTable', [RefID]='TableName', [RefName]='TableComment', [RefType]='GridReference' where tablename='faptable' and colName='ExtTable'
+﻿-- 删除表
+if exists(select * from sysobjects where id = object_id(N'[TmScheduleEmployee]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)
+drop table TmScheduleEmployee
+
+GO
+CREATE TABLE [TmScheduleEmployee](
+[Id]  INT NOT NULL IDENTITY(1,1),
+[Fid]  VARCHAR(20),
+[ScheduleUid]  VARCHAR(22),
+[EmpUid]  VARCHAR(22),
+[DeptUid]  VARCHAR(22),
+[ScheduleYear]  VARCHAR(10),
+[OrgUid]  VARCHAR(20),
+[GroupUid]  VARCHAR(20),
+[EnableDate]  VARCHAR(19),
+[DisableDate]  VARCHAR(19),
+[Dr]  INT,
+[Ts]  BIGINT,
+[CreateBy]  VARCHAR(20),
+[CreateName]  VARCHAR(100),
+[CreateDate]  VARCHAR(19),
+[UpdateBy]  VARCHAR(20),
+[UpdateName]  VARCHAR(100),
+[UpdateDate]  VARCHAR(19),
+PRIMARY KEY (Id));
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'排班人员' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmScheduleEmployee';
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'主键', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmScheduleEmployee', @level2type=N'COLUMN',@level2name=N'Id';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'唯一标识', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmScheduleEmployee', @level2type=N'COLUMN',@level2name=N'Fid';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'排班UID', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmScheduleEmployee', @level2type=N'COLUMN',@level2name=N'ScheduleUid';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'员工', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmScheduleEmployee', @level2type=N'COLUMN',@level2name=N'EmpUid';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'部门', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmScheduleEmployee', @level2type=N'COLUMN',@level2name=N'DeptUid';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'年度', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmScheduleEmployee', @level2type=N'COLUMN',@level2name=N'ScheduleYear';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'组织', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmScheduleEmployee', @level2type=N'COLUMN',@level2name=N'OrgUid';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'集团', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmScheduleEmployee', @level2type=N'COLUMN',@level2name=N'GroupUid';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'有效开始时间', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmScheduleEmployee', @level2type=N'COLUMN',@level2name=N'EnableDate';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'有效截止时间', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmScheduleEmployee', @level2type=N'COLUMN',@level2name=N'DisableDate';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'删除标记', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmScheduleEmployee', @level2type=N'COLUMN',@level2name=N'Dr';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'时间戳', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmScheduleEmployee', @level2type=N'COLUMN',@level2name=N'Ts';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'创建人', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmScheduleEmployee', @level2type=N'COLUMN',@level2name=N'CreateBy';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'创建人名称', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmScheduleEmployee', @level2type=N'COLUMN',@level2name=N'CreateName';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'创建时间', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmScheduleEmployee', @level2type=N'COLUMN',@level2name=N'CreateDate';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'更新人', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmScheduleEmployee', @level2type=N'COLUMN',@level2name=N'UpdateBy';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'更新人名称', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmScheduleEmployee', @level2type=N'COLUMN',@level2name=N'UpdateName';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'更新时间', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmScheduleEmployee', @level2type=N'COLUMN',@level2name=N'UpdateDate';
 
 
-UPDATE [fapcolumn]
-SET [EditAble]=0
-WHERE [TableName]='FapTable' AND [ColName]='IsSync'
-GO
-UPDATE [fapcolumn]
-SET [ShowAble]=0
-WHERE [TableName]='FapTable' AND [ColName]='SubTable'
-GO
-UPDATE [fapcolumn]
-SET [ShowAble]=1, [EditAble]=1, [CtrlType]='CHECKBOXLIST', [RefTable]='FapTableFeature', [RefID]='Code', [RefCode]='Code', [RefName]='Name'
-WHERE [TableName]='FapTable' AND [ColName]='TableFeature'
-GO
-UPDATE [fapcolumn]
-SET [ShowAble]=0
-WHERE [TableName]='FapTable' AND [ColName]='IsPagination'
-GO
-UPDATE [fapcolumn]
-SET [NullAble]=0
-WHERE [TableName]='FapTable' AND [ColName]='TableType'
-GO
-UPDATE [fapcolumn]
-SET [ShowAble]=1
-WHERE [TableName]='FapTable' AND [ColName]='DataInterceptor'
-GO
-UPDATE [fapcolumn]
-SET [NullAble]=0
-WHERE [TableName]='FapTable' AND [ColName]='TableCategory'
-GO
-UPDATE [fapcolumn]
-SET [NullAble]=0
-WHERE [TableName]='FapTable' AND [ColName]='TableName'
-GO
-UPDATE [fapcolumn]
-SET [NullAble]=0
-WHERE [TableName]='FapTable' AND [ColName]='ProductUid'
-GO
-UPDATE [fapcolumn]
-SET [NullAble]=0
-WHERE [TableName]='FapTable' AND [ColName]='TableComment'
-GO
-UPDATE [fapcolumn]
-SET [ShowAble]=0
-WHERE [TableName]='FapTable' AND [ColName]='IsTree'
-GO
-UPDATE [fapcolumn]
-SET [NullAble]=0
-WHERE [TableName]='FapTable' AND [ColName]='TableMode'
-GO
-UPDATE [fapcolumn]
-SET [EditAble]=1
-WHERE [TableName]='FapTable' AND [ColName]='DataInterceptor'
 GO
 
-UPDATE [faptable]
-SET [DataInterceptor]='Fap.Core.Infrastructure.Interceptor.FapTableDataInterceptor,Fap.Core'
-WHERE [TableName]='FapTable'
-GO
-UPDATE [faptable]
-SET [DataInterceptor]='Fap.Core.Infrastructure.Interceptor.FapColumnDataInterceptor,Fap.Core'
-WHERE [TableName]='FapColumn'
-GO
-update FapTable set TableFeature='AttachmentFeature:附件特性' where TableFeature='AttachmentFeature'
-update FapTable set TableFeature='AttachmentFeature:附件特性;BillFeature:单据特性' where TableFeature='AttachmentFeature,BillFeature'
-update FapTable set TableFeature='SortByFeature:排序特性' where TableFeature='SortByFeature'
-update FapTable set TableFeature='EmpSubFeature:员工子集特性' where TableFeature='EmpSubFeature'
-update FapTable set TableFeature='BillFeature:单据特性' where TableFeature='BillFeature'
-update FapTable set TableFeature='InsCaseFeature:保险类特性' where TableFeature='InsCaseFeature'
-update FapTable set TableFeature='PayCaseFeature:工资套特性' where TableFeature='PayCaseFeature'
-GO
-alter table FapTable
-alter column TableFeature varchar(128)
-GO
-
-UPDATE [FapDict]
-SET [Name]='浮点型'
-WHERE [Code]='DOUBLE' AND [Category]='ColType'
-GO
-UPDATE [FapDict]
-SET [Name]='二进制'
-WHERE [Code]='BLOB' AND [Category]='ColType'
-GO
-UPDATE [FapDict]
-SET [Name]='布尔型'
-WHERE [Code]='BOOL' AND [Category]='ColType'
-GO
-UPDATE [FapDict]
-SET [Name]='整型'
-WHERE [Code]='INT' AND [Category]='ColType'
-GO
-UPDATE [FapDict]
-SET [Name]='长整型'
-WHERE [Code]='LONG' AND [Category]='ColType'
-GO
-UPDATE [FapDict]
-SET [Name]='文本二进制'
-WHERE [Code]='CLOB' AND [Category]='ColType'
-GO
-UPDATE [FapDict]
-SET [Name]='字符串'
-WHERE [Code]='STRING' AND [Category]='ColType'
-GO
-UPDATE [FapDict]
-SET [Name]='日期时间'
-WHERE [Code]='DATETIME' AND [Category]='ColType'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='基本信息'
-WHERE [Fid]='6ff111e580ff54c0d527' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='控件设置'
-WHERE [Fid]='6ff111e580ff54c0d52d' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='控件设置'
-WHERE [Fid]='f41b11e5bd3ecacbc798' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='控件设置'
-WHERE [Fid]='6ff111e580ff54c0d52b' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='控件设置'
-WHERE [Fid]='6ff111e580ff54c0d52e' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='控件设置'
-WHERE [Fid]='6ff111e580ff54c0d52f' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='基本信息'
-WHERE [Fid]='5fb411e6a8dec3a1b249' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='基本信息'
-WHERE [Fid]='6ff111e580ff54c0d528' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='基本信息'
-WHERE [Fid]='6ff111e580ff54c0d51b' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='基本信息'
-WHERE [Fid]='5fb411e6a8dec3a1b248' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='控件设置'
-WHERE [Fid]='5fb411e6a8dec3a1b246' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='控件设置'
-WHERE [Fid]='5fb411e6a8dec3a1b245' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='控件设置'
-WHERE [Fid]='6ff111e580ff54c0d535' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='基本信息'
-WHERE [Fid]='6ff111e580ff54c0d529' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='基本信息'
-WHERE [Fid]='6ff111e580ff54c0d520' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColComment]='是否多选', [ColGroup]='基本信息'
-WHERE [Fid]='228b11e6828eb712f30f' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='基本信息'
-WHERE [Fid]='7c6311e58078247308c2' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='控件设置'
-WHERE [Fid]='6ff111e580ff54c0d533' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='基本信息'
-WHERE [Fid]='6ff111e580ff54c0d51a' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='基本信息'
-WHERE [Fid]='6ff111e580ff54c0d52a' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='基本信息'
-WHERE [Fid]='6ff111e580ff54c0d522' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='基本信息'
-WHERE [Fid]='6ff111e580ff54c0d51c' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='控件设置'
-WHERE [Fid]='5fb411e6a8dec3a1b24d' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='控件设置'
-WHERE [Fid]='83c011e58a7e044679c4' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='基本信息'
-WHERE [Fid]='6ff111e580ff54c0d51e' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='基本信息'
-WHERE [Fid]='6ff111e580ff54c0d524' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='基本信息'
-WHERE [Fid]='6ff111e580ff54c0d51d' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='控件设置'
-WHERE [Fid]='6ff111e580ff54c0d531' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='控件设置'
-WHERE [Fid]='5fb411e6a8dec3a1b24e' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='控件设置'
-WHERE [Fid]='6ff111e580ff54c0d530' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='基本信息'
-WHERE [Fid]='1da311e6a75ecae1c38f' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='控件设置'
-WHERE [Fid]='6ff111e580ff54c0d532' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='基本信息'
-WHERE [Fid]='5fb411e6a8dec3a1b24c' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='控件设置'
-WHERE [Fid]='83c011e58a7e0ac10c5c' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='基本信息'
-WHERE [Fid]='6ff111e580ff54c0d523' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='控件设置'
-WHERE [Fid]='83d011e6a05cbd502f63' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='基本信息'
-WHERE [Fid]='6ff111e580ff54c0d51f' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='控件设置'
-WHERE [Fid]='83c011e58a7e044679c3' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='基本信息'
-WHERE [Fid]='6ff111e580ff54c0d521' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='控件设置'
-WHERE [Fid]='6ff111e580ff54c0d534' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='基本信息'
-WHERE [Fid]='f41b11e5bd3ecacbc799' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='控件设置'
-WHERE [Fid]='7c5c11e58078cfc7c005' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='基本信息'
-WHERE [Fid]='5fb411e6a8dec3a1b247' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='控件设置'
-WHERE [Fid]='6ff111e580ff54c0d52c' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColOrder]=90, [ShowAble]=0
-WHERE [Fid]='6ff111e580ff54c0d51e' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ShowAble]=0
-WHERE [Fid]='73b311e5b11118fc216b' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColOrder]=6
-WHERE [Fid]='6ff111e580ff54c0d51f' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColOrder]=10
-WHERE [Fid]='6ff111e580ff54c0d522' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [EditAble]=0
-WHERE [Fid]='6ff111e580ff54c0d51a' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColOrder]=15
-WHERE [Fid]='f41b11e5bd3ecacbc799' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColOrder]=9
-WHERE [Fid]='6ff111e580ff54c0d524' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColOrder]=80
-WHERE [Fid]='7c5c11e58078cfc7c005' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColOrder]=8
-WHERE [Fid]='6ff111e580ff54c0d521' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColOrder]=11
-WHERE [Fid]='6ff111e580ff54c0d520' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColOrder]=7
-WHERE [Fid]='6ff111e580ff54c0d51d' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColOrder]=15
-WHERE [Fid]='1da311e6a75ecae1c38f' AND [TableName]='FapColumn'
-GO
-UPDATE [FapColumn]
-SET [ColOrder]=23
-WHERE [Fid]='f41b11e5bd3ecacbc799' AND [TableName]='FapColumn'
+--FapTable元数据
+delete from FapTable where TableName='TmScheduleEmployee'
+INSERT INTO [FapTable]([IsTree],[IsPagination],[IsSync],[Dr],[TraceAble],[Ts],[Fid],[TableName],[TableComment],[TableType],[TableCategory],[TableMode],[ProductUid],[DataInterceptor],[ScriptInjection],[SqlInjection],[TableFeature],[TableDesc],[CreateDate],[UpdateBy],[UpdateName],[UpdateDate],[GroupUid],[OrgUid],[SubTable],[MainTable],[EnableDate],[DisableDate],[CreateBy],[CreateName]) VALUES(0,1,1,0,0,637200746679654973,'689457915819458560','TmScheduleEmployee','排班人员','BUSINESS','Tm','SINGLE','HCM','',NULL,NULL,'','','2020-03-17 20:44:27',NULL,NULL,NULL,'','',NULL,'','2020-03-17 20:44:26','9999-12-31 23:59:59','3521928112763830273','wangyanfei');
+GO
+--FapColumn元数据
+delete from FapColumn where TableName='TmScheduleEmployee'
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,10,0,0,0,0,0,0,0,1,0,0,0,0,0,637200746683558995,'689458586757103616','TmScheduleEmployee','Id','主键','INT','PK','',NULL,NULL,NULL,NULL,NULL,NULL,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'wangyanfei',NULL,'2020-03-17 20:44:28',NULL,NULL,NULL,'2020-03-17 20:44:27','9999-12-31 23:59:59',NULL,NULL,'3521928112763830273',NULL,'0',NULL,NULL,NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,20,0,0,0,0,0,0,0,1,0,0,0,1,0,637200746684433347,'689458587486912512','TmScheduleEmployee','Fid','唯一标识','TEXT','UID','',NULL,NULL,NULL,NULL,NULL,NULL,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'wangyanfei',NULL,'2020-03-17 20:44:28',NULL,NULL,NULL,'2020-03-17 20:44:27','9999-12-31 23:59:59',NULL,NULL,'3521928112763830273',NULL,'1',NULL,NULL,NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,10,0,1,0,0,0,0,0,1,0,0,0,980,0,637200746684841848,'689458587830845440','TmScheduleEmployee','OrgUid','组织','TEXT','UID','',NULL,NULL,NULL,NULL,NULL,NULL,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'wangyanfei',NULL,'2020-03-17 20:44:28',NULL,NULL,NULL,'2020-03-17 20:44:27','9999-12-31 23:59:59',NULL,NULL,'3521928112763830273',NULL,'1',NULL,NULL,NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,10,0,1,0,0,0,0,0,1,0,0,0,981,0,637200746685244144,'689458588170584064','TmScheduleEmployee','GroupUid','集团','TEXT','UID','',NULL,NULL,NULL,NULL,NULL,NULL,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'wangyanfei',NULL,'2020-03-17 20:44:28',NULL,NULL,NULL,'2020-03-17 20:44:27','9999-12-31 23:59:59',NULL,NULL,'3521928112763830273',NULL,'1',NULL,NULL,NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,19,0,0,0,0,0,0,0,1,0,0,0,982,0,637200746685756782,'689458588598403072','TmScheduleEmployee','EnableDate','有效开始时间','DATETIME','DATETIME','',NULL,NULL,NULL,NULL,NULL,NULL,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'wangyanfei',NULL,'2020-03-17 20:44:28',NULL,NULL,NULL,'2020-03-17 20:44:27','9999-12-31 23:59:59',NULL,NULL,'3521928112763830273',NULL,'1',NULL,NULL,NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,19,0,0,0,0,0,0,0,1,0,0,0,983,0,637200746686151923,'689458588929753088','TmScheduleEmployee','DisableDate','有效截止时间','DATETIME','DATETIME','',NULL,NULL,NULL,NULL,NULL,NULL,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'wangyanfei',NULL,'2020-03-17 20:44:28',NULL,NULL,NULL,'2020-03-17 20:44:27','9999-12-31 23:59:59',NULL,NULL,'3521928112763830273',NULL,'1',NULL,NULL,NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(10,0,10,0,0,0,0,0,0,0,1,0,0,0,984,0,637200746686650223,'689458589349183488','TmScheduleEmployee','Dr','删除标记','CHECKBOX','BOOL','',NULL,NULL,NULL,NULL,NULL,NULL,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'wangyanfei',NULL,'2020-03-17 20:44:28',NULL,NULL,NULL,'2020-03-17 20:44:27','9999-12-31 23:59:59',NULL,NULL,'3521928112763830273',NULL,'1',NULL,NULL,NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,10,0,0,0,0,0,0,0,1,0,0,0,985,0,637200746687059418,'689458589693116416','TmScheduleEmployee','Ts','时间戳','TEXT','LONG','',NULL,NULL,NULL,NULL,NULL,NULL,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'wangyanfei',NULL,'2020-03-17 20:44:28',NULL,NULL,NULL,'2020-03-17 20:44:27','9999-12-31 23:59:59',NULL,NULL,'3521928112763830273',NULL,'1',NULL,NULL,NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,10,0,1,0,0,0,0,0,1,0,0,0,986,0,637200746687559957,'689458590112546816','TmScheduleEmployee','CreateBy','创建人','TEXT','STRING','',NULL,NULL,NULL,NULL,NULL,NULL,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'wangyanfei',NULL,'2020-03-17 20:44:28',NULL,NULL,NULL,'2020-03-17 20:44:27','9999-12-31 23:59:59',NULL,NULL,'3521928112763830273',NULL,'1',NULL,NULL,NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(100,0,10,0,1,0,0,0,0,0,1,0,0,0,987,0,637200746687988437,'689458590469062656','TmScheduleEmployee','CreateName','创建人名称','TEXT','STRING','',NULL,NULL,NULL,NULL,NULL,NULL,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'wangyanfei',NULL,'2020-03-17 20:44:28',NULL,NULL,NULL,'2020-03-17 20:44:27','9999-12-31 23:59:59',NULL,NULL,'3521928112763830273',NULL,'1',NULL,NULL,NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,10,0,1,0,0,0,0,0,1,0,0,0,988,0,637200746688440298,'689458590850744320','TmScheduleEmployee','CreateDate','创建时间','DATETIME','DATETIME','',NULL,NULL,NULL,NULL,NULL,NULL,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'wangyanfei',NULL,'2020-03-17 20:44:28',NULL,NULL,NULL,'2020-03-17 20:44:27','9999-12-31 23:59:59',NULL,NULL,'3521928112763830273',NULL,'1',NULL,NULL,NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,10,0,1,0,0,0,0,0,1,0,0,0,989,0,637200746688895371,'689458591232425984','TmScheduleEmployee','UpdateBy','更新人','TEXT','STRING','',NULL,NULL,NULL,NULL,NULL,NULL,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'wangyanfei',NULL,'2020-03-17 20:44:28',NULL,NULL,NULL,'2020-03-17 20:44:27','9999-12-31 23:59:59',NULL,NULL,'3521928112763830273',NULL,'1',NULL,NULL,NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(100,0,10,0,1,0,0,0,0,0,1,0,0,0,990,0,637200746689283575,'689458591555387392','TmScheduleEmployee','UpdateName','更新人名称','TEXT','STRING','',NULL,NULL,NULL,NULL,NULL,NULL,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'wangyanfei',NULL,'2020-03-17 20:44:28',NULL,NULL,NULL,'2020-03-17 20:44:27','9999-12-31 23:59:59',NULL,NULL,'3521928112763830273',NULL,'1',NULL,NULL,NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,10,0,1,0,0,0,0,0,1,0,0,0,991,0,637200746689669251,'689458591882543104','TmScheduleEmployee','UpdateDate','更新时间','DATETIME','DATETIME','',NULL,NULL,NULL,NULL,NULL,NULL,'',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'wangyanfei',NULL,'2020-03-17 20:44:28',NULL,NULL,NULL,'2020-03-17 20:44:27','9999-12-31 23:59:59',NULL,NULL,'3521928112763830273',NULL,'1',NULL,NULL,NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(22,0,120,1,1,0,0,0,0,0,0,0,0,0,3,0,689469542526615552,'689458823303266304','TmScheduleEmployee','ScheduleUid','排班UID','TEXT','STRING','',NULL,'','',NULL,'','','','3521928112763830273','','wangyanfei','','2020-03-17 21:06:14','','','wangyanfei','','2020-03-17 20:47:12','','',NULL,'2020-03-17 20:47:11','9999-12-31 23:59:59','','','3521928112763830273','','3','','',NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(22,0,120,1,1,0,0,0,0,0,0,1,0,0,4,0,637200748848134018,'689459968549584896','TmScheduleEmployee','EmpUid','员工','REFERENCE','STRING','',NULL,'','',NULL,'','','',NULL,'',NULL,'',NULL,'','Fid','wangyanfei','','2020-03-17 20:48:04','EmpName','',NULL,'2020-03-17 20:48:03','9999-12-31 23:59:59','GridReference','Employee','3521928112763830273','','3','','',NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(22,0,120,1,1,0,0,0,0,0,0,1,0,0,5,0,637200749491680523,'689460405847719936','TmScheduleEmployee','DeptUid','部门','REFERENCE','STRING','',NULL,'','',NULL,'','','',NULL,'',NULL,'',NULL,'','Fid','wangyanfei','','2020-03-17 20:49:09','DeptName','',NULL,'2020-03-17 20:49:08','9999-12-31 23:59:59','TreeReference','OrgDept','3521928112763830273','','3','','',NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(10,0,120,1,1,0,0,0,0,0,0,1,0,0,7,0,637200750374418894,'689460945486872576','TmScheduleEmployee','ScheduleYear','年度','TEXT','STRING','',NULL,'','',NULL,'','','',NULL,'',NULL,'',NULL,'','','wangyanfei','','2020-03-17 20:50:37','','',NULL,'2020-03-17 20:50:36','9999-12-31 23:59:59','','','3521928112763830273','','3','','',NULL,NULL);
 GO
 
 
-UPDATE [FapColumn]
-SET [ShowAble]=0
-WHERE [TableName]='FapColumn' AND [ColName]='MainTable'
-GO
-UPDATE [FapColumn]
-SET [CtrlType]='REFERENCE', [RefTable]='FapTable', [RefID]='TableName', [RefName]='TableComment', [RefType]='GridReference', [ColGroup]='参照控件设置'
-WHERE [TableName]='FapColumn' AND [ColName]='RefTable'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='参照控件设置'
-WHERE [TableName]='FapColumn' AND [ColName]='RefReturnMapping'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='参照控件设置'
-WHERE [TableName]='FapColumn' AND [ColName]='RefCols'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='参照控件设置'
-WHERE [TableName]='FapColumn' AND [ColName]='RefCondition'
-GO
-UPDATE [FapColumn]
-SET [CtrlType]='REFERENCE', [RefTable]='FapColumn', [RefID]='ColName', [RefName]='ColComment', [RefCondition]='TableName=''${RefTable}''', [RefType]='GridReference', [ColGroup]='参照控件设置'
-WHERE [TableName]='FapColumn' AND [ColName]='RefName'
-GO
-UPDATE [FapColumn]
-SET [ColComment]='参照FID列', [ColGroup]='参照控件设置'
-WHERE [TableName]='FapColumn' AND [ColName]='RefID'
-GO
-UPDATE [FapColumn]
-SET [ShowAble]=0
-WHERE [TableName]='FapColumn' AND [ColName]='MainTableCol'
-GO
-UPDATE [FapColumn]
-SET [CtrlType]='COMBOBOX', [RefTable]='RefType', [ColGroup]='参照控件设置'
-WHERE [TableName]='FapColumn' AND [ColName]='RefType'
-GO
-UPDATE [FapColumn]
-SET [CtrlType]='REFERENCE', [RefTable]='FapColumn', [RefID]='ColName', [RefName]='ColComment', [RefCondition]='TableName=''${RefTable}''', [RefType]='GridReference', [ColGroup]='参照控件设置'
-WHERE [TableName]='FapColumn' AND [ColName]='RefCode'
-GO
+-- 删除表
+if exists(select * from sysobjects where id = object_id(N'[TmSchedule]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)
+drop table TmSchedule
 
-UPDATE [FapColumn]
-SET [ColGroup]='数值控件设置'
-WHERE [TableName]='FapColumn' AND [ColName]='MaxValue'
 GO
-UPDATE [FapColumn]
-SET [ColGroup]='附件控件设置'
-WHERE [TableName]='FapColumn' AND [ColName]='FileCount'
-GO
-UPDATE [FapColumn]
-SET [ShowAble]=0
-WHERE [TableName]='FapColumn' AND [ColName]='CalculationExpr'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='附件控件设置'
-WHERE [TableName]='FapColumn' AND [ColName]='FileSuffix'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='字段校验设置'
-WHERE [TableName]='FapColumn' AND [ColName]='RemoteChkMsg'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='控件设置'
-WHERE [TableName]='FapColumn' AND [ColName]='DisplayFormat'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='字段校验设置'
-WHERE [TableName]='FapColumn' AND [ColName]='RemoteChkURL'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='附件控件设置'
-WHERE [TableName]='FapColumn' AND [ColName]='FileSize'
-GO
-UPDATE [FapColumn]
-SET [ColGroup]='数值控件设置'
-WHERE [TableName]='FapColumn' AND [ColName]='MinValue'
-GO
-UPDATE [FapColumn]
-SET [ShowAble]=0
-WHERE [TableName]='FapColumn' AND [ColName]='ComponentUid'
-GO
+CREATE TABLE [TmSchedule](
+[Id]  INT NOT NULL IDENTITY(1,1),
+[Fid]  VARCHAR(20),
+[ScheduleUid]  VARCHAR(22),
+[ShiftUid]  VARCHAR(20),
+[WorkDay]  VARCHAR(20),
+[StartTime]  VARCHAR(19),
+[EndTime]  VARCHAR(19),
+[LateTime]  VARCHAR(19),
+[LeaveTime]  VARCHAR(19),
+[StartCardTime]  VARCHAR(19),
+[EndCardTime]  VARCHAR(19),
+[WorkHoursLength]  DECIMAL(20,1),
+[RestMinutesLength]  DECIMAL(20,1),
+[RestStartTime]  VARCHAR(19),
+[RestEndTime]  VARCHAR(19),
+[OrgUid]  VARCHAR(20),
+[GroupUid]  VARCHAR(20),
+[EnableDate]  VARCHAR(19),
+[DisableDate]  VARCHAR(19),
+[Dr]  INT,
+[Ts]  BIGINT,
+[CreateBy]  VARCHAR(20),
+[CreateName]  VARCHAR(100),
+[CreateDate]  VARCHAR(19),
+[UpdateBy]  VARCHAR(20),
+[UpdateName]  VARCHAR(100),
+[UpdateDate]  VARCHAR(19),
+PRIMARY KEY (Id));
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'排班表' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule';
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'主键', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'Id';
 
-UPDATE [FapColumn]
-SET [ColOrder]=71
-WHERE [TableName]='FapColumn' AND [ColName]='RemoteChkMsg'
-GO
-UPDATE [FapColumn]
-SET [ColOrder]=70
-WHERE [TableName]='FapColumn' AND [ColName]='RemoteChkURL'
-GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'唯一标识', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'Fid';
 
-UPDATE [FapColumn]
-SET [NullAble]=0
-WHERE [TableName]='FapColumn' AND [ColName]='CtrlType'
-GO
-UPDATE [FapColumn]
-SET [NullAble]=0
-WHERE [TableName]='FapColumn' AND [ColName]='ColType'
-GO
-UPDATE [FapColumn]
-SET [NullAble]=0
-WHERE [TableName]='FapColumn' AND [ColName]='ColComment'
-GO
-UPDATE [FapColumn]
-SET [ColDefault]='1'
-WHERE [TableName]='FapColumn' AND [ColName]='ShowAble'
-GO
-UPDATE [FapColumn]
-SET [ColDefault]='1'
-WHERE [TableName]='FapColumn' AND [ColName]='NullAble'
-GO
-UPDATE [FapColumn]
-SET [ColDefault]='120', [NullAble]=0
-WHERE [TableName]='FapColumn' AND [ColName]='DisplayWidth'
-GO
-UPDATE [FapColumn]
-SET [ColDefault]='1'
-WHERE [TableName]='FapColumn' AND [ColName]='EditAble'
-GO
-UPDATE [FapColumn]
-SET [NullAble]=0,[ColDefault]=3
-WHERE [TableName]='FapColumn' AND [ColName]='ColOrder'
-GO
-UPDATE [FapColumn]
-SET [NullAble]=0
-WHERE [TableName]='FapColumn' AND [ColName]='TableName'
-GO
-UPDATE [FapColumn]
-SET [NullAble]=0
-WHERE [TableName]='FapColumn' AND [ColName]='ColName'
-GO
-UPDATE [FapColumn]
-SET [NullAble]=0
-WHERE [TableName]='FapColumn' AND [ColName]='ColLength'
-GO
-UPDATE [FapColumn]
-SET [ColComment]='可多选'
-WHERE [TableName]='FapColumn' AND [ColName]='MultiAble'
-GO
-UPDATE [FapColumn]
-SET [ColComment]='为空'
-WHERE [TableName]='FapColumn' AND [ColName]='NullAble'
-GO
-UPDATE [FapColumn]
-SET [ColDefault]='0'
-WHERE [TableName]='FapColumn' AND [ColName]='ColPrecision'
-GO
-UPDATE [FapColumn]
-SET [ColComment]='可编辑'
-WHERE [TableName]='FapColumn' AND [ColName]='EditAble'
-GO
-UPDATE [FapColumn]
-SET [ColOrder]=80
-WHERE [TableName]='FapColumn' AND [ColName]='OrgUid'
-GO
-UPDATE [FapColumn]
-SET [ColOrder]=81
-WHERE [TableName]='FapColumn' AND [ColName]='GroupUid'
-GO
-UPDATE [FapColumn]
-SET [ColComment]='多语字段'
-WHERE [TableName]='FapColumn' AND [ColName]='IsMultiLang'
-GO
-UPDATE [FapColumn]
-SET [ColComment]='可见'
-WHERE [TableName]='FapColumn' AND [ColName]='ShowAble'
-GO
-UPDATE [FapColumn]
-SET [ColOrder]=25
-WHERE [TableName]='FapColumn' AND [ColName]='RefCondition'
-GO
-UPDATE [FapColumn]
-SET [ColOrder]=24
-WHERE [TableName]='FapColumn' AND [ColName]='RefName'
-GO
-UPDATE [FapColumn]
-SET [ColOrder]=20
-WHERE [TableName]='FapColumn' AND [ColName]='RefType'
-GO
-UPDATE [FapColumn]
-SET [ColOrder]=27
-WHERE [TableName]='FapColumn' AND [ColName]='RefReturnMapping'
-GO
-UPDATE [FapColumn]
-SET [ColOrder]=21
-WHERE [TableName]='FapColumn' AND [ColName]='RefTable'
-GO
-UPDATE [FapColumn]
-SET [ColOrder]=26
-WHERE [TableName]='FapColumn' AND [ColName]='RefCols'
-GO
-UPDATE [FapColumn]
-SET [ColOrder]=23
-WHERE [TableName]='FapColumn' AND [ColName]='RefCode'
-GO
-UPDATE [FapColumn]
-SET [ColOrder]=22
-WHERE [TableName]='FapColumn' AND [ColName]='RefID'
-GO
-EXEC sp_rename 'FapColumn.Icon', 'ComboxSource' , 'COLUMN';
-GO
-UPDATE [FapColumn]
-SET [ColName]='ComboxSource', [ColComment]='下拉数据源', [ShowAble]=1, [ColLength]=50, [CtrlType]='COMBOBOX', [RefTable]='FapDict', [ColGroup]='下拉控件设置'
-WHERE [TableName]='FapColumn' AND [ColName]='Icon'
-GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'排班UID', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'ScheduleUid';
 
-alter table Fapcolumn
-alter column ComboxSource varchar(50)
-GO
---更新下拉数据源为ComboxSource
-update FapColumn set ComboxSource=RefTable where CtrlType='combobox' and RefTable!=''
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'班次', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'ShiftUid';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'工作日期', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'WorkDay';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'上班时间', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'StartTime';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'下班时间', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'EndTime';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'迟到时间', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'LateTime';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'早退时间', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'LeaveTime';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'计算打卡开始时间', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'StartCardTime';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'计算打卡结束时间', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'EndCardTime';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'排班工作时长', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'WorkHoursLength';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'排班休息时长', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'RestMinutesLength';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'休息开始时间', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'RestStartTime';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'休息结束时间', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'RestEndTime';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'组织', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'OrgUid';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'集团', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'GroupUid';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'有效开始时间', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'EnableDate';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'有效截止时间', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'DisableDate';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'删除标记', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'Dr';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'时间戳', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'Ts';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'创建人', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'CreateBy';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'创建人名称', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'CreateName';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'创建时间', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'CreateDate';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'更新人', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'UpdateBy';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'更新人名称', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'UpdateName';
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'更新时间', @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'TmSchedule', @level2type=N'COLUMN',@level2name=N'UpdateDate';
 
 
-UPDATE [fapdict]
-SET [Code]='0'
-WHERE [Name]='主键' AND [Category]='ColProperty'
-GO
-UPDATE [FapCore].[dbo].[fapdict]
-SET [Code]='1'
-WHERE [Name]='固定项' AND [Category]='ColProperty'
-GO
-UPDATE [FapCore].[dbo].[fapdict]
-SET [Code]='3'
-WHERE [Name]='扩展项' AND [Category]='ColProperty'
 GO
 
-UPDATE [FapColumn]
-SET [ColOrder]=38
-WHERE [TableName]='FapColumn' AND [ColName]='ComboxSource'
+--FapTable元数据
+delete from FapTable where TableName='TmSchedule'
+INSERT INTO [FapTable]([IsTree],[IsPagination],[IsSync],[Dr],[TraceAble],[Ts],[Fid],[TableName],[TableComment],[TableType],[TableCategory],[TableMode],[ProductUid],[DataInterceptor],[ScriptInjection],[SqlInjection],[TableFeature],[TableDesc],[CreateDate],[UpdateBy],[UpdateName],[UpdateDate],[GroupUid],[OrgUid],[SubTable],[MainTable],[EnableDate],[DisableDate],[CreateBy],[CreateName]) VALUES(0,0,1,0,0,635992123465793337,'1d1011e6828e842fe8b9','TmSchedule','排班表','BUSINESS','Tm','SINGLE','HCM','',NULL,NULL,'InsCaseFeature:保险类特性','员工一年的排班明细数据','2016-05-18 23:52:26',NULL,NULL,'2016-05-18 23:52:26',NULL,NULL,NULL,'','2016-05-18 23:52:26','9999-12-31 23:59:59',NULL,NULL);
 GO
-UPDATE [FapColumn]
-SET [ColOrder]=35
-WHERE [TableName]='FapColumn' AND [ColName]='RefCondition'
+--FapColumn元数据
+delete from FapColumn where TableName='TmSchedule'
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,10,0,1,0,NULL,NULL,0,0,1,0,0,0,986,0,636356455532695632,'1d1011e6828e842fe8c5','TmSchedule','CreateBy','创建人','TEXT','STRING',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2016-05-18 23:52:26',NULL,NULL,NULL,NULL,'2017-07-14 16:12:33',NULL,NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59',NULL,NULL,NULL,NULL,'1',NULL,NULL,NULL,NULL);
 GO
-UPDATE [FapColumn]
-SET [ColOrder]=20
-WHERE [TableName]='FapColumn' AND [ColName]='LangEn'
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,10,0,1,0,NULL,NULL,0,0,1,0,0,0,988,0,636356455532695632,'1d1011e6828e842fe8c7','TmSchedule','CreateDate','创建时间','DATETIME','DATETIME',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2016-05-18 23:52:26',NULL,NULL,NULL,NULL,'2017-07-14 16:12:33',NULL,NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59',NULL,NULL,NULL,NULL,'1',NULL,NULL,NULL,NULL);
 GO
-UPDATE [FapColumn]
-SET [ColOrder]=21
-WHERE [TableName]='FapColumn' AND [ColName]='LangJa'
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(100,0,10,0,1,0,NULL,NULL,0,0,1,0,0,0,987,0,636356455532695632,'1d1011e6828e842fe8c6','TmSchedule','CreateName','创建人名称','TEXT','STRING',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2016-05-18 23:52:26',NULL,NULL,NULL,NULL,'2017-07-14 16:12:33',NULL,NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59',NULL,NULL,NULL,NULL,'1',NULL,NULL,NULL,NULL);
 GO
-UPDATE [FapColumn]
-SET [ColOrder]=37
-WHERE [TableName]='FapColumn' AND [ColName]='RefReturnMapping'
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,19,0,0,0,NULL,NULL,0,0,1,0,0,0,983,0,636356455532695632,'1d1011e6828e842fe8c2','TmSchedule','DisableDate','有效截止时间','DATETIME','DATETIME',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2016-05-18 23:52:26',NULL,NULL,NULL,NULL,'2017-07-14 16:12:33',NULL,NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59',NULL,NULL,NULL,NULL,'1',NULL,NULL,NULL,NULL);
 GO
-UPDATE [FapColumn]
-SET [ColOrder]=19
-WHERE [TableName]='FapColumn' AND [ColName]='LangZhTW'
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(10,0,10,0,0,0,NULL,NULL,0,0,1,0,0,0,984,0,636356455532695632,'1d1011e6828e842fe8c3','TmSchedule','Dr','删除标记','CHECKBOX','BOOL',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2016-05-18 23:52:26',NULL,NULL,NULL,NULL,'2017-07-14 16:12:33',NULL,NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59',NULL,NULL,NULL,NULL,'1',NULL,NULL,NULL,NULL);
 GO
-UPDATE [FapColumn]
-SET [ColOrder]=32
-WHERE [TableName]='FapColumn' AND [ColName]='RefID'
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(22,0,80,1,1,0,0,0,0,0,0,1,0,0,2,0,689465694667931648,'1d1011e6828e842fe8bc','TmSchedule','ScheduleUid','排班UID','TEXT','STRING',NULL,NULL,'','',NULL,'','',NULL,'3521928112763830273','','wangyanfei','','2020-03-17 20:58:34','','',NULL,'','2017-07-14 16:12:33','','',NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59','','',NULL,'','1','','',NULL,NULL);
 GO
-UPDATE [FapColumn]
-SET [ColOrder]=33
-WHERE [TableName]='FapColumn' AND [ColName]='RefCode'
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,19,0,0,0,NULL,NULL,0,0,1,0,0,0,982,0,636356455532695632,'1d1011e6828e842fe8c1','TmSchedule','EnableDate','有效开始时间','DATETIME','DATETIME',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2016-05-18 23:52:26',NULL,NULL,NULL,NULL,'2017-07-14 16:12:33',NULL,NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59',NULL,NULL,NULL,NULL,'1',NULL,NULL,NULL,NULL);
 GO
-UPDATE [FapColumn]
-SET [ColOrder]=30
-WHERE [TableName]='FapColumn' AND [ColName]='RefType'
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,100,1,1,0,NULL,NULL,10,10240,0,1,0,0,10,0,636356455532695632,'78cb11e688795f91a10c','TmSchedule','EndCardTime','计算打卡结束时间','DATETIME','DATETIME',NULL,NULL,NULL,NULL,NULL,'','',NULL,NULL,NULL,NULL,'','2016-09-12 17:29:16','',NULL,NULL,NULL,'2017-07-14 16:12:33',NULL,NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59',NULL,NULL,NULL,NULL,'1',NULL,NULL,NULL,NULL);
 GO
-UPDATE [FapColumn]
-SET [ColOrder]=18
-WHERE [TableName]='FapColumn' AND [ColName]='SortDirection'
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,100,1,1,0,NULL,NULL,10,10240,0,1,0,0,6,0,636356455532695632,'77cc11e68b1a1cad8702','TmSchedule','EndTime','下班时间','DATETIME','DATETIME',NULL,NULL,NULL,NULL,NULL,'','',NULL,NULL,NULL,NULL,'','2016-09-11 11:02:02','',NULL,NULL,NULL,'2017-07-14 16:12:33',NULL,NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59',NULL,NULL,NULL,NULL,'1',NULL,NULL,NULL,NULL);
 GO
-UPDATE [FapColumn]
-SET [ColOrder]=34
-WHERE [TableName]='FapColumn' AND [ColName]='RefName'
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,20,0,0,0,NULL,NULL,0,0,1,0,0,0,1,0,636356455532695632,'1d1011e6828e842fe8bb','TmSchedule','Fid','唯一标识','TEXT','UID',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2016-05-18 23:52:26',NULL,NULL,NULL,NULL,'2017-07-14 16:12:33',NULL,NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59',NULL,NULL,NULL,'${FAP::UUID}','1',NULL,NULL,NULL,NULL);
 GO
-UPDATE [FapColumn]
-SET [ColOrder]=31
-WHERE [TableName]='FapColumn' AND [ColName]='RefTable'
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,10,0,1,0,NULL,NULL,0,0,1,0,0,0,981,0,636356455532695632,'1d1011e6828e842fe8c0','TmSchedule','GroupUid','集团','TEXT','UID',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2016-05-18 23:52:26',NULL,NULL,NULL,NULL,'2017-07-14 16:12:33',NULL,NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59',NULL,NULL,NULL,'${FAP::UUID}','1',NULL,NULL,NULL,NULL);
 GO
-UPDATE [FapColumn]
-SET [ColOrder]=36
-WHERE [TableName]='FapColumn' AND [ColName]='RefCols'
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,10,0,0,0,NULL,NULL,0,0,1,0,0,0,0,0,636356455532695632,'1d1011e6828e842fe8ba','TmSchedule','Id','主键','INT','PK',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2016-05-18 23:52:26',NULL,NULL,NULL,NULL,'2017-07-14 16:12:33',NULL,NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59',NULL,NULL,NULL,NULL,'0',NULL,NULL,NULL,NULL);
 GO
-UPDATE [FapColumn]
-SET [ColOrder]=18
-WHERE [TableName]='FapColumn' AND [ColName]='DisplayFormat'
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,100,1,1,0,NULL,NULL,10,10240,0,1,0,0,7,0,636356455532695632,'77cc11e68b1a1cad8703','TmSchedule','LateTime','迟到时间','DATETIME','DATETIME',NULL,NULL,NULL,NULL,NULL,'','',NULL,NULL,NULL,NULL,'','2016-09-11 11:02:02','',NULL,NULL,NULL,'2017-07-14 16:12:33',NULL,NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59',NULL,NULL,NULL,NULL,'1',NULL,NULL,NULL,NULL);
 GO
-UPDATE [FapColumn]
-SET [CtrlType]='COMBOBOX', [ComboxSource]='FieldSortType'
-WHERE [TableName]='FapColumn' AND [ColName]='SortDirection'
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,100,1,1,0,NULL,NULL,10,10240,0,1,0,0,8,0,636356455532695632,'77cc11e68b1a1cad8704','TmSchedule','LeaveTime','早退时间','DATETIME','DATETIME',NULL,NULL,NULL,NULL,NULL,'','',NULL,NULL,NULL,NULL,'','2016-09-11 11:02:02','',NULL,NULL,NULL,'2017-07-14 16:12:33',NULL,NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59',NULL,NULL,NULL,NULL,'1',NULL,NULL,NULL,NULL);
 GO
-
-INSERT INTO [FapDict]([Fid], [Code], [Name], [Pid], [IsEndLevel], [CPath], [Category], [CategoryName], [OrgUid], [GroupUid], [EnableDate], [DisableDate], [Dr], [Ts], [CreateBy], [CreateName], [CreateDate], [UpdateBy], [UpdateName], [UpdateDate], [IsSystem], [SortBy])
-  VALUES( '677482586057998336', 'ASC', '正序', '', 1, '', 'FieldSortType', '字段排序类型', '', '', '2020-02-13 19:40:36', '9999-12-31 23:59:59', 0, 637172196374555126, '3521928112763830273', '王燕飞', '2020-02-13 19:40:37', NULL, NULL, NULL, 0, 0)
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,10,0,1,0,NULL,NULL,0,0,1,0,0,0,980,0,636356455532695632,'1d1011e6828e842fe8bf','TmSchedule','OrgUid','组织','TEXT','UID',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2016-05-18 23:52:26',NULL,NULL,NULL,NULL,'2017-07-14 16:12:33',NULL,NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59',NULL,NULL,NULL,'${FAP::UUID}','1',NULL,NULL,NULL,NULL);
 GO
-INSERT INTO [FapDict]( [Fid], [Code], [Name], [Pid], [IsEndLevel], [CPath], [Category], [CategoryName], [OrgUid], [GroupUid], [EnableDate], [DisableDate], [Dr], [Ts], [CreateBy], [CreateName], [CreateDate], [UpdateBy], [UpdateName], [UpdateDate], [IsSystem], [SortBy])
-  VALUES( '677482783827820544', 'DESC', '倒序', '', 1, '', 'FieldSortType', '字段排序类型', '', '', '2020-02-13 19:41:06', '9999-12-31 23:59:59', 0, 637172196677113118, '3521928112763830273', '王燕飞', '2020-02-13 19:41:07', NULL, NULL, NULL, 0, 1)
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,100,1,1,0,NULL,NULL,10,10240,0,1,0,0,14,0,636356455532695632,'679611e78cc237941138','TmSchedule','RestEndTime','休息结束时间','DATETIME','DATETIME',NULL,NULL,NULL,NULL,NULL,'','',NULL,NULL,NULL,NULL,'','2017-07-13 14:40:54','',NULL,NULL,NULL,'2017-07-14 16:12:33',NULL,NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59',NULL,NULL,NULL,NULL,'1',NULL,NULL,NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,100,1,1,0,NULL,NULL,10,10240,0,1,0,0,13,0,636356455532695632,'797711e68879442f506c','TmSchedule','RestMinutesLength','排班休息时长','DOUBLE','DOUBLE',NULL,NULL,NULL,NULL,NULL,'','',NULL,NULL,NULL,NULL,'','2016-09-13 13:59:44','',NULL,NULL,NULL,'2017-07-14 16:12:33',NULL,NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59',NULL,NULL,NULL,'0.0','1',NULL,NULL,NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,100,1,1,0,NULL,NULL,10,10240,0,1,0,0,13,0,636356455532695632,'679611e78cc237941137','TmSchedule','RestStartTime','休息开始时间','DATETIME','DATETIME',NULL,NULL,NULL,NULL,NULL,'','',NULL,NULL,NULL,NULL,'','2017-07-13 14:40:54','',NULL,NULL,NULL,'2017-07-14 16:12:33',NULL,NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59',NULL,NULL,NULL,NULL,'1',NULL,NULL,NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,80,1,1,0,NULL,NULL,10,10240,0,1,0,0,3,0,636356455532695632,'1d1011e6828e842fe8bd','TmSchedule','ShiftUid','班次','REFERENCE','STRING',NULL,NULL,NULL,NULL,NULL,'','',NULL,NULL,NULL,NULL,'','2016-05-18 23:52:26','','Fid',NULL,NULL,'2017-07-14 16:12:33','ShiftName',NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59','GridReference','TmShift',NULL,NULL,'1',NULL,NULL,NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,100,1,1,0,NULL,NULL,10,10240,0,1,0,0,9,0,636356455532695632,'78cb11e688795f91a10b','TmSchedule','StartCardTime','计算打卡开始时间','DATETIME','DATETIME',NULL,NULL,NULL,NULL,NULL,'','',NULL,NULL,NULL,NULL,'','2016-09-12 17:29:16','',NULL,NULL,NULL,'2017-07-14 16:12:33',NULL,NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59',NULL,NULL,NULL,NULL,'1',NULL,NULL,NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,100,1,1,0,NULL,NULL,10,10240,0,1,0,0,5,0,636356455532695632,'77cc11e68b1a1cad8701','TmSchedule','StartTime','上班时间','DATETIME','DATETIME',NULL,NULL,NULL,NULL,NULL,'','',NULL,NULL,NULL,NULL,'','2016-09-11 11:02:02','',NULL,NULL,NULL,'2017-07-14 16:12:33',NULL,NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59',NULL,NULL,NULL,NULL,'1',NULL,NULL,NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,10,0,0,0,NULL,NULL,0,0,1,0,0,0,985,0,636356455532695632,'1d1011e6828e842fe8c4','TmSchedule','Ts','时间戳','TEXT','LONG',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2016-05-18 23:52:26',NULL,NULL,NULL,NULL,'2017-07-14 16:12:33',NULL,NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59',NULL,NULL,NULL,NULL,'1',NULL,NULL,NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,10,0,1,0,NULL,NULL,0,0,1,0,0,0,989,0,636356455532695632,'1d1011e6828e842fe8c8','TmSchedule','UpdateBy','更新人','TEXT','STRING',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2016-05-18 23:52:26',NULL,NULL,NULL,NULL,'2017-07-14 16:12:33',NULL,NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59',NULL,NULL,NULL,NULL,'1',NULL,NULL,NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,10,0,1,0,NULL,NULL,0,0,1,0,0,0,991,0,636356455532695632,'1d1011e6828e842fe8ca','TmSchedule','UpdateDate','更新时间','DATETIME','DATETIME',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2016-05-18 23:52:26',NULL,NULL,NULL,NULL,'2017-07-14 16:12:33',NULL,NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59',NULL,NULL,NULL,NULL,'1',NULL,NULL,NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(100,0,10,0,1,0,NULL,NULL,0,0,1,0,0,0,990,0,636356455532695632,'1d1011e6828e842fe8c9','TmSchedule','UpdateName','更新人名称','TEXT','STRING',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2016-05-18 23:52:26',NULL,NULL,NULL,NULL,'2017-07-14 16:12:33',NULL,NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59',NULL,NULL,NULL,NULL,'1',NULL,NULL,NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,100,1,1,0,NULL,NULL,10,10240,0,1,0,0,4,0,636356455532695632,'1d1011e6828e842fe8be','TmSchedule','WorkDay','工作日期','DATE','STRING',NULL,NULL,NULL,NULL,NULL,'','',NULL,NULL,NULL,NULL,'','2016-05-18 23:52:26','',NULL,NULL,NULL,'2017-07-14 16:12:33',NULL,NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59',NULL,NULL,NULL,NULL,'1',NULL,NULL,NULL,NULL);
+GO
+INSERT INTO [FapColumn]([ColLength],[ColPrecision],[DisplayWidth],[EditAble],[NullAble],[Dr],[MinValue],[MaxValue],[FileCount],[FileSize],[IsDefaultCol],[ShowAble],[MultiAble],[IsMultiLang],[ColOrder],[IsObsolete],[Ts],[Fid],[TableName],[ColName],[ColComment],[CtrlType],[ColType],[GroupUid],[DefaultValueClass],[ComboxSource],[FileSuffix],[ComponentUid],[RemoteChkURL],[RemoteChkMsg],[OrgUid],[UpdateBy],[RefCols],[UpdateName],[RefReturnMapping],[UpdateDate],[ColGroup],[RefID],[CreateName],[RefCode],[CreateDate],[RefName],[RefCondition],[CalculationExpr],[EnableDate],[DisableDate],[RefType],[RefTable],[CreateBy],[ColDefault],[ColProperty],[SortDirection],[DisplayFormat],[MainTable],[MainTableCol]) VALUES(20,0,100,1,1,0,NULL,NULL,10,10240,0,1,0,0,11,0,636356455532695632,'797711e68879442f506b','TmSchedule','WorkHoursLength','排班工作时长','DOUBLE','DOUBLE',NULL,NULL,NULL,NULL,NULL,'','',NULL,NULL,NULL,NULL,'','2016-09-13 13:59:44','',NULL,NULL,NULL,'2017-07-14 16:12:33',NULL,NULL,NULL,'2017-07-14 16:12:33','9999-12-31 23:59:59',NULL,NULL,NULL,'0.0','1',NULL,NULL,NULL,NULL);
 GO
 
-UPDATE [FapColumn]
-SET [MaxValue]=NULL, [MinValue]=NULL
-WHERE [TableName]='FapColumn' AND [ColName]='ColOrder'
-GO
 
-UPDATE [FapTableFeature]
-SET [Data]='[{"TableName":"","ColName":"Attachment","ColComment":"附件","ColDefault":"${FAP::UUID}","DefaultValueClass":null,"ColType":"UID","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":80,"ColOrder":100,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"FILE","CtrlTypeMC":null,"FileCount":20,"FileSuffix":"","FileSize":10240,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"RefReturnMapping":"","MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":"","RemoteChkMsg":"","LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null}]'
-WHERE [Fid]='83c211e58a7e7958b4ed'
-GO
-
-UPDATE [faptablefeature]
-SET [Data]='[{"TableName":"","ColName":"BillCode","ColComment":"单据编码","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":30,"DisplayWidth":135,"ColOrder":2,"ColPrecision":0,"NullAble":0,"ShowAble":1,"EditAble":0,"IsDefaultCol":0,"CtrlType":"TEXT","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"BillName","ColComment":"单据名称","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":100,"DisplayWidth":100,"ColOrder":3,"ColPrecision":0,"NullAble":0,"ShowAble":1,"EditAble":0,"IsDefaultCol":0,"CtrlType":"TEXT","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"BillTime","ColComment":"制单时间","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":100,"ColOrder":4,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":0,"IsDefaultCol":0,"CtrlType":"DATETIME","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"BillEmpUid","ColComment":"制单人","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":80,"ColOrder":5,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":0,"IsDefaultCol":0,"CtrlType":"REFERENCE","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":"Employee","RefID":"Fid","RefCode":null,"RefName":"EmpName","RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":"GridReference","MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"AppEmpUid","ColComment":"申请人","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":80,"ColOrder":6,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"REFERENCE","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":"Employee","RefID":"Fid","RefCode":null,"RefName":"EmpName","RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":"GridReference","MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"CurrApprover","ColComment":"当前审批人","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":100,"ColOrder":900,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":0,"IsDefaultCol":0,"CtrlType":"REFERENCE","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":"Employee","RefID":"Fid","RefCode":null,"RefName":"EmpName","RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":"GridReference","MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"ApprovalTime","ColComment":"审批时间","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":100,"ColOrder":901,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":0,"IsDefaultCol":0,"CtrlType":"DATETIME","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"ApprovalComments","ColComment":"审批意见","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":2000,"DisplayWidth":100,"ColOrder":902,"ColPrecision":0,"NullAble":1,"ShowAble":0,"EditAble":0,"IsDefaultCol":0,"CtrlType":"MEMO","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"SubmitTime","ColComment":"提交时间","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":100,"ColOrder":899,"ColPrecision":0,"NullAble":1,"ShowAble":0,"EditAble":0,"IsDefaultCol":0,"CtrlType":"DATETIME","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"BillStatus","ColComment":"单据状态","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":100,"ColOrder":903,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":0,"IsDefaultCol":0,"CtrlType":"COMBOBOX","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"ComboxSource":"BillStatus","RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"EffectiveTime","ColComment":"生效时间","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":100,"ColOrder":905,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":0,"IsDefaultCol":0,"CtrlType":"DATETIME","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"EffectiveState","ColComment":"生效状态","ColDefault":null,"DefaultValueClass":null,"ColType":"INT","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":100,"ColOrder":904,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":0,"IsDefaultCol":0,"CtrlType":"CHECKBOX","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null}]'
-WHERE [Fid]='e10811e5abed9b6c925e'
-GO
-UPDATE [FapTableFeature]
-SET [Data]='[{"TableName":"","ColName":"PayYM","ColComment":"工资年月","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":100,"ColOrder":5,"ColPrecision":0,"NullAble":0,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"TEXT","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"RefReturnMapping":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":null,"RemoteChkMsg":null,"LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"PayCaseUid","ColComment":"工资套","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":80,"ColOrder":6,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"REFERENCE","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":"PayCase","RefID":"Fid","RefCode":null,"RefName":"CaseName","RefCondition":null,"RefCols":null,"RefReturnMapping":null,"MultiAble":0,"Icon":null,"RefType":"GridReference","MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":null,"RemoteChkMsg":null,"LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"PaymentTimes","ColComment":"发放次数","ColDefault":null,"DefaultValueClass":null,"ColType":"INT","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":100,"ColOrder":8,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":0,"IsDefaultCol":0,"CtrlType":"INT","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"RefReturnMapping":"","MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":"","RemoteChkMsg":"","LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"EmpUid","ColComment":"员工","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":80,"ColOrder":1,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"REFERENCE","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":"Employee","RefID":"Fid","RefCode":null,"RefName":"EmpName","RefCondition":null,"RefCols":null,"RefReturnMapping":null,"MultiAble":0,"Icon":null,"RefType":"GridReference","MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":null,"RemoteChkMsg":null,"LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"DeptUid","ColComment":"部门","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":80,"ColOrder":4,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"REFERENCE","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":"OrgDept","RefID":"Fid","RefCode":null,"RefName":"DeptName","RefCondition":null,"RefCols":null,"RefReturnMapping":null,"MultiAble":0,"Icon":null,"RefType":"TreeReference","MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":null,"RemoteChkMsg":null,"LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"CostCenter","ColComment":"成本中心","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":200,"DisplayWidth":100,"ColOrder":7,"ColPrecision":0,"NullAble":0,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"COMBOBOX","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":"PayCostCenter","RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"RefReturnMapping":"","MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":"","RemoteChkMsg":"","LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"EmpCode","ColComment":"员工编码","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":80,"DisplayWidth":100,"ColOrder":2,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"TEXT","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"RefReturnMapping":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":null,"RemoteChkMsg":null,"LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"EmpCategory","ColComment":"员工类别","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":100,"ColOrder":3,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"COMBOBOX","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":"EmpCategory","RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"RefReturnMapping":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":null,"RemoteChkMsg":null,"LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"JoinCalculate","ColComment":"参与计算","ColDefault":null,"DefaultValueClass":null,"ColType":"INT","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":100,"ColOrder":9,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"CHECKBOX","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"RefReturnMapping":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":null,"RemoteChkMsg":null,"LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"PayConfirm","ColComment":"工资确认","ColDefault":null,"DefaultValueClass":null,"ColType":"INT","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":100,"ColOrder":10,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"CHECKBOX","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"RefReturnMapping":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":null,"RemoteChkMsg":null,"LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"UnpaidOdd","ColComment":"未付零头","ColDefault":null,"DefaultValueClass":null,"ColType":"DOUBLE","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":18,"DisplayWidth":100,"ColOrder":11,"ColPrecision":2,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"MONEY","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"RefReturnMapping":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":null,"RemoteChkMsg":null,"LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"RealPayroll","ColComment":"实发工资","ColDefault":null,"DefaultValueClass":null,"ColType":"DOUBLE","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":18,"DisplayWidth":100,"ColOrder":12,"ColPrecision":2,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"MONEY","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"RefReturnMapping":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":null,"RemoteChkMsg":null,"LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null}]'
-WHERE [Fid]='fc0111e5828ccd6edfb0'
-GO
-UPDATE [FapTableFeature]
-SET [Data]='[{"TableName":"","ColName":"EmpUid","ColComment":"员工","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":80,"ColOrder":2,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"REFERENCE","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":"Employee","RefID":"Fid","RefCode":null,"RefName":"EmpName","RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":"GridReference","MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":"","RemoteChkMsg":"","LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"EmpCode","ColComment":"人员编码","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":100,"ColOrder":3,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"TEXT","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":"","RemoteChkMsg":"","LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"EmpCategory","ColComment":"员工类别","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":100,"ColOrder":4,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"COMBOBOX","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":"EmpCategory","RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":"","RemoteChkMsg":"","LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"DeptUid","ColComment":"部门","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":80,"ColOrder":5,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"REFERENCE","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":"OrgDept","RefID":"Fid","RefCode":null,"RefName":"DeptName","RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":"TreeReference","MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":"","RemoteChkMsg":"","LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"InsYM","ColComment":"保险年月","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":100,"ColOrder":6,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"TEXT","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":"","RemoteChkMsg":"","LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"InsmentTimes","ColComment":"参保次数","ColDefault":null,"DefaultValueClass":null,"ColType":"INT","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":100,"ColOrder":7,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"INT","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":"","RemoteChkMsg":"","LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"InsBase","ColComment":"缴费基数","ColDefault":null,"DefaultValueClass":null,"ColType":"DOUBLE","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":100,"ColOrder":8,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"DOUBLE","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":"","RemoteChkMsg":"","LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"CompanyRate","ColComment":"单位缴费率","ColDefault":null,"DefaultValueClass":null,"ColType":"DOUBLE","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":100,"ColOrder":9,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"DOUBLE","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":"","RemoteChkMsg":"","LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"MySelfRate","ColComment":"个人缴费率","ColDefault":null,"DefaultValueClass":null,"ColType":"DOUBLE","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":100,"ColOrder":10,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"DOUBLE","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":"","RemoteChkMsg":"","LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"CompanyAmount","ColComment":"单位缴费额","ColDefault":null,"DefaultValueClass":null,"ColType":"DOUBLE","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":100,"ColOrder":11,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"DOUBLE","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":"","RemoteChkMsg":"","LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"MySelfAmount","ColComment":"个人缴费额","ColDefault":null,"DefaultValueClass":null,"ColType":"DOUBLE","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":100,"ColOrder":12,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"DOUBLE","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":"","RemoteChkMsg":"","LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"InsPayplace","ColComment":"缴纳地","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":30,"DisplayWidth":80,"ColOrder":13,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"TEXT","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":"","RemoteChkMsg":"","LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"HouseholdType","ColComment":"户口性质","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":100,"ColOrder":14,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"TEXT","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":"","RemoteChkMsg":"","LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"IdCard","ColComment":"身份证号","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":100,"ColOrder":15,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"TEXT","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":"","RemoteChkMsg":"","LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"InsConfirm","ColComment":"参保确认","ColDefault":null,"DefaultValueClass":null,"ColType":"INT","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":100,"ColOrder":16,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"INT","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":"","RemoteChkMsg":"","LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"InsCaseUid","ColComment":"保险组","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":80,"ColOrder":17,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"REFERENCE","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":"InsCase","RefID":"Fid","RefCode":null,"RefName":"CaseName","RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":"GridReference","MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":"","RemoteChkMsg":"","LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null}]'
-WHERE [Fid]='b2db11e6a7c90f4428fa'
-GO
-UPDATE [FapTableFeature]
-SET [Data]='[{"TableName":"","ColName":"EmpUid","ColComment":"员工","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":80,"ColOrder":2,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":0,"IsDefaultCol":0,"CtrlType":"REFERENCE","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":"Employee","RefID":"Fid","RefCode":null,"RefName":"EmpName","RefCondition":null,"RefCols":null,"RefReturnMapping":"","MultiAble":0,"Icon":null,"RefType":"GridReference","MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":"","RemoteChkMsg":"","LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null},{"TableName":"","ColName":"EmpCode","ColComment":"员工编码","ColDefault":null,"DefaultValueClass":null,"ColType":"STRING","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":40,"DisplayWidth":100,"ColOrder":3,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":0,"IsDefaultCol":0,"CtrlType":"TEXT","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"RefReturnMapping":"","MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":"","RemoteChkMsg":"","LangZhTW":null,"LangEn":null,"LangJa":null,"SortDirection":null,"CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null}]'
-WHERE [Fid]='101e11e6aa8dd3cffad7'
-GO
-UPDATE [FapTableFeature]
-SET [Data]='[{"TableName":"","ColName":"SortBy","ColComment":"排序","ColDefault":"0","DefaultValueClass":null,"ColType":"INT","ColTypeMC":null,"MinValue":null,"MaxValue":null,"ColProperty":3,"ColPropertyMC":null,"ColLength":20,"DisplayWidth":80,"ColOrder":996,"ColPrecision":0,"NullAble":1,"ShowAble":1,"EditAble":1,"IsDefaultCol":0,"CtrlType":"INT","CtrlTypeMC":null,"FileCount":0,"FileSuffix":null,"FileSize":0,"DisplayFormat":null,"RefTable":null,"RefID":null,"RefCode":null,"RefName":null,"RefCondition":null,"RefCols":null,"MultiAble":0,"Icon":null,"RefType":null,"MainTable":null,"MainTableCol":null,"CalculationExpr":null,"ColGroup":"","ComponentUid":null,"ComponentUidMC":null,"IsObsolete":0,"IsMultiLang":0,"RemoteChkURL":"","RemoteChkMsg":"","CustomFormat":null,"IsCustomColumn":0,"Id":0,"Fid":null,"OrgUid":null,"GroupUid":null,"EnableDate":null,"DisableDate":null,"Dr":0,"Ts":0,"CreateBy":null,"CreateName":null,"CreateDate":null,"UpdateBy":null,"UpdateName":null,"UpdateDate":null}]'
-WHERE [Fid]='642211e6a82a54fc5c9c'
-GO
-UPDATE [FapColumn]
-SET [ColLength]=128
-WHERE [TableName]='FapColumn' AND [ColName]='RefTable'
-GO
-UPDATE [FapColumn]
-SET [ColLength]=50
-WHERE [TableName]='FapColumn' AND [ColName]='RefName'
-GO
-UPDATE [FapColumn]
-SET [ColLength]=128
-WHERE [TableName]='FapColumn' AND [ColName]='ComboxSource'
-GO
-UPDATE FapColumn
-SET [ColDefault]='3', [NullAble]=0
-WHERE [TableName]='FapColumn' AND [ColName]='ColProperty'
-GO
---加一个表分类【元数据】
-INSERT INTO [fapdict]( [Fid], [Code], [Name], [Pid], [IsEndLevel], [CPath], [Category], [CategoryName], [OrgUid], [GroupUid], [EnableDate], [DisableDate], [Dr], [Ts], [CreateBy], [CreateName], [CreateDate], [UpdateBy], [UpdateName], [UpdateDate], [IsSystem], [SortBy])
-  VALUES('679651904816414720', 'Metadata', '元数据', '', 1, '', 'TableCategory', '表分类', '', '', '2020-02-19 19:28:09', '9999-12-31 23:59:59', 0, 637177372909429909, '3521928112763830273', '王燕飞', '2020-02-19 19:28:10', NULL, NULL, NULL, 1, 0)
-GO
-
-UPDATE [faptable]
-SET [TableCategory]='Metadata'
-WHERE [TableName]='FapTable' AND [TableComment]='实体表'
-GO
-UPDATE [faptable]
-SET [TableCategory]='Metadata'
-WHERE [TableName]='FapColumn' AND [TableComment]='实体属性表'
-GO
-update FapColumn set ColDefault=0 where ColType='INT' and ColDefault is null
-update FapColumn set ColDefault=0.0 where ColType='DOUBLE'   and ColDefault is null
-UPDATE [FapColumn]
-SET [CtrlType]='INT'
-WHERE [TableName]='FapColumn' AND [ColName]='FileSize'
-GO
-UPDATE [FapColumn]
-SET [CtrlType]='INT'
-WHERE [TableName]='FapColumn' AND [ColName]='FileCount'
-GO

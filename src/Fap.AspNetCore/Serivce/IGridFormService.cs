@@ -14,6 +14,7 @@ namespace Fap.AspNetCore.Serivce
     {
         Task<ResponseViewModel> PersistenceAsync(FormModel formModel);
         ResponseViewModel Persistence(FormModel frmModel);
+        Pageable AnalysisPostData(JqGridPostData jqGridPostData);
         PageDataResultView QueryPageDataResultView(JqGridPostData jqGridPostData);
         string ExportExcelData(JqGridPostData model);
         string ExportExcelTemplate(QuerySet querySet);

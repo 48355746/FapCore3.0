@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using Fap.AspNetCore.Infrastructure;
 using Fap.AspNetCore.ViewModel;
 using Fap.Core.Infrastructure.Domain;
+using Fap.Core.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Fap.Core.Utility;
 
 namespace Fap.Hcm.Web.Areas.Time.Controllers
 {
@@ -70,12 +72,32 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
             MultiJqGridViewModel model = new MultiJqGridViewModel();
             JqGridViewModel scheduleModel = this.GetJqGridModel("TmSchedule");
             model.JqGridViewModels.Add("TmSchedule", scheduleModel);
-            JqGridViewModel empModel = this.GetJqGridModel("Employee", (q) => {
+            JqGridViewModel empModel = this.GetJqGridModel("Employee", (q) =>
+            {
                 q.QueryCols = "Id,Fid,EmpCode,EmpName,EmpCategory,DeptUid,Gender,IDCard";
                 q.GlobalWhere = "IsMainJob=1";
             });
             model.JqGridViewModels.Add("Employee", empModel);
             return View(model);
+        }
+        /// <summary>
+        /// 排班详情
+        /// </summary>
+        /// <param name="fid">员工UID</param>
+        /// <returns></returns>
+        public PartialViewResult ScheduleInfo(string fid)
+        {
+            string sql = "select ScheduleUid from TmScheduleEmployee where EmpUid=@EmpUid and ScheduleYear=@Year";
+            string scheduleUid = _dbContext.ExecuteScalar<string>(sql, new Dapper.DynamicParameters(new { EmpUid = fid, Year = DateTime.Now.Year }));
+            if (scheduleUid.IsMissing())
+            {
+                scheduleUid = UUIDUtils.Fid;
+            }
+            JqGridViewModel scheduleModel = this.GetJqGridModel("TmSchedule",qs=> {
+                qs.GlobalWhere = "ScheduleUid=@SchUid";
+                qs.AddParameter("SchUid", scheduleUid);
+            });
+            return PartialView(scheduleModel);
         }
     }
 }
