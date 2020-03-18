@@ -97,7 +97,9 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
         [HttpPost("BatchCard")]
         public JsonResult PostBatchCard(BatchCardViewModel batchCard)
         {
-            return null;
+            Guard.Against.Null(batchCard,nameof(batchCard));
+            _timeService.BatchPatchCard(batchCard.DeptUidList, batchCard.StartDate, batchCard.EndDate);
+            return Json(ResponseViewModelUtils.Sueecss());
         }
     }
 }

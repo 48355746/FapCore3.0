@@ -109,5 +109,17 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
 
             return View(model);
         }
+        /// <summary>
+        /// 年假管理
+        /// </summary>
+        /// <returns></returns>
+        public ActionResult AnnualLeave()
+        {
+            var model = this.GetJqGridModel("TmAnnualLeave", (qs) =>
+            {
+                qs.AddOrderBy("Annual", "desc");
+            });
+            return View(model);
+        }
     }
 }

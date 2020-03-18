@@ -3,7 +3,7 @@
     Layout = null;
 }
 <title>
-    <fap-multilang default-content="打卡记录" lang-key="time_cardrecord_tile"></fap-multilang>
+    <fap-multilang default-content="打卡记录" lang-key="time_cardrecord"></fap-multilang>
 </title>
 <link href="~/Content/css/daterangepicker.css" rel="stylesheet" />
 
@@ -12,7 +12,7 @@
         <div class="widget-box">
             <div class="widget-header widget-header-flat">
                 <h4 class="widget-title">
-                    <fap-multilang default-content="打卡记录" lang-key="time_cardrecord_tile"></fap-multilang>
+                    <fap-multilang default-content="打卡记录" lang-key="time_cardrecord"></fap-multilang>
                 </h4>
                 <div class="widget-toolbar">
                     <a href="#" data-action="fullscreen" class="orange2">
@@ -26,7 +26,7 @@
                     <!-- #section:basics/content.searchbox -->
                     <div class="nav-search" style="top:6px">
                         <span class="input-icon">
-                            <input type="text" placeholder="员工编码/姓名" class="nav-search-input" id="nav-search-input" autocomplete="off" />
+                            <input type="text" placeholder="员工姓名" class="nav-search-input" id="nav-search-input" autocomplete="off" />
                             <i class="ace-icon fa fa-search nav-search-icon"></i>
                         </span>
 
@@ -137,14 +137,11 @@
                 } else {
                     var childs = treeDept.get_node(selData[0]).children_d;
                     var selids = childs.concat(selData[0]);
-                    var deptUids = [];
                     //var treeDept = $('#tree-orgdept').jstree(true);
                     var sels = $.grep(selids, function (d, i) {
                         return treeDept.get_node(d).data.ext1 == false;
                     });
-                    $.each(sels, function (i, d) {
-                        deptUids.push("'" + d + "'");
-                    })
+                
                     var r = [];
                     if (start != '') {
                         r.push({ field: "CardTime", op: "ge", data: start });
@@ -152,7 +149,7 @@
                     if (end != '') {
                         r.push({ field: "CardTime", op: "le", data: end });
                     }
-                    var dept = { field: "EmpUid", "op": "in", "data": "(select fid from Employee where DeptUid in(" + deptUids.join(",") + "))" };
+                    var dept = { field: "DeptUid", "op": "in", "data":  sels.join(",")  };
                     r.push(dept);
 
                     var filter = { groupOp: "AND", rules: r };
@@ -165,7 +162,7 @@
                 var v = $(this).val();
                 var filter = { "groupOp": "AND" };
                 var rules = [];
-                rules.push({ "field": "EmpUid", "op": "in", "data": "(select fid from Employee where (EmpName like '" + v + "%' or EmpCode like '" + v + "%'))" });
+                rules.push({ "field": "EmpUid", "op": "in", "data": "(select fid from Employee where EmpName like '" + v + "%')" });
                 if (window.dateCardRecordRange) {
                     rules.push({ field: "CardTime", op: "ge", data: window.dateCardRecordRange.start });
                     rules.push({ field: "CardTime", op: "le", data: window.dateCardRecordRange.end });
@@ -181,21 +178,17 @@
                     //获取所有子Fid
                     var childs = data.node.children_d;
                     var selids = childs.concat(deptid);
-                    var deptUids = [];
                     var treeDept = $('#tree-orgdept').jstree(true);
                     var sels = $.grep(selids, function (d, i) {
                         return treeDept.get_node(d).data.ext1 == false;
                     });
-                    $.each(sels, function (i, d) {
-                        deptUids.push("'" + d + "'");
-                    })
+                 
                     var r = [];
-
                     if (window.dateCardRecordRange) {
                         r.push({ field: "CardTime", op: "ge", data: window.dateCardRecordRange.start });
                         r.push({ field: "CardTime", op: "le", data: window.dateCardRecordRange.end });
                     }
-                    var dept = { field: "EmpUid", "op": "in", "data": "(select fid from Employee where DeptUid in(" + deptUids.join(",") + "))" };
+                    var dept = { field: "DeptUid", "op": "in", "data":  sels.join(",")  };
                     r.push(dept);
 
                     var filter = { groupOp: "AND", rules: r };
@@ -226,10 +219,14 @@
                                     bootbox.alert("请选择日期");
                                     return false;
                                 }
+                                var index= layer.load();
                                 var rang = rangDate.split('~');
                                 $.post(basePath + "/Time/Api/BatchCard", { "DeptUidList": selids, "StartDate": rang[0], "EndDate": rang[1] }, function (rv) {
-                                    if (rv.rv) {
-                                        $.msg("处理完成");
+                                    layer.close(index);
+                                    if (rv.success) {
+                                        $.msg(rv.msg);
+                                    } else {
+                                        bootbox.alert(rv.msg);
                                     }
                                 })
                             }

@@ -6,10 +6,11 @@ using System.Text;
 
 namespace Fap.Hcm.Service.Time
 {
+
 	/// <summary>
 	/// 打卡记录
 	/// </summary>
-	public class TmCardRecord :  BaseModel
+	public class TmCardRecord : Fap.Core.Infrastructure.Metadata.BaseModel
 	{
 		/// <summary>
 		/// 员工
@@ -21,9 +22,14 @@ namespace Fap.Hcm.Service.Time
 		[Computed]
 		public string EmpUidMC { get; set; }
 		/// <summary>
-		/// 员工编码
+		/// 部门
 		/// </summary>
-		public string EmpCode { get; set; }
+		public string DeptUid { get; set; }
+		/// <summary>
+		/// 部门 的显性字段MC
+		/// </summary>
+		[Computed]
+		public string DeptUidMC { get; set; }
 		/// <summary>
 		/// 打卡时间
 		/// </summary>
@@ -42,5 +48,4 @@ namespace Fap.Hcm.Service.Time
 		public string IpAddress { get; set; }
 
 	}
-
 }

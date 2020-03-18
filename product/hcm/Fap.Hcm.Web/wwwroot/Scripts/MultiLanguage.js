@@ -81,12 +81,16 @@ var MultiLangHelper = (function () {
       'add': { 'ZhCn': '添加', 'ZhTW': '', 'En': '', 'Ja': '' },
       'edit': { 'ZhCn': '修改', 'ZhTW': '', 'En': '', 'Ja': '' },
       'global_txt_savesuccess': { 'ZhCn': '保存成功', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'shift_required': { 'ZhCn': '班次不能为空', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'time_schedule': { 'ZhCn': '排班', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'yestoday': { 'ZhCn': '昨天', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'custom': { 'ZhCn': '自定义', 'ZhTW': '', 'En': '', 'Ja': '' },
       'to': { 'ZhCn': ' 至 ', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'today': { 'ZhCn': '今天', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'custom': { 'ZhCn': '自定义', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

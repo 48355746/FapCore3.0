@@ -1,0 +1,317 @@
+﻿
+@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+    Layout = null;
+}
+<title>
+    <fap-multilang default-content="年假管理" lang-key="annualleave_management"></fap-multilang>
+</title>
+
+<div class="row">
+
+    <div class="col-xs-12 col-sm-12">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title"><fap-multilang default-content="年假信息" lang-key="annualleave_info"></fap-multilang></h4>
+
+                <div class="widget-toolbar">
+
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar">
+                    <label for="leaveperiod" class="">假期区间:</label>
+
+                    <select name="leaveperiod" id="leaveperiod"></select>
+
+                </div>
+                <div class="widget-toolbar">
+                    <!-- #section:basics/content.searchbox -->
+                    <div class="nav-search" style="top:6px">
+
+                        <span class="input-icon">
+                            <input type="text" placeholder="员工姓名" class="nav-search-input" id="nav-search-input" autocomplete="off" />
+                            <i class="ace-icon fa fa-search nav-search-icon"></i>
+                        </span>
+
+                    </div><!-- /.nav-search -->
+                    <!-- /section:basics/content.searchbox -->
+                </div>
+
+            </div>
+            <div class="widget-body">
+                <div class="widget-toolbox">
+                    <div class="btn-toolbar">
+                        <div class="btn-group">
+                            <button id="btnLeavePeriod" class="btn btn-sm btn-default  btn-round">
+                                <i class="ace-icon fa fa-exchange"></i>
+                                1.假期区间>
+                            </button>
+                            <button id="btnLeaveRule" class="btn btn-sm btn-grey  btn-round">
+                                <i class="ace-icon fa fa-cogs"></i>
+                                2.生成规则>
+                            </button>
+                            <button id="btnLeaveInit" class="btn btn-sm btn-primary  btn-round">
+                                <i class="ace-icon fa fa-database"></i>
+                                3.初始化>
+                            </button>
+                            <button id="btnLeaveBalance" class="btn btn-sm btn-success  btn-round">
+                                <i class="ace-icon fa fa-database"></i>
+                                4.上年结余
+                            </button>
+                        </div>
+                        <div class="btn-group">
+                            @await Component.InvokeAsync("QueryProgram", new { tn = "TmAnnualLeave", gid = "grid-tmannualleave" })
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="widget-main jobpostionclass">
+                    <fap-grid id="tmannualleave" grid-model="Model" auto-width="true" 
+                              wrapper="widget-main" view-records="true" multi-box-only="true" multi-select="true" oper-cud="true" oper-import="true" shrink-fit="false"></fap-grid>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="right-menu" class="modal aside" data-body-scroll="false" data-offset="true" data-placement="right" data-fixed="true" data-backdrop="invisible" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header no-padding">
+                    <div class="table-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                            <span class="white">&times;</span>
+                        </button>
+                        组织机构
+                    </div>
+                </div>
+
+                <div class="modal-body">
+                    <div id="treeDeptDiv" class="widget-main ">
+                        <div class="scrollable">
+                            <fap-tree id="orgdept" is-async="false" is-orgdept="true"></fap-tree>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /.modal-content -->
+
+            <button class="aside-trigger btn btn-purple btn-app btn-xs ace-settings-btn" data-target="#right-menu" data-toggle="modal" type="button">
+                <i data-icon1="fa-sitemap" data-icon2="fa-minus" class="ace-icon fa fa-sitemap bigger-110 icon-only"></i>
+            </button>
+        </div><!-- /.modal-dialog -->
+    </div>
+</div>
+
+
+
+<script>
+    //控件会调用此方法
+    var queryProgramCallBack = function (qpfid) {
+        //获取查询方案的条件
+        $.get("@Url.Content("~/api/commctrlsapi/queryprogram")", { fid: qpfid }, function (data) {
+            var filters = "";
+            if (data) {
+                filters = data.queryCondition;
+            }
+            $("#grid-tmannualleave").jqGrid('setGridParam', {
+                datatype: 'json',
+                postData: { 'filters': filters }, //发送数据
+                page: 1
+            }).trigger("reloadGrid"); //重新载入
+        });
+    }
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $('.modal.aside').ace_aside();
+            $(document).one('ajaxloadstart.page', function (e) {
+                $("#tree-orgdept").jstree("destroy");
+                $('.modal.aside').remove();
+                $(window).off('.aside');
+            })
+            //初始化假期区间
+            var initLeavePeriod = function () {
+                var filter = { "groupOp": "AND" };
+                var rules = [];
+                rules.push({ "field": "LeaveType", "op": "eq", "data": "1dd311e6828ea2153c38" });
+                filter.rules = rules;
+                $.post(basePath + "/api/coreapi/querydata", {"EntityName":"TmLeavePeriod","Filters": JSON.stringify(filter),"QueryCols":"Fid,PeriodName","SortBy":"Annual desc" },function(rv){
+                    $("#leaveperiod").empty();
+                    if (rv.success == true) {
+                        var periods = rv.data;
+                        $.each(periods, function (i, d) {
+                            $("#leaveperiod").append("<option value='"+d.Fid+"'>"+d.PeriodName+"</option>")
+                        })
+                    }
+                })
+            }
+            initLeavePeriod();
+            $('#tree-orgdept').on("changed.jstree", function (e, data) {
+                if (data && data.selected && data.selected.length) {
+                    var deptid = data.selected[0];
+                    var deptMC = data.node.text;
+                    //获取所有子Fid
+                    var childs = data.node.children_d;
+                    var selids = childs.concat(deptid);
+                    var deptUids = [];
+
+                    //筛选有权限的节点
+                    var treeDept = $('#tree-orgdept').jstree(true);
+                    var sels = $.grep(selids, function (d, i) {
+                        return treeDept.get_node(d).data.ext1 == false;
+                    });
+                    $.each(sels, function (i, d) {
+                        deptUids.push("'" + d + "'");
+                    })
+                    var r = [];
+                    var perioduid = $("#leaveperiod").val();
+                    if (!perioduid) {
+                        bootbox.alert("请设置假期区间");
+                        return;
+                    }
+                    r.push({ field: "PeriodUid", "op": "eq", "data": perioduid });
+                    var dept = { field: "EmpUid", "op": "in", "data": "(select fid from Employee where DeptUid in(" + deptUids.join(",") + "))" };
+                    r.push(dept);
+
+                    var filter = { groupOp: "AND", rules: r };
+                    refreshGrid(JSON.stringify(filter));
+                }
+                //console.log(data.selected);
+            });
+            //假期区间
+            $("#btnLeavePeriod").on(ace.click_event, function () {
+                var dialog = bootbox.dialog({
+                    title: "假期区间",
+                    size: "large",
+                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                    buttons: {
+                        success: {
+                            label: MultiLangHelper.getResName("global_oper_enter", "确定"),
+                            className: "btn-primary",
+                            callback: function () {
+                                initLeavePeriod();
+                            }
+                        }
+                        //,
+                        //cancel: {
+                        //    label: MultiLangHelper.getResName("global_oper_cancel", "取消"), className: "btn-default"
+                        //}
+                    }
+
+                });
+                dialog.on("shown.bs.modal", function () {
+                    $(window).triggerHandler('resize.jqGrid');//触发窗口调整,使Grid得到正确的大小
+                });
+                dialog.init(function () {
+                    var url = basePath + '/Time/Manage/LeavePeriod';
+                    $.get(url, { typeuid: "1dd311e6828ea2153c38", typename: "年假" }, function (ev) {
+                        dialog.find('.bootbox-body').html(ev);
+                    })
+                });
+            })
+            //假期规则
+            $("#btnLeaveRule").on(ace.click_event, function () {
+                var perioduid = $("#leaveperiod").val();
+                var periodname=$("#leaveperiod option:selected").text();
+                if (!perioduid)
+                {
+                    bootbox.alert("请设置假期区间");
+                    return;
+                }
+
+                var dialog = bootbox.dialog({
+                    title: "假期生成规则",
+                    size: "large",
+                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                    buttons: {
+                        success: {
+                            label: MultiLangHelper.getResName("global_oper_enter", "确定"),
+                            className: "btn-primary",
+                            callback: function () {
+
+                            }
+                        }
+                        //,
+                        //cancel: {
+                        //    label: MultiLangHelper.getResName("global_oper_cancel", "取消"), className: "btn-default"
+                        //}
+                    }
+
+                });
+                dialog.on("shown.bs.modal", function () {
+                    $(window).triggerHandler('resize.jqGrid');//触发窗口调整,使Grid得到正确的大小
+                });
+                dialog.init(function () {
+                    var url = basePath + '/Time/Manage/LeaveRuleSetting';
+                    $.get(url, { perioduid: perioduid, periodname: periodname }, function (ev) {
+                        dialog.find('.bootbox-body').html(ev);
+                    })
+                });
+            })
+            //假期初始化
+            $("#btnLeaveInit").on(ace.click_event, function () {
+                var perioduid = $("#leaveperiod").val();
+                var periodname = $("#leaveperiod option:selected").text();
+                if (!perioduid) {
+                    bootbox.alert("请设置假期区间");
+                    return;
+                }
+                $.get(basePath + "/api/time/leaveinit/" + perioduid, function (rv) {
+                    if(rv.success)
+                    {
+                        var r = [];
+                        r.push({ field: "PeriodUid", "op": "eq", "data": perioduid });
+                        var filter = { groupOp: "AND", rules: r };
+                        refreshGrid(JSON.stringify(filter));
+                    }
+                })
+            })
+            //上年结余
+            $("#btnLeaveBalance").on(ace.click_event, function () {
+                var perioduid = $("#leaveperiod").val();
+                var periodname = $("#leaveperiod option:selected").text();
+                if (!perioduid) {
+                    bootbox.alert("请设置假期区间");
+                    return;
+                }
+                $.get(basePath + "/api/time/leavebalance/" + perioduid, function (rv) {
+                    if (rv.success) {
+                        var r = [];
+                        r.push({ field: "PeriodUid", "op": "eq", "data": perioduid });
+                        var filter = { groupOp: "AND", rules: r };
+                        refreshGrid(JSON.stringify(filter));
+                    }
+                })
+            })
+
+
+            $("#nav-search-input").change(function () {
+                var empName = $(this).val();
+                var perioduid = $("#leaveperiod").val();
+                var periodname = $("#leaveperiod option:selected").text();
+                if (!perioduid) {
+                    bootbox.alert("请设置假期区间");
+                    return;
+                }
+                var r = [];
+                r.push({ field: "EmpUidMC", op: "cn", data: empName });
+                r.push({ field: "PeriodUid", "op": "eq", "data": perioduid });
+                var filter = { groupOp: "AND", rules: r };
+                refreshGrid(JSON.stringify(filter));
+
+            })
+            var refreshGrid = function (filter) {
+                $("#grid-tmannualleave").jqGrid('setGridParam', {
+                    datatype: 'json',
+                    postData: { filters: filter }, //发送数据
+                    page: 1
+                }).trigger("reloadGrid"); //重新载入
+            }
+
+        })
+    });
+
+
+</script>

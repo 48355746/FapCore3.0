@@ -61,85 +61,91 @@ namespace Fap.Hcm.Service.Time
         public void Schedule(IEnumerable<Fap.Core.Rbac.Model.Employee> empList, string shiftUid, string holidayUid, string startDate, string endDate)
         {
             Guard.Against.Null(empList, nameof(empList));
-            //删除存在此区间排班的员工
-            string sql = "delete from TmScheduleEmployee where EmpUid in @EmpList and StartDate<@EndDate and EndDate>@StartDate";
-            _dbContext.Execute(sql, new DynamicParameters(new { EmpList = empList.Select(e => e.Fid), StartDate = startDate, EndDate = endDate }));
-            //add tmshceduleemployee
             string sheduleUid = UUIDUtils.Fid;
-            IList<TmScheduleEmployee> scheduleEmployeeList = new List<TmScheduleEmployee>();
-            foreach (var emp in empList)
+            ScheduleEmployee();
+            ScheduleShift();
+            void ScheduleShift()
             {
-                TmScheduleEmployee schemp = new TmScheduleEmployee();
-                schemp.EmpUid = emp.Fid;
-                schemp.DeptUid = emp.DeptUid;
-                schemp.StartDate = startDate;
-                schemp.EndDate = endDate;
-                schemp.ScheduleUid = sheduleUid;
-                scheduleEmployeeList.Add(schemp);
-            }
-            _dbContext.InsertBatch(scheduleEmployeeList);
-
-
-            //获取休息日
-            DynamicParameters paramHolidy = new DynamicParameters();
-            paramHolidy.Add("CaseUid", holidayUid);
-            var listHolidys = _dbContext.QueryWhere<TmHoliday>("CaseUid=@CaseUid", paramHolidy);
-            //获取班次
-            var Shift = _dbContext.Get<TmShift>(shiftUid);
-            if (Shift != null)
-            {
-                startDate += " 00:00:00";
-                endDate += " 23:59:59";
-                string currDate = DateTimeUtils.CurrentDateTimeStr;
-                var TimeS = DateTimeUtils.ToDateTime(endDate) - DateTimeUtils.ToDateTime(startDate);
-                var Days = Convert.ToInt32(TimeS.TotalDays);
-                DateTime wDate = DateTimeUtils.ToDateTime(startDate);
-
-                IList<TmSchedule> listSchedule = new List<TmSchedule>();
-                for (int i = 0; i < Days; i++)
+                //获取休息日
+                DynamicParameters paramHolidy = new DynamicParameters();
+                paramHolidy.Add("CaseUid", holidayUid);
+                var listHolidys = _dbContext.QueryWhere<TmHoliday>("CaseUid=@CaseUid", paramHolidy);
+                //获取班次
+                var Shift = _dbContext.Get<TmShift>(shiftUid);
+                if (Shift != null)
                 {
-                    TmSchedule tmSchedule = new TmSchedule();
-                    string wd = DateTimeUtils.DateFormat(wDate.AddDays(i));
-                    if (listHolidys.Any(w => w.Holiday == wd))
-                    {
-                        continue;
-                    }
-                    tmSchedule.ScheduleUid = sheduleUid;
-                    tmSchedule.ShiftUid = shiftUid;
-                    tmSchedule.WorkDay = wd;
-                    //上班时间
-                    tmSchedule.StartTime = wd + " " + Shift.StartTime;
-                    //下班时间，可能存在跨天=上班时间+工作时长+休息时长
-                    tmSchedule.EndTime = DateTimeUtils.DateTimeFormat(DateTimeUtils.ToDateTime(tmSchedule.StartTime).AddHours(Shift.WorkHoursLength).AddMinutes(Shift.RestMinutesLength));
-                    //迟到时间
-                    tmSchedule.LateTime = DateTimeUtils.DateTimeFormat(DateTimeUtils.ToDateTime(tmSchedule.StartTime).AddMinutes(Convert.ToDouble(Shift.ComeLate)));
+                    startDate += " 00:00:00";
+                    endDate += " 23:59:59";
+                    string currDate = DateTimeUtils.CurrentDateTimeStr;
+                    var TimeS = DateTimeUtils.ToDateTime(endDate) - DateTimeUtils.ToDateTime(startDate);
+                    var Days = Convert.ToInt32(TimeS.TotalDays);
+                    DateTime wDate = DateTimeUtils.ToDateTime(startDate);
 
-                    //排班休息开始时间
-                    tmSchedule.RestStartTime = wd + " " + Shift.RestStartTime;
-                    //休息时间跨天处理
-                    if (DateTimeUtils.ToDateTime(tmSchedule.StartTime) > DateTimeUtils.ToDateTime(tmSchedule.RestStartTime)) //如果排班跨天
+                    IList<TmSchedule> listSchedule = new List<TmSchedule>();
+                    for (int i = 0; i < Days; i++)
                     {
+                        TmSchedule tmSchedule = new TmSchedule();
+                        string wd = DateTimeUtils.DateFormat(wDate.AddDays(i));
+                        if (listHolidys.Any(w => w.Holiday == wd))
+                        {
+                            continue;
+                        }
+                        tmSchedule.ScheduleUid = sheduleUid;
+                        tmSchedule.ShiftUid = shiftUid;
+                        tmSchedule.WorkDay = wd;
+                        //上班时间
+                        tmSchedule.StartTime = wd + " " + Shift.StartTime;
+                        //下班时间，可能存在跨天=上班时间+工作时长+休息时长
+                        tmSchedule.EndTime = DateTimeUtils.DateTimeFormat(DateTimeUtils.ToDateTime(tmSchedule.StartTime).AddHours(Shift.WorkHoursLength).AddMinutes(Shift.RestMinutesLength));
+                        //迟到时间
+                        tmSchedule.LateTime = DateTimeUtils.DateTimeFormat(DateTimeUtils.ToDateTime(tmSchedule.StartTime).AddMinutes(Convert.ToDouble(Shift.ComeLate)));
+
                         //排班休息开始时间
-                        tmSchedule.RestStartTime = DateTimeUtils.DateFormat(DateTimeUtils.ToDateTime(wd).AddDays(1)) + " " + Shift.RestStartTime;
+                        tmSchedule.RestStartTime = wd + " " + Shift.RestStartTime;
+                        //休息时间跨天处理
+                        if (DateTimeUtils.ToDateTime(tmSchedule.StartTime) > DateTimeUtils.ToDateTime(tmSchedule.RestStartTime)) //如果排班跨天
+                        {
+                            //排班休息开始时间
+                            tmSchedule.RestStartTime = DateTimeUtils.DateFormat(DateTimeUtils.ToDateTime(wd).AddDays(1)) + " " + Shift.RestStartTime;
+                        }
+                        //休息结束时间
+                        tmSchedule.RestEndTime = DateTimeUtils.DateTimeFormat(DateTimeUtils.ToDateTime(tmSchedule.RestStartTime).AddMinutes(Convert.ToDouble(Shift.RestMinutesLength)));
+                        //早退时间
+                        tmSchedule.LeaveTime = DateTimeUtils.DateTimeFormat(DateTimeUtils.ToDateTime(tmSchedule.EndTime).AddMinutes(Convert.ToDouble(-Shift.LeftEarly)));
+                        //早打卡开始时间
+                        tmSchedule.StartCardTime = DateTimeUtils.DateTimeFormat(DateTimeUtils.ToDateTime(tmSchedule.StartTime).AddHours(Convert.ToDouble(-Shift.EarlyCard)));
+                        //最晚打卡时间
+                        tmSchedule.EndCardTime = DateTimeUtils.DateTimeFormat(DateTimeUtils.ToDateTime(tmSchedule.EndTime).AddHours(Convert.ToDouble(Shift.LateCard)));
+
+                        tmSchedule.WorkHoursLength = Shift.WorkHoursLength;
+                        tmSchedule.RestMinutesLength = Shift.RestMinutesLength;
+
+                        listSchedule.Add(tmSchedule);
                     }
-                    //休息结束时间
-                    tmSchedule.RestEndTime = DateTimeUtils.DateTimeFormat(DateTimeUtils.ToDateTime(tmSchedule.RestStartTime).AddMinutes(Convert.ToDouble(Shift.RestMinutesLength)));
-                    //早退时间
-                    tmSchedule.LeaveTime = DateTimeUtils.DateTimeFormat(DateTimeUtils.ToDateTime(tmSchedule.EndTime).AddMinutes(Convert.ToDouble(-Shift.LeftEarly)));
-                    //早打卡开始时间
-                    tmSchedule.StartCardTime = DateTimeUtils.DateTimeFormat(DateTimeUtils.ToDateTime(tmSchedule.StartTime).AddHours(Convert.ToDouble(-Shift.EarlyCard)));
-                    //最晚打卡时间
-                    tmSchedule.EndCardTime = DateTimeUtils.DateTimeFormat(DateTimeUtils.ToDateTime(tmSchedule.EndTime).AddHours(Convert.ToDouble(Shift.LateCard)));
+                    _dbContext.InsertBatch(listSchedule);
 
-                    tmSchedule.WorkHoursLength = Shift.WorkHoursLength;
-                    tmSchedule.RestMinutesLength = Shift.RestMinutesLength;
-
-                    listSchedule.Add(tmSchedule);
                 }
-                _dbContext.InsertBatch(listSchedule);
-
             }
+            void ScheduleEmployee()
+            {
+                //删除存在此区间排班的员工
+                string sql = "delete from TmScheduleEmployee where EmpUid in @EmpList and StartDate<@EndDate and EndDate>@StartDate";
+                _dbContext.Execute(sql, new DynamicParameters(new { EmpList = empList.Select(e => e.Fid), StartDate = startDate, EndDate = endDate }));
+                //add tmshceduleemployee
 
+                IList<TmScheduleEmployee> scheduleEmployeeList = new List<TmScheduleEmployee>();
+                foreach (var emp in empList)
+                {
+                    TmScheduleEmployee schemp = new TmScheduleEmployee();
+                    schemp.EmpUid = emp.Fid;
+                    schemp.DeptUid = emp.DeptUid;
+                    schemp.StartDate = startDate;
+                    schemp.EndDate = endDate;
+                    schemp.ScheduleUid = sheduleUid;
+                    scheduleEmployeeList.Add(schemp);
+                }
+                _dbContext.InsertBatch(scheduleEmployeeList);
+            }
         }
 
         /// <summary>
@@ -448,6 +454,7 @@ namespace Fap.Hcm.Service.Time
         ///  批量补签打卡
         /// </summary>
         /// <param name="recard"></param>
+        [Transactional]
         public void BatchPatchCard(IList<string> deptUids, string startDate, string endDate)
         {
             DynamicParameters param = new DynamicParameters();
@@ -461,26 +468,36 @@ namespace Fap.Hcm.Service.Time
             {
                 throw new FapException("未找到排班信息");
             }
+            param.Add("ScheduleUids", scheduleUids);
             string sqlWhere = "WorkDay>=@StartDate and WorkDay<=@EndDate and ScheduleUid in @ScheduleUids";
             var schedules = _dbContext.QueryWhere<TmSchedule>(sqlWhere, param).GroupBy(s => s.ScheduleUid);
+            IList<TmCardRecord> cardList = new List<TmCardRecord>();
             foreach (var schedule in schedules)
             {
-                foreach (var emp in scheduleEmployes.Where(s => s.ScheduleUid ==schedule.Key))
+                foreach (var emp in scheduleEmployes.Where(s => s.ScheduleUid == schedule.Key))
                 {
                     foreach (var sch in schedule)
                     {
-                        TmCardRecord rcr = new TmCardRecord();
+                        TmCardRecord cdr = new TmCardRecord();
+                        cdr.CardTime = sch.StartTime;
+                        cdr.EmpUid = emp.EmpUid;
+                        cdr.DeptUid = emp.DeptUid;
+                        cdr.DeviceName = "批量补签";
+                        cdr.DeviceNumber = "-";
+                        cdr.IpAddress = "0.0.0.0";
+                        cardList.Add(cdr);
+                        TmCardRecord cdr1 = new TmCardRecord();
+                        cdr1.CardTime = sch.StartTime;
+                        cdr1.EmpUid = emp.EmpUid;
+                        cdr1.DeptUid = emp.DeptUid;
+                        cdr1.DeviceName = "批量补签";
+                        cdr1.DeviceNumber = "-";
+                        cdr1.IpAddress = "0.0.0.0";
+                        cardList.Add(cdr1);
                     }
                 }
             }
-            //foreach (var sch in schedules)
-            //{
-            //    string sql1 = $"insert into TmCardRecord(Fid,EmpUid,EmpCode,CardTime,DeviceName,EnableDate,DisableDate,Dr) select '{ UUIDUtils.Fid}',Fid,EmpCode,'{sch.StartTime}','管理员批量补签','{DateTimeUtils.CurrentDateTimeStr}','9999-12-31 23:59:59',0 from Employee where Fid =@EmpUid";
-            //    string sql2 = $"insert into TmCardRecord(Fid,EmpUid,EmpCode,CardTime,DeviceName,EnableDate,DisableDate,Dr) select '{ UUIDUtils.Fid}',Fid,EmpCode,'{sch.EndTime}','管理员批量补签','{DateTimeUtils.CurrentDateTimeStr}','9999-12-31 23:59:59',0 from Employee where Fid =@EmpUid";
-            //    _dbContext.Execute(sql1, new DynamicParameters(new { EmpUid = sch.EmpUid }));
-            //    _dbContext.Execute(sql2, new DynamicParameters(new { EmpUid = sch.EmpUid }));
-            //}
-
+            _dbContext.InsertBatch(cardList);
 
         }
     }

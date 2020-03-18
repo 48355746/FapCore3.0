@@ -438,7 +438,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
 
         public string Name
         {
-            get { return _fapColumn.ColName; }
+            get { return _index; }
         }
 
         /// <summary>
@@ -599,7 +599,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                     AppendLine();
 
             // Columnname
-            script.AppendFormat("name:'{0}',", _fapColumn.ColName).AppendLine();
+            script.AppendFormat("name:'{0}',",Name).AppendLine();
 
             // FirstSortOrder
             if (_firstSortOrder.HasValue) script.AppendFormat("firstsortorder:'{0}',", _firstSortOrder.ToString().ToLower()).AppendLine();
