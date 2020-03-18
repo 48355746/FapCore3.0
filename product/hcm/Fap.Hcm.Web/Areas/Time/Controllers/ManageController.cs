@@ -69,16 +69,12 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
         /// <returns></returns>
         public ActionResult Schedule()
         {
-            MultiJqGridViewModel model = new MultiJqGridViewModel();
-            JqGridViewModel scheduleModel = this.GetJqGridModel("TmSchedule");
-            model.JqGridViewModels.Add("TmSchedule", scheduleModel);
             JqGridViewModel empModel = this.GetJqGridModel("Employee", (q) =>
             {
                 q.QueryCols = "Id,Fid,EmpCode,EmpName,EmpCategory,DeptUid,Gender,IDCard";
                 q.GlobalWhere = "IsMainJob=1";
             });
-            model.JqGridViewModels.Add("Employee", empModel);
-            return View(model);
+            return View(empModel);
         }
         /// <summary>
         /// 排班详情
@@ -87,8 +83,8 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
         /// <returns></returns>
         public PartialViewResult ScheduleInfo(string fid)
         {
-            string sql = "select ScheduleUid from TmScheduleEmployee where EmpUid=@EmpUid and ScheduleYear=@Year";
-            string scheduleUid = _dbContext.ExecuteScalar<string>(sql, new Dapper.DynamicParameters(new { EmpUid = fid, Year = DateTime.Now.Year }));
+            string sql = "select ScheduleUid from TmScheduleEmployee where EmpUid=@EmpUid and StartDate<=@CDate and EndDate>=@CDate";
+            string scheduleUid = _dbContext.ExecuteScalar<string>(sql, new Dapper.DynamicParameters(new { EmpUid = fid, CDate = DateTimeUtils.CurrentDateStr }));
             if (scheduleUid.IsMissing())
             {
                 scheduleUid = UUIDUtils.Fid;
@@ -98,6 +94,20 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
                 qs.AddParameter("SchUid", scheduleUid);
             });
             return PartialView(scheduleModel);
+        }
+
+        /// <summary>
+        /// 打卡记录
+        /// </summary>
+        /// <returns></returns>
+        public ActionResult CardRecord()
+        {
+            var model = this.GetJqGridModel("TmCardRecord", (qs) => {
+                qs.AddOrderBy("CardTime", "desc");
+                qs.AddDefaultValue("DeviceName", "管理员补签");
+            });
+
+            return View(model);
         }
     }
 }

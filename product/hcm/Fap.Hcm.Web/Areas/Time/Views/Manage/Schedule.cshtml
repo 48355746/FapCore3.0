@@ -1,21 +1,18 @@
 ﻿@using Fap.AspNetCore.Controls
-@model Fap.AspNetCore.ViewModel.MultiJqGridViewModel
+@model Fap.AspNetCore.ViewModel.JqGridViewModel
 @{
-    Layout = null;
-    Fap.AspNetCore.ViewModel.JqGridViewModel empM = Model.JqGridViewModels["Employee"];
-    Fap.AspNetCore.ViewModel.JqGridViewModel scheM = Model.JqGridViewModels["TmSchedule"];
     Select2Model shiftModel = new Select2Model { IdField = "Fid", NameField = "ShiftName", TableName = "TmShift" };
     Select2Model holidyCaseModel = new Select2Model { IdField = "Fid", NameField = "CaseName", TableName = "TmHolidayCase" };
 }
 <title>
-    <fap-multilang default-content="排班管理" lang-key="time_schedule_management"></fap-multilang>
+    <fap-multilang default-content="排班" lang-key="time_schedule"></fap-multilang>
 </title>
 <div class="row">
     <div class="col-xs-12 col-sm-12">
         <div class="widget-box">
             <div class="widget-header widget-header-flat">
                 <h4 class="widget-title">
-                    <fap-multilang default-content="排班信息" lang-key="time_schedule_info"></fap-multilang>
+                    <fap-multilang default-content="排班" lang-key="time_schedule"></fap-multilang>
                 </h4>
 
                 <div class="widget-toolbar">
@@ -24,160 +21,133 @@
                         <i class="ace-icon fa fa-expand"></i>
                     </a>
                 </div>
-                <!-- #section:custom/widget-box.tabbed -->
-                <div class="widget-toolbar no-border">
-                    <ul class="nav nav-tabs" id="myTab">
-                        <li class="active">
-                            <a data-toggle="tab" href="#home">
-                                <fap-multilang default-content="查看" lang-key="view"></fap-multilang>
-                            </a>
-                        </li>
-
-                        <li>
-                            <a data-toggle="tab" href="#generic">
-                                <fap-multilang default-content="生成" lang-key="generate"></fap-multilang>
-                            </a>
-                        </li>
-
-                    </ul>
-                </div>
-
-                <!-- /section:custom/widget-box.tabbed -->
 
             </div>
             <div class="widget-body">
                 <div class="widget-main padding-6">
-                    <div class="tab-content">
-                        <div id="home" class="tab-pane in active">                           
-                            <fap-grid id="tmschedule" grid-model="scheM"  auto-width="true"  wrapper="myTab,home" view-records="true" multi-box-only="true" multi-select="true"
-                                source-type="Local"       oper-cud="true" shrink-fit="false"></fap-grid>
-                        </div>
 
-                        <div id="generic" class="tab-pane">
-                            <div class="row" style="margin:0">
+                    <div class="row" style="margin:0">
 
-                                <!-- #section:plugins/fuelux.wizard -->
-                                <div id="fuelux-wizard-container">
-                                    <div>
-                                        <!-- #section:plugins/fuelux.wizard.steps -->
-                                        <ul class="steps">
-                                            <li data-step="1" class="active">
-                                                <span class="step">1</span>
-                                                <span class="title">排班人员</span>
-                                            </li>
+                        <!-- #section:plugins/fuelux.wizard -->
+                        <div id="fuelux-wizard-container">
+                            <div>
+                                <!-- #section:plugins/fuelux.wizard.steps -->
+                                <ul class="steps">
+                                    <li data-step="1" class="active">
+                                        <span class="step">1</span>
+                                        <span class="title">排班人员</span>
+                                    </li>
 
-                                            <li data-step="2">
-                                                <span class="step">2</span>
-                                                <span class="title">排班区间</span>
-                                            </li>
+                                    <li data-step="2">
+                                        <span class="step">2</span>
+                                        <span class="title">排班区间</span>
+                                    </li>
 
-                                            <li data-step="3">
-                                                <span class="step">3</span>
-                                                <span class="title">班次</span>
-                                            </li>
+                                    <li data-step="3">
+                                        <span class="step">3</span>
+                                        <span class="title">班次</span>
+                                    </li>
 
-                                            <li data-step="4">
-                                                <span class="step">4</span>
-                                                <span class="title">信息确认</span>
-                                            </li>
-                                        </ul>
+                                    <li data-step="4">
+                                        <span class="step">4</span>
+                                        <span class="title">信息确认</span>
+                                    </li>
+                                </ul>
 
-                                        <!-- /section:plugins/fuelux.wizard.steps -->
-                                    </div>
-
-                                    <hr />
-
-                                    <!-- #section:plugins/fuelux.wizard.container -->
-                                    <div class="step-content pos-rel">
-                                        <div class="step-pane active" data-step="1">
-                                            <h3 class="lighter block green">查找排班员工</h3>
-                                            <fap-grid id="Employee" grid-model="empM"  register-authority="false"  source-type="Local" auto-width="true" wrapper="myTab,generic"></fap-grid>
-
-                                        </div>
-
-                                        <div class="step-pane" data-step="2">
-                                            <h3 class="lighter block green">设置排班区间</h3>
-
-                                            <div class="form-horizontal">
-                                                <div class="form-group">
-                                                    <label class="col-sm-3 control-label no-padding-right" for="form-field-1">
-                                                        <fap-multilang lang-key="schedule_date" default-content="排班日期"></fap-multilang>
-                                                    </label>
-
-                                                    <div class="col-xs-12 col-sm-5">
-                                                        <div class="input-daterange input-group">
-                                                            <input type="text" class="input-sm form-control" id="startDatepicker" name="start" />
-                                                            <span class="input-group-addon">
-                                                                <i class="fa fa-exchange"></i>
-                                                            </span>
-
-                                                            <input type="text" class="input-sm form-control" id="endDatepicker" name="end" />
-
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="step-pane" data-step="3">
-                                            <h3 class="lighter block green">设置班次和休息日套</h3>
-                                            <div class="form-horizontal">
-                                                <div class="form-group">
-                                                    <label class="col-sm-3 control-label no-padding-right" for="form-field-1">
-                                                        <fap-multilang lang-key="shift" default-content="班次"></fap-multilang>
-                                                    </label>
-
-                                                    <div class="col-sm-9">
-                                                        <fap-select id="selshift" select-model="@shiftModel"></fap-select>
-                                                    </div>
-                                                </div>
-
-                                                <div class="form-group">
-                                                    <label class="col-sm-3 control-label no-padding-right" for="form-field-1-1">
-                                                        <fap-multilang lang-key="holiday_case" default-content="休息日套"></fap-multilang>
-                                                    </label>
-
-                                                    <div class="col-sm-9">
-                                                        <fap-select id="selholidaycase" select-model="@holidyCaseModel"></fap-select>
-
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="step-pane" data-step="4">
-                                            <h3 class="lighter block green">信息确认</h3>
-
-                                            <div class="form-horizontal">
-                                                <label class="col-sm-3 control-label no-padding-right" for="form-field-1-1"></label>
-                                                <div class="col-sm-9">
-                                                    <div id="schdulecontent"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- /section:plugins/fuelux.wizard.container -->
-                                </div>
-                                <div class="wizard-actions">
-                                    <!-- #section:plugins/fuelux.wizard.buttons -->
-                                    <button class="btn btn-prev">
-                                        <i class="ace-icon fa fa-arrow-left"></i>
-                                        上一步
-                                    </button>
-
-                                    <button class="btn btn-success btn-next" data-last="完成">
-                                        下一步
-                                        <i class="ace-icon fa fa-arrow-right icon-on-right"></i>
-                                    </button>
-
-                                    <!-- /section:plugins/fuelux.wizard.buttons -->
-                                </div>
-
+                                <!-- /section:plugins/fuelux.wizard.steps -->
                             </div>
-                            <div class="space-10"></div>
+
+                            <hr />
+
+                            <!-- #section:plugins/fuelux.wizard.container -->
+                            <div class="step-content pos-rel">
+                                <div class="step-pane active" data-step="1">
+                                    <h3 class="lighter block green">查找排班员工</h3>
+                                    <fap-grid id="Employee" grid-model="Model" register-authority="false" source-type="Local" auto-width="true"></fap-grid>
+
+                                </div>
+
+                                <div class="step-pane" data-step="2">
+                                    <h3 class="lighter block green">设置排班区间</h3>
+
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label no-padding-right" for="form-field-1">
+                                                <fap-multilang lang-key="schedule_date" default-content="排班日期"></fap-multilang>
+                                            </label>
+
+                                            <div class="col-xs-12 col-sm-5">
+                                                <div class="input-daterange input-group">
+                                                    <input type="text" class="input-sm form-control" id="startDatepicker" name="start" />
+                                                    <span class="input-group-addon">
+                                                        <i class="fa fa-exchange"></i>
+                                                    </span>
+
+                                                    <input type="text" class="input-sm form-control" id="endDatepicker" name="end" />
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-pane" data-step="3">
+                                    <h3 class="lighter block green">设置班次和休息日套</h3>
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label no-padding-right" for="form-field-1">
+                                                <fap-multilang lang-key="shift" default-content="班次"></fap-multilang>
+                                            </label>
+
+                                            <div class="col-sm-9">
+                                                <fap-select id="selshift" select-model="@shiftModel"></fap-select>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label no-padding-right" for="form-field-1-1">
+                                                <fap-multilang lang-key="holiday_case" default-content="休息日套"></fap-multilang>
+                                            </label>
+
+                                            <div class="col-sm-9">
+                                                <fap-select id="selholidaycase" select-model="@holidyCaseModel"></fap-select>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="step-pane" data-step="4">
+                                    <h3 class="lighter block green">信息确认</h3>
+
+                                    <div class="form-horizontal">
+                                        <label class="col-sm-3 control-label no-padding-right" for="form-field-1-1"></label>
+                                        <div class="col-sm-9">
+                                            <div id="schdulecontent"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- /section:plugins/fuelux.wizard.container -->
                         </div>
+                        <div class="wizard-actions">
+                            <!-- #section:plugins/fuelux.wizard.buttons -->
+                            <button class="btn btn-prev">
+                                <i class="ace-icon fa fa-arrow-left"></i>
+                                上一步
+                            </button>
+
+                            <button class="btn btn-success btn-next" data-last="完成">
+                                下一步
+                                <i class="ace-icon fa fa-arrow-right icon-on-right"></i>
+                            </button>
+
+                            <!-- /section:plugins/fuelux.wizard.buttons -->
+                        </div>
+
                     </div>
+                    <div class="space-10"></div>
                 </div>
             </div>
         </div>
@@ -214,7 +184,6 @@
     var scripts = [null, "/Content/js/fuelux/fuelux.wizard.js", null]
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
-            $("#grid-tmschedule").jqGrid('setGridParam',{datatype:'json'})
             $('.modal.aside').ace_aside();
             $(document).one('ajaxloadstart.page', function (e) {
                 $("#tree-orgdept").jstree("destroy");
@@ -224,7 +193,6 @@
             $('#fuelux-wizard-container')
                 .ace_wizard()
                 .on('actionclicked.fu.wizard', function (e, info) {
-                    debugger
                     if (info.step == 3) {
                         $("#schdulecontent").empty();
                         var jqPostData = $('#grid-Employee').jqGrid("getGridParam", "postData");
@@ -253,7 +221,7 @@
 
 
             $('#startDatepicker,#endDatepicker').datetimepicker({ todayHighlight: "false", startView: "month", minView: "month", format: "yyyy-mm-dd",  language: "zh-CN" });
-        
+
             //生成排班
             var saveSchdule = function () {
                 var startDatepicker = $("#startDatepicker").val();
@@ -277,25 +245,17 @@
                     return;
                 }
                 var jqPostData = $('#grid-Employee').jqGrid("getGridParam", "postData");
-             
+
                 var index = layer.load();
                 $.post("@Url.Content("~/Time/Api/Schedule")", { shiftUid: shiftUid, holidayUid: holiday, startDate: startDatepicker, endDate: endDatepicker, postData: jqPostData }, function (rv) {
                     layer.close(index);
-                    if (rv.success == true) {
-                        $.msg($.lang("success", "生成成功"));
+                    if (rv.success) {
+                        $.msg(rv.msg);
                     } else {
                         bootbox.alert(rv.msg);
                     }
                 })
             }
-            var $tab="#home"
-            $('#myTab a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-                $tab = e.target.getAttribute("href");
-                if ($tab !== "#home") {
-                    $("#grid-Employee").jqGrid('setGridParam',{datatype:'json'})
-                }
-            });
-
             //部门变化事件，加载人员信息
             $('#tree-orgdept').on("changed.jstree", function (e, data) {
                 if (data && data.selected && data.selected.length) {
@@ -312,18 +272,14 @@
                     $.each(sels, function (i, d) {
                         depts.push(d);
                     })
-                    if ($tab === "#home") {
-                        var currYear = moment().year();
-                        var filter = '{"groupOp":"AND","rules":[{"field":"DeptUid","op":"in","data":"' + depts.join() + '"},{"field":"WorkDay","op":"ge","data":"' + currYear + '-01-01"},{"field":"WorkDay","op":"le","data":"' + currYear + '-12-31"}]}'
-                        reloadGrid("grid-tmschedule", { filters: filter });
-                    } else {
+
                         var filter = '{"groupOp":"AND","rules":[{"field":"DeptUid","op":"in","data":"' + depts.join() + '"}]}';
                         reloadGrid("grid-Employee", { filters: filter });
-                    }
+
                 }
                 //console.log(data.selected);
             });
-            
+
         })
     })
 </script>

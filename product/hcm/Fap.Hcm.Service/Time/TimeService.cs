@@ -15,6 +15,8 @@ using System.Linq;
 using Fap.Core.Extensions;
 using Fap.Core.Utility;
 using Fap.Core.Infrastructure.Metadata;
+using Ardalis.GuardClauses;
+using Fap.Core.Exceptions;
 
 namespace Fap.Hcm.Service.Time
 {
@@ -24,11 +26,11 @@ namespace Fap.Hcm.Service.Time
     [Service]
     public class TimeService : ITimeService
     {
-        private readonly IDbContext _dataAccessor;
+        private readonly IDbContext _dbContext;
         private readonly IFapApplicationContext _applicationContext;
         public TimeService(IDbContext dataAccessor, IFapApplicationContext applicationContext)
         {
-            _dataAccessor = dataAccessor;
+            _dbContext = dataAccessor;
             _applicationContext = applicationContext;
         }
         /// <summary>
@@ -41,10 +43,10 @@ namespace Fap.Hcm.Service.Time
         {
             DynamicParameters param = new DynamicParameters();
             param.Add("CaseUid", caseUid);
-            _dataAccessor.DeleteExec("TmHoliday", "CaseUid=@CaseUid", param);
+            _dbContext.DeleteExec("TmHoliday", "CaseUid=@CaseUid", param);
             if (list.Any())
             {
-                _dataAccessor.InsertBatch<TmHoliday>(list);
+                _dbContext.InsertBatch<TmHoliday>(list);
             }
         }
 
@@ -56,85 +58,87 @@ namespace Fap.Hcm.Service.Time
         /// <param name="holidayUid">休息日套</param>
         /// <param name="shiftYear">年份</param>
         [Transactional]
-        public ResponseViewModel InitSchedule(string empWhere, string shiftUid, string holidayUid, string startDate, string endDate)
+        public void Schedule(IEnumerable<Fap.Core.Rbac.Model.Employee> empList, string shiftUid, string holidayUid, string startDate, string endDate)
         {
-            //获取排班的员工
-            var ecount = _dataAccessor.Count<Employee>(empWhere);
-            if (ecount < 1)
+            Guard.Against.Null(empList, nameof(empList));
+            //删除存在此区间排班的员工
+            string sql = "delete from TmScheduleEmployee where EmpUid in @EmpList and StartDate<@EndDate and EndDate>@StartDate";
+            _dbContext.Execute(sql, new DynamicParameters(new { EmpList = empList.Select(e => e.Fid), StartDate = startDate, EndDate = endDate }));
+            //add tmshceduleemployee
+            string sheduleUid = UUIDUtils.Fid;
+            IList<TmScheduleEmployee> scheduleEmployeeList = new List<TmScheduleEmployee>();
+            foreach (var emp in empList)
             {
-                return ResponseViewModelUtils.Failure("您设置的条件找不到员工");
+                TmScheduleEmployee schemp = new TmScheduleEmployee();
+                schemp.EmpUid = emp.Fid;
+                schemp.DeptUid = emp.DeptUid;
+                schemp.StartDate = startDate;
+                schemp.EndDate = endDate;
+                schemp.ScheduleUid = sheduleUid;
+                scheduleEmployeeList.Add(schemp);
             }
-            string where = string.Empty;
-            if (empWhere.IsPresent())
-            {
-                where = " where " + empWhere;
-            }
-            //查询已经排过班的员工
-            string vstartDate = startDate + " 00:00:00";
-            string vendDate = endDate + " 12:59:59";
-
-            //对于之前排过班又包括的 先删除
-            string schwhere = $"ShiftUid=@ShiftUid and EmpUid in (select fid from Employee {where}) and WorkDay>=@StartDate and WorkDay<=@EndDate";
-            _dataAccessor.DeleteExec("TmSchedule", schwhere, new DynamicParameters(new { ShiftUid = shiftUid, StartDate = vstartDate, EndDate = vendDate }));
+            _dbContext.InsertBatch(scheduleEmployeeList);
 
 
             //获取休息日
             DynamicParameters paramHolidy = new DynamicParameters();
             paramHolidy.Add("CaseUid", holidayUid);
-            var listHolidys = _dataAccessor.QueryWhere<TmHoliday>("CaseUid=@CaseUid", paramHolidy);
-            if (!listHolidys.Any())
-            {
-                return ResponseViewModelUtils.Failure("你还没有设置休息日，请先设置休息日再生成排班");
-            }
-            DynamicParameters paramShift = new DynamicParameters();
-            paramShift.Add("Fid", shiftUid);
-            var Shift = _dataAccessor.Get<TmShift>(shiftUid);
+            var listHolidys = _dbContext.QueryWhere<TmHoliday>("CaseUid=@CaseUid", paramHolidy);
+            //获取班次
+            var Shift = _dbContext.Get<TmShift>(shiftUid);
             if (Shift != null)
             {
+                startDate += " 00:00:00";
+                endDate += " 23:59:59";
                 string currDate = DateTimeUtils.CurrentDateTimeStr;
-                var TimeS = Convert.ToDateTime(endDate) - Convert.ToDateTime(startDate);
+                var TimeS = DateTimeUtils.ToDateTime(endDate) - DateTimeUtils.ToDateTime(startDate);
                 var Days = Convert.ToInt32(TimeS.TotalDays);
-                DateTime wDate = Convert.ToDateTime(startDate);
-                string batchSql = "";
+                DateTime wDate = DateTimeUtils.ToDateTime(startDate);
+
+                IList<TmSchedule> listSchedule = new List<TmSchedule>();
                 for (int i = 0; i < Days; i++)
                 {
-                    string wd = wDate.AddDays(i).ToString("yyyy-MM-dd");
+                    TmSchedule tmSchedule = new TmSchedule();
+                    string wd = DateTimeUtils.DateFormat(wDate.AddDays(i));
                     if (listHolidys.Any(w => w.Holiday == wd))
                     {
                         continue;
                     }
-                    //打卡开始时间
-                    string st = wd + " " + Shift.StartTime;
+                    tmSchedule.ScheduleUid = sheduleUid;
+                    tmSchedule.ShiftUid = shiftUid;
+                    tmSchedule.WorkDay = wd;
+                    //上班时间
+                    tmSchedule.StartTime = wd + " " + Shift.StartTime;
+                    //下班时间，可能存在跨天=上班时间+工作时长+休息时长
+                    tmSchedule.EndTime = DateTimeUtils.DateTimeFormat(DateTimeUtils.ToDateTime(tmSchedule.StartTime).AddHours(Shift.WorkHoursLength).AddMinutes(Shift.RestMinutesLength));
                     //迟到时间
-                    string cd = Convert.ToDateTime(st).AddMinutes(Convert.ToDouble(Shift.ComeLate)).ToString("yyyy-MM-dd HH:mm:00");
-                    //下班时间=上班时间+工作时长+休息时长
-                    string ed = Convert.ToDateTime(st).AddHours(Convert.ToDouble(Shift.WorkHoursLength)).AddMinutes(Convert.ToDouble(Shift.RestMinutesLength)).ToString("yyyy-MM-dd HH:mm:00");
+                    tmSchedule.LateTime = DateTimeUtils.DateTimeFormat(DateTimeUtils.ToDateTime(tmSchedule.StartTime).AddMinutes(Convert.ToDouble(Shift.ComeLate)));
+
                     //排班休息开始时间
-                    string rs = wd + " " + Shift.RestStartTime;
-                    //休息结束时间
-                    string re = Convert.ToDateTime(rs).AddMinutes(Convert.ToDouble(Shift.RestMinutesLength)).ToString("yyyy-MM-dd HH:mm:00");
-                    if (Convert.ToDateTime(st) > Convert.ToDateTime(rs)) //如果排班跨天
+                    tmSchedule.RestStartTime = wd + " " + Shift.RestStartTime;
+                    //休息时间跨天处理
+                    if (DateTimeUtils.ToDateTime(tmSchedule.StartTime) > DateTimeUtils.ToDateTime(tmSchedule.RestStartTime)) //如果排班跨天
                     {
                         //排班休息开始时间
-                        rs = Convert.ToDateTime(wd).AddDays(1).ToString("yyyy-MM-dd") + " " + Shift.RestStartTime;
-                        //休息结束时间
-                        re = Convert.ToDateTime(rs).AddMinutes(Convert.ToDouble(Shift.RestMinutesLength)).ToString("yyyy-MM-dd HH:mm:00");
+                        tmSchedule.RestStartTime = DateTimeUtils.DateFormat(DateTimeUtils.ToDateTime(wd).AddDays(1)) + " " + Shift.RestStartTime;
                     }
+                    //休息结束时间
+                    tmSchedule.RestEndTime = DateTimeUtils.DateTimeFormat(DateTimeUtils.ToDateTime(tmSchedule.RestStartTime).AddMinutes(Convert.ToDouble(Shift.RestMinutesLength)));
                     //早退时间
-                    string zt = Convert.ToDateTime(ed).AddMinutes(Convert.ToDouble(-Shift.LeftEarly)).ToString("yyyy-MM-dd HH:mm:00");
+                    tmSchedule.LeaveTime = DateTimeUtils.DateTimeFormat(DateTimeUtils.ToDateTime(tmSchedule.EndTime).AddMinutes(Convert.ToDouble(-Shift.LeftEarly)));
                     //早打卡开始时间
-                    string startcard = Convert.ToDateTime(st).AddHours(Convert.ToDouble(-Shift.EarlyCard)).ToString("yyyy-MM-dd HH:mm:00");
+                    tmSchedule.StartCardTime = DateTimeUtils.DateTimeFormat(DateTimeUtils.ToDateTime(tmSchedule.StartTime).AddHours(Convert.ToDouble(-Shift.EarlyCard)));
                     //最晚打卡时间
-                    string endcard = Convert.ToDateTime(ed).AddHours(Convert.ToDouble(Shift.LateCard)).ToString("yyyy-MM-dd HH:mm:00");
+                    tmSchedule.EndCardTime = DateTimeUtils.DateTimeFormat(DateTimeUtils.ToDateTime(tmSchedule.EndTime).AddHours(Convert.ToDouble(Shift.LateCard)));
 
-                    batchSql = batchSql + "\r\n" + string.Format("insert into TmSchedule(Fid,EmpUid,ShiftUid,StartTime,EndTime,LateTime,LeaveTime,WorkDay,StartCardTime,EndCardTime,WorkHoursLength,RestMinutesLength,RestStartTime,RestEndTime,EnableDate,DisableDate,Dr,Ts,CreateBy,CreateName,CreateDate) select dbo.GetFid(),Fid, '{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}',{8},{9},'{10}','{11}','{12}','9999-12-31 23:59:59',0,dbo.GetTs(),'{13}','{14}','{15}' from Employee  {16}", shiftUid, st, ed, cd, zt, wd, startcard, endcard, Shift.WorkHoursLength, Shift.RestMinutesLength, rs, re, currDate, _applicationContext.EmpUid, _applicationContext.EmpName, currDate, empWhere);
+                    tmSchedule.WorkHoursLength = Shift.WorkHoursLength;
+                    tmSchedule.RestMinutesLength = Shift.RestMinutesLength;
 
+                    listSchedule.Add(tmSchedule);
                 }
-                _dataAccessor.Execute(batchSql);
+                _dbContext.InsertBatch(listSchedule);
 
             }
-
-            return ResponseViewModelUtils.Sueecss();
 
         }
 
@@ -154,14 +158,14 @@ namespace Fap.Hcm.Service.Time
             paramWork.Add("vStartDate", DateTimeUtils.DateTimeFormat(vStartDate));
             paramWork.Add("vEndDate", DateTimeUtils.DateTimeFormat(vEndDate));
             //获取该时间段是否有休假
-            var tm = _dataAccessor.Count("TmLeaveApply", "AppEmpUid=@EmpUid and ((StartTime<=@vStartDate and EndTime>@vStartDate) or (StartTime<@vEndDate and EndTime>=@vEndDate) or (StartTime>=@vStartDate and EndTime<=@vEndDate)) and (BillStatus='PROCESSING' or BillStatus='PASSED' or BillStatus='SUSPENDED')", paramWork);
+            var tm = _dbContext.Count("TmLeaveApply", "AppEmpUid=@EmpUid and ((StartTime<=@vStartDate and EndTime>@vStartDate) or (StartTime<@vEndDate and EndTime>=@vEndDate) or (StartTime>=@vStartDate and EndTime<=@vEndDate)) and (BillStatus='PROCESSING' or BillStatus='PASSED' or BillStatus='SUSPENDED')", paramWork);
             if (tm > 0)
             {
                 msg = "当前时间段内已存在请假申请！";
                 return 0;
             }
             //获取当前时间段是否有出差
-            var cc = _dataAccessor.Count("TmTravelApply", "AppEmpUid=@EmpUid and ((StartTime<=@vStartDate and EndTime>@vStartDate) or (StartTime<@vEndDate and EndTime>=@vEndDate) or (StartTime>=@vStartDate and EndTime<=@vEndDate)) and (BillStatus='PROCESSING' or BillStatus='PASSED' or BillStatus='SUSPENDED')", paramWork);
+            var cc = _dbContext.Count("TmTravelApply", "AppEmpUid=@EmpUid and ((StartTime<=@vStartDate and EndTime>@vStartDate) or (StartTime<@vEndDate and EndTime>=@vEndDate) or (StartTime>=@vStartDate and EndTime<=@vEndDate)) and (BillStatus='PROCESSING' or BillStatus='PASSED' or BillStatus='SUSPENDED')", paramWork);
             if (cc > 0)
             {
                 msg = "当前时间段内已存在出差申请！";
@@ -170,15 +174,15 @@ namespace Fap.Hcm.Service.Time
             paramWork.Add("StartDate", vStartDate.ToString("yyyy-MM-dd"));
             paramWork.Add("EndDate", vEndDate.ToString("yyyy-MM-dd"));
             //获取当前时间段内排班天数
-            double workDay = (double)_dataAccessor.Count("TmSchedule", "EmpUid=@EmpUid and WorkDay>=@StartDate and WorkDay<=@EndDate", paramWork);
+            double workDay = (double)_dbContext.Count("TmSchedule", "EmpUid=@EmpUid and WorkDay>=@StartDate and WorkDay<=@EndDate", paramWork);
             if (workDay <= 0)
             {
                 msg = "您当前时段内未找到排班信息！";
                 return 0;
             }
-            workhours = (double)_dataAccessor.Sum("TmSchedule", "workhourslength", "EmpUid=@EmpUid and WorkDay>=@StartDate and WorkDay<=@EndDate", paramWork);
+            workhours = (double)_dbContext.Sum("TmSchedule", "workhourslength", "EmpUid=@EmpUid and WorkDay>=@StartDate and WorkDay<=@EndDate", paramWork);
             //获取请假开始当天的排班
-            var startSchedule = _dataAccessor.QueryFirstOrDefaultWhere<TmSchedule>("WorkDay=@StartDate", paramWork);
+            var startSchedule = _dbContext.QueryFirstOrDefaultWhere<TmSchedule>("WorkDay=@StartDate", paramWork);
             if (startSchedule != null)
             {
                 //获取开始请假当天的请假时长
@@ -197,7 +201,7 @@ namespace Fap.Hcm.Service.Time
                 workhours = workhours - startSchedule.WorkHoursLength + startHours;
             }
             //获取请假结束当天的排班
-            var endSchedule = _dataAccessor.QueryFirstOrDefaultWhere<TmSchedule>("WorkDay=@EndDate", paramWork);
+            var endSchedule = _dbContext.QueryFirstOrDefaultWhere<TmSchedule>("WorkDay=@EndDate", paramWork);
             if (endSchedule != null)
             {
                 //获取结束请假当天的请假时长
@@ -228,7 +232,7 @@ namespace Fap.Hcm.Service.Time
             paramWork.Add("EmpUid", EmpUid);
             paramWork.Add("vStartDate", vStartDate.ToString("yyyy-MM-dd HH:mm"));
             paramWork.Add("vEndDate", vEndDate.ToString("yyyy-MM-dd HH:mm"));
-            var tm = _dataAccessor.Count("TmSchedule", "EmpUid=@EmpUid and ((StartTime<=@vStartDate and EndTime>@vStartDate) or (StartTime<@vEndDate and EndTime>=@vEndDate) or (StartTime>=@vStartDate and EndTime<=@vEndDate))", paramWork);
+            var tm = _dbContext.Count("TmSchedule", "EmpUid=@EmpUid and ((StartTime<=@vStartDate and EndTime>@vStartDate) or (StartTime<@vEndDate and EndTime>=@vEndDate) or (StartTime>=@vStartDate and EndTime<=@vEndDate))", paramWork);
             if (tm > 0)
             {
                 return true;
@@ -249,7 +253,7 @@ namespace Fap.Hcm.Service.Time
             //根据当前列获取值
             param.Add("EmpUid", EmpUid);
             param.Add("Annual", DateTime.Now.Year);
-            double c = _dataAccessor.ExecuteScalar<double>("select RemainderNum from  TmAnnualLeave where EmpUid=@EmpUid and Annual=@Annual", param);
+            double c = _dbContext.ExecuteScalar<double>("select RemainderNum from  TmAnnualLeave where EmpUid=@EmpUid and Annual=@Annual", param);
 
             return c;
 
@@ -266,7 +270,7 @@ namespace Fap.Hcm.Service.Time
 
             DynamicParameters param = new DynamicParameters();
             param.Add("TypeCode", TypeCode);
-            return _dataAccessor.QueryAll<TmLeaveType>().FirstOrDefault(t => t.TypeCode == TypeCode);
+            return _dbContext.QueryAll<TmLeaveType>().FirstOrDefault(t => t.TypeCode == TypeCode);
         }
         /// <summary>
         /// 获取人员可调休时长
@@ -278,7 +282,7 @@ namespace Fap.Hcm.Service.Time
             DynamicParameters param = new DynamicParameters();
             param.Add("EmpUid", EmpUid);
             //缺少计算条件
-            var hours = _dataAccessor.ExecuteScalar<double>("select sum(ReHoursLength) from  TmOvertimeStat where EmpUid=@EmpUid and isFalse=0", param);
+            var hours = _dbContext.ExecuteScalar<double>("select sum(ReHoursLength) from  TmOvertimeStat where EmpUid=@EmpUid and isFalse=0", param);
 
             return hours;
         }
@@ -295,13 +299,13 @@ namespace Fap.Hcm.Service.Time
             //string empName = _applicationContext.EmpName;
 
             ////先删除本区间
-            //_dataAccessor.DeleteExec("TmAnnualLeave", "PeriodUid=@Period", new DynamicParameters(new { Period = periodUid }));
-            //dynamic entity = _dataAccessor.Get("TmleavePeriod", periodUid, false);
+            //_dbContext.DeleteExec("TmAnnualLeave", "PeriodUid=@Period", new DynamicParameters(new { Period = periodUid }));
+            //dynamic entity = _dbContext.Get("TmleavePeriod", periodUid, false);
             //string sql = "insert into TmAnnualLeave(Fid,EmpUid,EmpCode,EmpCategory,PeriodUid,Annual,EnableDate,DisableDate,Dr,Ts,CreateBy,CreateName,CreateDate) select dbo.GetFid(),Fid,EmpCode,EmpCategory,@Period,@Annual,@CurrDate,'9999-12-31 12:59:59',0,dbo.GetTs(),@CurrEmp,@CurrEmpName,@CurrDate from employee where DisableDate>getdate() and EnableDate<=getdate() and dr=0 and EmpStatus='Current' and IsMainJob=1";
-            //_dataAccessor.Execute(sql, new DynamicParameters(new { Period = periodUid, Annual = entity.Annual, CurrDate = currDate, CurrEmp = empuid, CurrEmpName = empName }));
+            //_dbContext.Execute(sql, new DynamicParameters(new { Period = periodUid, Annual = entity.Annual, CurrDate = currDate, CurrEmp = empuid, CurrEmpName = empName }));
             //DynamicParameters param = new DynamicParameters();
             //param.Add("Period", periodUid);
-            //IEnumerable<dynamic> list = _dataAccessor.Query("select * from TmLeaveInitRule where PeriodUid=@Period and IsEnabled=1", param, false);
+            //IEnumerable<dynamic> list = _dbContext.Query("select * from TmLeaveInitRule where PeriodUid=@Period and IsEnabled=1", param, false);
             //if (list != null && list.Any())
             //{
             //    foreach (var item in list)
@@ -310,10 +314,10 @@ namespace Fap.Hcm.Service.Time
             //        var filter = item.RuleSetting;
             //        if (filter != "")
             //        {
-            //            JsonFilterToSql jfts = new JsonFilterToSql(_dataAccessor);
+            //            JsonFilterToSql jfts = new JsonFilterToSql(_dbContext);
             //            string where = jfts.BuilderFilter("Employee", filter);
             //            string updateSql = $"update TmAnnualLeave set CurrYearNum={days} where PeriodUid=@Period and EmpUid in(select fid from Employee where  {where})";
-            //            _dataAccessor.Execute(updateSql, new DynamicParameters(new { Period = periodUid }), session);
+            //            _dbContext.Execute(updateSql, new DynamicParameters(new { Period = periodUid }), session);
             //        }
             //    }
             //}
@@ -326,18 +330,18 @@ namespace Fap.Hcm.Service.Time
         [Transactional]
         public void BalanceLeaveData(string periodUid)
         {
-            dynamic entity = _dataAccessor.Get("TmleavePeriod", periodUid, false);
+            dynamic entity = _dbContext.Get("TmleavePeriod", periodUid, false);
             int annual = Convert.ToInt32(entity.Annual);//当前期间年
             int preAnnual = annual - 1;//上一年
             DynamicParameters parameters = new DynamicParameters(new { CurrAnnual = annual.ToString(), PreAnnual = preAnnual.ToString() });
             //求结余天数
             string sql = "update a set a.LastYearLeft=b.RemainderNum, a.IsHandle=1  from TmAnnualLeave a,TmAnnualLeave b where a.EmpUid=b.EmpUid and a.Annual=@CurrAnnual and a.IsHandle=0 and b.Annual=@PreAnnual";
             //此规则的sql 无法解析。所以用原始执行sql，需要的话手动添加有效条件
-            _dataAccessor.Execute(sql, parameters);
+            _dbContext.Execute(sql, parameters);
 
             //求本年实际和剩余天数
             sql = "update TmAnnualLeave set RemainderNum=CurrYearNum+LastYearLeft,CurrRealNum=CurrYearNum+LastYearLeft,IsHandle=1 where Annual=@CurrAnnual ";
-            _dataAccessor.Execute(sql, parameters);
+            _dbContext.Execute(sql, parameters);
 
 
         }
@@ -352,15 +356,15 @@ namespace Fap.Hcm.Service.Time
 
             DynamicParameters param = new DynamicParameters();
             param.Add("Fid", fid);
-            var tmmonth = _dataAccessor.QueryFirstOrDefault("select Code,StartDate,EndDate from  TmPeriod where Fid=@Fid", param);
+            var tmmonth = _dbContext.QueryFirstOrDefault("select Code,StartDate,EndDate from  TmPeriod where Fid=@Fid", param);
 
-            _dataAccessor.Execute(@"merge into TmReplenDay A
+            _dbContext.Execute(@"merge into TmReplenDay A
                                    using  (select * from  TmDayResult where dr=0 and CurrDate>=@StartDate and CurrDate<=@EndDate and (CalResult like '%旷工%' or CalResult like '%缺勤%' or CalResult like '%迟%' or CalResult like '%退%')) B on (A.EmpUid=B.EmpUid and A.CurrDate=B.CurrDate)
                                    when not matched then
                                    insert (Fid,EmpUid,TmMonthCode,StartTime,EndTime,CurrDate,ReCalResult,EnableDate,DisableDate,Ts,Dr,CreateBy,CreateName,CreateDate) values(dbo.GetFid(),B.EmpUid,@Code,B.CardStartTime,B.CardEndTime,B.CurrDate,B.CalResult,CONVERT(varchar(100), GETDATE(), 20),'9999-12-31 23:59:59',dbo.GetTs(),0,@UserFid,@UserName,CONVERT(varchar(100), GETDATE()));
                                 ", new DynamicParameters(new { StartDate = tmmonth.StartDate, EndDate = tmmonth.EndDate, Code = tmmonth.Code, UserName = _applicationContext.EmpName, UserFid = _applicationContext.EmpUid }));
             //更新员工编码、邮箱、直属上级字段
-            _dataAccessor.Execute($"update TmReplenDay  set EmpCode=Employee.EmpCode,MailBox=Employee.MailBox, LeaderShip=Employee.LeaderShip from Employee where TmReplenDay.EmpUid=Employee.Fid and TmReplenDay.TmMonthCode=@Code ", new DynamicParameters(new { Code = tmmonth.Code }));
+            _dbContext.Execute($"update TmReplenDay  set EmpCode=Employee.EmpCode,MailBox=Employee.MailBox, LeaderShip=Employee.LeaderShip from Employee where TmReplenDay.EmpUid=Employee.Fid and TmReplenDay.TmMonthCode=@Code ", new DynamicParameters(new { Code = tmmonth.Code }));
 
             //发消息
             var UserName = _applicationContext.EmpName;
@@ -368,7 +372,7 @@ namespace Fap.Hcm.Service.Time
             string baseUrl = _applicationContext.BaseUrl;
 
             string sql = string.Empty;
-            if (_dataAccessor.DatabaseDialect == DatabaseDialectEnum.MSSQL)
+            if (_dbContext.DatabaseDialect == DatabaseDialectEnum.MSSQL)
             {
                 sql = @"insert into FapMail (Fid,Recipient,RecipientEmailAddress,Subject,MailContent,EnableDate,DisableDate,Ts,Dr,CreateBy,CreateName,CreateDate) 
                             select dbo.GetFid(),(select top 1 EmpName from Employee where Fid=TmReplenDay.EmpUid and dr=0),
@@ -399,10 +403,10 @@ namespace Fap.Hcm.Service.Time
                             CONVERT(varchar(100), GETDATE(), 20),'9999-12-31 23:59:59',dbo.GetTs(),0,@UserFid,@UserName,CONVERT(varchar(100), GETDATE(),20)
                             from   TmReplenDay where dr=0 and TmMonthCode=@Code group by LeaderShip;";
 
-                _dataAccessor.Execute(sql, new DynamicParameters(new { SEmpUid = UserFid, Code = tmmonth.Code, UserName = UserName, UserFid = UserFid, SendTime = DateTimeUtils.CurrentDateTimeStr, PUrl = baseUrl + "/Home/MainFrame#SelfService/Ess/TmMyReplenCard", MUrl = baseUrl + "/Home/MainFrame#Time/Time/TmReplenCard" }));
+                _dbContext.Execute(sql, new DynamicParameters(new { SEmpUid = UserFid, Code = tmmonth.Code, UserName = UserName, UserFid = UserFid, SendTime = DateTimeUtils.CurrentDateTimeStr, PUrl = baseUrl + "/Home/MainFrame#SelfService/Ess/TmMyReplenCard", MUrl = baseUrl + "/Home/MainFrame#Time/Time/TmReplenCard" }));
 
             }
-            else if (_dataAccessor.DatabaseDialect == DatabaseDialectEnum.MYSQL)
+            else if (_dbContext.DatabaseDialect == DatabaseDialectEnum.MYSQL)
             {
                 sql = "";
             }
@@ -420,51 +424,64 @@ namespace Fap.Hcm.Service.Time
         public void ReCard(string empUid, string empCode, string startTime, string endTime)
         {
 
-            dynamic fdo1 = new FapDynamicObject(_dataAccessor.Columns("TmCardRecord"));
+            dynamic fdo1 = new FapDynamicObject(_dbContext.Columns("TmCardRecord"));
             fdo1.EmpUid = empUid;
             fdo1.CardTime = startTime;
             fdo1.EmpCode = empCode;
             fdo1.DeviceName = "补签数据";
 
-            dynamic fdo2 = new FapDynamicObject(_dataAccessor.Columns("TmCardRecord"));
+            dynamic fdo2 = new FapDynamicObject(_dbContext.Columns("TmCardRecord"));
             fdo2.EmpUid = empUid;
             fdo2.CardTime = endTime;
             fdo2.EmpCode = empCode;
             fdo2.DeviceName = "补签数据";
 
-            _dataAccessor.InsertDynamicData(fdo1);
-            _dataAccessor.InsertDynamicData(fdo2);
+            _dbContext.InsertDynamicData(fdo1);
+            _dbContext.InsertDynamicData(fdo2);
             string cardDate = startTime.Substring(0, 10);
-            _dataAccessor.Execute("update TmReplenDay set ReplenStatus = 1 where EmpUid=@EmpUid and CurrDate=@CurrDate", new DynamicParameters(new { EmpUid = empUid, CurrDate = cardDate }));
+            _dbContext.Execute("update TmReplenDay set ReplenStatus = 1 where EmpUid=@EmpUid and CurrDate=@CurrDate", new DynamicParameters(new { EmpUid = empUid, CurrDate = cardDate }));
 
 
 
         }
         /// <summary>
-        ///  补签打卡不经过审批
+        ///  批量补签打卡
         /// </summary>
         /// <param name="recard"></param>
-        public void ReCardNoApply(ReCard recard)
+        public void BatchPatchCard(IList<string> deptUids, string startDate, string endDate)
         {
-            //获取排班
             DynamicParameters param = new DynamicParameters();
-            param.Add("StartDate", recard.StartDate);
-            param.Add("EndDate", recard.EndDate);
-            param.Add("DeptUids", recard.DeptUids);
-            string sqlWhere = "WorkDay>=@StartDate and WorkDay<=@EndDate and EmpUid in(select Fid from Employee where DeptUid in @DeptUids)";
-            IEnumerable<TmSchedule> schedules = _dataAccessor.QueryWhere<TmSchedule>(sqlWhere, param).OrderBy(c => c.WorkDay);
-            if (schedules.Any())
+            param.Add("StartDate", startDate);
+            param.Add("EndDate", endDate);
+            param.Add("DeptUids", deptUids);
+            string sql = "select * from TmScheduleEmployee where DeptUid in @DeptUids and EndDate>@StartDate and StartDate<@EndDate";
+            var scheduleEmployes = _dbContext.Query<TmScheduleEmployee>(sql, param);
+            var scheduleUids = scheduleEmployes.Select(s => s.ScheduleUid).Distinct();
+            if (!scheduleUids.Any())
             {
-
-                foreach (var sch in schedules)
-                {
-                    string sql1 = $"insert into TmCardRecord(Fid,EmpUid,EmpCode,CardTime,DeviceName,EnableDate,DisableDate,Dr) select '{ UUIDUtils.Fid}',Fid,EmpCode,'{sch.StartTime}','管理员批量补签','{DateTimeUtils.CurrentDateTimeStr}','9999-12-31 23:59:59',0 from Employee where Fid =@EmpUid";
-                    string sql2 = $"insert into TmCardRecord(Fid,EmpUid,EmpCode,CardTime,DeviceName,EnableDate,DisableDate,Dr) select '{ UUIDUtils.Fid}',Fid,EmpCode,'{sch.EndTime}','管理员批量补签','{DateTimeUtils.CurrentDateTimeStr}','9999-12-31 23:59:59',0 from Employee where Fid =@EmpUid";
-                    _dataAccessor.Execute(sql1, new DynamicParameters(new { EmpUid = sch.EmpUid }));
-                    _dataAccessor.Execute(sql2, new DynamicParameters(new { EmpUid = sch.EmpUid }));
-                }
-
+                throw new FapException("未找到排班信息");
             }
+            string sqlWhere = "WorkDay>=@StartDate and WorkDay<=@EndDate and ScheduleUid in @ScheduleUids";
+            var schedules = _dbContext.QueryWhere<TmSchedule>(sqlWhere, param).GroupBy(s => s.ScheduleUid);
+            foreach (var schedule in schedules)
+            {
+                foreach (var emp in scheduleEmployes.Where(s => s.ScheduleUid ==schedule.Key))
+                {
+                    foreach (var sch in schedule)
+                    {
+                        TmCardRecord rcr = new TmCardRecord();
+                    }
+                }
+            }
+            //foreach (var sch in schedules)
+            //{
+            //    string sql1 = $"insert into TmCardRecord(Fid,EmpUid,EmpCode,CardTime,DeviceName,EnableDate,DisableDate,Dr) select '{ UUIDUtils.Fid}',Fid,EmpCode,'{sch.StartTime}','管理员批量补签','{DateTimeUtils.CurrentDateTimeStr}','9999-12-31 23:59:59',0 from Employee where Fid =@EmpUid";
+            //    string sql2 = $"insert into TmCardRecord(Fid,EmpUid,EmpCode,CardTime,DeviceName,EnableDate,DisableDate,Dr) select '{ UUIDUtils.Fid}',Fid,EmpCode,'{sch.EndTime}','管理员批量补签','{DateTimeUtils.CurrentDateTimeStr}','9999-12-31 23:59:59',0 from Employee where Fid =@EmpUid";
+            //    _dbContext.Execute(sql1, new DynamicParameters(new { EmpUid = sch.EmpUid }));
+            //    _dbContext.Execute(sql2, new DynamicParameters(new { EmpUid = sch.EmpUid }));
+            //}
+
+
         }
     }
 }

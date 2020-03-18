@@ -36,6 +36,10 @@ namespace Fap.Core.Utility
                 return string.Format("{0:yyyy-MM-dd}", DateTime.Now);
             }
         }
+        public static DateTime ToDateTime(string dt)
+        {
+            return Convert.ToDateTime(dt);
+        }
         /// <summary>
         /// 获取时间的字符串
         /// </summary>

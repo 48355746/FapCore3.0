@@ -72,13 +72,32 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
             var holiday = list.Select(l => l.Holiday);
             return Json(holiday);
         }
+        /// <summary>
+        /// 排班
+        /// </summary>
+        /// <param name="schedule"></param>
+        /// <returns></returns>
         [HttpPost("Schedule")]
         public JsonResult PostInitSchedule(ScheduleViewModel schedule)
         {
             var pageable= _gridFormService.AnalysisPostData(schedule.PostData);
-            var empList = _dbContext.Query(pageable.ToString());
-            //ReturnMsg rmsg = _timeService.InitSchedule(strWhere, schedule.ShiftUid, schedule.HolidayUid, schedule.StartDate, schedule.EndDate);
+            var empList = _dbContext.Query<Fap.Core.Rbac.Model.Employee>(pageable.ToString());
+            if (!empList.Any())
+            {
+                return Json(ResponseViewModelUtils.Failure("请设置排班员工"));
+            }
+             _timeService.Schedule(empList, schedule.ShiftUid, schedule.HolidayUid, schedule.StartDate, schedule.EndDate);
             return Json(ResponseViewModelUtils.Sueecss());
+        }
+        /// <summary>
+        /// 批量打卡
+        /// </summary>
+        /// <param name="batchCard"></param>
+        /// <returns></returns>
+        [HttpPost("BatchCard")]
+        public JsonResult PostBatchCard(BatchCardViewModel batchCard)
+        {
+            return null;
         }
     }
 }

@@ -459,6 +459,16 @@
         <script src="~/Content/js/lodash.min.js" asp-append-version="true"></script>
     </environment>
     <script src="~/Content/layer/layer.js"></script>
-
+    <script>
+        if (language === "ZhTW") {
+            moment.locale("zh-tw");
+        } else if (language === "En") {
+            moment.locale("en");
+        } else if (language === "Ja") {
+            moment.locale("ja");
+        } else {
+            moment.locale('zh-cn');
+        }
+    </script>
 </body>
 </html>
