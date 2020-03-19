@@ -50,6 +50,10 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
             mmodel.JqGridViewModels.Add("overtime", om);
             return View(mmodel);
         }
+        /// <summary>
+        /// 考勤期间
+        /// </summary>
+        /// <returns></returns>
         public ActionResult Period()
         {
             var model = this.GetJqGridModel("TmPeriod", (qs) =>
@@ -58,6 +62,15 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
             });
             return View(model);
 
+        }
+        /// <summary>
+        /// 年假规则设置
+        /// </summary>
+        /// <returns></returns>
+        public ActionResult AnnualLeaveRule()
+        {
+            var model = GetJqGridModel("TmAnnualLeaveRule");
+            return View(model);
         }
         #endregion
 

@@ -1,0 +1,13 @@
+﻿
+@model Fap.AspNetCore.ViewModel.JqGridViewModel
+
+<title>
+    <fap-multilang lang-key="annualleave_rule" default-content="年假规则"></fap-multilang>
+</title>
+<div class="row">
+    <fap-grid id="annualrule" grid-model="Model" view-records="true" multi-box-only="true" multi-select="true" oper-cud="true"></fap-grid>
+</div>
+<script>
+    var scripts = [null, null];
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () { });
+</script>

@@ -723,7 +723,16 @@ namespace Fap.Hcm.Web.Controllers
             var history = _dbContext.QueryDataHistory(bn, fid);
             return PartialView(history);
         }
-
+        /// <summary>
+        /// 实体条件设置
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        public PartialViewResult EntityCondition(string entity)
+        {
+            ViewBag.TableName = entity;
+            return PartialView();
+        }
         #region 附件相关
         public PartialViewResult AttachmentInfo(string fid)
         {
