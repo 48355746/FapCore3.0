@@ -12,7 +12,7 @@
     string tn = ViewBag.TableName;
     var cols = _db.Columns(tn);
     var options = cols.Where(c => c.IsDefaultCol == 0).Select(c => "<option value='" + c.ColComment + "'>" + c.ColComment + "[" + c.ColName + "]</option>");
-    var columns ="{"+string.Join(",", cols.Where(c => c.IsDefaultCol == 0).Select(c => c.ColName + ":'" + c.ColComment+"'"))+"}";
+    var columns = "{" + string.Join(",", cols.Where(c => c.IsDefaultCol == 0).Select(c => c.ColName + ":'" + c.ColComment + "'")) + "}";
 }
 <div class="row">
     <div class="col-xs-12  col-sm-4">
@@ -151,14 +151,14 @@
             return data[k]==value;
         });
     }
-    function getConditionObject() { 
+    function getConditionObject() {
         debugger
-        var ttext = conditionEditor.getValue();     
+        var ttext = conditionEditor.getValue();
         var patt = new RegExp(/\$\{\S+?\}/, "g");
         var tvalue;
         var tdesc;
         while ((result = patt.exec(ttext)) != null)
-        { 
+        {
             var col = result[0].slice(2, -1);
             tvalue = ttext.replace(result,'${'+findKey(col, objFields)+'}');
             tdesc = ttext.replace(result, col);
@@ -168,6 +168,7 @@
         return { text: ttext, value: tvalue, desc:tdesc };
 
     }
+ 
     $(function () {
         //公式编辑器
         conditionEditor = CodeMirror.fromTextArea(document.getElementById("formulaDisplay"), {

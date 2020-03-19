@@ -7,23 +7,18 @@ using Fap.AspNetCore.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Fap.Core.Extensions;
 using Dapper;
-using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 using System.Web;
-using Fap.Core.Infrastructure.Metadata;
-using Fap.Core.Utility;
 using System.IO;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Infrastructure.Query;
-using Fap.Hcm.Web.Models;
-using Microsoft.Extensions.Primitives;
 using Fap.AspNetCore.Binder;
-using Fap.AspNetCore.Serivce;
 using Fap.Core.Infrastructure.Model;
 using System.Text.RegularExpressions;
 using Fap.AspNetCore.Model;
 using System.Data;
 using System.Collections.Generic;
+using Fap.Core.Utility;
 
 namespace Fap.Hcm.Web.Controllers
 {
@@ -177,7 +172,7 @@ namespace Fap.Hcm.Web.Controllers
                 var queryColList = HttpUtility.UrlDecode(qryCols).ToLower().SplitComma();
                 colCacheList = colCacheList.Where(c => queryColList.Contains(c.ColName.ToLower()));
             }
-            return Json(colCacheList);
+            return Json(colCacheList.OrderBy(c=>c.ColOrder));
         }
         [HttpPost("MultiLanguage")]
         public JsonResult RegisterMultiLanguage(string langKey, string langValue)
@@ -281,30 +276,16 @@ namespace Fap.Hcm.Web.Controllers
 
         #region 校验条件sql设置
 
-        [HttpPost("ValideSqlCondition")]
+        [HttpPost("VerifySql")]
         // POST: api/Common
         public JsonResult PostValideSqlCondition(string tableName, string conditionSql)
         {
-            bool success = true;
-            string msg = string.Empty;
-            Regex rgx = new Regex(FapPlatformConstants.VariablePattern);
-            MatchCollection matchs = rgx.Matches(conditionSql);
-            foreach (var mtch in matchs)
-            {
-                conditionSql = conditionSql.Replace(mtch.ToString(), "'1'");
-            }
-            string sql = "select 1 from dual where " + conditionSql;
+            var cols = _dbContext.Columns(tableName);
+            conditionSql= SqlUtils.ParsingSql(cols, conditionSql, _dbContext.DatabaseDialect);
+            string sql = $"select count(0) from {tableName} where " + conditionSql;
+            _dbContext.ExecuteScalar(sql);
+            return Json(ResponseViewModelUtils.Sueecss());
 
-            try
-            {
-                _dbContext.Execute(sql);
-            }
-            catch (Exception ex)
-            {
-                success = false;
-                msg = ex.Message;
-            }
-            return Json(new ResponseViewModel { success = success, msg = msg });
         }
         #endregion
     }

@@ -1,10 +1,6 @@
-﻿
-using Dapper;
-using Fap.AspNetCore.Controls.JqGrid.Enums;
+﻿using Fap.AspNetCore.Controls.JqGrid.Enums;
 //using Fap.Core.Extensions;
 using Fap.AspNetCore.Controls.JqGrid.Extensions;
-using Fap.AspNetCore.Infrastructure;
-using Fap.AspNetCore.Model;
 using Fap.Core.DataAccess;
 using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Domain;
@@ -13,14 +9,10 @@ using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.MultiLanguage;
 using Fap.Core.Utility;
 using Microsoft.AspNetCore.Html;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Yahoo.Yui.Compressor;
-using System.Text.Encodings.Web;
 using System.Web;
 using Fap.Core.Infrastructure.Enums;
 using Fap.Core.Rbac;

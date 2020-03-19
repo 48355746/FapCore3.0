@@ -4,10 +4,13 @@
 <title>
     <fap-multilang lang-key="annualleave_rule" default-content="年假规则"></fap-multilang>
 </title>
+<link href="~/Content/css/codemirror/codemirror.css" rel="stylesheet" />
+<link rel="stylesheet" href="~/Content/css/codemirror/theme/xq-light.css" />
+
 <div class="row">
     <fap-grid id="annualrule" grid-model="Model" view-records="true" multi-box-only="true" multi-select="true" oper-cud="true"></fap-grid>
 </div>
 <script>
-    var scripts = [null, null];
+    var scripts = [null, "/Content/js/codemirror/codemirror.js","/Content/js/codemirror/mode/sql/sql.js", null];
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () { });
 </script>
