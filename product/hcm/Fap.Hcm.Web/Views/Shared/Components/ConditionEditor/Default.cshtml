@@ -1,26 +1,82 @@
 ﻿@*<link href="~/Content/css/codemirror/codemirror.css" rel="stylesheet" />
-    <link rel="stylesheet" href="~/Content/css/codemirror/theme/xq-light.css"/>
-        <style>
-        .CodeMirror {
-            height: 240px;
-        }
-    </style>
-    <script src="~/Content/js/codemirror/codemirror.js"></script>
+    <link rel="stylesheet" href="~/Content/css/codemirror/theme/xq-light.css"/>*@
+<style>
+    .CodeMirror {
+        height: 240px;
+    }
+</style>
+
+@*<script src="~/Content/js/codemirror/codemirror.js"></script>
     <script src="~/Content/js/codemirror/mode/sql/sql.js"></script>*@
-@inject Fap.Core.DataAccess.IDbContext _db;
-@{
-    string tn = ViewBag.TableName;
-    var cols = _db.Columns(tn);
-    var options = cols.Where(c => c.IsDefaultCol == 0).Select(c => "<option value='" + c.ColComment + "'>" + c.ColComment + "[" + c.ColName + "]</option>");
-    var columns = "{" + string.Join(",", cols.Where(c => c.IsDefaultCol == 0).Select(c => c.ColName + ":'" + c.ColComment + "'")) + "}";
-}
+<script>
+    var objFields;
+    var conditionEditor;
+    //获取完整的条件结果
+    var getEditorValue = function () {
+        return conditionEditor.getValue();
+    }
+    var setEditorValue = function (value) {
+        setTimeout(() => {
+            conditionEditor.getDoc().setValue(value);
+        }, 1);
+    }
+    //初始化公式编辑器
+    var initEditor=function() {
+        setTimeout(function () {
+            //公式编辑器
+            conditionEditor = CodeMirror.fromTextArea(document.getElementById("formulaDisplay"), {
+                mode: 'text/x-mssql',
+                theme: 'xq-light',
+                indentWithTabs: true,
+                smartIndent: true,
+                lineNumbers: true,
+                matchBrackets: true,
+                autofocus: true,
+
+            });
+        }, 0)
+    }
+    $(function () {
+
+        $.get(basePath + "/Api/Core/FieldList/@ViewBag.TableName", function (data) {
+            objFields = data;
+            $.each(data, function (i, c) {
+                $("#sel_refformulaitems").append("<option value='" + c.colComment + "'>" + c.colComment + "[" + c.colName + "]</option>")
+            })
+        })
+
+        //校验公式项
+        $("#btnValidate").on(ace.click_event, function () {
+            var cv = conditionEditor.getValue();
+            $.post("@Url.Content("~/Api/Core/VerifySql")", { tableName: '@ViewBag.TableName', conditionSql: cv }, function (data) {
+                if (data.success == true) {
+                    layer.msg("条件校验合法！");
+                } else {
+                    layer.msg("条件校验失败！" + data.message);
+                }
+            });
+        });
+        //操作符插入
+        $(":button[data-provider='fap-formula']").on(ace.click_event, function () {
+            conditionEditor.replaceSelection($(this).data("handler").toString());
+        });
+        $("a[data-provider='fap-formula']").on(ace.click_event, function () {
+            conditionEditor.replaceSelection($(this).data("handler").toString());
+        });
+
+        //公式项字段设置
+        $("#sel_refformulaitems").on(ace.click_event, function () {
+            conditionEditor.replaceSelection("{" + $(this).val() + "}");
+        });
+    })
+</script>
+
 <div class="row">
     <div class="col-xs-12  col-sm-4">
         <div class="widget-box widget-color-blue3">
             <div class="widget-header widget-header-small">
                 <h6 class="widget-title">参考项</h6>
             </div>
-
             <div class="widget-body">
                 <div class="widget-main no-padding">
 
@@ -48,32 +104,30 @@
 
                     <ul class="dropdown-menu dropdown-warning dropdown-menu-right dropdown-caret dropdown-close">
                         <li>
-                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" DATEPART(datepart,字段) ">日期格式</a>
+                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" [小时](开始时间,结束时间) ">时间间隔(小时)</a>
                         </li>
                         <li>
-                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" DATEADD (day,天数,字段) ">日期加减</a>
-                        </li>
-
-                        <li>
-                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" DATEDIFF(day , 开始时间 , 结束时间) ">日期间隔</a>
-                        </li>
-
-                        <li>
-                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" GETDATE() ">当前日期</a>
+                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" [天](开始时间,结束时间) ">时间间隔(天)</a>
                         </li>
                         <li>
-                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" YEAR(字段) ">年</a>
+                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" [星期](开始时间,结束时间) ">时间间隔(星期)</a>
                         </li>
                         <li>
-                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" MONTH(字段) ">月</a>
+                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" [月](开始时间,结束时间) ">时间间隔(月)</a>
                         </li>
                         <li>
-                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" DAY(字段) ">日</a>
+                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" [季度](开始时间,结束时间) ">时间间隔(季度)</a>
+                        </li>
+                        <li>
+                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" [年](开始时间,结束时间) ">时间间隔(年)</a>
+                        </li>
+                        <li>
+                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler="[当前日期]">当前日期</a>
                         </li>
                         <li class="divider"></li>
 
                         <li>
-                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" ABS(字段) ">绝对值</a>
+                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" [绝对值](字段) ">绝对值</a>
                         </li>
                     </ul>
                 </div>
@@ -140,73 +194,3 @@
         </div>
     </div>
 </div>
-
-
-<script>
-    //window.conditionDisplay={};
-    var conditionEditor;
-    var objFields =@Html.Raw(columns);
-    function findKey(value,data) {
-        return Object.keys(data).find(function (k) {
-            return data[k]==value;
-        });
-    }
-    function getConditionObject() {
-        debugger
-        var ttext = conditionEditor.getValue();
-        var patt = new RegExp(/\$\{\S+?\}/, "g");
-        var tvalue;
-        var tdesc;
-        while ((result = patt.exec(ttext)) != null)
-        {
-            var col = result[0].slice(2, -1);
-            tvalue = ttext.replace(result,'${'+findKey(col, objFields)+'}');
-            tdesc = ttext.replace(result, col);
-            patt.lastIndex;
-        }
-
-        return { text: ttext, value: tvalue, desc:tdesc };
-
-    }
- 
-    $(function () {
-        //公式编辑器
-        conditionEditor = CodeMirror.fromTextArea(document.getElementById("formulaDisplay"), {
-            mode: 'text/x-mssql',
-            theme: 'xq-light',
-            indentWithTabs: true,
-            smartIndent: true,
-            lineNumbers: true,
-            matchBrackets: true,
-            autofocus: true,
-
-        });
-      //设置值
-        //conditionEditor.getDoc().setValue(window.conditionDisplay);
-
-        //校验公式项
-        $("#btnValidate").on(ace.click_event, function () {
-            var cv = conditionEditor.getValue();
-            $.post("@Url.Content("~/api/commctrlsapi/valideSqlCondition/")", { tableName: '@ViewBag.TableName', conditionSql: cv }, function (data) {
-                if (data.success == true) {
-                    layer.msg("条件校验合法！");
-                } else {
-                    layer.msg("条件校验失败！" + data.message);
-                }
-            });
-        });
-        //操作符插入
-        $(":button[data-provider='fap-formula']").on(ace.click_event, function () {
-            conditionEditor.replaceSelection($(this).data("handler").toString());
-        });
-        $("a[data-provider='fap-formula']").on(ace.click_event, function () {
-            conditionEditor.replaceSelection($(this).data("handler").toString());
-        });
-        $("#sel_refformulaitems").append($("@Html.Raw(string.Join("", options))"));
-
-        //公式项字段设置
-        $("#sel_refformulaitems").on(ace.click_event, function () {
-            conditionEditor.replaceSelection("${" + $(this).val() + "}");
-        });
-    })
-</script>

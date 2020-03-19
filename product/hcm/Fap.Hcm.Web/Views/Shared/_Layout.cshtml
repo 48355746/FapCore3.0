@@ -72,7 +72,7 @@
     @RenderSection("userscript", required: false)
     <script>
 
-        var basePath = "http://" + window.location.host;
+        var basePath = window.location.protocol+"//"  + window.location.host;
     </script>
     <script src="@Url.Content("~/Scripts/Fap/common.js")"></script>
 </head>

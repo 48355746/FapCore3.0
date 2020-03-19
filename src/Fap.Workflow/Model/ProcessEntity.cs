@@ -11,6 +11,10 @@ namespace Fap.Workflow.Model
     {
         public int ID { get; set; }
         /// <summary>
+        /// 单据表
+        /// </summary>
+        public string BillTable { get; set; }
+        /// <summary>
         /// 流程Uid
         /// </summary>
         public string ProcessUid { get; set; }

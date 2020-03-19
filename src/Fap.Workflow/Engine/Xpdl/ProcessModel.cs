@@ -15,6 +15,7 @@ using Fap.Workflow.Engine.Entity;
 using Fap.Core.DataAccess;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Rbac.Model;
+using Fap.Core.Utility;
 
 namespace Fap.Workflow.Engine.Xpdl
 {
@@ -62,6 +63,7 @@ namespace Fap.Workflow.Engine.Xpdl
                 entity.IsUsing = wfProcess.Status == WfProcessState.Using;
                 entity.Version = wfProcess.Version;
                 entity.BizData = bizData;
+                entity.BillTable = wfProcess.BillTable;
             }
             else
             {
@@ -781,7 +783,7 @@ namespace Fap.Workflow.Engine.Xpdl
                         //根据tansitionNode获取toActivityNode
                         return tansitionNode;
                     }
-                    else if (condition.IsPresent() && CheckTansitionCondition(ProcessEntity.BizData, condition))
+                    else if (condition.IsPresent() && CheckTansitionCondition(ProcessEntity, condition))
                     {
                         //返回满足条件的流转节点
                         return tansitionNode;
@@ -833,7 +835,7 @@ namespace Fap.Workflow.Engine.Xpdl
                 string condition = XMLHelper.GetXmlAttribute(transitionNode.ParentNode, "condition");
                 if (condition.IsPresent())
                 {
-                    if (!CheckTansitionCondition(ProcessEntity.BizData, condition))
+                    if (!CheckTansitionCondition(ProcessEntity, condition))
                     {
                         continue;
                     }
@@ -966,23 +968,13 @@ namespace Fap.Workflow.Engine.Xpdl
         #endregion
 
         #region 校验流转条件
-        private bool CheckTansitionCondition(dynamic bizData, string condition)
+        private bool CheckTansitionCondition(ProcessEntity processEntity, string condition)
         {
-            IDictionary<string, object> dapperRow = bizData as IDictionary<string, object>;
-            Regex rgx = new Regex(FapPlatformConstants.VariablePattern);
-            MatchCollection matchs = rgx.Matches(condition);
-            foreach (Match item in matchs)
-            {
-                int length = item.ToString().Length - 3;
-                string fn = item.ToString().Substring(2, length);
+            dynamic bizData = processEntity.BizData;
+            IDictionary<string, object> data = bizData as IDictionary<string, object>;
 
-                condition = condition.Replace(item.ToString(), dapperRow[fn].ToStringOrEmpty());
-            }
-            string sql = $"select 1 where {condition}";
-            if (_dataAccessor.DatabaseDialect != DatabaseDialectEnum.MSSQL)
-            {
-                sql = $"select 1 from dual where {condition}";
-            }
+            string sql= SqlUtils.ParsingConditionSql(_dataAccessor.Columns(processEntity.BillTable), data, condition, _dataAccessor.DatabaseDialect);
+          
             object o = _dataAccessor.ExecuteScalar(sql);
             if (o != null && DBNull.Value != o)
             {

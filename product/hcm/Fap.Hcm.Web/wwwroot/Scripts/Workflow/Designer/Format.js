@@ -739,8 +739,8 @@ BaseFormatPanel.prototype.createSelect = function (container, graph, value, call
 
     function update(evt) {
         var value = select.value;
-        callback && callback(value)
-    };
+        callback && callback(value);
+    }
     mxEvent.addListener(select, 'change', update);
     this.listeners.push({
         destroy: function () {
@@ -900,7 +900,7 @@ var createTransitionTags = function (tags, value, callback) {
         mxEvent.addListener(btn, 'click', function (evt) {
             btn.parentNode.remove();
             callback && callback(value);
-        })
+        });
         tags.appendChild(tag);
     }
 
@@ -2396,7 +2396,7 @@ TransferFormatPanel.prototype.addTransfer = function (container) {
             return;
         }
         //事件
-        layer.open({
+        top.layer.open({
             type: 2,
             title: '流转条件设置',
             shadeClose: true,
@@ -2405,13 +2405,13 @@ TransferFormatPanel.prototype.addTransfer = function (container) {
             content: TRANSITION_URL + "?billTable=" + encodeURIComponent(billTable), //iframe的url，
             btn: ['确定', '关闭'],
             success: function (layero, index) {
-                var iframeWin = window[layero.find('iframe')[0]['name']];
-
-                var transition = iframeWin.setTransition(conditionDesc);
+                var iframeWin =parent.window[layero.find('iframe')[0]['name']];
+                iframeWin.initEditor();
+                iframeWin.setEditorValue(conditionDesc);
             },
             yes: function (index, layero) {
-                var iframeWin = window[layero.find('iframe')[0]['name']];
-                var transition = iframeWin.getTransition();
+                var iframeWin = parent.window[layero.find('iframe')[0]['name']];
+                var transition = iframeWin.getEditorValue();
                 if (transition) {
                     while (tags.hasChildNodes()) //当elem下还存在子节点时 循环继续  
                     {
@@ -2419,16 +2419,16 @@ TransferFormatPanel.prototype.addTransfer = function (container) {
                     }
                     createTransitionTags(tags, transition, function (values) {
                         //删除条件
-                        cell.setAttribute('condition', '')
+                        cell.setAttribute('condition', '');
                     });
-                    cell.setAttribute('condition', transition.value);
-                    cell.setAttribute('conditionDesc', transition.text);
+                    cell.setAttribute('condition', transition);
+                    cell.setAttribute('conditionDesc', transition);
                     //label
                     graph.getModel().beginUpdate();
                     try {
                         var edit = new mxCellAttributeChange(
                             cell, 'label',
-                            transition.desc);
+                            transition);
                         graph.getModel().execute(edit);
                         graph.updateCellSize(cell);
                     }
@@ -2436,7 +2436,7 @@ TransferFormatPanel.prototype.addTransfer = function (container) {
                         graph.getModel().endUpdate();
                     }
                 }
-                layer.close(index);
+                top.layer.close(index);
             }
         });
     });

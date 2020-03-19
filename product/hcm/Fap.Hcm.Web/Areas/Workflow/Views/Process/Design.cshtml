@@ -21,7 +21,7 @@
     <script type="text/javascript">
         window.jQuery || document.write("<script src='/Content/js/jquery.js'>" + "<" + "/script>");
         //全局根路径
-        var basePath = "http://" + window.location.host;
+        var basePath = window.location.protocol+"//" + window.location.host;
            //单据表
         var billTables = [@Html.Raw(string.Join(",",table))];
         //列信息
@@ -63,6 +63,8 @@
     <environment include="Development">
         <script src="~/Content/layer/layer.js"></script>
         <script src="~/Content/js/lodash.min.js"></script>
+
+        @*以下为workflowjs*@
         <script type="text/javascript" src="~/Scripts/Fap/common.js" asp-append-version="true"></script>
         <script type="text/javascript" src="~/Scripts/Workflow/Designer/Init.js" asp-append-version="true"></script>
         @*压缩算法*@
