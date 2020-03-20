@@ -708,16 +708,28 @@ namespace Fap.AspNetCore.Controls.JqGrid
             else if (_searchType == Searchtype.Datepicker)
             {
                 string format = _searchDateFormat.IsMissing() ? "YYYY-MM-DD" : _searchDateFormat;
-                if (format.EqualsWithIgnoreCase("yyyy-mm"))
+                if (format.EqualsWithIgnoreCase("yyyy-mm-dd"))
+                {
+                    searchOptions.Add("dataInit", @"function(el){$(el).datepicker({format: 'yyyy-mm-dd',language: 'zh-CN',
+                        todayHighlight: true,autoclose: true})}");
+
+                }
+                else if (format.EqualsWithIgnoreCase("yyyy-mm"))
                 {
                     //format = "YYYY-MM";
-                    searchOptions.Add("dataInit", "function(el){$(el).datetimepicker({language:'zh-CN',startView: 4,minView:3,format:'yyyy-mm'})}");
+                    searchOptions.Add("dataInit", @"function(el){$(el).datepicker({format: 'yyyy-mm',language: 'zh-CN',
+                        autoclose: true,
+                        startView: 'months',
+                        maxViewMode: 'years',
+                        minViewMode: 'months'})}");
                 }
                 else
                 {
-                    //format = "YYYY-MM-DD";
-                    //searchOptions.Add("dataInit", "function(el){$(el).datepicker({changeYear:true, onSelect: function() {var sgrid = $('###gridid##')[0]; sgrid.triggerToolbar();},dateFormat:'dd-mm-yy'});}");
-                    searchOptions.Add("dataInit", "function(el){$(el).datetimepicker({language:'zh-CN',minView:2, format:'yyyy-mm-dd'})}");
+                    searchOptions.Add("dataInit", @"function(el){$(el).datepicker({format: 'yyyy',language: 'zh-CN',
+                        autoclose: true,
+                        startView: 'years',
+                        maxViewMode: 'years',
+                        minViewMode: 'years'})}");
                 }
             }
             else if (_searchType == Searchtype.Datetimepicker)

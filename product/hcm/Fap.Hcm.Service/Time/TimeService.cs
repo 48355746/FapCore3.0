@@ -298,58 +298,66 @@ namespace Fap.Hcm.Service.Time
         /// <param name="periodUid">假期区间</param>
         /// <param name="Annual">年度</param>
         [Transactional]
-        public void InitLeaveData(string periodUid)
+        public void AnnualLeaveInit(string year, string startDate, string endDate)
         {
-            //string currDate = DateTimeUtils.CurrentDateTimeStr;
-            //string empuid = _applicationContext.EmpUid;
-            //string empName = _applicationContext.EmpName;
-
-            ////先删除本区间
-            //_dbContext.DeleteExec("TmAnnualLeave", "PeriodUid=@Period", new DynamicParameters(new { Period = periodUid }));
-            //dynamic entity = _dbContext.Get("TmleavePeriod", periodUid, false);
-            //string sql = "insert into TmAnnualLeave(Fid,EmpUid,EmpCode,EmpCategory,PeriodUid,Annual,EnableDate,DisableDate,Dr,Ts,CreateBy,CreateName,CreateDate) select dbo.GetFid(),Fid,EmpCode,EmpCategory,@Period,@Annual,@CurrDate,'9999-12-31 12:59:59',0,dbo.GetTs(),@CurrEmp,@CurrEmpName,@CurrDate from employee where DisableDate>getdate() and EnableDate<=getdate() and dr=0 and EmpStatus='Current' and IsMainJob=1";
-            //_dbContext.Execute(sql, new DynamicParameters(new { Period = periodUid, Annual = entity.Annual, CurrDate = currDate, CurrEmp = empuid, CurrEmpName = empName }));
-            //DynamicParameters param = new DynamicParameters();
-            //param.Add("Period", periodUid);
-            //IEnumerable<dynamic> list = _dbContext.Query("select * from TmLeaveInitRule where PeriodUid=@Period and IsEnabled=1", param, false);
-            //if (list != null && list.Any())
-            //{
-            //    foreach (var item in list)
-            //    {
-            //        var days = item.DayNum;
-            //        var filter = item.RuleSetting;
-            //        if (filter != "")
-            //        {
-            //            JsonFilterToSql jfts = new JsonFilterToSql(_dbContext);
-            //            string where = jfts.BuilderFilter("Employee", filter);
-            //            string updateSql = $"update TmAnnualLeave set CurrYearNum={days} where PeriodUid=@Period and EmpUid in(select fid from Employee where  {where})";
-            //            _dbContext.Execute(updateSql, new DynamicParameters(new { Period = periodUid }), session);
-            //        }
-            //    }
-            //}
+            DynamicParameters param = new DynamicParameters();
+            param.Add("Year", year);
+            param.Add("StartDate", startDate);
+            param.Add("EndDate", endDate);
+            int isExist= _dbContext.Count(nameof(TmAnnualLeave), $"{nameof(TmAnnualLeave.Annual)}=@Year", param);
+            if (isExist > 0)
+            {
+                Guard.Against.FapBusiness("已存在该年度年假，不能再生成！");
+            }
+            //查找年假规则
+            var rules= _dbContext.QueryAll<TmAnnualLeaveRule>();
+            if (!rules.Any())
+            {
+                Guard.Against.FapBusiness("没有找到年假生成规则，请在菜单[基础设置-年假规则]中设置年假规则");
+            }
+            var cols = _dbContext.Columns("Employee");
+            IList<TmAnnualLeave> annualLeaveList = new List<TmAnnualLeave>();
+            foreach (var rule in rules)
+            {
+                if (rule.EmpConditionDesc.IsMissing())
+                {
+                    continue;
+                }
+                string sql = $"select {rule.Days} Days,Fid,DeptUid from Employee where {SqlUtils.ParsingSql(cols, rule.EmpConditionDesc, _dbContext.DatabaseDialect)}";
+                var emps= _dbContext.Query(sql);
+                foreach (var emp in emps)
+                {
+                    TmAnnualLeave annualLeave = new TmAnnualLeave()
+                    {
+                        Annual = year, EmpUid=emp.Fid,DeptUid=emp.DeptUid,
+                        StartDate=startDate,EndDate=endDate,
+                        CurrYearNum=emp.Days, LastYearLeft=0,
+                        CurrRealNum=emp.Days,UsedNum=0,RemainderNum=emp.Days,
+                        IsHandle=0
+                    };
+                    annualLeaveList.Add(annualLeave);
+                }
+            }
+            _dbContext.InsertBatch(annualLeaveList);
 
         }
         /// <summary>
         /// 上年结余假期
         /// </summary>
-        /// <param name="periodUid"></param>
+        /// <param name="year"></param>
+        /// <param name="lastYear">上一年</param>
         [Transactional]
-        public void BalanceLeaveData(string periodUid)
+        public void AnnualLeaveSurplus(string year, string lastYear)
         {
-            dynamic entity = _dbContext.Get("TmleavePeriod", periodUid, false);
-            int annual = Convert.ToInt32(entity.Annual);//当前期间年
-            int preAnnual = annual - 1;//上一年
-            DynamicParameters parameters = new DynamicParameters(new { CurrAnnual = annual.ToString(), PreAnnual = preAnnual.ToString() });
+            DynamicParameters parameters = new DynamicParameters(new { CurrAnnual = year, PreAnnual = lastYear});
             //求结余天数
-            string sql = "update a set a.LastYearLeft=b.RemainderNum, a.IsHandle=1  from TmAnnualLeave a,TmAnnualLeave b where a.EmpUid=b.EmpUid and a.Annual=@CurrAnnual and a.IsHandle=0 and b.Annual=@PreAnnual";
+            string sql = "update a set a.LastYearLeft=b.RemainderNum, a.IsHandle=1  from TmAnnualLeave as a,TmAnnualLeave as b where a.EmpUid=b.EmpUid and a.Annual=@CurrAnnual and a.IsHandle=0 and b.Annual=@PreAnnual";
             //此规则的sql 无法解析。所以用原始执行sql，需要的话手动添加有效条件
-            _dbContext.Execute(sql, parameters);
+            _dbContext.ExecuteOriginal(sql, parameters);
 
             //求本年实际和剩余天数
-            sql = "update TmAnnualLeave set RemainderNum=CurrYearNum+LastYearLeft,CurrRealNum=CurrYearNum+LastYearLeft,IsHandle=1 where Annual=@CurrAnnual ";
+            sql = "update TmAnnualLeave set RemainderNum=CurrYearNum+LastYearLeft,CurrRealNum=CurrYearNum+LastYearLeft,IsHandle=1 where Annual=@CurrAnnual";
             _dbContext.Execute(sql, parameters);
-
-
         }
         /// <summary>
         /// 生成日结果补签数据

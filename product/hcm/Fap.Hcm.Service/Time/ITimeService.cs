@@ -6,14 +6,16 @@ namespace Fap.Hcm.Service.Time
     public interface ITimeService
     {
         void AddHoliday(string caseUid, IEnumerable<TmHoliday> list);
-        void BalanceLeaveData(string periodUid);
         void BuilderDayResultBq(string fid);
         double GetAnnaulRemainderNum(string EmpUid);
         double GetEmpWorkDaysByTime(string EmpUid, string StartDate, string EndDate, string LeaveType, out string msg, out double workhours, string Billcode = null);
         TmLeaveType GetLeaveType(string TypeCode);
       
         double GetTuneoffHoursLength(string EmpUid);
-        void InitLeaveData(string periodUid);
+        //年假初始化
+        void AnnualLeaveInit(string year,string startDate,string endDate);
+        //年假结余
+        void AnnualLeaveSurplus(string year,string lastYear);
         /// <summary>
         /// 排班
         /// </summary>

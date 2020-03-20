@@ -6,3 +6,7 @@ insert into FapMultiLanguage(Fid,Qualifier,LangKey,LangValue,LangValueZhCn,Enabl
 delete from FapMultiLanguage where Qualifier='FapTable'
 
 insert into FapMultiLanguage(Fid,Qualifier,LangKey,LangValue,LangValueZhCn,EnableDate,DisableDate,Dr,Ts) select Fid,'FapTable',TableName,TableComment,TableComment,EnableDate,DisableDate,Dr,Ts  from FapTable where Dr=0
+
+delete from FapMultiLanguage where Qualifier='Menu'
+
+insert into FapMultiLanguage(Fid,Qualifier,LangKey,LangValue,LangValueZhCn,EnableDate,DisableDate,Dr,Ts) select Fid,'Menu',Fid,MenuName,MenuName,EnableDate,DisableDate,Dr,Ts  from FapMenu where   Dr=0

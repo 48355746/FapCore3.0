@@ -861,6 +861,10 @@ namespace Fap.Core.DataAccess
         #endregion
 
         #region 基础操作
+        public int ExecuteOriginal(string sqlOri, DynamicParameters parameters = null)
+        {
+            return _dbSession.Execute(sqlOri, parameters);
+        }
         public int Execute(string sqlOri, DynamicParameters parameters = null)
         {
             var (sql, dynParams) = WrapSqlAndParam(sqlOri, parameters);

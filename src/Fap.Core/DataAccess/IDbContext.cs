@@ -30,6 +30,7 @@ namespace Fap.Core.DataAccess
         void DeleteDynamicDataBatch(IEnumerable<FapDynamicObject> dataObjects);
         int DeleteExec(string tableName, string where = "", DynamicParameters parameters = null);
         Task<int> DeleteExecAsync(string tableName, string where = "", DynamicParameters parameters = null);
+        int ExecuteOriginal(string sqlOri, DynamicParameters parameters = null);
         int Execute(string sqlOri, DynamicParameters parameters = null);
         Task<int> ExecuteAsync(string sqlOri, DynamicParameters parameters = null);
         object ExecuteScalar(string sqlOri, DynamicParameters parameters = null);

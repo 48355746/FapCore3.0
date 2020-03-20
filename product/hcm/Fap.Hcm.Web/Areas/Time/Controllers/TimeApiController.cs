@@ -101,5 +101,17 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
             _timeService.BatchPatchCard(batchCard.DeptUidList, batchCard.StartDate, batchCard.EndDate);
             return Json(ResponseViewModelUtils.Sueecss());
         }
+        [HttpPost("AnnualLeave/Init")]
+        public JsonResult AnnualLeaveInit(string year,string startDate,string endDate)
+        {
+            _timeService.AnnualLeaveInit(year, startDate, endDate);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+        [HttpPost("AnnualLeave/Surplus")]
+        public JsonResult AnnualLeaveSurplus(string year,string lastYear)
+        {
+            _timeService.AnnualLeaveSurplus(year, lastYear);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
     }
 }
