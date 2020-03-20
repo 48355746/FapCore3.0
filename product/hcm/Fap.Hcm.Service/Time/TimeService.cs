@@ -148,6 +148,12 @@ namespace Fap.Hcm.Service.Time
             }
         }
 
+        public void DayResultCalculate(string startDate,string endDate)
+        {
+            //排班数据写入
+
+        }
+
         /// <summary>
         /// 根据时间段获取员工在当前时间段里的工作天数
         /// </summary>

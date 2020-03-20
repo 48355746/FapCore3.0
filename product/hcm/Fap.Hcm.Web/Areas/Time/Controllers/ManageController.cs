@@ -134,5 +134,30 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
             });
             return View(model);
         }
+        /// <summary>
+        /// 日结果
+        /// </summary>
+        /// <returns></returns>
+        public ActionResult DayResult()
+        {
+            var model = this.GetJqGridModel("TmDayResult", (qs) =>
+            {
+                qs.AddOrderBy("CurrDate", "desc");
+            });
+            return View(model);
+        }
+        //GET: /Time/Manage/MonthResult
+        /// <summary>
+        /// 月结果
+        /// </summary>
+        /// <returns></returns>
+        public ActionResult MonthResult()
+        {
+            var model = this.GetJqGridModel("TmMonthResult", (qs) =>
+            {
+                qs.AddOrderBy("CurrMonth", "desc");
+            });
+            return View(model);
+        }
     }
 }

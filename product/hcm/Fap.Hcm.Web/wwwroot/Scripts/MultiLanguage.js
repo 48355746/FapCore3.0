@@ -88,7 +88,17 @@ var MultiLangHelper = (function () {
       'to': { 'ZhCn': ' 至 ', 'ZhTW': '', 'En': '', 'Ja': '' },
       'today': { 'ZhCn': '今天', 'ZhTW': '', 'En': '', 'Ja': '' },
       'annual': { 'ZhCn': '年假', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'all_required': { 'ZhCn': '所有项必填', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'all_required': { 'ZhCn': '所有项必填', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

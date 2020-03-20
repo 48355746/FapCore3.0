@@ -1,0 +1,234 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+    Layout = null;
+}
+<title>
+    <fap-multilang default-content="月结果" lang-key="time_monthresult_title"></fap-multilang>
+</title>
+<link href="~/Content/waiting/waiting.css" rel="stylesheet" />
+
+
+<div class="row">
+    <div class="col-xs-12 col-sm-12">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">
+                    <fap-multilang default-content="月结果" lang-key="time_monthresult_title"></fap-multilang>
+                </h4>
+
+                <div class="widget-toolbar">
+
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar">
+                    <label for="leaveperiod" class="">考勤周期:</label>
+
+                    <select name="timeperiod" id="timeperiod"></select>
+
+                </div>
+                <div class="widget-toolbar">
+                    <!-- #section:basics/content.searchbox -->
+                    <div class="nav-search" style="top:6px">
+
+                        <span class="input-icon">
+                            <input type="text" placeholder="员工姓名" class="nav-search-input" id="nav-search-input" autocomplete="off" />
+                            <i class="ace-icon fa fa-search nav-search-icon"></i>
+                        </span>
+
+                    </div><!-- /.nav-search -->
+                    <!-- /section:basics/content.searchbox -->
+                </div>
+
+            </div>
+            <div class="widget-body">
+                <div class="widget-toolbox">
+                    <div class="btn-toolbar">
+                        <div class="btn-group">
+                            @await Component.InvokeAsync("QueryProgram", new { tn = "TmMonthResult", gid = "grid-tmmonthresult" })
+                        </div>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-success  btn-no-border" id="btnMonthResult">
+                                <span class="ace-icon fa fa-calculator icon-on-right bigger-110"></span>
+                                计算月结果
+                            </button>
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+                <div class="widget-main jobpostionclass">
+                    <fap-grid id="tmmonthresult" query-option="Model.QueryOption" post-data="Model.PostData" auto-width="true" multi-box-only="true" multi-select="true" oper-cud="true" view-records="true" shrink-fit="false"></fap-grid>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="right-menu" class="modal aside" data-body-scroll="false" data-offset="true" data-placement="right" data-fixed="true" data-backdrop="invisible" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header no-padding">
+                    <div class="table-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                            <span class="white">&times;</span>
+                        </button>
+                        组织机构
+                    </div>
+                </div>
+
+                <div class="modal-body">
+                    <div id="treeDeptDiv" class="widget-main ">
+                        <div class="scrollable">
+                            <fap-tree id="orgdept" is-async="false" is-orgdept="true"></fap-tree>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /.modal-content -->
+
+            <button class="aside-trigger btn btn-purple btn-app btn-xs ace-settings-btn" data-target="#right-menu" data-toggle="modal" type="button">
+                <i data-icon1="fa-sitemap" data-icon2="fa-minus" class="ace-icon fa fa-sitemap bigger-110 icon-only"></i>
+            </button>
+        </div><!-- /.modal-dialog -->
+    </div>
+</div>
+
+
+
+
+<script>
+    //控件会调用此方法
+    var queryProgramCallBack = function (qpfid) {
+        //获取查询方案的条件
+        $.get("@Url.Content("~/api/commctrlsapi/queryprogram")", { fid: qpfid }, function (data) {
+            var filters = "";
+            if (data) {
+                filters = data.queryCondition;
+            }
+            $("#grid-tmmonthresult").jqGrid('setGridParam', {
+                datatype: 'json',
+                postData: { 'filters': filters }, //发送数据
+                page: 1
+            }).trigger("reloadGrid"); //重新载入
+        });
+    }
+
+    var scripts = [null, "/Content/waiting/jquery.waiting.js", null];
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $('.modal.aside').ace_aside();
+            $(document).one('ajaxloadstart.page', function (e) {
+                $("#tree-orgdept").jstree("destroy");
+                $('.modal.aside').remove();
+                $(window).off('.aside');
+            })
+            //初始化考勤期间
+
+            $.post(basePath + "/api/coreapi/querydata", { "EntityName": "TmPeriod", "QueryCols": "Fid,Code", "SortBy": "CurrMonth desc" }, function (rv) {
+                $("#timeperiod").empty();
+                if (rv.success == true) {
+                    var periods =rv.data;
+                    $.each(periods, function (i, d) {
+                        $("#timeperiod").append("<option value='" + d.Fid + "'>" + d.Code + "</option>")
+                    })
+                }
+            })
+
+            $('#tree-orgdept').on("changed.jstree", function (e, data) {
+                if (data && data.selected && data.selected.length) {
+                    var deptid = data.selected[0];
+                    var deptMC = data.node.text;
+                    //获取所有子Fid
+                    var childs = data.node.children_d;
+                    var selids = childs.concat(deptid);
+                    var deptUids = [];
+                    var treeDept = $('#tree-orgdept').jstree(true);
+                    var sels = $.grep(selids, function (d, i) {
+                        return treeDept.get_node(d).data.ext1 == false;
+                    });
+                    $.each(sels, function (i, d) {
+                        deptUids.push("'" + d + "'");
+                    })
+                    var r = [];
+                    var start = $("#timeperiod option:selected").text();// $("#timeperiod").val();
+                    if (start == "") {
+                        bootbox.alert("请选择考勤周期！");
+                        return;
+                    } else {
+                        r.push({ field: "CurrMonth", op: "eq", data: start });
+                    }
+
+                    var dept = { field: "EmpUid", "op": "in", "data": "(select fid from Employee where DeptUid in(" + deptUids.join(",") + "))" };
+                    r.push(dept);
+
+                    var filter = { groupOp: "AND", rules: r };
+                    refreshGrid(JSON.stringify(filter));
+                }
+                //console.log(data.selected);
+            });
+            $("#nav-search-input").change(function () {
+                var v = $(this).val();
+                var r = [];
+                r.push({ "field": "EmpUid", "op": "in", "data": "(select fid from Employee where (EmpName like '" + v + "%' or EmpCode like '" + v + "%'))" });
+
+                var start = $("#timeperiod option:selected").text();// $("#timeperiod").val();
+                if (start == "") {
+                    bootbox.alert("请选择考勤周期！");
+                    return;
+                } else {
+                    r.push({ field: "CurrMonth", op: "eq", data: start });
+                }
+                var filter = { groupOp: "AND", rules: r };
+
+                refreshGrid(JSON.stringify(filter));
+            })
+            var refreshGrid = function (filter) {
+                $("#grid-tmmonthresult").jqGrid('setGridParam', {
+                    datatype: 'json',
+                    postData: { filters: filter }, //发送数据
+                    page: 1
+                }).trigger("reloadGrid"); //重新载入
+            }
+            $("#btnMonthResult").click(function () {
+                var treeDept = $('#tree-orgdept').jstree(true);
+
+                var selData = treeDept.get_selected();
+                if (!selData.length) {
+                    bootbox.alert("请选择计算部门！");
+                    return;
+                }
+                var fid = $("#timeperiod").val();
+                if (fid == "") {
+                    bootbox.alert("请选择考勤周期！");
+                    return;
+                }
+                selData = selData[0];
+                MonthResultCalulate(selData, fid);
+            });
+        })
+    });
+
+
+    //计算月结果
+    function MonthResultCalulate(fid, Month) {
+        $(".page-content").waiting({ loadingtext: "正在计算考勤结果，请等待...", fixed: true })
+        $.ajax({
+            url: '@Url.Content("~/api/time/MonthResultCalulate")',
+            type: "post",
+            dataType: "json",
+            data: { fid: fid, Month: Month },
+            success: function (data) {
+                $(".page-content").waiting('done');
+                bootbox.alert(data.msg);
+            },
+            error: function (e) {
+                bootbox.alert("计算打卡数据异常！");
+            }
+        });
+
+
+    }
+
+</script>
