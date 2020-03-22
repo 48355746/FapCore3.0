@@ -17,6 +17,7 @@ using Fap.Core.Utility;
 using Fap.Core.Infrastructure.Metadata;
 using Ardalis.GuardClauses;
 using Fap.Core.Exceptions;
+using Fap.Core.Extensions;
 
 namespace Fap.Hcm.Service.Time
 {
@@ -148,10 +149,158 @@ namespace Fap.Hcm.Service.Time
             }
         }
 
-        public void DayResultCalculate(string startDate,string endDate)
+        public void DayResultCalculate(string startDate, string endDate)
         {
-            //排班数据写入
+            //初始化当月日结果数据通过排班
+            InitDayResultBySchedule();
+            //更新打卡数据到日结果
+            UpdateCardRecordToDayResult();
+            //此时间段日结果
+            var dayResultList = _dbContext.QueryWhere<TmDayResult>($"{nameof(TmDayResult.CurrDate)}>=@StartDate and {nameof(TmDayResult.CurrDate)}<=@EndDate",
+                new DynamicParameters(new { StartDate = startDate, EndDate = endDate }));
+            foreach (var dayResult in dayResultList)
+            {
+                //无请假出差
+                if (dayResult.TravelType.IsMissing() && dayResult.LeavelType.IsMissing())
+                {
+                    //计算打卡
+                    CalculateCardRecord(dayResult);
+                }
+                else
+                {
+                    //计算出差和请假
+                    CalculateTravelAndLeavel(dayResult);
 
+                }
+            }
+            void CalculateTravelAndLeavel(TmDayResult dayResult)
+            {
+
+            }
+            void CalculateCardRecord(TmDayResult dayResult)
+            {
+                //存在实际工作时长
+                if (dayResult.StWorkHourLength > 0)
+                {
+                    if (DateTimeUtils.ToDateTime(dayResult.CardStartTime) > DateTimeUtils.ToDateTime(dayResult.LateTime)
+                        &&DateTimeUtils.ToDateTime(dayResult.CardEndTime)>DateTimeUtils.ToDateTime(dayResult.EndTime))
+                    {
+                        //早打卡迟到且晚打卡大于下班时间
+                        dayResult.CalResult = DayResultEnum.ComeLate.Description();
+                    }
+                    if (DateTimeUtils.ToDateTime(dayResult.CardEndTime) < DateTimeUtils.ToDateTime(dayResult.LeaveTime)&&
+                        DateTimeUtils.ToDateTime(dayResult.CardStartTime)<DateTimeUtils.ToDateTime(dayResult.StartTime))
+                    {
+                        //早打卡正常，晚打卡早于早退时间
+                        dayResult.CalResult = DayResultEnum.LeaveEarly.Description();
+                    }
+                    if(DateTimeUtils.ToDateTime(dayResult.CardStartTime)>DateTimeUtils.ToDateTime(dayResult.LateTime)
+                        && DateTimeUtils.ToDateTime(dayResult.CardEndTime) < DateTimeUtils.ToDateTime(dayResult.LeaveTime))
+                    {
+                        //迟到早退
+                        dayResult.CalResult = DayResultEnum.ComeLate.Description() + DayResultEnum.LeaveEarly.Description();
+                    }
+                    //实际工作时长>工作时长,且无迟到早退
+                    if (dayResult.StWorkHourLength >= dayResult.WorkHoursLength)
+                    {
+                        if (dayResult.CalResult.IsMissing())
+                        {
+                            dayResult.CalResult = DayResultEnum.Normal.Description();
+                        }
+                        else
+                        {
+                            dayResult.CalResult += DayResultEnum.Normal.Description();
+                        }
+                    }
+                    else if(dayResult.StWorkHourLength< dayResult.WorkHoursLength)
+                    {
+
+                    }
+                }
+                else
+                {
+                    dayResult.CalResult = DayResultEnum.Absence.Description();
+                }
+
+            }
+
+            void UpdateCardRecordToDayResult()
+            {
+                //此时间段(+-1天)所有打卡记录，存在跨天情况
+                var cardRecords = _dbContext.QueryWhere<TmCardRecord>($"{nameof(TmCardRecord.CardTime)}>=@StartDate and {nameof(TmCardRecord.CardTime)}<=@EndDate"
+                    , new DynamicParameters(new { StartDate = DateTimeUtils.DateTimeFormat(DateTimeUtils.ToDateTime(startDate).AddDays(-1)), EndDate = DateTimeUtils.DateTimeFormat(DateTimeUtils.ToDateTime(endDate).AddDays(1)) }));
+                if (!cardRecords.Any())
+                {
+                    return;
+                }
+                //此时间段日结果
+                var dayResults = _dbContext.QueryWhere<TmDayResult>($"{nameof(TmDayResult.CurrDate)}>=@StartDate and {nameof(TmDayResult.CurrDate)}<=@EndDate",
+                    new DynamicParameters(new { StartDate = startDate, EndDate = endDate }));
+                foreach (var dayResult in dayResults)
+                {
+                    //当前日结果中考勤打卡集合
+                    var cardTimes = cardRecords.Where(c => c.EmpUid == dayResult.EmpUid && DateTimeUtils.ToDateTime(c.CardTime) >= DateTimeUtils.ToDateTime(dayResult.StartCardTime) && DateTimeUtils.ToDateTime(c.CardTime) <= DateTimeUtils.ToDateTime(dayResult.EndCardTime));
+                    if (cardTimes.Any())
+                    {
+                        dayResult.CardStartTime = cardTimes.Min(c => c.CardTime);
+                        dayResult.CardEndTime = cardTimes.Max(c => c.CardTime);
+                        dayResult.StWorkHourLength =Math.Round(DateTimeUtils.ToDateTime(dayResult.CardStartTime).Subtract(DateTimeUtils.ToDateTime(dayResult.CardEndTime)).TotalHours-dayResult.RestMinutesLength/60.0,2);
+                        _dbContext.Update(dayResult);
+                    }
+                }
+            }
+
+            void InitDayResultBySchedule()
+            {
+                //获取当前月考勤期间的排班
+                var currPeriod = _dbContext.QueryFirstOrDefaultWhere<TmPeriod>($"{nameof(TmPeriod.CurrMonth)}='{DateTimeUtils.CurrentYearMonth}'");
+                if (currPeriod == null)
+                {
+                    Guard.Against.FapBusiness("无当月考勤期间，请设置考勤期间");
+                }
+                int isExist = _dbContext.Count(nameof(TmDayResult), $"{nameof(TmDayResult.CurrDate)}>='{currPeriod.StartDate}' and {nameof(TmDayResult.CurrDate)}<='{currPeriod.EndDate}'");
+                if (isExist > 0)
+                {
+                    return;
+                }
+                var schedules = _dbContext.QueryWhere<TmSchedule>($"{nameof(TmSchedule.WorkDay)}>= '{currPeriod.StartDate}' and {nameof(TmSchedule.WorkDay)}<='{currPeriod.EndDate}'");
+                if (!schedules.Any())
+                {
+                    Guard.Against.FapBusiness("未找到当月排班，请设置排班");
+                }
+                //排班员工
+                var scheduleEmployees = _dbContext.QueryWhere<TmScheduleEmployee>($"{nameof(TmScheduleEmployee.ScheduleUid)} in @ScheduleUids", new DynamicParameters(new { ScheduleUids = schedules.Select(s => s.ScheduleUid) }));
+                if (!scheduleEmployees.Any())
+                {
+                    Guard.Against.FapBusiness("未找到次考勤期间的排班员工");
+                }
+                _dbContext.InsertBatch(InitDayResult());
+                IEnumerable<TmDayResult> InitDayResult()
+                {
+                    foreach (var schedule in schedules)
+                    {
+                        foreach (var scheduleEmployee in scheduleEmployees)
+                        {
+                            TmDayResult dayResult = new TmDayResult();
+                            dayResult.EmpUid = scheduleEmployee.EmpUid;
+                            dayResult.DeptUid = scheduleEmployee.DeptUid;
+                            dayResult.ShiftUid = schedule.ShiftUid;
+                            dayResult.WorkHoursLength = schedule.WorkHoursLength;
+                            dayResult.RestMinutesLength = schedule.RestMinutesLength;
+                            dayResult.CurrDate = schedule.WorkDay;
+                            dayResult.StartTime = schedule.StartTime;
+                            dayResult.EndTime = schedule.EndTime;
+                            dayResult.LateTime = schedule.LateTime;
+                            dayResult.LeaveTime = schedule.LeaveTime;
+                            dayResult.StartCardTime = schedule.StartCardTime;
+                            dayResult.EndCardTime = schedule.EndCardTime;
+                            dayResult.RestStartTime = schedule.RestStartTime;
+                            dayResult.RestEndTime = schedule.RestEndTime;
+                            yield return dayResult;
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -310,13 +459,13 @@ namespace Fap.Hcm.Service.Time
             param.Add("Year", year);
             param.Add("StartDate", startDate);
             param.Add("EndDate", endDate);
-            int isExist= _dbContext.Count(nameof(TmAnnualLeave), $"{nameof(TmAnnualLeave.Annual)}=@Year", param);
+            int isExist = _dbContext.Count(nameof(TmAnnualLeave), $"{nameof(TmAnnualLeave.Annual)}=@Year", param);
             if (isExist > 0)
             {
                 Guard.Against.FapBusiness("已存在该年度年假，不能再生成！");
             }
             //查找年假规则
-            var rules= _dbContext.QueryAll<TmAnnualLeaveRule>();
+            var rules = _dbContext.QueryAll<TmAnnualLeaveRule>();
             if (!rules.Any())
             {
                 Guard.Against.FapBusiness("没有找到年假生成规则，请在菜单[基础设置-年假规则]中设置年假规则");
@@ -330,16 +479,22 @@ namespace Fap.Hcm.Service.Time
                     continue;
                 }
                 string sql = $"select {rule.Days} Days,Fid,DeptUid from Employee where {SqlUtils.ParsingSql(cols, rule.EmpConditionDesc, _dbContext.DatabaseDialect)}";
-                var emps= _dbContext.Query(sql);
+                var emps = _dbContext.Query(sql);
                 foreach (var emp in emps)
                 {
                     TmAnnualLeave annualLeave = new TmAnnualLeave()
                     {
-                        Annual = year, EmpUid=emp.Fid,DeptUid=emp.DeptUid,
-                        StartDate=startDate,EndDate=endDate,
-                        CurrYearNum=emp.Days, LastYearLeft=0,
-                        CurrRealNum=emp.Days,UsedNum=0,RemainderNum=emp.Days,
-                        IsHandle=0
+                        Annual = year,
+                        EmpUid = emp.Fid,
+                        DeptUid = emp.DeptUid,
+                        StartDate = startDate,
+                        EndDate = endDate,
+                        CurrYearNum = emp.Days,
+                        LastYearLeft = 0,
+                        CurrRealNum = emp.Days,
+                        UsedNum = 0,
+                        RemainderNum = emp.Days,
+                        IsHandle = 0
                     };
                     annualLeaveList.Add(annualLeave);
                 }
@@ -355,7 +510,7 @@ namespace Fap.Hcm.Service.Time
         [Transactional]
         public void AnnualLeaveSurplus(string year, string lastYear)
         {
-            DynamicParameters parameters = new DynamicParameters(new { CurrAnnual = year, PreAnnual = lastYear});
+            DynamicParameters parameters = new DynamicParameters(new { CurrAnnual = year, PreAnnual = lastYear });
             //求结余天数
             string sql = "update a set a.LastYearLeft=b.RemainderNum, a.IsHandle=1  from TmAnnualLeave as a,TmAnnualLeave as b where a.EmpUid=b.EmpUid and a.Annual=@CurrAnnual and a.IsHandle=0 and b.Annual=@PreAnnual";
             //此规则的sql 无法解析。所以用原始执行sql，需要的话手动添加有效条件

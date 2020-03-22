@@ -36,6 +36,13 @@ namespace Fap.Core.Utility
                 return string.Format("{0:yyyy-MM-dd}", DateTime.Now);
             }
         }
+        public static string CurrentYearMonth
+        {
+            get
+            {
+                return string.Format("0:yyyy-MM", DateTime.Now);
+            }
+        }
         public static DateTime ToDateTime(string dt)
         {
             return Convert.ToDateTime(dt);
