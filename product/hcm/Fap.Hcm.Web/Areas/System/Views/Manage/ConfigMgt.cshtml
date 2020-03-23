@@ -57,7 +57,15 @@
         <label class="col-sm-3 control-label no-padding-right" for="${$value.fid}">  ${$value.paramName} </label>
 
         <div class="col-sm-6">
-            <input type="text" id="${$value.fid}" data-name="${$value.paramKey}" value="${$value.paramValue}" class="form-control" />
+            <input type="text" id="${$value.fid}" data-pk="${$value.id}" data-ts="${$value.ts}" data-name="${$value.paramKey}" value="${$value.paramValue}" class="form-control" />
+        </div>
+    </div>
+    {{else $value.ctrlType=='MEMO'}}
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="${$value.fid}">  ${$value.paramName} </label>
+
+        <div class="col-sm-6">
+            <textarea id="${$value.fid}" data-pk="${$value.id}" data-ts="${$value.ts}" data-name="${$value.paramKey}" rows="6" class="form-control" maxlength="3000">${$value.paramValue}</textarea>
         </div>
     </div>
     {{else  $value.ctrlType=='CHECKBOX'}}
@@ -68,9 +76,9 @@
             <div class="checkbox">
                 <label>
                     {{if $value.paramValue=='true'}}
-                    <input id="${$value.fid}" data-name="${$value.paramKey}" type="checkbox" checked="checked" value="true" class="ace form-control" />
+                    <input id="${$value.fid}" data-pk="${$value.id}" data-ts="${$value.ts}" data-name="${$value.paramKey}" type="checkbox" checked="checked" value="true" class="ace form-control" />
                     {{else}}
-                    <input id="${$value.fid}" data-name="${$value.paramKey}" type="checkbox" value="true" class="ace form-control" />
+                    <input id="${$value.fid}" data-pk="${$value.id}" data-ts="${$value.ts}" data-name="${$value.paramKey}" type="checkbox" value="true" class="ace form-control" />
                     {{/if}}
                     <span class="lbl"> </span>
                 </label>
@@ -83,9 +91,9 @@
         <label class="col-sm-3 control-label no-padding-right" for="${$value.fid}">  ${$value.paramName} </label>
 
         <div class="col-sm-6">
-            <select class="form-control" id="${$value.fid}" data-name="${$value.paramKey}">
+            <select class="form-control" id="${$value.fid}" data-pk="${$value.id}" data-ts="${$value.ts}" data-name="${$value.paramKey}">
                 {{each $value.dictSource}}
-                <option value="${$value.code}" {{if $value.selected}} selected="selected"{{else}}{{/if}}> ${$value.name}</option>
+                <option value="${$value.code}" {{if $value.selected}} selected="selected" {{else}} {{/if}}> ${$value.name}</option>
                 {{/each}}
             </select>
         </div>
@@ -95,7 +103,7 @@
         <label class="col-sm-3 control-label no-padding-right" for="${$value.fid}">  ${$value.paramName} </label>
 
         <div class="col-sm-6">
-            <input type="password" class="form-control" id="${$value.fid}" data-name="${$value.paramKey}" value="${$value.paramValue}" />
+            <input type="password" class="form-control" id="${$value.fid}" data-ts="${$value.ts}" data-pk="${$value.id}" data-name="${$value.paramKey}" value="${$value.paramValue}" />
 
         </div>
     </div>
@@ -104,7 +112,7 @@
         <label class="col-sm-3 control-label no-padding-right" for="${$value.fid}">  ${$value.paramName} </label>
 
         <div class="col-sm-6">
-            <input type="number" class="form-control" id="${$value.fid}" data-name="${$value.paramKey}" value="${$value.paramValue}" />
+            <input type="number" class="form-control" id="${$value.fid}"  data-pk="${$value.id}" data-ts="${$value.ts}" data-name="${$value.paramKey}" value="${$value.paramValue}" />
 
         </div>
     </div>
@@ -210,6 +218,8 @@
                 $("#frmConfigTemplate .form-control").each(function () {
                     var configItem = {};
                     configItem.Fid = $(this).attr("id");
+                    configItem.Id = $(this).data("pk");
+                    configItem.Ts = $(this).data("ts");
                     configItem.ParamKey = $(this).data("name");
                     if ($(this).attr("type") == "checkbox") {
                         if ($(this).is(':checked')) {

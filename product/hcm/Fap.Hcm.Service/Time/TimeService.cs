@@ -18,6 +18,7 @@ using Fap.Core.Infrastructure.Metadata;
 using Ardalis.GuardClauses;
 using Fap.Core.Exceptions;
 using Fap.Core.Extensions;
+using Fap.Core.Infrastructure.Config;
 
 namespace Fap.Hcm.Service.Time
 {
@@ -29,9 +30,11 @@ namespace Fap.Hcm.Service.Time
     {
         private readonly IDbContext _dbContext;
         private readonly IFapApplicationContext _applicationContext;
-        public TimeService(IDbContext dataAccessor, IFapApplicationContext applicationContext)
+        private readonly IFapConfigService _configService;
+        public TimeService(IDbContext dataAccessor,IFapConfigService configService, IFapApplicationContext applicationContext)
         {
             _dbContext = dataAccessor;
+            _configService = configService;
             _applicationContext = applicationContext;
         }
         /// <summary>
@@ -159,8 +162,9 @@ namespace Fap.Hcm.Service.Time
             InitDayResultBySchedule();
 
             //此时间段日结果
-            var dayResults = _dbContext.QueryWhere<TmDayResult>($"{nameof(TmDayResult.CurrDate)}>=@StartDate and {nameof(TmDayResult.CurrDate)}<=@EndDate",
-                new DynamicParameters(new { StartDate = startDate, EndDate = DateTimeUtils.CurrentDateStr }));
+            string sWhere = $"{nameof(TmDayResult.CurrDate)}>=@StartDate and {nameof(TmDayResult.CurrDate)}<=@EndDate";
+            var param = new DynamicParameters(new { StartDate = startDate, EndDate = DateTimeUtils.CurrentDateStr });
+            var dayResults = _dbContext.QueryWhere<TmDayResult>(sWhere,param);
             //更新打卡数据到日结果
             UpdateCardRecordToDayResult();   
             //计算日结果
@@ -179,6 +183,19 @@ namespace Fap.Hcm.Service.Time
                 }
             }
             _dbContext.UpdateBatchSql(dayResults);
+            //日结果计算后事件
+            string afterSql = _configService.GetSysParamValue("AfterDayResultCalculate");
+            if (afterSql.IsPresent())
+            {
+                List<string> sqls= afterSql.SplitSemicolon();
+                foreach (var sql in sqls)
+                {
+                    if (sql.IsPresent())
+                    {
+                        _dbContext.Execute(sql + " and " + sWhere, param);
+                    }
+                }
+            }
             void CalculateTravelAndLeavel(TmDayResult dayResult)
             {
                 string calResult = string.Empty;
@@ -362,6 +379,20 @@ namespace Fap.Hcm.Service.Time
                 monthResults.Add(mr);
             }
             _dbContext.InsertBatchSql(monthResults);
+
+            //月结果计算后事件
+            string afterSql = _configService.GetSysParamValue("AfterMonthResultCalculate");
+            if (afterSql.IsPresent())
+            {
+                List<string> sqls = afterSql.SplitSemicolon();
+                foreach (var sql in sqls)
+                {
+                    if (sql.IsPresent())
+                    {
+                        _dbContext.Execute(sql + $" and CurrMonth='{currPeriod.CurrMonth}'");
+                    }
+                }
+            }
         }
         /// <summary>
         /// 根据时间段获取员工在当前时间段里的工作天数

@@ -377,16 +377,12 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             {
                 return Json(rv);
             }
-            try
-            {
-                _dbContext.UpdateBatch(configs);
-            }
-            catch (Sys.Exception ex)
-            {
-                rv.success = false;
-                rv.msg = ex.Message;
-            }
 
+            foreach (var config in configs)
+            {
+                _dbContext.ExecuteOriginal($"update {nameof(FapConfig)} set {nameof(FapConfig.ParamValue)}='{config.ParamValue.ReplaceIgnoreCase("'", "''")}' where Id={config.Id}");
+            }
+            _platformDomain.ParamSet.Refresh();
             return Json(rv);
         }
         /// <summary>
