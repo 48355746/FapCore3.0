@@ -19,29 +19,7 @@ namespace Fap.Hcm.Service.Time
 		/// 员工 的显性字段MC
 		/// </summary>
 		[Computed]
-		public string EmpUidMC { get; set; }
-		/// <summary>
-		/// 员工编码
-		/// </summary>
-		public string EmpCode { get; set; }
-		/// <summary>
-		/// 员工类别
-		/// </summary>
-		public string EmpCategory { get; set; }
-		/// <summary>
-		/// 员工类别 的显性字段MC
-		/// </summary>
-		[Computed]
-		public string EmpCategoryMC { get; set; }
-		/// <summary>
-		/// 性别
-		/// </summary>
-		public string Gender { get; set; }
-		/// <summary>
-		/// 性别 的显性字段MC
-		/// </summary>
-		[Computed]
-		public string GenderMC { get; set; }
+		public string EmpUidMC { get; set; }		
 		/// <summary>
 		/// 部门
 		/// </summary>

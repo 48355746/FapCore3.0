@@ -151,12 +151,8 @@ namespace Fap.Hcm.Service.Time
         [Transactional]
         public void DayResultCalculate()
         {
-            //获取当前月考勤期间的排班
-            var currPeriod = _dbContext.QueryFirstOrDefaultWhere<TmPeriod>($"{nameof(TmPeriod.IsPeriod)}=1");
-            if (currPeriod == null)
-            {
-                Guard.Against.FapBusiness("无可计算考勤期间，请设置考勤期间[基础设置-考勤期间]");
-            }
+            //获取当前月考勤周期的排班
+            var currPeriod = GetCurrentPeriod();
             string startDate = currPeriod.StartDate;
             string endDate = currPeriod.EndDate;
             //初始化当月日结果数据通过排班
@@ -290,7 +286,7 @@ namespace Fap.Hcm.Service.Time
                 var scheduleEmployees = _dbContext.QueryWhere<TmScheduleEmployee>($"{nameof(TmScheduleEmployee.ScheduleUid)} in @ScheduleUids", new DynamicParameters(new { ScheduleUids = schedules.Select(s => s.ScheduleUid) }));
                 if (!scheduleEmployees.Any())
                 {
-                    Guard.Against.FapBusiness("未找到次考勤期间的排班员工");
+                    Guard.Against.FapBusiness("未找到次考勤周期的排班员工");
                 }
                 _dbContext.InsertBatchSql(InitDayResult());
                 IEnumerable<TmDayResult> InitDayResult()
@@ -320,7 +316,53 @@ namespace Fap.Hcm.Service.Time
                 }
             }
         }
-
+        private TmPeriod GetCurrentPeriod()
+        {
+            //获取当前月考勤周期的排班
+            var currPeriod = _dbContext.QueryFirstOrDefaultWhere<TmPeriod>($"{nameof(TmPeriod.IsPeriod)}=1");
+            if (currPeriod == null)
+            {
+                Guard.Against.FapBusiness("无可计算考勤周期，请设置考勤周期[基础设置-考勤周期]");
+            }
+            return currPeriod;
+        }
+        /// <summary>
+        /// 月考勤结果计算
+        /// </summary>
+        [Transactional]
+        public void MonthResultCalculate()
+        {
+            var currPeriod = GetCurrentPeriod();
+            string startDate = currPeriod.StartDate;
+            string endDate = currPeriod.EndDate;
+            //此时间段日结果
+            var dayResults = _dbContext.QueryWhere<TmDayResult>($"{nameof(TmDayResult.CurrDate)}>=@StartDate and {nameof(TmDayResult.CurrDate)}<=@EndDate",
+                new DynamicParameters(new { StartDate = startDate, EndDate = endDate }));
+            _dbContext.ExecuteOriginal($"delete from {nameof(TmMonthResult)} where {nameof(TmMonthResult.CurrMonth)}='{currPeriod.CurrMonth}'");
+            var empGrp= dayResults.GroupBy(d => d.EmpUid);
+            IList<TmMonthResult> monthResults = new List<TmMonthResult>();
+            foreach (var empDay in empGrp)
+            {
+                var firstDayRv= empDay.FirstOrDefault();
+                TmMonthResult mr = new TmMonthResult();
+                mr.EmpUid = firstDayRv.EmpUid;
+                mr.DeptUid = firstDayRv.DeptUid;
+                mr.CurrMonth = currPeriod.CurrMonth;
+                mr.TravelNum = empDay.Sum(d => d.TravelDays);
+                mr.AbsenceNum = empDay.Count(d => d.CalResult.Contains(DayResultEnum.Absence.Description(), StringComparison.OrdinalIgnoreCase));
+                mr.AnnualNum = empDay.Where(d => d.LeavelType.EqualsWithIgnoreCase("Annaul")).Sum(d => d.LeaveDays);
+                mr.BizLeaveNum= empDay.Where(d => d.LeavelType.EqualsWithIgnoreCase("Business")).Sum(d => d.LeaveDays);
+                mr.SickLeaveNum= empDay.Where(d => d.LeavelType.EqualsWithIgnoreCase("Sick")).Sum(d => d.LeaveDays);
+                mr.WedLeaveNum= empDay.Where(d => d.LeavelType.EqualsWithIgnoreCase("Wed")).Sum(d => d.LeaveDays);
+                mr.MaternityLeaveNum=empDay.Where(d => d.LeavelType.EqualsWithIgnoreCase("Maternity ")).Sum(d => d.LeaveDays);
+                mr.FuneralLeaveNum= empDay.Where(d => d.LeavelType.EqualsWithIgnoreCase("Funeral ")).Sum(d => d.LeaveDays);
+                mr.LateNum= empDay.Count(d => d.CalResult.Contains(DayResultEnum.ComeLate.Description(), StringComparison.OrdinalIgnoreCase));
+                mr.LeftEarlyNum=empDay.Count(d => d.CalResult.Contains(DayResultEnum.LeaveEarly.Description(), StringComparison.OrdinalIgnoreCase));
+                mr.WorkDayNum = empDay.Count();
+                monthResults.Add(mr);
+            }
+            _dbContext.InsertBatchSql(monthResults);
+        }
         /// <summary>
         /// 根据时间段获取员工在当前时间段里的工作天数
         /// </summary>
@@ -687,5 +729,6 @@ namespace Fap.Hcm.Service.Time
             _dbContext.InsertBatchSql(cardList);
 
         }
+      
     }
 }

@@ -19,8 +19,11 @@
                     </a>
                 </div>
                 <div class="widget-toolbar">
+                    <fap-button id="btnDayResult" btn-tag="link" content="计算日结果" icon-before="fa fa-calculator blue" class-name="info"></fap-button>
+                </div>
+                <div class="widget-toolbar">
                     <label>
-                        <input type="checkbox" id="exkq" class="ace"/>
+                        <input type="checkbox" id="exkq" class="ace" />
                         <span class="lbl"> 仅显示考勤异常结果</span>
                     </label>
 
@@ -49,28 +52,13 @@
                 </div>
             </div>
             <div class="widget-body">
-                <div class="widget-toolbox">
-                    <div class="btn-toolbar">
-                        <div class="btn-group">
-                            @await Component.InvokeAsync("QueryProgram", new { tn = "TmDayResult", gid = "grid-tmdayresult" })
-                        </div>
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-success  btn-no-border" id="btnDayResult">
-                                <span class="ace-icon fa fa-calculator icon-on-right bigger-110"></span>
-                                计算日结果
-                            </button>
-                        </div>
 
-                    </div>
+                <div class="widget-main">
+                    <fap-grid id="tmdayresult" grid-model="Model" auto-width="true"
+                              view-records="true" multi-box-only="true" multi-select="true" shrink-fit="false"></fap-grid>
+
+
                 </div>
-
-            </div>
-
-            <div class="widget-main jobpostionclass">
-                <fap-grid id="tmdayresult" grid-model="Model" auto-width="true" 
-                          view-records="true" multi-box-only="true" multi-select="true"  shrink-fit="false"></fap-grid>
-
-
             </div>
         </div>
     </div>
@@ -82,7 +70,7 @@
                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
                             <span class="white">&times;</span>
                         </button>
-                        组织机构
+                        <fap-multilang lang-key="department" default-content="部门"></fap-multilang>
                     </div>
                 </div>
 
@@ -102,26 +90,8 @@
     </div>
 </div>
 
-
-
 <script>
-
-    //控件会调用此方法
-    var queryProgramCallBack = function (qpfid) {
-        //获取查询方案的条件
-        $.get("@Url.Content("~/api/commctrlsapi/queryprogram")", { fid: qpfid }, function (data) {
-            var filters = "";
-            if (data) {
-                filters = data.queryCondition;
-            }
-            $("#grid-tmdayresult").jqGrid('setGridParam', {
-                datatype: 'json',
-                postData: { 'filters': filters }, //发送数据
-                page: 1
-            }).trigger("reloadGrid"); //重新载入
-        });
-    }
-    var scripts = [null, "/Content/waiting/jquery.waiting.js", "/Scripts/FapControl/dateFilter.js?v=1", "/Content/js/date-time/daterangepicker.js", null]
+    var scripts = [null,  "/Scripts/FapControl/dateFilter.js?v=1", "/Content/js/date-time/daterangepicker.js", null]
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
             $('.modal.aside').ace_aside();
@@ -131,7 +101,7 @@
                 $('.modal.aside').remove();
                 $(window).off('.aside');
             })
-            moment.locale('zh-cn');
+            //moment.locale('zh-cn');
             $('#nav-calendar-input').daterangepicker({
                 'applyClass': 'btn-sm btn-success btn-round',
                 'cancelClass': 'btn-sm btn-default  btn-round',
@@ -150,84 +120,20 @@
                     '上月': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
                 }
             }).on('apply.daterangepicker', function (ev, picker) {
-
                 window.dateDayResultRange = {
                     "start": picker.startDate.format('YYYY-MM-DD') + " 00:00:00",
                     "end": picker.endDate.format('YYYY-MM-DD') + " 23:59:59"
-                };;
-                var treeDept = $('#tree-orgdept').jstree(true);
-                var selData = treeDept.get_selected();
-                var start = window.dateDayResultRange.start;
-                var end = window.dateDayResultRange.end;
-                var r = [];
-                r.push({ field: "CurrDate", op: "ge", data: start });
-                r.push({ field: "CurrDate", op: "le", data: end });
-                if (selData.length > 0) {
-                    var childs = treeDept.get_node(selData[0]).children_d;
-                    var selids = childs.concat(selData[0]);
-                    var deptUids = [];
-                    //筛选有权限的节点
-                    var sels = $.grep(selids, function (d, i) {
-                        return treeDept.get_node(d).data.ext1 == false;
-                    });
-                    $.each(sels, function (i, d) {
-                        deptUids.push("'" + d + "'");
-                    })
-                    var dept = { field: "EmpUid", "op": "in", "data": "(select fid from Employee where DeptUid in(" + deptUids.join(",") + "))" };
-                    r.push(dept);
-                }
-                var eblist = [];
-                if ($("#exkq:checked").length > 0) {
-                    var eb = [];
-                    eb.push({ field: "CalResult", op: "cn", data: '旷工' });
-                    eb.push({ field: "CalResult", op: "cn", data: '缺勤' });
-                    eb.push({ field: "CalResult", op: "cn", data: '迟到' });
-                    eb.push({ field: "CalResult", op: "cn", data: '早退' });
-                    var ebfilter = { groupOp: "OR", rules: eb };
-                    eblist.push(ebfilter);
-                }
-                var filter = { groupOp: "AND", rules: r, groups: eblist };
-                refreshGrid(JSON.stringify(filter));
+                };
+                refreshGrid();
             }).next().on(ace.click_event, function () {
                 $(this).prev().focus();
             });
             //时间变化事件
             $('#nav-calendar-input');
             $('#tree-orgdept').on("changed.jstree", function (e, data) {
-                if (data && data.selected && data.selected.length) {
-                    var deptid = data.selected[0];
-                    var deptMC = data.node.text;
-                    //获取所有子Fid
-                    var childs = data.node.children_d;
-                    var selids = childs.concat(deptid);
-                    var deptUids = [];
-                    var treeDept = $('#tree-orgdept').jstree(true);
-                    var sels = $.grep(selids, function (d, i) {
-                        return treeDept.get_node(d).data.ext1 == false;
-                    });
-                    $.each(sels, function (i, d) {
-                        deptUids.push("'" + d + "'");
-                    })
-                    var r = [];
-                    if (window.dateDayResultRange) {
-                        r.push({ field: "CurrDate", op: "ge", data: window.dateDayResultRange.start });
-                        r.push({ field: "CurrDate", op: "le", data: window.dateDayResultRange.end });
-                    }
-                    var dept = { field: "EmpUid", "op": "in", "data": "(select fid from Employee where DeptUid in(" + deptUids.join(",") + "))" };
-                    r.push(dept);
-                    var filter = { groupOp: "AND", rules: r };
-                    var eblist = [];
-                    if ($("#exkq:checked").length > 0) {
-                        var eb = [];
-                        eb.push({ field: "CalResult", op: "cn", data: '旷工' });
-                        eb.push({ field: "CalResult", op: "cn", data: '缺勤' });
-                        var ebfilter = { groupOp: "OR", rules: eb };
-                        eblist.push(ebfilter);
-                        filter = { groupOp: "AND", rules: r, groups: eblist };
-                    }
-                    refreshGrid(JSON.stringify(filter));
+                if (data && data.selected && data.selected.length) {                    
+                    refreshGrid();
                 }
-                //console.log(data.selected);
             });
             $("#nav-search-input").change(function () {
                 var v = $(this).val();
@@ -240,36 +146,70 @@
                 var eblist = [];
                 if ($("#exkq:checked").length > 0) {
                     var eb = [];
-                    eb.push({ field: "CalResult", op: "cn", data: '旷工' });
                     eb.push({ field: "CalResult", op: "cn", data: '缺勤' });
+                    eb.push({ field: "CalResult", op: "cn", data: '迟到' });
+                    eb.push({ field: "CalResult", op: "cn", data: '早退' });
                     var ebfilter = { groupOp: "OR", rules: eb };
                     eblist.push(ebfilter);
                 }
                 var filter = { groupOp: "AND", rules: rules, groups: eblist };
-
-                refreshGrid(JSON.stringify(filter));
+                 reloadGrid("grid-tmdayresult", { filters: JSON.stringify(filter) });
             })
 
             $("#btnDayResult").click(function () {
-                var index = layer.load();
-                $.get('@Url.Content("~/Time/Api/DayResult/Calulate")', function (rv) {
-                    if (rv.success) {
-                        $.msg(rv.msg);
-                    } else {
-                        bootbox.alert(rv.msg);
+                bootbox.confirm("计算日结果将非常耗时，确认计算吗？", function (result) {
+                    if (result) {
+                        var index = layer.load();
+                        $.get('@Url.Content("~/Time/Api/DayResult/Calulate")', function (rv) {
+                            if (rv.success) {
+                                $.msg(rv.msg);
+                            } else {
+                                bootbox.alert(rv.msg);
+                            }
+                            layer.close(index);
+                        })
                     }
-                    layer.close(index);
                 })
 
             });
         })
     });
-    function refreshGrid(filter) {
-        $("#grid-tmdayresult").jqGrid('setGridParam', {
-            datatype: 'json',
-            postData: { filters: filter }, //发送数据
-            page: 1
-        }).trigger("reloadGrid"); //重新载入
+    function refreshGrid() {
+        var treeDept = $('#tree-orgdept').jstree(true);
+        var selData = treeDept.get_selected();
+        var r = [];        
+        if (window.dateDayResultRange) {
+            var start = window.dateDayResultRange.start;
+            var end = window.dateDayResultRange.end;
+            r.push({ field: "CurrDate", op: "ge", data: start });
+            r.push({ field: "CurrDate", op: "le", data: end });
+        }
+        if (selData.length > 0) {
+            var childs = treeDept.get_node(selData[0]).children_d;
+            var selids = childs.concat(selData[0]);
+            var deptUids = [];
+            //筛选有权限的节点
+            var sels = $.grep(selids, function (d, i) {
+                return treeDept.get_node(d).data.ext1 == false;
+            });
+            $.each(sels, function (i, d) {
+                deptUids.push(d);
+            })
+            var dept = { field: "DeptUid", "op": "in", "data": deptUids.join(",") };
+            r.push(dept);
+        }
+        var eblist = [];
+        if ($("#exkq:checked").length > 0) {
+            var eb = [];
+            eb.push({ field: "CalResult", op: "cn", data: '缺勤' });
+            eb.push({ field: "CalResult", op: "cn", data: '迟到' });
+            eb.push({ field: "CalResult", op: "cn", data: '早退' });
+            var ebfilter = { groupOp: "OR", rules: eb };
+            eblist.push(ebfilter);
+        }
+        var filter = { groupOp: "AND", rules: r, groups: eblist };
+        reloadGrid("grid-tmdayresult", { filters: JSON.stringify(filter) });
+
     }
-   
+
 </script>

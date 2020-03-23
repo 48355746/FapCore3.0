@@ -58,6 +58,12 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
             _timeService.AddHoliday(holiday.CaseUid, list);
             return Json(ResponseViewModelUtils.Sueecss());
         }
+        [HttpGet("Period")]
+        public JsonResult TmPeriod()
+        {
+            var periods= _dbContext.QueryAll<TmPeriod>().OrderByDescending(p => p.CurrMonth).Take(12);
+            return Json(periods);
+        }
         /// <summary>
         /// 获取假日
         /// </summary>
@@ -117,6 +123,12 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
         public JsonResult DayResultCalulate()
         {
             _timeService.DayResultCalculate();
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+        [HttpGet("MonthResult/Calulate")]
+        public JsonResult MonthResultCalulate()
+        {
+            _timeService.MonthResultCalculate();
             return Json(ResponseViewModelUtils.Sueecss());
         }
     }
