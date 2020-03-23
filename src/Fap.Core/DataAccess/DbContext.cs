@@ -22,6 +22,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Fap.Core.MultiLanguage;
+using Dapper.Contrib.Extensions;
 
 namespace Fap.Core.DataAccess
 {
@@ -409,10 +410,10 @@ namespace Fap.Core.DataAccess
                 if (column.IsMultiLang == 1)
                 {
                     //设置多语字段
-                    var langs= typeof(MultiLanguageEnum).EnumItems();
+                    var langs = typeof(MultiLanguageEnum).EnumItems();
                     foreach (var lang in langs)
                     {
-                        dynEntity.SetValue(key+lang, "");
+                        dynEntity.SetValue(key + lang, "");
                     }
                 }
             }
@@ -2370,9 +2371,10 @@ namespace Fap.Core.DataAccess
             }
             foreach (var dict in fapDictionarys)
             {
-                string name= GetDictName(dict);
-                if (name.IsPresent()) {
-                    dict.Name =name ;
+                string name = GetDictName(dict);
+                if (name.IsPresent())
+                {
+                    dict.Name = name;
                 }
             }
             return fapDictionarys;
@@ -2383,12 +2385,12 @@ namespace Fap.Core.DataAccess
             MultiLanguageEnum.Ja => dict.NameJa,
             MultiLanguageEnum.ZhCn => dict.NameZhCn,
             MultiLanguageEnum.ZhTW => dict.NameZhTW,
-            _=>dict.Name
+            _ => dict.Name
         };
-       
+
         public FapDict Dictionary(string category, string code)
         {
-            var dict= Dictionarys(category).FirstOrDefault(d => d.Code.EqualsWithIgnoreCase(code));
+            var dict = Dictionarys(category).FirstOrDefault(d => d.Code.EqualsWithIgnoreCase(code));
             if (dict != null)
             {
                 string name = GetDictName(dict);
@@ -2555,7 +2557,58 @@ namespace Fap.Core.DataAccess
             }
         }
 
+
         #endregion
+
+        #region batch sql
+
+        public void UpdateBatchSql<T>(IEnumerable<T> entityListToUpdate) where T : BaseModel
+        {
+            StringBuilder sql = new StringBuilder(null);
+            int i = 0;
+            foreach (var entity in entityListToUpdate)
+            {
+                InitEntityToInsert(entity);
+                sql.AppendLine(_dbSession.EntityToUpdateSql(entity));
+                i++;
+                if (i > 500)
+                {
+                    _dbSession.Execute(sql.ToString());
+                    sql.Clear();
+                    i = 0;
+                }
+
+            }
+            if (sql.Length > 0)
+            {
+                _dbSession.Execute(sql.ToString());
+            }
+        }
+
+        public void InsertBatchSql<T>(IEnumerable<T> entityListToInsert) where T : BaseModel
+        {
+            StringBuilder sql = new StringBuilder(null);
+            int i = 0;
+            foreach (var entity in entityListToInsert)
+            {
+                InitEntityToInsert(entity);
+                sql.AppendLine(_dbSession.EntityToInsertSql(entity));
+                i++;
+                if (i > 500)
+                {
+                    _dbSession.Execute(sql.ToString());
+                    sql.Clear();
+                    i = 0;
+                }
+
+            }
+            if (sql.Length > 0)
+            {
+                _dbSession.Execute(sql.ToString());
+            }
+        }
+        #endregion
+
     }
 }
 

@@ -251,20 +251,15 @@
             })
 
             $("#btnDayResult").click(function () {
-                var treeDept = $('#tree-orgdept').jstree(true);
-                var selData = treeDept.get_selected();
-                if (!selData.length) {
-                    bootbox.alert("请选择计算部门！");
-                    return;
-                }
-                if (window.dateDayResultRange) {
-                    var start = window.dateDayResultRange.start;
-                    var end = window.dateDayResultRange.end;
-                    DayResultCalulate(selData[0], start, end);
-                } else {
-                    bootbox.alert("请选择时间段！");
-                    return;
-                }
+                var index = layer.load();
+                $.get('@Url.Content("~/Time/Api/DayResult/Calulate")', function (rv) {
+                    if (rv.success) {
+                        $.msg(rv.msg);
+                    } else {
+                        bootbox.alert(rv.msg);
+                    }
+                    layer.close(index);
+                })
 
             });
         })
@@ -276,24 +271,5 @@
             page: 1
         }).trigger("reloadGrid"); //重新载入
     }
-    //计算打卡数据
-    function DayResultCalulate(fid, startDate, endDate) {
-        $(".page-content").waiting({ loadingtext: "正在计算考勤结果，请等待...", fixed: true })
-        $.ajax({
-            url: '@Url.Content("~/api/time/DayResultCalulate")',
-            type: "post",
-            dataType: "json",
-            data: { fid: fid, startDate: startDate, endDate: endDate },
-            success: function (data) {
-                $(".page-content").waiting('done');
-                bootbox.alert(data.msg);
-            },
-            error: function (e) {
-                bootbox.alert("计算打卡数据异常！");
-            }
-        });
-
-
-    }
-
+   
 </script>

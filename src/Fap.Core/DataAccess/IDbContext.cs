@@ -11,7 +11,7 @@ namespace Fap.Core.DataAccess
     public interface IDbContext
     {
         string HistoryDateTime { get; set; }
-        DatabaseDialectEnum DatabaseDialect {get;}
+        DatabaseDialectEnum DatabaseDialect { get; }
         void BeginTransaction();
         void Commit();
         int Count(string tableName, string where = "", DynamicParameters parameters = null);
@@ -64,7 +64,7 @@ namespace Fap.Core.DataAccess
         /// <param name="sqlOri"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        IEnumerable<T> QueryOriSql<T>(string sqlOri, DynamicParameters parameters = null) where T:class;
+        IEnumerable<T> QueryOriSql<T>(string sqlOri, DynamicParameters parameters = null) where T : class;
         IEnumerable<dynamic> Query(string sqlOri, DynamicParameters parameters = null, bool withMC = false);
         IEnumerable<T> Query<T>(string sqlOri, DynamicParameters parameters = null, bool withMC = false) where T : class;
         IEnumerable<dynamic> QueryAll(string tableName, bool withMC = false);
@@ -260,7 +260,8 @@ namespace Fap.Core.DataAccess
         Task<bool> UpdateBatchAsync<T>(IEnumerable<T> entityListToUpdate) where T : BaseModel;
         bool UpdateDynamicData(FapDynamicObject fapDynData);
         void UpdateDynamicDataBatch(IEnumerable<FapDynamicObject> dataObjects);
-
+        void UpdateBatchSql<T>(IEnumerable<T> entityListToUpdate) where T : BaseModel;
+        void InsertBatchSql<T>(IEnumerable<T> entityListToInsert) where T : BaseModel;
         PageInfo<T> QueryPage<T>(Pageable pageable) where T : BaseModel;
         PageInfo<dynamic> QueryPage(Pageable pageable);
         /// <summary>

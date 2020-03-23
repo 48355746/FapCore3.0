@@ -11,10 +11,6 @@ namespace Fap.Hcm.Service.Time
 	public class TmPeriod : Fap.Core.Infrastructure.Metadata.BaseModel
 	{
 		/// <summary>
-		/// 周期编码
-		/// </summary>
-		public string Code { get; set; }
-		/// <summary>
 		/// 月份
 		/// </summary>
 		public string CurrMonth { get; set; }
@@ -26,6 +22,10 @@ namespace Fap.Hcm.Service.Time
 		/// 结束日期
 		/// </summary>
 		public string EndDate { get; set; }
+		/// <summary>
+		/// 当前期间
+		/// </summary>
+		public int IsPeriod { get; set; }
 
 	}
 }

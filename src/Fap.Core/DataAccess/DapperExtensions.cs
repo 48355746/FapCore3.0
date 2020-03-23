@@ -63,6 +63,91 @@ namespace Fap.Core.DataAccess
             if (wasClosed) connection.Close();
             return returnVal;
         }
+        public static string EntityToInsertSql<T>(this IDbConnection connection, T entity) where T : class
+        {
+            var type = typeof(T);
+            var name = GetTableName(type);
+            var sbColumnList = new StringBuilder(null);
+            var allProperties = TypePropertiesCache(type);
+            var keyProperties = KeyPropertiesCache(type);
+            var computedProperties = ComputedPropertiesCache(type);
+            var allPropertiesExceptKeyAndComputed = allProperties.Except(keyProperties.Union(computedProperties)).ToList();
+
+            var adapter = GetFormatter(connection);
+
+            for (var i = 0; i < allPropertiesExceptKeyAndComputed.Count; i++)
+            {
+                var property = allPropertiesExceptKeyAndComputed[i];
+                adapter.AppendColumnName(sbColumnList, property.Name);  //fix for issue #336
+                if (i < allPropertiesExceptKeyAndComputed.Count - 1)
+                    sbColumnList.Append(", ");
+            }
+
+            var sbValueList = new StringBuilder(null);
+            for (var i = 0; i < allPropertiesExceptKeyAndComputed.Count; i++)
+            {
+                var property = allPropertiesExceptKeyAndComputed[i];
+                if (property.PropertyType.Name == typeof(string).Name)
+                {
+                    sbValueList.AppendFormat("'{0}'", property.GetValue(entity));
+                }
+                else
+                {
+                    sbValueList.AppendFormat("{0}", property.GetValue(entity));
+
+                }
+                if (i < allPropertiesExceptKeyAndComputed.Count - 1)
+                    sbValueList.Append(", ");
+            }
+            return $"insert into {name}({sbColumnList}) values({sbValueList})";
+
+        }
+        public static string EntityToUpdateSql<T>(this IDbConnection connection, T entity) where T : class
+        {
+            var type = typeof(T);
+            var adapter = GetFormatter(connection);
+            StringBuilder sqlBuilder = new StringBuilder();
+            sqlBuilder.Append(" UPDATE ").Append(typeof(T).Name).Append(" SET ");
+            var allProperties = TypePropertiesCache(type);
+            var keyProperties = KeyPropertiesCache(type);
+            if (keyProperties.Count == 0)
+                throw new ArgumentException("Entity must have at least one [Key] property");
+            var computedProperties = ComputedPropertiesCache(type);
+            var allPropertiesExceptKeysAndComputed = allProperties.Except(keyProperties.Union(computedProperties)).ToList();
+            for (int i = 0; i < allPropertiesExceptKeysAndComputed.Count; i++)
+            {
+                var property = allPropertiesExceptKeysAndComputed[i];
+                adapter.AppendColumnNameEqualsValue(sqlBuilder, property.Name);
+                if (property.PropertyType.Name == typeof(string).Name)
+                {
+                    sqlBuilder.Replace($"@{property.Name}", $"'{property.GetValue(entity)}'");
+                }
+                else
+                {
+                    sqlBuilder.Replace($"@{property.Name}", $"{property.GetValue(entity)}");
+                }
+                sqlBuilder.Append(",");
+            }
+            sqlBuilder.Remove(sqlBuilder.Length - 1, 1);
+            sqlBuilder.Append(" where ");
+            for (var i = 0; i < keyProperties.Count; i++)
+            {
+                var property = keyProperties[i];
+                adapter.AppendColumnNameEqualsValue(sqlBuilder, property.Name);  //fix for issue #336
+                if (i < keyProperties.Count - 1)
+                    sqlBuilder.Append(" and ");
+                if (property.PropertyType.Name == typeof(string).Name)
+                {
+                    sqlBuilder.Replace($"@{property.Name}", $"'{property.GetValue(entity)}'");
+                }
+                else
+                {
+                    sqlBuilder.Replace($"@{property.Name}", $"{property.GetValue(entity)}");
+                }
+            }
+
+            return sqlBuilder.ToString();
+        }
         /// <summary>
         /// 
         /// </summary>
@@ -81,13 +166,13 @@ namespace Fap.Core.DataAccess
             long id = dynamicToUpdate.Get(FapDbConstants.FAPCOLUMN_FIELD_Id).ToLong();
             long ts = dynamicToUpdate.Get(FapDbConstants.FAPCOLUMN_FIELD_Ts).ToLong();
             Guard.Against.Zero(id, nameof(id));
-            
+
             var adapter = GetFormatter(connection);
             StringBuilder sqlBuilder = new StringBuilder();
             sqlBuilder.Append(" UPDATE ").Append(tableName).Append(" SET ");
             foreach (string fieldName in dynamicToUpdate.Keys)
             {
-                if ("Id".EqualsWithIgnoreCase(fieldName)||"Fid".EqualsWithIgnoreCase(fieldName))
+                if ("Id".EqualsWithIgnoreCase(fieldName) || "Fid".EqualsWithIgnoreCase(fieldName))
                 {
                     continue;
                 }
@@ -109,7 +194,7 @@ namespace Fap.Core.DataAccess
                 sqlBuilder.Append($" = {ts}");
             }
             DynamicParameters parameters = new DynamicParameters();
-            foreach (var entry in dynamicToUpdate as IDictionary<string,object>)
+            foreach (var entry in dynamicToUpdate as IDictionary<string, object>)
             {
                 parameters.Add(entry.Key, entry.Value);
             }
@@ -123,7 +208,7 @@ namespace Fap.Core.DataAccess
         {
             long id = entityUpdate.Id;
             long ts = entityUpdate.Ts;
-            
+
             Guard.Against.Zero(id, nameof(id));
             Guard.Against.Zero(ts, nameof(ts));
             var type = typeof(T);
@@ -136,7 +221,7 @@ namespace Fap.Core.DataAccess
             var allPropertiesExceptKeysAndComputed = allProperties.Except(keyProperties.Union(computedProperties)).ToList();
             for (int i = 0; i < allPropertiesExceptKeysAndComputed.Count; i++)
             {
-                var property = allPropertiesExceptKeysAndComputed[i];                
+                var property = allPropertiesExceptKeysAndComputed[i];
                 adapter.AppendColumnNameEqualsValue(sqlBuilder, property.Name);
                 sqlBuilder.Append(",");
             }
@@ -166,7 +251,7 @@ namespace Fap.Core.DataAccess
             var name = connection.GetType().Name.ToLower();
             if (connection is ProfiledDbConnection)
             {
-                name= (connection as ProfiledDbConnection).WrappedConnection.GetType().Name.ToLower();
+                name = (connection as ProfiledDbConnection).WrappedConnection.GetType().Name.ToLower();
             }
 
             return !AdapterDictionary.ContainsKey(name)
@@ -175,7 +260,7 @@ namespace Fap.Core.DataAccess
         }
         private static readonly ConcurrentDictionary<RuntimeTypeHandle, IEnumerable<PropertyInfo>> KeyProperties = new ConcurrentDictionary<RuntimeTypeHandle, IEnumerable<PropertyInfo>>();
         private static readonly ConcurrentDictionary<RuntimeTypeHandle, IEnumerable<PropertyInfo>> ComputedProperties = new ConcurrentDictionary<RuntimeTypeHandle, IEnumerable<PropertyInfo>>();
-
+        private static readonly ConcurrentDictionary<RuntimeTypeHandle, string> TypeTableName = new ConcurrentDictionary<RuntimeTypeHandle, string>();
         private static readonly ConcurrentDictionary<RuntimeTypeHandle, IEnumerable<PropertyInfo>> TypeProperties = new ConcurrentDictionary<RuntimeTypeHandle, IEnumerable<PropertyInfo>>();
         private static List<PropertyInfo> TypePropertiesCache(Type type)
         {
@@ -188,7 +273,30 @@ namespace Fap.Core.DataAccess
             TypeProperties[type.TypeHandle] = properties;
             return properties.ToList();
         }
+        private static string GetTableName(Type type)
+        {
+            if (TypeTableName.TryGetValue(type.TypeHandle, out string name)) return name;
 
+
+            //NOTE: This as dynamic trick should be able to handle both our own Table-attribute as well as the one in EntityFramework 
+            var tableAttr = type
+#if NETSTANDARD1_3
+                    .GetTypeInfo()
+#endif
+                    .GetCustomAttributes(false).SingleOrDefault(attr => attr.GetType().Name == "TableAttribute") as dynamic;
+            if (tableAttr != null)
+            {
+                name = tableAttr.Name;
+            }
+            else
+            {
+                name = type.Name;
+            }
+
+
+            TypeTableName[type.TypeHandle] = name;
+            return name;
+        }
         private static bool IsWriteable(PropertyInfo pi)
         {
             var attributes = pi.GetCustomAttributes(typeof(WriteAttribute), false).AsList();

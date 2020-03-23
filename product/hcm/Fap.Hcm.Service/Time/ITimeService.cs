@@ -34,5 +34,9 @@ namespace Fap.Hcm.Service.Time
         /// <param name="startDate"></param>
         /// <param name="endDate"></param>
         void BatchPatchCard(IList<string> deptUids, string startDate, string endDate);
+        /// <summary>
+        /// 日结果计算(计算当前考勤期间)
+        /// </summary>
+        void DayResultCalculate();
     }
 }

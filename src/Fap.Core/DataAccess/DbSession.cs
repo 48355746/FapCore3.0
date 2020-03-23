@@ -120,6 +120,7 @@ namespace Fap.Core.DataAccess
                 return DbExecProxy<int>((param) => connection.Execute(sql, param, CurrentTransaction, null, commandType), sql, parameters);
             }
         }
+
         public Task<int> ExecuteAsync(string sql, DynamicParameters parameters = null, CommandType? commandType = null)
         {
             if (CurrentTransaction != null)
@@ -705,6 +706,32 @@ namespace Fap.Core.DataAccess
         {
             CurrentConnection = null;
             CurrentTransaction = null;
+        }
+
+        public string EntityToInsertSql<T>(T entity) where T : class
+        {
+            if (CurrentConnection != null)
+            {
+                return CurrentConnection.EntityToInsertSql(entity);
+            }
+            else
+            {
+                using var connection = GetDbConnection(DataSourceEnum.MASTER);
+                return connection.EntityToInsertSql(entity);
+            }
+        }
+
+        public string EntityToUpdateSql<T>(T entity) where T : class
+        {
+            if (CurrentConnection != null)
+            {
+                return CurrentConnection.EntityToUpdateSql(entity);
+            }
+            else
+            {
+                using var connection = GetDbConnection(DataSourceEnum.MASTER);
+                return connection.EntityToUpdateSql(entity);
+            }
         }
 
         #endregion

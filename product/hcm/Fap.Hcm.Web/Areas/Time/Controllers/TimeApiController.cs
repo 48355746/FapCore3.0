@@ -113,5 +113,11 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
             _timeService.AnnualLeaveSurplus(year, lastYear);
             return Json(ResponseViewModelUtils.Sueecss());
         }
+        [HttpGet("DayResult/Calulate")]
+        public JsonResult DayResultCalulate()
+        {
+            _timeService.DayResultCalculate();
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
     }
 }

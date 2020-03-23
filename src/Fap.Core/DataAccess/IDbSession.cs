@@ -56,7 +56,8 @@ namespace Fap.Core.DataAccess
         bool Update<T>(T entityToUpdate) where T : class;
         bool UpdateWithTimestamp<T>(T entityToUpdate) where T : BaseModel;
         Task<bool> UpdateAsync<T>(T entityToUpdate) where T : class;
-
+        string EntityToInsertSql<T>(T entity) where T : class;
+        string EntityToUpdateSql<T>(T entity) where T : class;
         public void BeginTransaction();
 
         public void Commit();
