@@ -24,9 +24,9 @@
                 <div class="widget-toolbar">
                     <label>
                         <input type="checkbox" id="exkq" class="ace" />
-                        <span class="lbl"> 仅显示考勤异常结果</span>
+                        <span class="lbl"><fap-multilang lang-key="only_show_time_exception" default-content="仅显示异常考勤"></fap-multilang></span>
                     </label>
-
+                    <fap-button id="btnExceptionNotice" btn-tag="link" content="异常通知" icon-before="fa fa-envelope blue" class-name="info"></fap-button>
                 </div>
 
                 <div class="widget-toolbar">
@@ -170,8 +170,30 @@
                         })
                     }
                 })
-
             });
+            $("#btnExceptionNotice").click(ace.click_event, function () {
+                bootbox.prompt({
+                    title: "选择接收人!",
+                    value: ['emp', 'mgr'],
+                    inputType: 'checkbox',
+                    inputOptions: [{
+                        text: '员工',
+                        value: 'emp',
+                    },
+                    {
+                        text: '部门负责人',
+                        value: 'mgr',
+                    }],
+                    callback: function (result) {
+                        if (result != null && result.length>0) {
+                            $.post(basePath + "/Time/Api/Exception/Notice", { options: result }, function () {
+
+
+                            })
+                        }
+                    }
+                });
+            })
         })
     });
     function refreshGrid() {

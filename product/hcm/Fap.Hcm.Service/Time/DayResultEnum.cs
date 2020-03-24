@@ -14,12 +14,7 @@ namespace Fap.Hcm.Service.Time
         /// 正常
         /// </summary>
         [Description("正常")]
-        Normal,
-        /// <summary>
-        /// 出勤
-        /// </summary>
-        [Description("出勤")]
-        Work,
+        Normal,      
         /// <summary>
         /// 迟到
         /// </summary>

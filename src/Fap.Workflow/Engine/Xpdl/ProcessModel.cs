@@ -975,8 +975,8 @@ namespace Fap.Workflow.Engine.Xpdl
 
             string sql= SqlUtils.ParsingConditionSql(_dataAccessor.Columns(processEntity.BillTable), data, condition, _dataAccessor.DatabaseDialect);
           
-            object o = _dataAccessor.ExecuteScalar(sql);
-            if (o != null && DBNull.Value != o)
+            var o = _dataAccessor.QueryOriSql(sql);
+            if (o.Any())
             {
                 return true;
             }

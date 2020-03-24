@@ -211,6 +211,7 @@
             shade: false,
             skin: 'billskin',
             maxmin: true, //开启最大化最小化按钮
+            zIndex:1000,
             //area: ['900px', '600px'],
             content: basePath + '/System/Manage/FreeFormSet/' + fid,
             yes: function (index, layero) {
@@ -227,14 +228,13 @@
                     }
                 };
 
-                $.post("@Url.Content("~/Api/Core/Persistence/")", { Id: id, Fid: fid, FFContent: jsonStr, Table_Name: 'CfgFreeForm', oper: 'edit' }, function (rv) {
-                    if (rv) {
-                        layer.msg('保存成功！');
+                $.post("@Url.Content("~/System/Api/Manage/Setting/FreeForm")", { Id: id,  FFContent: jsonStr}, function (rv) {
+                    if (rv.success) {
+                        $.msg(rv.msg);
+                    } else {
+                        bootbox.alert(rv.msg);
                     }
                 })
-                //alert(jsonStr);
-
-                //layer.close(index); //如果设定了yes回调，需进行手工关闭
             },
             cancel: function () {
                 //console.log('cancel');

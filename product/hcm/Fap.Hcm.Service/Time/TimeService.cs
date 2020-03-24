@@ -19,6 +19,7 @@ using Ardalis.GuardClauses;
 using Fap.Core.Exceptions;
 using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Config;
+using Fap.Core.Infrastructure.Model;
 
 namespace Fap.Hcm.Service.Time
 {
@@ -31,7 +32,7 @@ namespace Fap.Hcm.Service.Time
         private readonly IDbContext _dbContext;
         private readonly IFapApplicationContext _applicationContext;
         private readonly IFapConfigService _configService;
-        public TimeService(IDbContext dataAccessor,IFapConfigService configService, IFapApplicationContext applicationContext)
+        public TimeService(IDbContext dataAccessor, IFapConfigService configService, IFapApplicationContext applicationContext)
         {
             _dbContext = dataAccessor;
             _configService = configService;
@@ -164,9 +165,9 @@ namespace Fap.Hcm.Service.Time
             //此时间段日结果
             string sWhere = $"{nameof(TmDayResult.CurrDate)}>=@StartDate and {nameof(TmDayResult.CurrDate)}<=@EndDate";
             var param = new DynamicParameters(new { StartDate = startDate, EndDate = DateTimeUtils.CurrentDateStr });
-            var dayResults = _dbContext.QueryWhere<TmDayResult>(sWhere,param);
+            var dayResults = _dbContext.QueryWhere<TmDayResult>(sWhere, param);
             //更新打卡数据到日结果
-            UpdateCardRecordToDayResult();   
+            UpdateCardRecordToDayResult();
             //计算日结果
             foreach (var dayResult in dayResults)
             {
@@ -187,7 +188,7 @@ namespace Fap.Hcm.Service.Time
             string afterSql = _configService.GetSysParamValue("AfterDayResultCalculate");
             if (afterSql.IsPresent())
             {
-                List<string> sqls= afterSql.SplitSemicolon();
+                List<string> sqls = afterSql.SplitSemicolon();
                 foreach (var sql in sqls)
                 {
                     if (sql.IsPresent())
@@ -215,9 +216,10 @@ namespace Fap.Hcm.Service.Time
                         calResult += $"{dayResult.LeavelHours}小时";
                     }
                 }
-                if (dayResult.StWorkHourLength > 0)
+                double abs = dayResult.WorkHoursLength - dayResult.LeavelHours - dayResult.TravelHours - dayResult.StWorkHourLength;
+                if (abs > 0)
                 {
-                    calResult += (DayResultEnum.Work.Description() + $"{dayResult.StWorkHourLength}小时");
+                    calResult += (DayResultEnum.Absence.Description() + $"{Math.Round(abs, 2)}小时");
                 }
             }
             void CalculateCardRecord(TmDayResult dayResult)
@@ -226,18 +228,18 @@ namespace Fap.Hcm.Service.Time
                 if (dayResult.StWorkHourLength > 0)
                 {
                     if (DateTimeUtils.ToDateTime(dayResult.CardStartTime) > DateTimeUtils.ToDateTime(dayResult.LateTime)
-                        &&DateTimeUtils.ToDateTime(dayResult.CardEndTime)>DateTimeUtils.ToDateTime(dayResult.EndTime))
+                        && DateTimeUtils.ToDateTime(dayResult.CardEndTime) > DateTimeUtils.ToDateTime(dayResult.EndTime))
                     {
                         //早打卡迟到且晚打卡大于下班时间
                         dayResult.CalResult = DayResultEnum.ComeLate.Description();
                     }
-                    if (DateTimeUtils.ToDateTime(dayResult.CardEndTime) < DateTimeUtils.ToDateTime(dayResult.LeaveTime)&&
-                        DateTimeUtils.ToDateTime(dayResult.CardStartTime)<DateTimeUtils.ToDateTime(dayResult.StartTime))
+                    if (DateTimeUtils.ToDateTime(dayResult.CardEndTime) < DateTimeUtils.ToDateTime(dayResult.LeaveTime) &&
+                        DateTimeUtils.ToDateTime(dayResult.CardStartTime) < DateTimeUtils.ToDateTime(dayResult.StartTime))
                     {
                         //早打卡正常，晚打卡早于早退时间
                         dayResult.CalResult = DayResultEnum.LeaveEarly.Description();
                     }
-                    if(DateTimeUtils.ToDateTime(dayResult.CardStartTime)>DateTimeUtils.ToDateTime(dayResult.LateTime)
+                    if (DateTimeUtils.ToDateTime(dayResult.CardStartTime) > DateTimeUtils.ToDateTime(dayResult.LateTime)
                         && DateTimeUtils.ToDateTime(dayResult.CardEndTime) < DateTimeUtils.ToDateTime(dayResult.LeaveTime))
                     {
                         //迟到早退
@@ -251,9 +253,9 @@ namespace Fap.Hcm.Service.Time
                             dayResult.CalResult = DayResultEnum.Normal.Description();
                         }
                     }
-                    else if(dayResult.StWorkHourLength< dayResult.WorkHoursLength)
+                    else if (dayResult.StWorkHourLength < dayResult.WorkHoursLength)
                     {
-                        dayResult.CalResult = DayResultEnum.Work.Description()+$"{dayResult.StWorkHourLength}小时";
+                        dayResult.CalResult = DayResultEnum.Absence.Description() + $"{Math.Round(dayResult.WorkHoursLength - dayResult.StWorkHourLength, 2)}小时";
                     }
                 }
                 else
@@ -271,7 +273,7 @@ namespace Fap.Hcm.Service.Time
                 if (!cardRecords.Any())
                 {
                     return;
-                }             
+                }
                 foreach (var dayResult in dayResults)
                 {
                     //当前日结果中考勤打卡集合
@@ -280,15 +282,21 @@ namespace Fap.Hcm.Service.Time
                     {
                         dayResult.CardStartTime = cardTimes.Min(c => c.CardTime);
                         dayResult.CardEndTime = cardTimes.Max(c => c.CardTime);
-                        dayResult.StWorkHourLength =Math.Round(DateTimeUtils.ToDateTime(dayResult.CardEndTime).Subtract(DateTimeUtils.ToDateTime(dayResult.CardStartTime)).TotalHours-dayResult.RestMinutesLength/60.0,2);
-                       
+                        if (dayResult.CardStartTime == dayResult.CardEndTime)
+                        {
+                            dayResult.StWorkHourLength = 0;
+                        }
+                        else
+                        {
+                            dayResult.StWorkHourLength = Math.Round(DateTimeUtils.ToDateTime(dayResult.CardEndTime).Subtract(DateTimeUtils.ToDateTime(dayResult.CardStartTime)).TotalHours - Math.Round(dayResult.RestMinutesLength / 60.0, 2), 2);
+                        }
                     }
                 }
             }
 
             void InitDayResultBySchedule()
             {
-              
+
                 int isExist = _dbContext.Count(nameof(TmDayResult), $"{nameof(TmDayResult.CurrDate)}>='{currPeriod.StartDate}' and {nameof(TmDayResult.CurrDate)}<='{currPeriod.EndDate}'");
                 if (isExist > 0)
                 {
@@ -356,11 +364,11 @@ namespace Fap.Hcm.Service.Time
             var dayResults = _dbContext.QueryWhere<TmDayResult>($"{nameof(TmDayResult.CurrDate)}>=@StartDate and {nameof(TmDayResult.CurrDate)}<=@EndDate",
                 new DynamicParameters(new { StartDate = startDate, EndDate = endDate }));
             _dbContext.ExecuteOriginal($"delete from {nameof(TmMonthResult)} where {nameof(TmMonthResult.CurrMonth)}='{currPeriod.CurrMonth}'");
-            var empGrp= dayResults.GroupBy(d => d.EmpUid);
+            var empGrp = dayResults.GroupBy(d => d.EmpUid);
             IList<TmMonthResult> monthResults = new List<TmMonthResult>();
             foreach (var empDay in empGrp)
             {
-                var firstDayRv= empDay.FirstOrDefault();
+                var firstDayRv = empDay.FirstOrDefault();
                 TmMonthResult mr = new TmMonthResult();
                 mr.EmpUid = firstDayRv.EmpUid;
                 mr.DeptUid = firstDayRv.DeptUid;
@@ -368,13 +376,13 @@ namespace Fap.Hcm.Service.Time
                 mr.TravelNum = empDay.Sum(d => d.TravelDays);
                 mr.AbsenceNum = empDay.Count(d => d.CalResult.Contains(DayResultEnum.Absence.Description(), StringComparison.OrdinalIgnoreCase));
                 mr.AnnualNum = empDay.Where(d => d.LeavelType.EqualsWithIgnoreCase("Annaul")).Sum(d => d.LeaveDays);
-                mr.BizLeaveNum= empDay.Where(d => d.LeavelType.EqualsWithIgnoreCase("Business")).Sum(d => d.LeaveDays);
-                mr.SickLeaveNum= empDay.Where(d => d.LeavelType.EqualsWithIgnoreCase("Sick")).Sum(d => d.LeaveDays);
-                mr.WedLeaveNum= empDay.Where(d => d.LeavelType.EqualsWithIgnoreCase("Wed")).Sum(d => d.LeaveDays);
-                mr.MaternityLeaveNum=empDay.Where(d => d.LeavelType.EqualsWithIgnoreCase("Maternity ")).Sum(d => d.LeaveDays);
-                mr.FuneralLeaveNum= empDay.Where(d => d.LeavelType.EqualsWithIgnoreCase("Funeral ")).Sum(d => d.LeaveDays);
-                mr.LateNum= empDay.Count(d => d.CalResult.Contains(DayResultEnum.ComeLate.Description(), StringComparison.OrdinalIgnoreCase));
-                mr.LeftEarlyNum=empDay.Count(d => d.CalResult.Contains(DayResultEnum.LeaveEarly.Description(), StringComparison.OrdinalIgnoreCase));
+                mr.BizLeaveNum = empDay.Where(d => d.LeavelType.EqualsWithIgnoreCase("Business")).Sum(d => d.LeaveDays);
+                mr.SickLeaveNum = empDay.Where(d => d.LeavelType.EqualsWithIgnoreCase("Sick")).Sum(d => d.LeaveDays);
+                mr.WedLeaveNum = empDay.Where(d => d.LeavelType.EqualsWithIgnoreCase("Wed")).Sum(d => d.LeaveDays);
+                mr.MaternityLeaveNum = empDay.Where(d => d.LeavelType.EqualsWithIgnoreCase("Maternity ")).Sum(d => d.LeaveDays);
+                mr.FuneralLeaveNum = empDay.Where(d => d.LeavelType.EqualsWithIgnoreCase("Funeral ")).Sum(d => d.LeaveDays);
+                mr.LateNum = empDay.Count(d => d.CalResult.Contains(DayResultEnum.ComeLate.Description(), StringComparison.OrdinalIgnoreCase));
+                mr.LeftEarlyNum = empDay.Count(d => d.CalResult.Contains(DayResultEnum.LeaveEarly.Description(), StringComparison.OrdinalIgnoreCase));
                 mr.WorkDayNum = empDay.Count();
                 monthResults.Add(mr);
             }
@@ -394,113 +402,184 @@ namespace Fap.Hcm.Service.Time
                 }
             }
         }
+        public void ExceptionNotice(string[] options)
+        {
+            var currPeriod = GetCurrentPeriod();
+            string startDate = currPeriod.StartDate;
+            string endDate = currPeriod.EndDate;
+            //此时间段日结果
+            var dayResults = _dbContext.QueryWhere<TmDayResult>($"{nameof(TmDayResult.CurrDate)}>=@StartDate and {nameof(TmDayResult.CurrDate)}<=@EndDate and {nameof(TmDayResult.CalResult)} like '{DayResultEnum.Absence.Description()}%'",
+                new DynamicParameters(new { StartDate = startDate, EndDate = endDate }));
+            if (!dayResults.Any())
+            {
+                return;
+            }
+            IList<FapMail> mailList = new List<FapMail>();
+            if (options.Contains("emp", new FapStringEqualityComparer()))
+            {
+                var employees = _dbContext.QueryWhere<Employee>("Fid in @EmpUids", new DynamicParameters(new { EmpUids = dayResults.Select(d => d.EmpUid).Distinct() }));
+                foreach (var empResult in dayResults.GroupBy(d => d.EmpUid))
+                {
+                    var employee = employees.FirstOrDefault(e => e.Fid == empResult.Key);
+                    if (employee == null || employee.Mailbox.IsMissing())
+                    {
+                        continue;
+                    }
+                    FapMail mail = new FapMail();
+                    mail.Recipient = employee.EmpName;
+                    mail.RecipientEmailAddress = $"{employee.EmpName}<{employee.Mailbox}>";
+                    mail.Subject = "考勤异常通知";
+                    mail.MailContent = $"您有{empResult.Count()}条考勤异常未处理，请抓紧补签。";
+                    mail.SendCount = 0;
+                    mail.MailCategory = "考勤异常";
+                    mailList.Add(mail);
+                }
+            }
+            if (options.Contains("mgr", new FapStringEqualityComparer()))
+            {
+                var deptList = _dbContext.QueryWhere<OrgDept>("Fid in @DeptUids", new DynamicParameters(new { DeptUids = dayResults.Select(d => d.DeptUid).Distinct() }));
+                if (deptList.Any())
+                {
+                    var employees = _dbContext.QueryWhere<Employee>("Fid in @EmpUids", new DynamicParameters(new { EmpUids = deptList.Select(d => d.DeptManager).Union(deptList.Select(d => d.Director)).Distinct() }));
+                    foreach (var deptResult in dayResults.GroupBy(d => d.DeptUid))
+                    {
+                        var dept = deptList.FirstOrDefault(d => d.Fid == deptResult.Key);
+                        if (dept != null && (dept.DeptManager.IsPresent() || dept.Director.IsPresent()))
+                        {
+                            if (dept.DeptManager.EqualsWithIgnoreCase(dept.Director))
+                            {
+                                var employee = employees.FirstOrDefault(e => e.Fid == dept.DeptManager);
+                                if (employee == null)
+                                {
+                                    continue;
+                                }
+                                SendDeptMail(employee, deptResult.Count());
+                            }
+                            if (dept.DeptManager.IsPresent() && dept.Director.IsPresent() && !dept.DeptManager.EqualsWithIgnoreCase(dept.Director))
+                            {
+                                string[] empUids = new string[] { dept.DeptManager, dept.Director };
+                                foreach (var employee in employees.Where(e => empUids.Contains(e.Fid)))
+                                {
+                                    SendDeptMail(employee, deptResult.Count());
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+            if (mailList.Count > 0)
+            {
+                _dbContext.InsertBatchSql(mailList);
+            }
+            void SendDeptMail(Employee employee, int count)
+            {
+                if (employee.Mailbox.IsMissing())
+                {
+                    return;
+                }
+                FapMail mail = new FapMail();
+                mail.Recipient = employee.EmpName;
+                mail.RecipientEmailAddress = $"{employee.EmpName}<{employee.Mailbox}>";
+                mail.Subject = "部门考勤异常通知";
+                mail.MailContent = $"您部门还有{count}条考勤异常未处理，请抓紧催促补签。";
+                mail.SendCount = 0;
+                mail.MailCategory = "考勤异常";
+                mailList.Add(mail);
+            }
+        }
         /// <summary>
-        /// 根据时间段获取员工在当前时间段里的工作天数
+        ///请假天数时长
         /// </summary>
         /// <returns></returns>
-        public double GetEmpWorkDaysByTime(string EmpUid, string StartDate, string EndDate, string LeaveType, out string msg, out double workhours, string Billcode = null)
+        public (double,double) LeavelDays(string empUid, string startDateTime, string endDateTime)
         {
-            msg = "";
-            workhours = 0;
-            var vStartDate = Convert.ToDateTime(StartDate);
-            var vEndDate = Convert.ToDateTime(EndDate);
+            double days = 0.0;
+            var scheduleEmployees = _dbContext.QueryWhere<TmScheduleEmployee>("EmpUid=@EmpUid and StartDate<@EndDate and EndDate>@StartDate"
+                , new DynamicParameters(new { EmpUid = empUid, EndDate = endDateTime, StartDate = startDateTime }));
+            if (!scheduleEmployees.Any())
+            {
+                Guard.Against.FapBusiness("系统还没有排班，暂时不能请假！");
+            }
+            var scheEmp = scheduleEmployees.First();
+            var schedules = _dbContext.QueryWhere<TmSchedule>("ScheduleUid=@ScheduleUid and EndTime>=@StartTime and StartTime<=@EndTime"
+                , new DynamicParameters(new { ScheduleUid = scheEmp.ScheduleUid, StartTime = startDateTime, EndTime = endDateTime }));
+            if (!schedules.Any())
+            {
+                Guard.Against.FapBusiness("选择的时间周期内无排班，不需要请假！");
+            }
+            var firstSche = schedules.First();
+            var lastSche = schedules.Last();
+            if (schedules.Count() == 1)
+            {
+                double totalHours = DateTimeUtils.ToDateTime(endDateTime).Subtract(DateTimeUtils.ToDateTime(startDateTime)).TotalHours;
+                if (totalHours >= firstSche.WorkHoursLength)
+                {
+                    days = 1.0;
+                }
+                else
+                {
+                    if (totalHours > firstSche.WorkHoursLength / 2)
+                    {
+                        //减去休息时长
+                        totalHours -= firstSche.RestMinutesLength / 60.0;
+                    }
+                    days = (totalHours / firstSche.WorkHoursLength > 0.5) ? 1 : 0.5;
+                }
+            }
+            else
+            {
+                bool firstDiff = false;
+                bool lastDiff = false;
+                if (DateTimeUtils.ToDateTime(firstSche.StartTime) > DateTimeUtils.ToDateTime(startDateTime))
+                {
+                    //第一天请假时长
+                    double firstHour = DateTimeUtils.ToDateTime(firstSche.EndTime).Subtract(DateTimeUtils.ToDateTime(startDateTime)).TotalHours;
+                    if (firstHour > firstSche.WorkHoursLength / 2)
+                    {
+                        //减去休息时长
+                        firstHour -= firstSche.RestMinutesLength / 60.0;
+                    }
+                    double firstDay = (firstHour / firstSche.WorkHoursLength > 0.5) ? 1 : 0.5;
+                    days += firstDay;
+                    firstDiff = true;
+                }
+                if (DateTimeUtils.ToDateTime(endDateTime) < DateTimeUtils.ToDateTime(lastSche.EndTime))
+                {
+                    //最后一天请假时长
+                    double lastHour = DateTimeUtils.ToDateTime(endDateTime).Subtract(DateTimeUtils.ToDateTime(lastSche.StartTime)).TotalHours;
+                    if (lastHour > lastSche.WorkHoursLength / 2)
+                    {
+                        //减去休息时长
+                        lastHour -= firstSche.RestMinutesLength / 60.0;
+                    }
+                    double lastDay = (lastHour / lastSche.WorkHoursLength > 0.5) ? 1 : 0.5;
+                    days += lastDay;
+                    lastDiff = true;
+                }
+                if (firstDiff && lastDiff)
+                {
+                    days += (schedules.Count() - 2);
+                }
+                else if ((firstDiff && !lastDiff) || (!firstDiff && lastDiff))
+                {
+                    days += (schedules.Count() - 1);
+                }
+                else
+                {
+                    days = schedules.Count();
+                }
 
-            DynamicParameters paramWork = new DynamicParameters();
-            paramWork.Add("EmpUid", EmpUid);
-            paramWork.Add("vStartDate", DateTimeUtils.DateTimeFormat(vStartDate));
-            paramWork.Add("vEndDate", DateTimeUtils.DateTimeFormat(vEndDate));
-            //获取该时间段是否有休假
-            var tm = _dbContext.Count("TmLeaveApply", "AppEmpUid=@EmpUid and ((StartTime<=@vStartDate and EndTime>@vStartDate) or (StartTime<@vEndDate and EndTime>=@vEndDate) or (StartTime>=@vStartDate and EndTime<=@vEndDate)) and (BillStatus='PROCESSING' or BillStatus='PASSED' or BillStatus='SUSPENDED')", paramWork);
-            if (tm > 0)
-            {
-                msg = "当前时间段内已存在请假申请！";
-                return 0;
             }
-            //获取当前时间段是否有出差
-            var cc = _dbContext.Count("TmTravelApply", "AppEmpUid=@EmpUid and ((StartTime<=@vStartDate and EndTime>@vStartDate) or (StartTime<@vEndDate and EndTime>=@vEndDate) or (StartTime>=@vStartDate and EndTime<=@vEndDate)) and (BillStatus='PROCESSING' or BillStatus='PASSED' or BillStatus='SUSPENDED')", paramWork);
-            if (cc > 0)
-            {
-                msg = "当前时间段内已存在出差申请！";
-                return 0;
-            }
-            paramWork.Add("StartDate", vStartDate.ToString("yyyy-MM-dd"));
-            paramWork.Add("EndDate", vEndDate.ToString("yyyy-MM-dd"));
-            //获取当前时间段内排班天数
-            double workDay = (double)_dbContext.Count("TmSchedule", "EmpUid=@EmpUid and WorkDay>=@StartDate and WorkDay<=@EndDate", paramWork);
-            if (workDay <= 0)
-            {
-                msg = "您当前时段内未找到排班信息！";
-                return 0;
-            }
-            workhours = (double)_dbContext.Sum("TmSchedule", "workhourslength", "EmpUid=@EmpUid and WorkDay>=@StartDate and WorkDay<=@EndDate", paramWork);
-            //获取请假开始当天的排班
-            var startSchedule = _dbContext.QueryFirstOrDefaultWhere<TmSchedule>("WorkDay=@StartDate", paramWork);
-            if (startSchedule != null)
-            {
-                //获取开始请假当天的请假时长
-
-                var startHours = (Convert.ToDateTime(startSchedule.EndTime) - vStartDate).TotalHours;
-
-                //当天请假时长大于1小于排班数一半 按0.5天计算  超过请假时长一半按1天计算 小于1小时的不算当天请假
-                if (1 <= startHours && startHours <= (startSchedule.WorkHoursLength / 2))
-                {
-                    workDay -= 0.5D;
-                }
-                else if (startHours < 1)
-                {
-                    workDay -= 1;
-                }
-                workhours = workhours - startSchedule.WorkHoursLength + startHours;
-            }
-            //获取请假结束当天的排班
-            var endSchedule = _dbContext.QueryFirstOrDefaultWhere<TmSchedule>("WorkDay=@EndDate", paramWork);
-            if (endSchedule != null)
-            {
-                //获取结束请假当天的请假时长
-                var endHours = (vEndDate - Convert.ToDateTime(endSchedule.StartTime)).TotalHours;
-                if (1 <= endHours && endHours <= (endSchedule.WorkHoursLength / 2))
-                {
-                    workDay -= 0.5;
-                }
-                else if (endHours < 1)
-                {
-                    workDay -= 1;
-                }
-                workhours = workhours - endSchedule.WorkHoursLength + endHours;
-            }
-            return workDay;
+            return (days,Math.Round(days*firstSche.WorkHoursLength,2));
         }
-
         /// <summary>
-        /// 判断某人在某个时间段内是否有排班
-        /// </summary>
-        /// <returns></returns>
-        public bool ExistEmpWorkDaysByTime(string EmpUid, string StartDate, string EndDate)
-        {
-            var vStartDate = Convert.ToDateTime(StartDate);
-            var vEndDate = Convert.ToDateTime(EndDate);
-
-            DynamicParameters paramWork = new DynamicParameters();
-            paramWork.Add("EmpUid", EmpUid);
-            paramWork.Add("vStartDate", vStartDate.ToString("yyyy-MM-dd HH:mm"));
-            paramWork.Add("vEndDate", vEndDate.ToString("yyyy-MM-dd HH:mm"));
-            var tm = _dbContext.Count("TmSchedule", "EmpUid=@EmpUid and ((StartTime<=@vStartDate and EndTime>@vStartDate) or (StartTime<@vEndDate and EndTime>=@vEndDate) or (StartTime>=@vStartDate and EndTime<=@vEndDate))", paramWork);
-            if (tm > 0)
-            {
-                return true;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// 根据获取人员当前年假天数
+        /// 根据获取人员当前有效年假天数
         /// </summary>
         /// <param name="EmpUid"></param>
         /// <returns></returns>
-        public double GetAnnaulRemainderNum(string EmpUid)
+        public double ValidAnnualLeaveDays(string EmpUid)
         {
-
-            //string sql = string.Format("select RemainderNum from TmAnnualLeave where EmpUid=@EmpUid and Annual=@Annual");
             DynamicParameters param = new DynamicParameters();
             //根据当前列获取值
             param.Add("EmpUid", EmpUid);
@@ -760,6 +839,6 @@ namespace Fap.Hcm.Service.Time
             _dbContext.InsertBatchSql(cardList);
 
         }
-      
+
     }
 }

@@ -63,7 +63,7 @@ namespace Fap.Core.Extensions
         /// <returns></returns>
         public static List<string> SplitComma(this string value)
         {
-            return value.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).AsList();
+            return value.Split(new char[] { ','}, StringSplitOptions.RemoveEmptyEntries).AsList();
         }
         /// <summary>
         /// 分号拆分同时去掉内容的空格
@@ -72,7 +72,7 @@ namespace Fap.Core.Extensions
         /// <returns></returns>
         public static List<string> SplitSemicolon(this string value)
         {
-            return value.Split(new char[] { ';', ' ' }, StringSplitOptions.RemoveEmptyEntries).AsList();
+            return value.Split(new char[] { ';'}, StringSplitOptions.RemoveEmptyEntries).AsList();
         }
         /// <summary>
         /// 转化为整形

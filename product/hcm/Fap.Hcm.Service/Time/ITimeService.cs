@@ -5,16 +5,47 @@ namespace Fap.Hcm.Service.Time
 {
     public interface ITimeService
     {
+        /// <summary>
+        /// 添加休息日
+        /// </summary>
+        /// <param name="caseUid"></param>
+        /// <param name="list"></param>
         void AddHoliday(string caseUid, IEnumerable<TmHoliday> list);
         void BuilderDayResultBq(string fid);
-        double GetAnnaulRemainderNum(string EmpUid);
-        double GetEmpWorkDaysByTime(string EmpUid, string StartDate, string EndDate, string LeaveType, out string msg, out double workhours, string Billcode = null);
+        /// <summary>
+        /// 获取有效年假天数
+        /// </summary>
+        /// <param name="EmpUid"></param>
+        /// <returns></returns>
+        double ValidAnnualLeaveDays(string EmpUid);
+        /// <summary>
+        /// 请假天数时长
+        /// </summary>
+        /// <param name="empUid"></param>
+        /// <param name="startDateTime"></param>
+        /// <param name="endDateTime"></param>
+        /// <returns></returns>
+        (double, double) LeavelDays(string empUid, string startDateTime, string endDateTime);
+        /// <summary>
+        /// 获取请假类型
+        /// </summary>
+        /// <param name="TypeCode"></param>
+        /// <returns></returns>
         TmLeaveType GetLeaveType(string TypeCode);
       
         double GetTuneoffHoursLength(string EmpUid);
-        //年假初始化
+        /// <summary>
+        /// 年假初始化
+        /// </summary>
+        /// <param name="year"></param>
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
         void AnnualLeaveInit(string year,string startDate,string endDate);
-        //年假结余
+        /// <summary>
+        /// 年假结余
+        /// </summary>
+        /// <param name="year"></param>
+        /// <param name="lastYear"></param>
         void AnnualLeaveSurplus(string year,string lastYear);
         /// <summary>
         /// 排班
@@ -25,7 +56,6 @@ namespace Fap.Hcm.Service.Time
         /// <param name="startDate">开始日期</param>
         /// <param name="endDate">结束日期</param>
         void Schedule(IEnumerable<Fap.Core.Rbac.Model.Employee> empList, string shiftUid, string holidayUid, string startDate, string endDate);
-        bool ExistEmpWorkDaysByTime(string EmpUid, string StartDate, string EndDate);
         void ReCard(string empUid, string empCode, string startTime, string endTime);
         /// <summary>
         /// 部门批量打卡
@@ -42,5 +72,10 @@ namespace Fap.Hcm.Service.Time
         /// 月结果计算（计算当前考勤周期）
         /// </summary>
         void MonthResultCalculate();
+        /// <summary>
+        /// 考勤异常通知
+        /// </summary>
+        /// <param name="options">emp,mgr</param>
+        void ExceptionNotice(string[] options);
     }
 }

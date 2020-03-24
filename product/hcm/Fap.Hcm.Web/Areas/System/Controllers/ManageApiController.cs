@@ -390,8 +390,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        [HttpPost]
-        [Route("Setting/BillWriteBackRule")]
+        [HttpPost("Setting/BillWriteBackRule")]
         public bool PostBillWriteBackRule(CfgBillWriteBackRule model)
         {
             if (model.Fid.IsMissing())
@@ -412,7 +411,14 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             }
             return true;
         }
-
+        [HttpPost("Setting/FreeForm")]
+        public JsonResult SettingFreeForm(int id,string ffContent)
+        {
+            var ff= _dbContext.Get<CfgFreeForm>(id);
+            ff.FFContent = ffContent;
+            _dbContext.Update(ff);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
         /// <summary>
         /// 保存动态角色配置
         /// </summary>

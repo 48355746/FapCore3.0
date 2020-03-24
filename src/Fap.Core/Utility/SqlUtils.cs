@@ -99,7 +99,7 @@ namespace Fap.Core.Utility
             {
                 sql = $"select 1 from dual where {sqlDesc}";
             }
-            return sqlDesc;
+            return sql;
            
         }
     }

@@ -89,7 +89,7 @@ namespace Fap.Core.DataAccess
                 var property = allPropertiesExceptKeyAndComputed[i];
                 if (property.PropertyType.Name == typeof(string).Name)
                 {
-                    sbValueList.AppendFormat("'{0}'", property.GetValue(entity).ToString().ReplaceIgnoreCase("'", "''"));
+                    sbValueList.AppendFormat("'{0}'", property.GetValue(entity)?.ToString().ReplaceIgnoreCase("'", "''"));
                 }
                 else
                 {
@@ -120,7 +120,7 @@ namespace Fap.Core.DataAccess
                 adapter.AppendColumnNameEqualsValue(sqlBuilder, property.Name);
                 if (property.PropertyType.Name == typeof(string).Name)
                 {
-                    sqlBuilder.Replace($"@{property.Name}", $"'{property.GetValue(entity).ToString().ReplaceIgnoreCase("'", "''")}'");
+                    sqlBuilder.Replace($"@{property.Name}", $"'{property.GetValue(entity)?.ToString().ReplaceIgnoreCase("'", "''")}'");
                 }
                 else
                 {

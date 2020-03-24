@@ -61,7 +61,7 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
         [HttpGet("Period")]
         public JsonResult TmPeriod()
         {
-            var periods= _dbContext.QueryAll<TmPeriod>().OrderByDescending(p => p.CurrMonth).Take(12);
+            var periods = _dbContext.QueryAll<TmPeriod>().OrderByDescending(p => p.CurrMonth).Take(12);
             return Json(periods);
         }
         /// <summary>
@@ -86,13 +86,13 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
         [HttpPost("Schedule")]
         public JsonResult PostInitSchedule(ScheduleViewModel schedule)
         {
-            var pageable= _gridFormService.AnalysisPostData(schedule.PostData);
+            var pageable = _gridFormService.AnalysisPostData(schedule.PostData);
             var empList = _dbContext.Query<Fap.Core.Rbac.Model.Employee>(pageable.ToString());
             if (!empList.Any())
             {
                 return Json(ResponseViewModelUtils.Failure("请设置排班员工"));
             }
-             _timeService.Schedule(empList, schedule.ShiftUid, schedule.HolidayUid, schedule.StartDate, schedule.EndDate);
+            _timeService.Schedule(empList, schedule.ShiftUid, schedule.HolidayUid, schedule.StartDate, schedule.EndDate);
             return Json(ResponseViewModelUtils.Sueecss());
         }
         /// <summary>
@@ -103,18 +103,18 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
         [HttpPost("BatchCard")]
         public JsonResult PostBatchCard(BatchCardViewModel batchCard)
         {
-            Guard.Against.Null(batchCard,nameof(batchCard));
+            Guard.Against.Null(batchCard, nameof(batchCard));
             _timeService.BatchPatchCard(batchCard.DeptUidList, batchCard.StartDate, batchCard.EndDate);
             return Json(ResponseViewModelUtils.Sueecss());
         }
         [HttpPost("AnnualLeave/Init")]
-        public JsonResult AnnualLeaveInit(string year,string startDate,string endDate)
+        public JsonResult AnnualLeaveInit(string year, string startDate, string endDate)
         {
             _timeService.AnnualLeaveInit(year, startDate, endDate);
             return Json(ResponseViewModelUtils.Sueecss());
         }
         [HttpPost("AnnualLeave/Surplus")]
-        public JsonResult AnnualLeaveSurplus(string year,string lastYear)
+        public JsonResult AnnualLeaveSurplus(string year, string lastYear)
         {
             _timeService.AnnualLeaveSurplus(year, lastYear);
             return Json(ResponseViewModelUtils.Sueecss());
@@ -130,6 +130,27 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
         {
             _timeService.MonthResultCalculate();
             return Json(ResponseViewModelUtils.Sueecss());
+        }
+        [HttpPost("Exception/Notice")]
+        public JsonResult ExceptionNotice(string[] options)
+        {
+            if (options.Length > 0)
+            {
+                _timeService.ExceptionNotice(options);
+            }
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+        [HttpPost("LeavelDays")]
+        public JsonResult LeavelDays(string empUid, string startDateTime, string endDateTime)
+        {
+            var (days, hours) = _timeService.LeavelDays(empUid, startDateTime, endDateTime);
+            return Json(new ResponseViewModel { data = new { days = days, hours = hours },success=true });
+        }
+        [HttpGet("Annual/ValidDays")]
+        public JsonResult AnnualValidDays(string empUid)
+        {
+            double days = _timeService.ValidAnnualLeaveDays(empUid);
+            return Json(new ResponseViewModel { success = true, data = days });
         }
     }
 }
