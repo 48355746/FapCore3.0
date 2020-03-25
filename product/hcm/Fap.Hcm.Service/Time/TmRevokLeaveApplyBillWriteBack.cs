@@ -11,14 +11,14 @@ using System.Text;
 namespace Fap.Hcm.Service.Time
 {
     /// <summary>
-    /// 请假回写请假统计
+    /// 销假回写请假统计
     /// </summary>
     [Service]
-    public class TmLeavelApplyBillWriteBack : IBillWritebackService
+    public class TmRevokLeaveApplyBillWriteBack : IBillWritebackService
     {
         private readonly ITimeService _timeService;
         private readonly IDbContext _dbContext;
-        public TmLeavelApplyBillWriteBack(ITimeService timeService,IDbContext dbContext)
+        public TmRevokLeaveApplyBillWriteBack(ITimeService timeService, IDbContext dbContext)
         {
             _timeService = timeService;
             _dbContext = dbContext;
@@ -26,12 +26,17 @@ namespace Fap.Hcm.Service.Time
         [Transactional]
         public void Exec(FapDynamicObject billData, FapDynamicObject bizData)
         {
-            string empUid= billData.Get("AppEmpUid").ToString();
+            string empUid = billData.Get("AppEmpUid").ToString();
+            string oriBillUid = billData.Get("OriBillUid").ToString();
+            //删除原有统计
+            _dbContext.ExecuteOriginal($"delete from {nameof(TmLeaveStat)} where BillUid=@BillUid and EmpUid=@EmpUid"
+                , new Dapper.DynamicParameters(new { BillUid = oriBillUid, EmpUid = empUid }));
+            //新增现有统计
             string startDateTime = billData.Get("StartTime").ToString();
             string endDateTime = billData.Get("EndTime").ToString();
             var appInfoList = _timeService.LeaveDaysInfo(empUid, startDateTime, endDateTime);
             string billUid = billData.Get("Fid").ToString();
-            string leaveType = billData.Get("LeaveType").ToString();
+            string leaveType = billData.Get("RevokType").ToString();
             IList<TmLeaveStat> stats = new List<TmLeaveStat>();
             foreach (var appinfo in appInfoList)
             {
@@ -40,27 +45,26 @@ namespace Fap.Hcm.Service.Time
                     EmpUid = empUid,
                     BillUid = billUid,
                     WorkDate = appinfo.ApplyDate,
-                    LeaveTypeUid=leaveType,
+                    LeaveTypeUid = leaveType,
                     LeaveDays = appinfo.Days,
                     LeaveHours = appinfo.Hours
                 };
                 stats.Add(lstat);
             }
             _dbContext.InsertBatchSql(stats);
-            //扣减年假
+
             if (leaveType == "Annaul")
             {
                 var annualLeave = _dbContext.QueryFirstOrDefault<TmAnnualLeave>("select * from TmAnnualLeave where EmpUid=@EmpUid and Annual=@Year",
                     new Dapper.DynamicParameters(new { EmpUid = empUid, Year = DateTimeUtils.ToDateTime(startDateTime).Year }));
                 if (annualLeave != null)
                 {
-                    annualLeave.UsedNum += (billData.Get("IntervalDay").ToDouble());
+                    annualLeave.UsedNum = annualLeave.UsedNum - billData.Get("OriIntervalDay").ToDouble()+ billData.Get("IntervalDay").ToDouble();
                     annualLeave.RemainderNum = annualLeave.CurrRealNum - annualLeave.UsedNum;
                     _dbContext.Update(annualLeave);
                 }
-            
-            }
 
+            }
         }
     }
 }

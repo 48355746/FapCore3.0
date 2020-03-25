@@ -47,6 +47,10 @@ namespace Fap.Hcm.Service.Time
 		/// </summary>
 		public double HoursLength { get; set; }
 		/// <summary>
+		/// 已调休时长
+		/// </summary>
+		public double DaysOffHours { get; set; }
+		/// <summary>
 		/// 失效
 		/// </summary>
 		public int Invalid { get; set; }

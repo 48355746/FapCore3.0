@@ -1,43 +1,24 @@
-﻿$("#HoursLength").attr("readonly", "readonly");
+﻿
 $("#StartTime,#EndTime,#RestHours").on("change", function () {
-    if ($("#StartTime").val() == "" || $("#EndTime").val() == "")
+    var startTime = $("#StartTime").val();
+    var endTime = $("#EndTime").val();
+    if (startTime === "" || endTime === "")
     {
         return false;
     }
     //休息时长
-    var rh = 0;
-    if ($("#RestHours").val() != "")
+    var rh = $("#RestHours").val();
+    if (rh === "")
     {
-        rh = $("#RestHours").val();
+        rh = 0;
     }
-    $.ajax({
-        url: basePath + '/api/time/getworkovertime',
-        type: "post",
-        datatype: "json",
-        data: { StartTime: $("#StartTime").val(), EndTime: $("#EndTime").val(), RestHours: rh },
-        async: false,
-        success: function (data) {
-            $("#msgannauljq").remove();
-            if (data.msg != "") {
-                $("#frm-TmOvertimeApply").before("<div id='msgannauljq' class=alert style='color:red' alert-block alert-success><button type=button class=close data-dismiss=alert><i class=ace-icon fa fa-times></i></button><i class=ace-icon fa fa-check green></i><strong class=green>加班信息：</strong>" + data.msg + "</div>");
-                $("#HoursLength").val(0);
-                //$("#intervalhour").val(0);
+    let t1 = moment(startTime);
 
-            }
-            else {
-                if (data.workhours >= data.minworkhours) {
-                    $("#frm-TmOvertimeApply").before("<div id='msgannauljq' class=alert style='color:red' alert-block alert-success><button type=button class=close data-dismiss=alert><i class=ace-icon fa fa-times></i></button><i class=ace-icon fa fa-check green></i><strong class=green>加班信息：</strong>您的加班时长为：" + data.workhours + "小时.</div>");
-                }
-                else {
-                    $("#frm-TmOvertimeApply").before("<div id='msgannauljq' class=alert style='color:red' alert-block alert-success><button type=button class=close data-dismiss=alert><i class=ace-icon fa fa-times></i></button><i class=ace-icon fa fa-check green></i><strong class=green>加班信息：</strong>加班时长不得小于：" + data.minworkhours + "小时.</div>");
-                }
-                $("#HoursLength").val(data.workhours.toFixed(1));
-                //$("#intervalhour").val(data.workhours);
-            }
-        },
-        error: function (e) {
-            alert("异常！");
-        }
-    });
+    let t2 = moment(endTime);
+
+    var minute = t2.diff(t1, 'minute');
+    var hours = (minute / 60.0).toFixed(2);
+    $("#HoursLength").val(hours);
+    
 
 });

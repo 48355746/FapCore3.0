@@ -147,9 +147,9 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
             return Json(new ResponseViewModel { data = new { days = days, hours = hours },success=true });
         }
         [HttpGet("Annual/ValidDays")]
-        public JsonResult AnnualValidDays(string empUid)
+        public JsonResult AnnualValidDays(string empUid,string startTime)
         {
-            double days = _timeService.ValidAnnualLeaveDays(empUid);
+            double days = _timeService.ValidAnnualLeaveDays(empUid, startTime);
             return Json(new ResponseViewModel { success = true, data = days });
         }
     }

@@ -8,6 +8,9 @@ using System.Text;
 
 namespace Fap.Hcm.Service.Time
 {
+    /// <summary>
+    /// 出差回写出差统计
+    /// </summary>
     [Service]
     public class TmTravelApplyBillWriteBack: IBillWritebackService
     {
@@ -18,6 +21,7 @@ namespace Fap.Hcm.Service.Time
             _timeService = timeService;
             _dbContext = dbContext;
         }
+        [Transactional]
         public void Exec(FapDynamicObject billData, FapDynamicObject bizData)
         {
             string empUid = billData.Get("AppEmpUid").ToString();

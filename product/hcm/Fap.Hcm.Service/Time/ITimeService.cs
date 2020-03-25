@@ -11,13 +11,13 @@ namespace Fap.Hcm.Service.Time
         /// <param name="caseUid"></param>
         /// <param name="list"></param>
         void AddHoliday(string caseUid, IEnumerable<TmHoliday> list);
-        void BuilderDayResultBq(string fid);
+       
         /// <summary>
         /// 获取有效年假天数
         /// </summary>
         /// <param name="EmpUid"></param>
         /// <returns></returns>
-        double ValidAnnualLeaveDays(string EmpUid);
+        double ValidAnnualLeaveDays(string EmpUid, string startTime);
         /// <summary>
         /// 请假天数时长
         /// </summary>
@@ -64,7 +64,13 @@ namespace Fap.Hcm.Service.Time
         /// <param name="startDate">开始日期</param>
         /// <param name="endDate">结束日期</param>
         void Schedule(IEnumerable<Fap.Core.Rbac.Model.Employee> empList, string shiftUid, string holidayUid, string startDate, string endDate);
-        void ReCard(string empUid, string empCode, string startTime, string endTime);
+        /// <summary>
+        /// 补签打卡
+        /// </summary>
+        /// <param name="empUid"></param>
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
+        void ReCard(string empUid, string startDate, string endDate);
         /// <summary>
         /// 部门批量打卡
         /// </summary>
