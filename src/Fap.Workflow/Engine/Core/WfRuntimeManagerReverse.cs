@@ -4,6 +4,7 @@ using Fap.Workflow.Engine.Enums;
 using Fap.Workflow.Engine.Manager;
 using Fap.Wrokflow.Engine.Node;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace Fap.Workflow.Engine.Core
 {
@@ -12,7 +13,7 @@ namespace Fap.Workflow.Engine.Core
     /// </summary>
     internal class WfRuntimeManagerReverse : WfRuntimeManager
     {
-        internal WfRuntimeManagerReverse(IDbContext dbContext,  ILoggerFactory loggerFactory) : base(dbContext,  loggerFactory)
+        internal WfRuntimeManagerReverse(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
 
@@ -23,7 +24,7 @@ namespace Fap.Workflow.Engine.Core
         internal override void ExecuteInstanceImp()
         {
             //修改流程实例为返签状态
-            var pim = new ProcessInstanceManager(_dataAccessor,_loggerFactory);
+            var pim = new ProcessInstanceManager(_serviceProvider);
             pim.Reverse(base.BackwardContext.ProcessInstance.Fid);
 
             //创建新任务节点

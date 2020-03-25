@@ -19,6 +19,7 @@ using Fap.Workflow.Engine.Xpdl;
 using Fap.Workflow.Engine.Xpdl.Entity;
 using Fap.Workflow.Model;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,12 +36,16 @@ namespace Fap.Workflow.Service
         private readonly ILogger<WorkflowService> _logger;
         private readonly IFapApplicationContext _applicationContext;
         private IProcessModel _processModel;
-        public WorkflowService(IDbContext dataAccessor, IFapApplicationContext applicationContext, ILoggerFactory loggerFactory)
+        private readonly IWriteBackRule _writeBack;
+        private readonly IServiceProvider _serviceProvider;
+        public WorkflowService(IServiceProvider serviceProvider)
         {
-            _dataAccessor = dataAccessor;
-            _loggerFactory = loggerFactory;
-            _applicationContext = applicationContext;
-            _logger = loggerFactory.CreateLogger<WorkflowService>();
+            _serviceProvider = serviceProvider;
+            _dataAccessor = serviceProvider.GetService<IDbContext>();
+            _loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+            _applicationContext = serviceProvider.GetService<IFapApplicationContext>();
+            _logger =serviceProvider.GetService<ILoggerFactory>().CreateLogger<WorkflowService>();
+            _writeBack =serviceProvider.GetService<IWriteBackRule>();
         }
 
         #region 流程CRUD
@@ -163,7 +168,7 @@ namespace Fap.Workflow.Service
             WfExecutedResult result = new WfExecutedResult();
             try
             {
-                WfRuntimeManager runtimeManager = WfRuntimeManagerFactory.CreateRuntimeInstanceStartup(runner, _dataAccessor, _loggerFactory, ref result);
+                WfRuntimeManager runtimeManager = WfRuntimeManagerFactory.CreateRuntimeInstanceStartup(runner,_serviceProvider, ref result);
                 runtimeManager.OnWfProcessExecuted += delegate (object sender, WfEventArgs args)
                {
                    result = args.WfExecutedResult;
@@ -203,7 +208,7 @@ namespace Fap.Workflow.Service
             try
             {
 
-                var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceAppRunning(runner, _dataAccessor, _loggerFactory, ref result);
+                var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceAppRunning(runner,_serviceProvider, ref result);
 
                 if (result.Status != WfExecutedStatus.Exception)
                 {
@@ -250,7 +255,7 @@ namespace Fap.Workflow.Service
         [Transactional]
         public ActivityEntity GetFirstActivity(string processId, string billUid)
         {
-            _processModel = new ProcessModel(_dataAccessor, _loggerFactory, processId, billUid);
+            _processModel = new ProcessModel(_serviceProvider, processId, billUid);
             var firstActivity = _processModel.GetFirstActivity();
             return firstActivity;
         }
@@ -273,7 +278,7 @@ namespace Fap.Workflow.Service
         /// <returns></returns>
         public IEnumerable<ActivityEntity> GetTaskActivityList(string processId, string billUid)
         {
-            _processModel = new ProcessModel(_dataAccessor, _loggerFactory, processId, billUid);
+            _processModel = new ProcessModel(_serviceProvider, processId, billUid);
             var activityList = _processModel.GetAllTaskActivityList();
 
             return activityList;
@@ -287,7 +292,7 @@ namespace Fap.Workflow.Service
         {
             bool result = false;
 
-            ActivityInstanceManager activityInstanceManager = new ActivityInstanceManager(_dataAccessor, _loggerFactory);
+            ActivityInstanceManager activityInstanceManager = new ActivityInstanceManager(_serviceProvider);
             result = activityInstanceManager.IsComplete(activityInsUid);
 
             return result;
@@ -301,7 +306,7 @@ namespace Fap.Workflow.Service
         public ActivityEntity GetNextActivity(string processId,
             string nodeId, string billUid)
         {
-            _processModel = new ProcessModel(_dataAccessor, _loggerFactory, processId, billUid);
+            _processModel = new ProcessModel(_serviceProvider, processId, billUid);
             var nextActivity = _processModel.GetNextActivity(nodeId);
             return nextActivity;
         }
@@ -313,7 +318,7 @@ namespace Fap.Workflow.Service
         /// <returns></returns>
         public IList<Participant> GetFirstActivityParticipants(string processId, string billUid)
         {
-            _processModel = new ProcessModel(_dataAccessor, _loggerFactory, processId, billUid);
+            _processModel = new ProcessModel(_serviceProvider, processId, billUid);
             var firstActivity = _processModel.GetFirstActivity();
             return _processModel.GetActivityParticipants(firstActivity.ActivityID);
         }
@@ -327,7 +332,7 @@ namespace Fap.Workflow.Service
         /// <returns></returns>
         public IList<NodeView> GetNextNodeList(string processId, string nodeId, string billUid)
         {
-            _processModel = new ProcessModel(_dataAccessor, _loggerFactory, processId, billUid);
+            _processModel = new ProcessModel(_serviceProvider, processId, billUid);
             var nextSteps = _processModel.GetNextActivityTree(nodeId);
             return nextSteps;
         }
@@ -338,7 +343,7 @@ namespace Fap.Workflow.Service
 
         public PerformerList GetPerformerOfNextStep(string processId, string nodeId, string billUid)
         {
-            _processModel = new ProcessModel(_dataAccessor, _loggerFactory, processId, billUid);
+            _processModel = new ProcessModel(_serviceProvider, processId, billUid);
             return _processModel.GetActivityPerformers(nodeId);
         }
 
@@ -559,7 +564,7 @@ namespace Fap.Workflow.Service
             WfExecutedResult _withdrawedResult = null;
             try
             {
-                var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceWithdraw(runner, _dataAccessor, _loggerFactory, ref _withdrawedResult);
+                var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceWithdraw(runner, _serviceProvider, ref _withdrawedResult);
 
                 //不满足撤销操作，返回异常结果信息
                 if (_withdrawedResult.Status != WfExecutedStatus.Exception)
@@ -598,7 +603,7 @@ namespace Fap.Workflow.Service
             try
             {
 
-                var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceSendBack(runner, _dataAccessor, _loggerFactory, ref _sendbackResult);
+                var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceSendBack(runner, _serviceProvider, ref _sendbackResult);
 
                 if (_sendbackResult.Status != WfExecutedStatus.Exception)
                 {
@@ -678,10 +683,10 @@ namespace Fap.Workflow.Service
             bool result = true;
             try
             {
-                var pim = new ProcessInstanceManager(_dataAccessor, _loggerFactory);
+                var pim = new ProcessInstanceManager(_serviceProvider);
                 pim.Suspend(processId);
 
-                var tam = new TaskAdviceManager(_dataAccessor, _applicationContext, _loggerFactory);
+                var tam = new TaskAdviceManager(_serviceProvider);
                 tam.RecordWhenSuspend(processId, comment);
 
 
@@ -705,9 +710,9 @@ namespace Fap.Workflow.Service
             bool result = true;
             try
             {
-                var pim = new ProcessInstanceManager(_dataAccessor, _loggerFactory);
+                var pim = new ProcessInstanceManager(_serviceProvider);
                 pim.Resume(processId);
-                var tam = new TaskAdviceManager(_dataAccessor, _applicationContext, _loggerFactory);
+                var tam = new TaskAdviceManager(_serviceProvider);
                 tam.RecordWhenResume(processId, comment);
 
             }
@@ -728,7 +733,7 @@ namespace Fap.Workflow.Service
         [Transactional]
         public bool TurnTask(string taskId, WfAppRunner runner)
         {
-            TaskManager tim = new TaskManager(_dataAccessor, _loggerFactory);
+            TaskManager tim = new TaskManager(_serviceProvider);
             WfTask task = tim.GetTask(taskId);
             if (task == null)
             {
@@ -736,7 +741,7 @@ namespace Fap.Workflow.Service
             }
 
             Performer turner = runner.Turners[0];
-            ActivityInstanceManager aim = new ActivityInstanceManager(_dataAccessor, _loggerFactory);
+            ActivityInstanceManager aim = new ActivityInstanceManager(_serviceProvider);
             WfActivityInstance activity = aim.GetByFid(task.ActivityInsUid);
             activity.AssignedToUserIds = activity.AssignedToUserIds.Replace(runner.UserId, turner.UserId);
             activity.AssignedToUserNames = activity.AssignedToUserNames.Replace(runner.UserName, turner.UserName);
@@ -749,7 +754,7 @@ namespace Fap.Workflow.Service
             task.UpdateDate = DateTimeUtils.CurrentDateStr;
             tim.Update(task);
 
-            TaskAdviceManager tam = new TaskAdviceManager(_dataAccessor, _applicationContext, _loggerFactory);
+            TaskAdviceManager tam = new TaskAdviceManager(_serviceProvider);
             tam.RecordWhenTurnTask(runner.ProcessUid, runner.CurrNodeId, runner.Comment, turner.UserId, turner.UserName);
 
 
@@ -766,7 +771,7 @@ namespace Fap.Workflow.Service
         public bool AssignAgentTask(string taskId, WfAppRunner runner)
         {
 
-            TaskManager tim = new TaskManager(_dataAccessor, _loggerFactory);
+            TaskManager tim = new TaskManager(_serviceProvider);
             WfTask task = tim.GetTask(taskId);
             if (task == null)
             {
@@ -774,7 +779,7 @@ namespace Fap.Workflow.Service
             }
             Performer agent = runner.Agents[0];
 
-            TaskAdviceManager tam = new TaskAdviceManager(_dataAccessor, _applicationContext, _loggerFactory);
+            TaskAdviceManager tam = new TaskAdviceManager(_serviceProvider);
             tam.RecordWhenAssignAgentTask(runner.ProcessUid, runner.CurrNodeId, runner.Comment, agent.UserId, agent.UserName);
 
             task.AgentEmpUid = agent.UserId;
@@ -800,10 +805,10 @@ namespace Fap.Workflow.Service
         [Transactional]
         public bool EndProcess(string processId, string comment)
         {
-            var pim = new ProcessInstanceManager(_dataAccessor, _loggerFactory);
+            var pim = new ProcessInstanceManager(_serviceProvider);
             pim.End(processId);
 
-            TaskAdviceManager tam = new TaskAdviceManager(_dataAccessor, _applicationContext, _loggerFactory);
+            TaskAdviceManager tam = new TaskAdviceManager(_serviceProvider);
             tam.RecordWhenEnd(processId, comment);
 
 
@@ -827,7 +832,7 @@ namespace Fap.Workflow.Service
                 _dataAccessor.Execute("delete from wfTask where ProcessId='" + processId + "'");
                 _dataAccessor.Execute("delete from WfActivityInstance where ProcessId='" + processId + "'");
 
-                TaskAdviceManager tam = new TaskAdviceManager(_dataAccessor, _applicationContext, _loggerFactory);
+                TaskAdviceManager tam = new TaskAdviceManager(_serviceProvider);
                 tam.RecordWhenDelete(processId, comment);
 
 
@@ -844,11 +849,10 @@ namespace Fap.Workflow.Service
             //获取没有回写的流程实例
             IEnumerable<WfProcessInstance> processes = _dataAccessor.QueryWhere<WfProcessInstance>($"ProcessState='Completed' and ApproveResult='Agree' and (WriteBackState=0 or WriteBackState is null)");
             if (processes != null && processes.Any())
-            {
-                IWriteBackRule writeBackRule = new BillWriteBack(_dataAccessor);
+            {               
                 foreach (var process in processes)
                 {
-                    writeBackRule.WriteBackToBusiness(process.BillTable, process.BillUid);
+                    _writeBack.WriteBackToBusiness(process.BillTable, process.BillUid);
                 }
             }
         }

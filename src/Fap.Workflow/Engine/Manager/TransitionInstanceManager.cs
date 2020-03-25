@@ -5,6 +5,7 @@ using Fap.Workflow.Engine.Common;
 using Fap.Workflow.Engine.Enums;
 using Fap.Workflow.Model;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,7 +13,7 @@ namespace Fap.Workflow.Engine.Manager
 {
     internal class TransitionInstanceManager : ManagerBase
     {
-        public TransitionInstanceManager(IDbContext dataAccessor,ILoggerFactory loggerFactory) : base(dataAccessor,  loggerFactory)
+        public TransitionInstanceManager(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
 
@@ -161,7 +162,7 @@ namespace Fap.Workflow.Engine.Manager
                     backSrcActivityInstanceId = runningActivity.Fid;
             }
 
-            var aim = new ActivityInstanceManager(_dataAccessor,_loggerFactory);
+            var aim = new ActivityInstanceManager(_serviceProvider);
             var runningTransitionList = transitionList.Where(o => o.TargetActivityInsUid == backSrcActivityInstanceId).ToList();
 
             List<WfActivityInstance> previousActivityList = new List<WfActivityInstance>();
@@ -187,7 +188,7 @@ namespace Fap.Workflow.Engine.Manager
         {
             var previousTransitionList = transitionList.Where(o => o.TargetActivityNodeId == toActivityId).ToList();
 
-            var aim = new ActivityInstanceManager(_dataAccessor,_loggerFactory);
+            var aim = new ActivityInstanceManager(_serviceProvider);
             foreach (var entity in previousTransitionList)
             {
                 if (entity.SourceActivityNodeType == WfActivityType.TaskNode

@@ -7,6 +7,7 @@ using Fap.Workflow.Engine.Enums;
 using Fap.Workflow.Engine.Xpdl;
 using Fap.Workflow.Model;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,9 +17,9 @@ namespace Fap.Workflow.Engine.Manager
     internal class ActivityInstanceManager : ManagerBase
     {
         private readonly ILogger<ActivityInstanceManager> _logger;
-        public ActivityInstanceManager(IDbContext dataAccessor,ILoggerFactory loggerFactory) : base(dataAccessor, loggerFactory)
+        public ActivityInstanceManager(IServiceProvider serviceProvider) : base(serviceProvider)
         {
-            _logger = loggerFactory.CreateLogger<ActivityInstanceManager>();
+            _logger = serviceProvider.GetService<ILoggerFactory>().CreateLogger<ActivityInstanceManager>();
         }
 
         /// <summary>

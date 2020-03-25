@@ -2,6 +2,7 @@
 using Fap.Workflow.Engine.Common;
 using Fap.Workflow.Engine.Manager;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace Fap.Workflow.Engine.Core
 {
@@ -10,7 +11,7 @@ namespace Fap.Workflow.Engine.Core
     /// </summary>
     internal class WfRuntimeManagerWithdraw : WfRuntimeManager
     {
-        internal WfRuntimeManagerWithdraw(IDbContext dbContext,  ILoggerFactory loggerFactory) : base(dbContext, loggerFactory)
+        internal WfRuntimeManagerWithdraw(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
 
@@ -21,7 +22,7 @@ namespace Fap.Workflow.Engine.Core
         internal override void ExecuteInstanceImp()
         {
             //如果审批人还没有人审批 则可以撤销回草稿态
-            ProcessInstanceManager manager = new ProcessInstanceManager(_dataAccessor,  _loggerFactory);
+            ProcessInstanceManager manager = new ProcessInstanceManager(_serviceProvider);
             manager.Withdrawn(AppRunner);
             
             //构造回调函数需要的数据

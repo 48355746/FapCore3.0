@@ -7,6 +7,7 @@ using Fap.Workflow.Engine.Node;
 using Fap.Workflow.Engine.Xpdl;
 using Fap.Workflow.Model;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace Fap.Wrokflow.Engine.Node
 {
@@ -15,8 +16,8 @@ namespace Fap.Wrokflow.Engine.Node
     /// </summary>
     internal class NodeMediatorEnd : NodeMediator
     {
-        internal NodeMediatorEnd(ActivityForwardContext forwardContext,WfAppRunner runner, IDbContext dbContext,ILoggerFactory loggerFactory)
-            : base(forwardContext, runner,dbContext,loggerFactory)
+        internal NodeMediatorEnd(ActivityForwardContext forwardContext,WfAppRunner runner, IServiceProvider serviceProvider)
+            : base(forwardContext, runner,serviceProvider)
         {
             
         }
@@ -31,7 +32,7 @@ namespace Fap.Wrokflow.Engine.Node
             //    ActivityForwardContext.ActivityResource.AppRunner.ActionMethodParameters);
 
             //设置流程完成
-            ProcessInstanceManager pim = new ProcessInstanceManager(_dataAccessor,_loggerFactory);
+            ProcessInstanceManager pim = new ProcessInstanceManager(_serviceProvider);
             pim.Complete(ActivityForwardContext.ProcessInstance.Fid,AppRunner.BillUid);
         }
 

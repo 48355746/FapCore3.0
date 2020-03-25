@@ -10,6 +10,7 @@ using Fap.Workflow.Engine.Xpdl.Entity;
 using Fap.Workflow.Engine.Xpdl.Node;
 using Fap.Workflow.Model;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace Fap.Workflow.Engine.Node
 {
@@ -18,8 +19,8 @@ namespace Fap.Workflow.Engine.Node
     /// </summary>
     internal class NodeMediatorSubProcess : NodeMediator
     {
-        internal NodeMediatorSubProcess(ActivityForwardContext forwardContext, WfAppRunner runner,IDbContext dbContext,ILoggerFactory loggerFactory)
-            : base(forwardContext, runner,dbContext,loggerFactory)
+        internal NodeMediatorSubProcess(ActivityForwardContext forwardContext, WfAppRunner runner, IServiceProvider serviceProvider)
+            : base(forwardContext, runner,serviceProvider)
         {
 
         }
@@ -39,7 +40,7 @@ namespace Fap.Workflow.Engine.Node
                 if (base.Linker.FromActivity.ActivityType == ActivityTypeEnum.SubProcessNode)
                 {
                     //检查子流程是否结束
-                    var pim = new ProcessInstanceManager(_dataAccessor,_loggerFactory);
+                    var pim = new ProcessInstanceManager(_serviceProvider);
                     bool isCompleted = pim.CheckSubProcessInstanceCompleted(
                         base.Linker.FromActivityInstance.Fid,
                         base.Linker.FromActivityInstance.NodeId);
@@ -140,7 +141,7 @@ namespace Fap.Workflow.Engine.Node
                    AppRunner.UserName
                 },subProcessNode );
 
-            var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceStartup(subRunner, _dataAccessor,_loggerFactory,
+            var runtimeInstance = WfRuntimeManagerFactory.CreateRuntimeInstanceStartup(subRunner,_serviceProvider,
                 processInstance,
                 subProcessNode,
                 ref startedResult);

@@ -4,6 +4,7 @@ using Fap.Workflow.Engine.Enums;
 using Fap.Workflow.Engine.Xpdl;
 using Fap.Workflow.Engine.Xpdl.Exceptions;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace Fap.Wrokflow.Engine.Node
 {
@@ -21,34 +22,34 @@ namespace Fap.Wrokflow.Engine.Node
         /// <returns>Gateway节点处理实例</returns>
         internal static NodeMediatorGateway CreateGatewayNodeMediator(ActivityEntity gActivity, 
             IProcessModel processModel,
-            WfAppRunner runner,IDbContext dbContext,ILoggerFactory loggerFactory)
+            WfAppRunner runner, IServiceProvider serviceProvider)
         {
             NodeMediatorGateway nodeMediator = null;
             if (gActivity.ActivityType == ActivityTypeEnum.GatewayNode)
             {
                 if (gActivity.GatewayDirectionType == GatewayDirectionEnum.AndSplit)
                 {
-                    nodeMediator = new NodeMediatorAndSplit(gActivity, processModel, runner,dbContext,loggerFactory);
+                    nodeMediator = new NodeMediatorAndSplit(gActivity, processModel, runner,serviceProvider);
                 }
                 else if (gActivity.GatewayDirectionType == GatewayDirectionEnum.OrSplit)
                 {
-                    nodeMediator = new NodeMediatorOrSplit(gActivity, processModel, runner, dbContext,  loggerFactory);
+                    nodeMediator = new NodeMediatorOrSplit(gActivity, processModel, runner,serviceProvider);
                 }
                 else if (gActivity.GatewayDirectionType == GatewayDirectionEnum.XOrSplit)
                 {
-                    nodeMediator = new NodeMediatorXOrSplit(gActivity, processModel, runner, dbContext,  loggerFactory);
+                    nodeMediator = new NodeMediatorXOrSplit(gActivity, processModel, runner,serviceProvider);
                 }
                 else if (gActivity.GatewayDirectionType == GatewayDirectionEnum.AndJoin)
                 {
-                    nodeMediator = new NodeMediatorAndJoin(gActivity, processModel, runner, dbContext,  loggerFactory);
+                    nodeMediator = new NodeMediatorAndJoin(gActivity, processModel, runner,serviceProvider);
                 }
                 else if (gActivity.GatewayDirectionType == GatewayDirectionEnum.OrJoin)
                 {
-                    nodeMediator = new NodeMediatorOrJoin(gActivity, processModel, runner, dbContext,  loggerFactory);
+                    nodeMediator = new NodeMediatorOrJoin(gActivity, processModel, runner,serviceProvider);
                 }
                 else if (gActivity.GatewayDirectionType == GatewayDirectionEnum.XOrJoin)
                 {
-                    nodeMediator = new NodeMediatorXOrJoin(gActivity, processModel, runner, dbContext,loggerFactory);
+                    nodeMediator = new NodeMediatorXOrJoin(gActivity, processModel, runner,serviceProvider);
                 }
                 else
                 {

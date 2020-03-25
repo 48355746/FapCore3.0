@@ -18,16 +18,16 @@ namespace Fap.Workflow.Engine.Node
         /// <param name="forwardContext">活动上下文</param>
         /// <param name="session">会话</param>
         /// <returns></returns>
-        internal static NodeMediator CreateNodeMediator(ActivityForwardContext forwardContext,WfAppRunner runner,IDbContext dbContext,ILoggerFactory loggerFactory)
+        internal static NodeMediator CreateNodeMediator(ActivityForwardContext forwardContext,WfAppRunner runner, IServiceProvider serviceProvider)
         {
             var activityType=forwardContext.Activity.ActivityType;
             if (activityType == ActivityTypeEnum.StartNode)         //开始节点
             {
-                return new NodeMediatorStart(forwardContext, runner,dbContext,loggerFactory);
+                return new NodeMediatorStart(forwardContext, runner,serviceProvider);
             }
             else if (activityType == ActivityTypeEnum.TaskNode|| activityType== ActivityTypeEnum.TimerNode||activityType== ActivityTypeEnum.SignNode)         //任务节点
             {
-                return new NodeMediatorTask(forwardContext, runner,dbContext,loggerFactory);
+                return new NodeMediatorTask(forwardContext, runner,serviceProvider);
             }
             else if (forwardContext.Activity.ActivityType == ActivityTypeEnum.SubProcessNode)
             {

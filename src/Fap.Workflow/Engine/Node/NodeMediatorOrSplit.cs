@@ -5,6 +5,7 @@ using Fap.Workflow.Engine.Node;
 using Fap.Workflow.Engine.Xpdl;
 using Fap.Workflow.Model;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace Fap.Wrokflow.Engine.Node
 {
@@ -13,8 +14,8 @@ namespace Fap.Wrokflow.Engine.Node
     /// </summary>
     internal class NodeMediatorOrSplit : NodeMediatorGateway, ICompleteAutomaticlly
     {
-        internal NodeMediatorOrSplit(ActivityEntity activity, IProcessModel processModel, WfAppRunner runner, IDbContext dbContext,  ILoggerFactory loggerFactory)
-            : base(activity, processModel, runner,dbContext,loggerFactory)
+        internal NodeMediatorOrSplit(ActivityEntity activity, IProcessModel processModel, WfAppRunner runner, IServiceProvider serviceProvider)
+            : base(activity, processModel, runner,serviceProvider)
         {
 
         }

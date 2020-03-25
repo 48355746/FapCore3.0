@@ -4,6 +4,7 @@ using Fap.Workflow.Engine.Xpdl.Entity;
 using Fap.Workflow.Model;
 using System;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using Fap.Workflow.Engine.Exceptions;
 using Fap.Workflow.Engine.WriteBack;
 using Fap.Workflow.Engine.Message;
@@ -18,9 +19,9 @@ namespace Fap.Workflow.Engine.Manager
     {
         private readonly ILogger<ProcessInstanceManager> _logger;
 
-        public ProcessInstanceManager(IDbContext dataAccessor,ILoggerFactory loggerFactory) : base(dataAccessor,  loggerFactory)
+        public ProcessInstanceManager(IServiceProvider serviceProvider) : base(serviceProvider)
         {
-            _logger = loggerFactory.CreateLogger<ProcessInstanceManager>();
+            _logger = _loggerFactory.CreateLogger<ProcessInstanceManager>();
         }
 
         /// <summary>
@@ -208,8 +209,8 @@ namespace Fap.Workflow.Engine.Manager
 
                 MessageManager msgManager = new MessageManager(_dataAccessor, _loggerFactory);
                 msgManager.SendMessageWhenProcessCompleted(processIns, "通过");
-               
-                IWriteBackRule bwb = new BillWriteBack(_dataAccessor);
+
+                IWriteBackRule bwb = _serviceProvider.GetService<IWriteBackRule>();
                 //改变单据状态为通过
                 bwb.Approved(billTable, billUid);
                 //单据回写业务
@@ -238,7 +239,7 @@ namespace Fap.Workflow.Engine.Manager
                 MessageManager msgManager = new MessageManager(_dataAccessor, _loggerFactory);
                 msgManager.SendMessageWhenProcessCompleted(processIns, "驳回");
 
-                IWriteBackRule bwb = new BillWriteBack(_dataAccessor);
+                IWriteBackRule bwb =_serviceProvider.GetService<IWriteBackRule>();
                 //改变单据状态为驳回
                 bwb.Rejected(processIns.BillTable, processIns.BillUid);
 

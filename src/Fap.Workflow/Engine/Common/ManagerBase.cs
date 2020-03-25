@@ -1,5 +1,7 @@
 ﻿using Fap.Core.DataAccess;
 using Microsoft.Extensions.Logging;
+using System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Fap.Workflow.Engine.Common
 {
@@ -7,10 +9,12 @@ namespace Fap.Workflow.Engine.Common
     {
         protected IDbContext _dataAccessor;
         protected ILoggerFactory _loggerFactory;
-        public ManagerBase(IDbContext dataAccessor,ILoggerFactory loggerFactory)
+        protected IServiceProvider _serviceProvider;
+        public ManagerBase(IServiceProvider serviceProvider)
         {
-            _dataAccessor = dataAccessor;
-            _loggerFactory = loggerFactory;
+            _serviceProvider = serviceProvider;
+            _dataAccessor =serviceProvider.GetService<IDbContext>();
+            _loggerFactory = serviceProvider.GetService<ILoggerFactory>();
         }
     }
 }

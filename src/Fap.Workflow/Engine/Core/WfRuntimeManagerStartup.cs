@@ -3,6 +3,7 @@ using Fap.Workflow.Engine.Common;
 using Fap.Workflow.Engine.Manager;
 using Fap.Workflow.Engine.Node;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace Fap.Workflow.Engine.Core
 {
@@ -11,7 +12,7 @@ namespace Fap.Workflow.Engine.Core
     /// </summary>
     internal class WfRuntimeManagerStartup : WfRuntimeManager
     {
-        internal WfRuntimeManagerStartup(IDbContext dbContext,  ILoggerFactory loggerFactory) : base(dbContext,  loggerFactory)
+        internal WfRuntimeManagerStartup(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
 
@@ -22,7 +23,7 @@ namespace Fap.Workflow.Engine.Core
         internal override void ExecuteInstanceImp()
         {
             //构造流程实例
-            var processInstance = new ProcessInstanceManager(_dataAccessor,  _loggerFactory)
+            var processInstance = new ProcessInstanceManager(_serviceProvider)
                 .CreateProcessInstance(base.AppRunner,
                 base.ParentProcessInstance, null,
                 (runner,processIns,process)=> { });
@@ -34,7 +35,7 @@ namespace Fap.Workflow.Engine.Core
             var startExecutionContext = ActivityForwardContext.CreateStartupContext(base.ProcessModel,
                 processInstance, startEntity);
 
-            NodeMediator mediator = NodeMediatorFactory.CreateNodeMediator(startExecutionContext, base.AppRunner, _dataAccessor,  _loggerFactory);
+            NodeMediator mediator = NodeMediatorFactory.CreateNodeMediator(startExecutionContext, base.AppRunner,_serviceProvider);
             mediator.Linker.FromActivityInstance = RunningActivityInstance;
             mediator.ExecuteWorkItem();
 

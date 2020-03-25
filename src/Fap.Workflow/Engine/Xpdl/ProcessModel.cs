@@ -13,7 +13,7 @@ using Dapper;
 using System.Text.RegularExpressions;
 using Fap.Workflow.Engine.Entity;
 using Fap.Core.DataAccess;
-using Fap.Core.Infrastructure.Domain;
+using Microsoft.Extensions.DependencyInjection;
 using Fap.Core.Rbac.Model;
 using Fap.Core.Utility;
 
@@ -26,16 +26,18 @@ namespace Fap.Workflow.Engine.Xpdl
     {
         private readonly IDbContext _dataAccessor;
         private readonly ILogger<ProcessModel> _logger;
+        private readonly IServiceProvider _serviceProvider;
         #region 属性和构造函数
         /// <summary>
         /// 流程定义实体
         /// </summary>
         public ProcessEntity ProcessEntity { get; set; }
 
-        public ProcessModel(IDbContext dataAccessor, ILoggerFactory loggerFactory, string processId, string billUid)
+        public ProcessModel(IServiceProvider serviceProvider, string processId, string billUid)
         {
-            _dataAccessor = dataAccessor;
-            _logger = loggerFactory.CreateLogger<ProcessModel>();
+            _serviceProvider = serviceProvider;
+            _dataAccessor =serviceProvider.GetService<IDbContext>();
+            _logger =serviceProvider.GetService<ILoggerFactory>().CreateLogger<ProcessModel>();
             ProcessEntity = GetProcessEntity(processId, billUid);
         }
         private ProcessEntity GetProcessEntity(string processUid, string billUid)

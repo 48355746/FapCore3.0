@@ -5,6 +5,7 @@ using Fap.Workflow.Engine.Enums;
 using Fap.Workflow.Engine.Xpdl;
 using Fap.Workflow.Model;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace Fap.Workflow.Engine.Node
 {
@@ -13,8 +14,8 @@ namespace Fap.Workflow.Engine.Node
     /// </summary>
     internal class NodeMediatorTask : NodeMediator
     {
-        internal NodeMediatorTask(ActivityForwardContext forwardContext, WfAppRunner runner, IDbContext dbContext, ILoggerFactory loggerFactory)
-            : base(forwardContext, runner,dbContext,loggerFactory)
+        internal NodeMediatorTask(ActivityForwardContext forwardContext, WfAppRunner runner, IServiceProvider serviceProvider)
+            : base(forwardContext, runner,serviceProvider)
         {
 
         }

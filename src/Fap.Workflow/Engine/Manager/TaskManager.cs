@@ -9,12 +9,13 @@ using System.Linq;
 using Fap.Workflow.Engine.Message;
 using Fap.Core.DataAccess;
 using Fap.Core.Utility;
+using System;
 
 namespace Fap.Workflow.Engine.Manager
 {
     internal class TaskManager : ManagerBase
     {
-        public TaskManager(IDbContext dataAccessor, ILoggerFactory loggerFactory) : base(dataAccessor, loggerFactory)
+        public TaskManager(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
 

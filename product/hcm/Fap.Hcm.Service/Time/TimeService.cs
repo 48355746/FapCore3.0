@@ -168,6 +168,7 @@ namespace Fap.Hcm.Service.Time
             var dayResults = _dbContext.QueryWhere<TmDayResult>(sWhere, param);
             //更新打卡数据到日结果
             UpdateCardRecordToDayResult();
+            UpdateTravelAndLeaveToDayResult();
             //计算日结果
             foreach (var dayResult in dayResults)
             {
@@ -293,7 +294,42 @@ namespace Fap.Hcm.Service.Time
                     }
                 }
             }
+            void UpdateTravelAndLeaveToDayResult()
+            {
+                var travelStatList = _dbContext.QueryWhere<TmTravelStat>($"{nameof(TmTravelStat.WorkDate)}>=@StartDate and {nameof(TmTravelStat.WorkDate)}<=@EndDate"
+                    , new DynamicParameters(new { StartDate = DateTimeUtils.DateTimeFormat(DateTimeUtils.ToDateTime(startDate).AddDays(-1)), EndDate = DateTimeUtils.DateTimeFormat(DateTimeUtils.ToDateTime(endDate).AddDays(1)) }));
 
+                var leaveStatList = _dbContext.QueryWhere<TmLeaveStat>($"{nameof(TmLeaveStat.WorkDate)}>=@StartDate and {nameof(TmLeaveStat.WorkDate)}<=@EndDate"
+                    , new DynamicParameters(new { StartDate = DateTimeUtils.DateTimeFormat(DateTimeUtils.ToDateTime(startDate).AddDays(-1)), EndDate = DateTimeUtils.DateTimeFormat(DateTimeUtils.ToDateTime(endDate).AddDays(1)) }));
+                if (!travelStatList.Any() && !leaveStatList.Any())
+                {
+                    return;
+                }
+                foreach (var dayResult in dayResults)
+                {
+                    if (travelStatList.Any())
+                    {
+                        var travel = travelStatList.FirstOrDefault(t => t.WorkDate == dayResult.CurrDate);
+                        if (travel != null)
+                        {
+                            dayResult.TravelType = travel.TravelTypeUid;
+                            dayResult.TravelDays = travel.TravelDays;
+                            dayResult.TravelHours = travel.TravelHours;
+                        }
+
+                    }
+                    if (leaveStatList.Any())
+                    {
+                        var leave = leaveStatList.FirstOrDefault(t => t.WorkDate == dayResult.CurrDate);
+                        if (leave != null)
+                        {
+                            dayResult.LeavelType = leave.LeaveTypeUid;
+                            dayResult.LeaveDays = leave.LeaveDays;
+                            dayResult.LeavelHours = leave.LeaveHours;
+                        }
+                    }
+                }
+            }
             void InitDayResultBySchedule()
             {
 
@@ -492,7 +528,7 @@ namespace Fap.Hcm.Service.Time
         ///请假天数时长
         /// </summary>
         /// <returns></returns>
-        public (double,double) LeavelDays(string empUid, string startDateTime, string endDateTime)
+        public (double, double) LeavelDays(string empUid, string startDateTime, string endDateTime)
         {
             double days = 0.0;
             var scheduleEmployees = _dbContext.QueryWhere<TmScheduleEmployee>("EmpUid=@EmpUid and StartDate<@EndDate and EndDate>@StartDate"
@@ -531,7 +567,7 @@ namespace Fap.Hcm.Service.Time
             {
                 bool firstDiff = false;
                 bool lastDiff = false;
-                if (DateTimeUtils.ToDateTime(firstSche.StartTime) > DateTimeUtils.ToDateTime(startDateTime))
+                if (DateTimeUtils.ToDateTime(firstSche.StartTime) < DateTimeUtils.ToDateTime(startDateTime))
                 {
                     //第一天请假时长
                     double firstHour = DateTimeUtils.ToDateTime(firstSche.EndTime).Subtract(DateTimeUtils.ToDateTime(startDateTime)).TotalHours;
@@ -571,8 +607,102 @@ namespace Fap.Hcm.Service.Time
                 }
 
             }
-            return (days,Math.Round(days*firstSche.WorkHoursLength,2));
+            return (days, Math.Round(days * firstSche.WorkHoursLength, 2));
         }
+        /// <summary>
+        /// 获取请假或出差的日结果详情
+        /// </summary>
+        /// <param name="empUid"></param>
+        /// <param name="startDateTime"></param>
+        /// <param name="endDateTime"></param>
+        /// <returns></returns>
+        public IEnumerable<ApplyInfo> LeaveDaysInfo(string empUid, string startDateTime, string endDateTime)
+        {
+            double days = 0.0;
+            var scheduleEmployees = _dbContext.QueryWhere<TmScheduleEmployee>("EmpUid=@EmpUid and StartDate<@EndDate and EndDate>@StartDate"
+                , new DynamicParameters(new { EmpUid = empUid, EndDate = endDateTime, StartDate = startDateTime }));
+            var scheEmp = scheduleEmployees.First();
+            var schedules = _dbContext.QueryWhere<TmSchedule>("ScheduleUid=@ScheduleUid and EndTime>=@StartTime and StartTime<=@EndTime"
+                , new DynamicParameters(new { ScheduleUid = scheEmp.ScheduleUid, StartTime = startDateTime, EndTime = endDateTime }));
+
+            if (schedules.Count() == 1)
+            {
+                var firstSche = schedules.First();
+                var lastSche = schedules.Last();
+                double totalHours = DateTimeUtils.ToDateTime(endDateTime).Subtract(DateTimeUtils.ToDateTime(startDateTime)).TotalHours;
+                if (totalHours >= firstSche.WorkHoursLength)
+                {
+                    days = 1.0;
+                }
+                else
+                {
+                    if (totalHours > firstSche.WorkHoursLength / 2)
+                    {
+                        //减去休息时长
+                        totalHours -= firstSche.RestMinutesLength / 60.0;
+                    }
+                    days = (totalHours / firstSche.WorkHoursLength > 0.5) ? 1 : 0.5;
+                }
+                yield return new ApplyInfo { ApplyDate = firstSche.WorkDay, Days = days, Hours = Math.Round(days * firstSche.WorkHoursLength, 2) };
+            }
+            else
+            {
+                int first = 0;
+                int last = schedules.Count();
+                foreach (var schedule in schedules)
+                {
+                    first++;
+                    if (first == 1)
+                    {
+                        if (DateTimeUtils.ToDateTime(schedule.StartTime) < DateTimeUtils.ToDateTime(startDateTime))
+                        {
+                            //第一天请假时长
+                            double firstHour = DateTimeUtils.ToDateTime(schedule.EndTime).Subtract(DateTimeUtils.ToDateTime(startDateTime)).TotalHours;
+                            if (firstHour > schedule.WorkHoursLength / 2)
+                            {
+                                //减去休息时长
+                                firstHour -= schedule.RestMinutesLength / 60.0;
+                            }
+                            double firstDay = (firstHour / schedule.WorkHoursLength > 0.5) ? 1 : 0.5;
+
+                            yield return new ApplyInfo { ApplyDate = schedule.WorkDay, Days = firstDay, Hours = Math.Round(firstDay * schedule.WorkHoursLength, 2) };
+                        }
+                        else
+                        {
+                            yield return new ApplyInfo { ApplyDate = schedule.WorkDay, Days = 1.0, Hours = Math.Round(1.0 * schedule.WorkHoursLength, 2) };
+                        }
+                    }
+                    else if (first == last)
+                    {
+                        if (DateTimeUtils.ToDateTime(endDateTime) < DateTimeUtils.ToDateTime(schedule.EndTime))
+                        {
+                            //最后一天请假时长
+                            double lastHour = DateTimeUtils.ToDateTime(endDateTime).Subtract(DateTimeUtils.ToDateTime(schedule.StartTime)).TotalHours;
+                            if (lastHour > schedule.WorkHoursLength / 2)
+                            {
+                                //减去休息时长
+                                lastHour -= schedule.RestMinutesLength / 60.0;
+                            }
+                            double lastDay = (lastHour / schedule.WorkHoursLength > 0.5) ? 1 : 0.5;
+                            yield return new ApplyInfo { ApplyDate = schedule.WorkDay, Days = lastDay, Hours = Math.Round(lastDay * schedule.WorkHoursLength, 2) };
+
+                        }
+                        else
+                        {
+                            yield return new ApplyInfo { ApplyDate = schedule.WorkDay, Days = 1.0, Hours = Math.Round(1.0 * schedule.WorkHoursLength, 2) };
+
+                        }
+                    }
+                    else
+                    {
+                        yield return new ApplyInfo { ApplyDate = schedule.WorkDay, Days = 1.0, Hours = Math.Round(1.0 * schedule.WorkHoursLength, 2) };
+                    }
+                }
+            }
+        }
+
+        //public void 
+
         /// <summary>
         /// 根据获取人员当前有效年假天数
         /// </summary>

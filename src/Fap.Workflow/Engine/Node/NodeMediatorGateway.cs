@@ -5,6 +5,8 @@ using Fap.Workflow.Engine.Manager;
 using Fap.Workflow.Engine.Xpdl;
 using Fap.Workflow.Model;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace Fap.Wrokflow.Engine.Node
 {
@@ -28,6 +30,7 @@ namespace Fap.Wrokflow.Engine.Node
 
         protected readonly IDbContext _dataAccessor;
         protected readonly ILoggerFactory _loggerFactory;
+        protected readonly IServiceProvider _serviceProvider;
 
         internal WfActivityInstance GatewayActivityInstance
         {
@@ -42,18 +45,19 @@ namespace Fap.Wrokflow.Engine.Node
             {
                 if (activityInstanceManager == null)
                 {
-                    activityInstanceManager = new ActivityInstanceManager(_dataAccessor,_loggerFactory);
+                    activityInstanceManager = new ActivityInstanceManager(_serviceProvider);
                 }
                 return activityInstanceManager;
             }
         }
         
-        internal NodeMediatorGateway(ActivityEntity gActivity, IProcessModel processModel, WfAppRunner runner, IDbContext dbContext,  ILoggerFactory loggerFactory)
+        internal NodeMediatorGateway(ActivityEntity gActivity, IProcessModel processModel, WfAppRunner runner, IServiceProvider serviceProvider)
         {
             _gatewayActivity = gActivity;
             _processModel = processModel;
-            _dataAccessor = dbContext;
-            _loggerFactory =loggerFactory;
+            _serviceProvider = serviceProvider;
+            _dataAccessor =serviceProvider.GetService<IDbContext>();
+            _loggerFactory =serviceProvider.GetService<ILoggerFactory>();
             _runner = runner;
         }
 
@@ -66,7 +70,7 @@ namespace Fap.Wrokflow.Engine.Node
         protected WfActivityInstance CreateActivityInstanceObject(ActivityEntity activity,
             WfProcessInstance processInstance)
         {
-            ActivityInstanceManager aim = new ActivityInstanceManager(_dataAccessor, _loggerFactory);
+            ActivityInstanceManager aim = new ActivityInstanceManager(_serviceProvider);
             this.GatewayActivityInstance = aim.CreateActivityInstanceObject(processInstance,
                 activity,
                 _runner);
@@ -103,7 +107,7 @@ namespace Fap.Wrokflow.Engine.Node
             TransitionTypeEnum transitionType,
             TransitionFlyingTypeEnum flyingType)
         {
-            var tim = new TransitionInstanceManager(_dataAccessor, _loggerFactory);
+            var tim = new TransitionInstanceManager(_serviceProvider);
             var transitionInstanceObject = tim.CreateTransitionInstanceObject(processInstance,
                 transitionGUID,
                 fromActivityInstance,
@@ -134,7 +138,7 @@ namespace Fap.Wrokflow.Engine.Node
         /// <returns></returns>
         protected int GetInstanceGatewayCount(string splitActivityInstanceUID,string processInstanceUid)
         {
-            ActivityInstanceManager aim = new ActivityInstanceManager(_dataAccessor,_loggerFactory);
+            ActivityInstanceManager aim = new ActivityInstanceManager(_serviceProvider);
             return aim.GetInstanceGatewayCount(splitActivityInstanceUID, processInstanceUid);
         }
     }

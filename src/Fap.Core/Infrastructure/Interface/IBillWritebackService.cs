@@ -5,6 +5,8 @@
 * ==============================================================================*/
 
 using Fap.Core.DataAccess;
+using Fap.Core.Infrastructure.Metadata;
+using System;
 
 namespace Fap.Core.Infrastructure.Interface
 {
@@ -16,6 +18,6 @@ namespace Fap.Core.Infrastructure.Interface
         /// <param name="dataAccessor">数据库访问</param>
         /// <param name="billData">FapDynamicObject单据实体</param>
         /// <param name="bizData">FapDynamicObject业务实体，只有映射了业务实体的时候才会有值，默认null</param>
-        void Exec(IDbContext dataAccessor, dynamic billData, dynamic bizData);
+        void Exec(FapDynamicObject billData, FapDynamicObject bizData);
     }
 }

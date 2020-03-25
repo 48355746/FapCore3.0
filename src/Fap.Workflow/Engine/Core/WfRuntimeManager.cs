@@ -6,6 +6,7 @@ using Fap.Workflow.Engine.Xpdl;
 using Fap.Workflow.Engine.Xpdl.Node;
 using Fap.Workflow.Model;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 
 namespace Fap.Workflow.Engine.Core
@@ -18,11 +19,11 @@ namespace Fap.Workflow.Engine.Core
         #region 抽象方法
         internal abstract void ExecuteInstanceImp();
         #endregion
-
+        protected IDbContext _dataAccessor;
+        protected ILoggerFactory _loggerFactory;
+        protected IServiceProvider _serviceProvider;
         #region 流转属性和基础方法
         internal WfAppRunner AppRunner { get; set; }
-        internal IDbContext _dataAccessor { get; set; }
-        internal ILoggerFactory _loggerFactory { get; set; }
         internal IProcessModel ProcessModel { get; set; }
         internal WfProcessInstance ParentProcessInstance { get; set; }
         internal NodeBase InvokedSubProcessNode { get; set; }
@@ -57,10 +58,11 @@ namespace Fap.Workflow.Engine.Core
         #endregion
 
         #region 构造方法
-        internal WfRuntimeManager(IDbContext dbContext,ILoggerFactory loggerFactory)
+        internal WfRuntimeManager(IServiceProvider serviceProvider)
         {
-            _dataAccessor = dbContext;
-            _loggerFactory = loggerFactory;
+            _serviceProvider = serviceProvider;
+            _dataAccessor = serviceProvider.GetService<IDbContext>();
+            _loggerFactory = serviceProvider.GetService<ILoggerFactory>();
             BackwardContext = new BackwardContext();
         }
         #endregion

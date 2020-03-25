@@ -4,6 +4,7 @@ using Fap.Workflow.Engine.Exceptions;
 using Fap.Workflow.Engine.Manager;
 using Fap.Workflow.Engine.Node;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace Fap.Workflow.Engine.Core
 {
@@ -12,7 +13,7 @@ namespace Fap.Workflow.Engine.Core
     /// </summary>
     internal class WfRuntimeManagerAppRunning : WfRuntimeManager
     {
-        internal WfRuntimeManagerAppRunning(IDbContext dbContext, ILoggerFactory loggerFactory) : base(dbContext,  loggerFactory)
+        internal WfRuntimeManagerAppRunning(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
 
@@ -25,14 +26,14 @@ namespace Fap.Workflow.Engine.Core
             try
             {
                 var result = base.WfExecutedResult;
-                var processIns = new ProcessInstanceManager(_dataAccessor,  _loggerFactory).GetByFid(base.TaskView.ProcessInsUid);
-                var fromActivityIns = new ActivityInstanceManager(_dataAccessor,  _loggerFactory).GetByFid(base.TaskView.ActivityInsUid);
+                var processIns = new ProcessInstanceManager(_serviceProvider).GetByFid(base.TaskView.ProcessInsUid);
+                var fromActivityIns = new ActivityInstanceManager(_serviceProvider).GetByFid(base.TaskView.ActivityInsUid);
 
                 var runningExecutionContext = ActivityForwardContext.CreateRunningContext(base.TaskView,
                     base.ProcessModel, processIns, fromActivityIns);
 
                 //执行节点
-                NodeMediator mediator = NodeMediatorFactory.CreateNodeMediator(runningExecutionContext, AppRunner, _dataAccessor,  _loggerFactory);
+                NodeMediator mediator = NodeMediatorFactory.CreateNodeMediator(runningExecutionContext, AppRunner,_serviceProvider);
                 mediator.Linker.FromActivityInstance = RunningActivityInstance;
                 mediator.ExecuteWorkItem();
 

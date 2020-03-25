@@ -5,6 +5,7 @@ using Fap.Workflow.Engine.Manager;
 using Fap.Workflow.Engine.Node;
 using Fap.Wrokflow.Engine.Node;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace Fap.Workflow.Engine.Core
 {
@@ -13,7 +14,7 @@ namespace Fap.Workflow.Engine.Core
     /// </summary>
     internal class WfRuntimeManagerJump : WfRuntimeManager
     {
-        internal WfRuntimeManagerJump(IDbContext dbContext, ILoggerFactory loggerFactory) : base(dbContext,  loggerFactory)
+        internal WfRuntimeManagerJump(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
 
@@ -41,7 +42,7 @@ namespace Fap.Workflow.Engine.Core
                     TransitionFlyingTypeEnum.NotFlying);
 
                 //更新当前办理节点的状态（从准备或运行状态更新为退回状态）
-                var aim = new ActivityInstanceManager(_dataAccessor, _loggerFactory);
+                var aim = new ActivityInstanceManager(_serviceProvider);
                 aim.SendBack(base.BackwardContext.BackwardFromActivityInstance.Fid,
                    AppRunner);
 
@@ -53,11 +54,11 @@ namespace Fap.Workflow.Engine.Core
             {
                 var jumpActivityGUID = base.AppRunner.NextActivity.ActivityID;
                 var jumpforwardActivity = base.ProcessModel.GetActivity(jumpActivityGUID);
-                var proecessInstance = (new ProcessInstanceManager(_dataAccessor, _loggerFactory)).GetByFid(base.RunningActivityInstance.ProcessInsUid);
+                var proecessInstance = (new ProcessInstanceManager(_serviceProvider)).GetByFid(base.RunningActivityInstance.ProcessInsUid);
                 var jumpforwardExecutionContext = ActivityForwardContext.CreateJumpforwardContext(jumpforwardActivity,
                     base.ProcessModel, proecessInstance);
 
-                NodeMediator mediator = NodeMediatorFactory.CreateNodeMediator(jumpforwardExecutionContext, AppRunner,_dataAccessor, _loggerFactory);
+                NodeMediator mediator = NodeMediatorFactory.CreateNodeMediator(jumpforwardExecutionContext, AppRunner,_serviceProvider);
                 mediator.Linker.FromActivityInstance = base.RunningActivityInstance;
                 mediator.Linker.ToActivity = jumpforwardActivity;
                 mediator.ExecuteWorkItem();

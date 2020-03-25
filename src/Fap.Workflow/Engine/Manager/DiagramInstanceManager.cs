@@ -2,6 +2,7 @@
 using Fap.Workflow.Engine.Common;
 using Fap.Workflow.Model;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace Fap.Workflow.Engine.Manager
 {
@@ -10,7 +11,7 @@ namespace Fap.Workflow.Engine.Manager
     /// </summary>
     class DiagramInstanceManager : ManagerBase
     {
-        public DiagramInstanceManager(IDbContext dataAccessor, ILoggerFactory loggerFactory) : base(dataAccessor,  loggerFactory)
+        public DiagramInstanceManager(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
         public WfDiagramInstance CreateDiagramInstance(string processUid,string processInsUid)

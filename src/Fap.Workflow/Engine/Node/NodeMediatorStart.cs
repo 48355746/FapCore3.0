@@ -7,6 +7,7 @@ using Fap.Workflow.Engine.Xpdl;
 using Fap.Workflow.Model;
 using Fap.Wrokflow.Engine.Node;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 
 namespace Fap.Workflow.Engine.Node
@@ -16,8 +17,8 @@ namespace Fap.Workflow.Engine.Node
     /// </summary>
     internal class NodeMediatorStart : NodeMediator
     {
-        internal NodeMediatorStart(ActivityForwardContext forwardContext,WfAppRunner appRunner, IDbContext dbContext,ILoggerFactory loggerFactory)
-            : base(forwardContext, appRunner,dbContext,loggerFactory)
+        internal NodeMediatorStart(ActivityForwardContext forwardContext,WfAppRunner appRunner,IServiceProvider serviceProvider)
+            : base(forwardContext, appRunner, serviceProvider)
         {
 
         }
@@ -30,10 +31,10 @@ namespace Fap.Workflow.Engine.Node
             try
             {
                 //写入流程实例
-                ProcessInstanceManager pim = new ProcessInstanceManager(_dataAccessor,_loggerFactory);
+                ProcessInstanceManager pim = new ProcessInstanceManager(_serviceProvider);
                 var newInstance = pim.Insert(ActivityForwardContext.ProcessInstance);
                 //写入流程图实例
-                DiagramInstanceManager dim = new DiagramInstanceManager(_dataAccessor,  _loggerFactory);
+                DiagramInstanceManager dim = new DiagramInstanceManager(_serviceProvider);
                 dim.Insert(dim.CreateDiagramInstance(newInstance.ProcessUid, newInstance.Fid));
 
                 ActivityForwardContext.ProcessInstance.Id = newInstance.Id;

@@ -27,6 +27,14 @@ namespace Fap.Hcm.Service.Time
         /// <returns></returns>
         (double, double) LeavelDays(string empUid, string startDateTime, string endDateTime);
         /// <summary>
+        /// 获取请假或出差的日结果详情
+        /// </summary>
+        /// <param name="empUid"></param>
+        /// <param name="startDateTime"></param>
+        /// <param name="endDateTime"></param>
+        /// <returns></returns>
+        IEnumerable<ApplyInfo> LeaveDaysInfo(string empUid, string startDateTime, string endDateTime);
+        /// <summary>
         /// 获取请假类型
         /// </summary>
         /// <param name="TypeCode"></param>

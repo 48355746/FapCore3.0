@@ -2,6 +2,7 @@
 using Fap.Workflow.Engine.Common;
 using Fap.Workflow.Engine.Manager;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace Fap.Workflow.Engine.Core
 {
@@ -10,7 +11,7 @@ namespace Fap.Workflow.Engine.Core
     /// </summary>
     internal class WfRuntimeManagerSendBack : WfRuntimeManager
     {
-        internal WfRuntimeManagerSendBack(IDbContext dbContext, ILoggerFactory loggerFactory) : base(dbContext,  loggerFactory)
+        internal WfRuntimeManagerSendBack(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
 
@@ -38,11 +39,11 @@ namespace Fap.Workflow.Engine.Core
             ////更新当前办理节点的状态（从准备或运行状态更新为退回状态）
             //aim.SendBack(base.BackwardContext.BackwardFromActivityInstance.Fid,AppRunner);
             //设置流程实例为驳回状态
-            var pim = new ProcessInstanceManager(_dataAccessor,_loggerFactory);
+            var pim = new ProcessInstanceManager(_serviceProvider);
             pim.Revoke(AppRunner.CurrProcessInsUid);
-            var aim = new ActivityInstanceManager(_dataAccessor,  _loggerFactory);
+            var aim = new ActivityInstanceManager(_serviceProvider);
             aim.Revoke(AppRunner.CurrActivityInsUid, AppRunner.CurrProcessInsUid);
-            var tim = new TaskManager(_dataAccessor,  _loggerFactory);
+            var tim = new TaskManager(_serviceProvider);
             tim.Revoke(AppRunner.CurrWfTaskUid, AppRunner);
 
             //构造回调函数需要的数据

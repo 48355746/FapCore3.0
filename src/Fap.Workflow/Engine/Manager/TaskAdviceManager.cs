@@ -3,7 +3,8 @@ using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Utility;
 using Fap.Workflow.Engine.Common;
 using Fap.Workflow.Model;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace Fap.Workflow.Engine.Manager
 {
@@ -13,9 +14,9 @@ namespace Fap.Workflow.Engine.Manager
     internal class TaskAdviceManager: ManagerBase
 	{
         private readonly IFapApplicationContext _applicationContext;
-        public TaskAdviceManager(IDbContext dataAccessor, IFapApplicationContext applicationContext,ILoggerFactory loggerFactory) : base(dataAccessor, loggerFactory)
+        public TaskAdviceManager(IServiceProvider serviceProvider) : base(serviceProvider)
         {
-            _applicationContext = applicationContext;
+            _applicationContext =_serviceProvider.GetService<IFapApplicationContext>();
         }
 
         public void RecordWhenStartupProcess(string processId, string taskId, string suggestion)

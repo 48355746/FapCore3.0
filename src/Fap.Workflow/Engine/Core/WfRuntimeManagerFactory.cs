@@ -7,6 +7,7 @@ using System.Linq;
 using Dapper;
 using Microsoft.Extensions.Logging;
 using Fap.Core.DataAccess;
+using System;
 
 namespace Fap.Workflow.Engine.Core
 {
@@ -23,22 +24,22 @@ namespace Fap.Workflow.Engine.Core
         /// <param name="runner">执行者</param>
         /// <param name="result">结果对象</param>
         /// <returns>运行时实例对象</returns>
-        public static WfRuntimeManager CreateRuntimeInstanceStartup(WfAppRunner runner,IDbContext dbContext,ILoggerFactory loggerFactory,
+        public static WfRuntimeManager CreateRuntimeInstanceStartup(WfAppRunner runner,IServiceProvider serviceProvider,
             ref WfExecutedResult result)
         {
-            return CreateRuntimeInstanceStartup(runner,dbContext,loggerFactory, null, null, ref result);
+            return CreateRuntimeInstanceStartup(runner,serviceProvider, null, null, ref result);
         }
 
-        public static WfRuntimeManager CreateRuntimeInstanceStartup(WfAppRunner runner, IDbContext dbContext,  ILoggerFactory loggerFactory,
+        public static WfRuntimeManager CreateRuntimeInstanceStartup(WfAppRunner runner, IServiceProvider serviceProvider,
             WfProcessInstance parentProcessInstance,
             SubProcessNode subProcessNode,
             ref WfExecutedResult result)
         {
             //检查流程是否可以被启动
-            var rmins = new WfRuntimeManagerStartup(dbContext,loggerFactory);
+            var rmins = new WfRuntimeManagerStartup(serviceProvider);
 
             rmins.WfExecutedResult = result = new WfExecutedResult();
-            var pim = new ProcessInstanceManager(dbContext,loggerFactory);
+            var pim = new ProcessInstanceManager(serviceProvider);
             WfProcessInstance processInstance = null;
 
             if (subProcessNode == null)
@@ -74,7 +75,7 @@ namespace Fap.Workflow.Engine.Core
                 rmins.InvokedSubProcessNode = subProcessNode;
 
                 //获取流程第一个可办理节点
-                rmins.ProcessModel = new ProcessModel(dbContext,loggerFactory, runner.ProcessUid, runner.BillUid);
+                rmins.ProcessModel = new ProcessModel(serviceProvider, runner.ProcessUid, runner.BillUid);
             }
 
             //var firstActivity = rmins.ProcessModel.GetFirstActivity();
@@ -96,11 +97,11 @@ namespace Fap.Workflow.Engine.Core
         /// <param name="result">结果对象</param>
         /// <returns>运行时实例对象</returns>
         public static WfRuntimeManager CreateRuntimeInstanceAppRunning(
-            WfAppRunner runner, IDbContext dbContext, ILoggerFactory loggerFactory,
+            WfAppRunner runner, IServiceProvider serviceProvider,
            ref WfExecutedResult result)
         {
             //检查传人参数是否有效
-            var rmins = new WfRuntimeManagerAppRunning(dbContext,loggerFactory);
+            var rmins = new WfRuntimeManagerAppRunning(serviceProvider);
             rmins.WfExecutedResult = result = new WfExecutedResult();
             if (string.IsNullOrEmpty(runner.BillUid)
                 || runner.ProcessUid == null || runner.CurrActivityInsUid == null || runner.CurrProcessInsUid == null || runner.CurrWfTaskUid == null || runner.CurrNodeId == null)
@@ -114,7 +115,7 @@ namespace Fap.Workflow.Engine.Core
             //传递runner变量
             rmins.AppRunner = runner;
 
-            var aim = new ActivityInstanceManager(dbContext,loggerFactory);
+            var aim = new ActivityInstanceManager(serviceProvider);
             WfActivityInstance wfActivityInstance = aim.GetByFid(runner.CurrActivityInsUid);
             if(wfActivityInstance.ActivityState == WfActivityInstanceState.Completed)
             {
@@ -123,8 +124,8 @@ namespace Fap.Workflow.Engine.Core
                 return rmins;
             }
             rmins.RunningActivityInstance = wfActivityInstance;
-            rmins.ProcessModel = new ProcessModel(dbContext,loggerFactory, runner.ProcessUid, runner.BillUid);
-            var tm = new TaskManager(dbContext,loggerFactory);
+            rmins.ProcessModel = new ProcessModel(serviceProvider, runner.ProcessUid, runner.BillUid);
+            var tm = new TaskManager(serviceProvider);
             rmins.TaskView = tm.GetTask(runner.CurrWfTaskUid);
             return rmins;
         }
@@ -201,13 +202,13 @@ namespace Fap.Workflow.Engine.Core
         /// <param name="runner">执行者</param>
         /// <param name="result">结果对象</param>
         /// <returns>运行时实例对象</returns>
-        internal static WfRuntimeManager CreateRuntimeInstanceWithdraw(WfAppRunner runner, IDbContext dbContext, ILoggerFactory loggerFactory,
+        internal static WfRuntimeManager CreateRuntimeInstanceWithdraw(WfAppRunner runner, IServiceProvider serviceProvider,
             ref WfExecutedResult result)
         {
-            WfRuntimeManager rmins = new WfRuntimeManagerWithdraw(dbContext,loggerFactory);
+            WfRuntimeManager rmins = new WfRuntimeManagerWithdraw(serviceProvider);
             rmins.WfExecutedResult = result = new WfExecutedResult();
 
-            var aim = new TaskManager(dbContext,loggerFactory);
+            var aim = new TaskManager(serviceProvider);
             if(aim.ExistApproval(runner.CurrProcessInsUid))
             {
                 result.Status = WfExecutedStatus.Exception;
@@ -231,13 +232,13 @@ namespace Fap.Workflow.Engine.Core
         ///// <param name="runner">执行者</param>
         ///// <param name="result">结果对象</param>
         ///// <returns>运行时实例对象</returns>
-        internal static WfRuntimeManager CreateRuntimeInstanceSendBack(WfAppRunner runner, IDbContext dbContext,  ILoggerFactory loggerFactory,
+        internal static WfRuntimeManager CreateRuntimeInstanceSendBack(WfAppRunner runner, IServiceProvider serviceProvider,
             ref WfExecutedResult result)
         {
-            WfRuntimeManager rmins = new WfRuntimeManagerSendBack(dbContext,loggerFactory);
+            WfRuntimeManager rmins = new WfRuntimeManagerSendBack(serviceProvider);
             rmins.WfExecutedResult = result = new WfExecutedResult();
 
-            var aim = new ActivityInstanceManager(dbContext,loggerFactory);
+            var aim = new ActivityInstanceManager(serviceProvider);
             var runningActivityInstanceList = aim.GetRunningActivityInstanceList(runner.CurrProcessInsUid).AsList();            
 
             //当前没有运行状态的节点存在，流程不存在，或者已经结束或取消

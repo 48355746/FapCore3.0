@@ -9,6 +9,7 @@ using Fap.Workflow.Engine.Xpdl.Entity;
 using Fap.Workflow.Model;
 using Fap.Wrokflow.Engine.Node;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +24,7 @@ namespace Fap.Workflow.Engine.Node
     {
         protected readonly IDbContext _dataAccessor;
         protected readonly ILoggerFactory _loggerFactory;
+        protected readonly IServiceProvider _serviceProvider;
         private readonly ILogger<NodeMediator> _logger;
         #region 属性列表
         private ActivityForwardContext _activityForwardContext;
@@ -66,7 +68,7 @@ namespace Fap.Workflow.Engine.Node
             {
                 if (activityInstanceManager == null)
                 {
-                    activityInstanceManager = new ActivityInstanceManager(_dataAccessor,_loggerFactory);
+                    activityInstanceManager = new ActivityInstanceManager(_serviceProvider);
                 }
                 return activityInstanceManager;
             }
@@ -79,7 +81,7 @@ namespace Fap.Workflow.Engine.Node
             {
                 if (taskManager == null)
                 {
-                    taskManager = new TaskManager(_dataAccessor,  _loggerFactory);
+                    taskManager = new TaskManager(_serviceProvider);
                 }
                 return taskManager;
             }
@@ -91,7 +93,7 @@ namespace Fap.Workflow.Engine.Node
             get
             {
                 if (processInstanceManager == null)
-                    processInstanceManager = new ProcessInstanceManager(_dataAccessor, _loggerFactory);
+                    processInstanceManager = new ProcessInstanceManager(_serviceProvider);
                 return processInstanceManager;
             }
         }
@@ -136,12 +138,13 @@ namespace Fap.Workflow.Engine.Node
         /// </summary>
         /// <param name="forwardContext">前进上下文</param>
         /// <param name="session">Session</param>
-        internal NodeMediator(ActivityForwardContext forwardContext, WfAppRunner appRunner,IDbContext dbContext,ILoggerFactory loggerFactory)
+        internal NodeMediator(ActivityForwardContext forwardContext, WfAppRunner appRunner,IServiceProvider serviceProvider)
         {
             _activityForwardContext = forwardContext;
+            _serviceProvider = serviceProvider;
             AppRunner = appRunner;
-            _dataAccessor = dbContext;
-            _loggerFactory = loggerFactory;
+            _dataAccessor = _serviceProvider.GetService<IDbContext>();
+            _loggerFactory =_serviceProvider.GetService<ILoggerFactory>();
             _logger = _loggerFactory.CreateLogger<NodeMediator>();
             Linker.FromActivity = forwardContext.Activity;
         }
@@ -236,7 +239,7 @@ namespace Fap.Workflow.Engine.Node
                     //此节点类型为分支或合并节点类型：首先需要实例化当前节点(自动完成)
                     NodeMediatorGateway gatewayNodeMediator = NodeMediatorGatewayFactory.CreateGatewayNodeMediator(comp.Activity,
                         this.ActivityForwardContext.ProcessModel,
-                        AppRunner, _dataAccessor,_loggerFactory);
+                        AppRunner, _serviceProvider);
 
                     ICompleteAutomaticlly autoGateway = (ICompleteAutomaticlly)gatewayNodeMediator;
                     GatewayExecutedResult gatewayResult = autoGateway.CompleteAutomaticlly(
@@ -304,7 +307,7 @@ namespace Fap.Workflow.Engine.Node
                 else if (comp.Activity.ActivityType == ActivityTypeEnum.EndNode)        //结束节点
                 {
                     //此节点为完成结束节点，结束流程
-                    NodeMediator endMediator = new NodeMediatorEnd(ActivityForwardContext, AppRunner, _dataAccessor, _loggerFactory);
+                    NodeMediator endMediator = new NodeMediatorEnd(ActivityForwardContext, AppRunner,_serviceProvider);
                     endMediator.Linker.ToActivity = comp.Activity;
 
                     //创建结束节点实例及转移数据
@@ -434,7 +437,7 @@ namespace Fap.Workflow.Engine.Node
             TransitionFlyingTypeEnum flyingType,
             WfAppRunner runner)
         {
-            var tim = new TransitionInstanceManager(_dataAccessor,_loggerFactory);
+            var tim = new TransitionInstanceManager(_serviceProvider);
             var transitionInstanceObject = tim.CreateTransitionInstanceObject(processInstance,
                 transitionId,
                 fromActivityInstance,

@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using Fap.AspNetCore.Model;
 using Fap.Core.DataAccess;
+using Fap.Core.DI;
 using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Config;
 using Fap.Core.Infrastructure.Enums;
@@ -8,6 +9,8 @@ using Fap.Core.Infrastructure.Interface;
 using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.Rbac.Model;
 using Fap.Core.Utility;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -18,12 +21,17 @@ namespace Fap.Workflow.Engine.WriteBack
     /// <summary>
     /// 单据回写类
     /// </summary>
+    [Service]
     public class BillWriteBack : IWriteBackRule
     {
         private readonly IDbContext _dbContext;
-        public BillWriteBack(IDbContext dbContext)
+        private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<BillWriteBack> _logger;
+        public BillWriteBack(IDbContext dbContext, IServiceProvider serviceProvider)
         {
             _dbContext = dbContext;
+            _serviceProvider = serviceProvider;
+            _logger = serviceProvider.GetService<ILoggerFactory>().CreateLogger<BillWriteBack>();
         }
         #region 审批完成单据回写
         /// <summary>
@@ -144,8 +152,8 @@ namespace Fap.Workflow.Engine.WriteBack
                                         string bizCol = arryMap[1].Split('.')[1];
                                         fdo.SetValue(bizCol, fapBillData.Get(billCol));
                                     }
-                                    fdo.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Fid,UUIDUtils.Fid);
-                                   
+                                    fdo.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Fid, UUIDUtils.Fid);
+
                                     //insert
                                     _dbContext.InsertDynamicData(fdo);
                                     bizData = _dbContext.Get(bizTableName, fdo.Get(FapDbConstants.FAPCOLUMN_FIELD_Fid).ToString());
@@ -170,11 +178,18 @@ namespace Fap.Workflow.Engine.WriteBack
                     //回调类
                     if (rule.CallBackClass.IsPresent())
                     {
-                        Type type = System.Type.GetType(rule.CallBackClass);
-                        if (type != null && type.GetInterface("IBillWritebackService") != null)
+                        try
                         {
-                            IBillWritebackService wb = (IBillWritebackService)Activator.CreateInstance(type);
-                            wb.Exec(_dbContext,  fapBillData, fapBizData);
+                            Type type = System.Type.GetType(rule.CallBackClass);
+                            if (type != null && type.GetInterface("IBillWritebackService") != null)
+                            {
+                                IBillWritebackService wb = (IBillWritebackService)ActivatorUtilities.GetServiceOrCreateInstance(_serviceProvider, type);
+                                wb.Exec(fapBillData, fapBizData);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex.Message);
                         }
                     }
                 }
@@ -333,7 +348,7 @@ namespace Fap.Workflow.Engine.WriteBack
             insToDo.DeptCode = empInfo.DeptCode;
             insToDo.CaseUid = caseUid;//受影响保险组
             insToDo.TableUid = rule.DocEntityUid;//单据实体
-            insToDo.BizDate =DateTimeUtils.CurrentDateStr;//业务日期--当前时间
+            insToDo.BizDate = DateTimeUtils.CurrentDateStr;//业务日期--当前时间
             insToDo.OperEmpUid = billData.BillEmpUid;//变动处理人--制单人
             insToDo.OperFlag = 0;//变动应用 默认为0
             insToDo.TransID = billData.Id;//单据ID

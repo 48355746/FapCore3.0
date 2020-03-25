@@ -423,7 +423,7 @@ namespace Fap.AspNetCore.Serivce
                 else
                 {
                     _memoryCache.Set(avoid_repeat_tokenKey, frmModel.AvoidDuplicateKey, DateTimeOffset.Now.AddMinutes(30));
-                }               
+                }
             }
 
             #endregion
@@ -491,13 +491,26 @@ namespace Fap.AspNetCore.Serivce
                         //获取外键字段
                         var childColumnList = _dbContext.Columns(item.Key);
                         string foreignKey = childColumnList.First(f => f.RefTable == mainData.TableName).ColName;
-                        //先删除后增加
-                        _dbContext.DeleteExec(item.Key, $"{foreignKey}='{mainData.Get("Fid")}'");
+                        IList<long> ids = new List<long>();
                         foreach (var data in item.Value)
                         {
-                            //赋值外键
-                            data.SetValue(foreignKey, mainData.Get("Fid").ToString());
-                            _dbContext.InsertDynamicData(data);
+                            if (data.Get("Id").ToString().IsMissing())
+                            {
+                                //赋值外键
+                                data.SetValue(foreignKey, mainData.Get("Fid").ToString());
+                                long id= _dbContext.InsertDynamicData(data);
+                                ids.Add(id);
+                            }
+                            else
+                            {
+                                ids.Add(data.Get("Id").ToLong());
+                                _dbContext.UpdateDynamicData(data);
+                            }
+                        }
+                        if (ids.Count > 0)
+                        {
+                            //先删除后增加
+                            _dbContext.DeleteExec(item.Key, $"{foreignKey}='{mainData.Get("Fid")}' and Id not in @Ids",new DynamicParameters(new { Ids=ids}));
                         }
                     }
                 }
