@@ -15,6 +15,7 @@ using Fap.Core.Rbac;
 using System;
 using Fap.Core.Rbac.Model;
 using Fap.AspNetCore.ViewModel;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Fap.AspNetCore.Controls.TagHelpers
 {
@@ -27,7 +28,8 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         private IFapApplicationContext _applicationContext;
         private IMultiLangService _multiLang;
         private readonly IRbacService _rbacService;
-        public FapGridTagHelper(IDbContext dataAccessor, ILoggerFactory logger, IFapApplicationContext applicationContext, IMultiLangService multiLang, IRbacService rbacService)
+        private readonly IWebHostEnvironment _env;
+        public FapGridTagHelper(IDbContext dataAccessor, ILoggerFactory logger, IFapApplicationContext applicationContext, IMultiLangService multiLang, IRbacService rbacService,IWebHostEnvironment env)
         {
             _dbContext = dataAccessor;
             //_fapOption = fapOption;
@@ -36,6 +38,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             _applicationContext = applicationContext;
             _multiLang = multiLang;
             _rbacService = rbacService;
+            _env = env;
         }
         /// <summary>
         /// 控件ID
@@ -238,7 +241,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             }
             this.Id = $"grid-{id}";
             string pager = $"pager-{id}";
-            Grid grid = new Grid(_dbContext, _rbacService, _applicationContext, _multiLang, this.Id);
+            Grid grid = new Grid(_dbContext, _rbacService, _applicationContext, _multiLang,_env, this.Id);
 
             if (Url.IsPresent())
             {

@@ -20,17 +20,14 @@ using Yahoo.Yui.Compressor;
 using static System.String;
 using Fap.Core.Exceptions;
 using Ardalis.GuardClauses;
+using Microsoft.Extensions.Hosting;
 
 namespace Fap.AspNetCore.Controls.DataForm
 {
     internal class FapFreeForm : BaseForm
     {
         public CfgFreeForm FFrm { get; private set; }
-
-        //存在模板上的字段
-        private List<FapField> _existTemplateFields = new List<FapField>();
-        //模板上的子表
-        private Dictionary<string, FapTable> _childTableList = new Dictionary<string, FapTable>();
+        
 
         public FapFreeForm(IServiceProvider serviceProvider, string id, FormStatus formStatus = FormStatus.Add) : base(serviceProvider, id, formStatus)
         {
@@ -118,9 +115,16 @@ namespace Fap.AspNetCore.Controls.DataForm
                 var script = new StringBuilder();
                 // Start script
                 script.AppendLine("<script type=\"text/javascript\">");
-                JavaScriptCompressor compressor = new JavaScriptCompressor();
-                compressor.Encoding = Encoding.UTF8;
-                script.Append(compressor.Compress(RenderJavascript()));
+                if (_env.IsDevelopment())
+                {
+                    script.Append(RenderJavascript());
+                }
+                else
+                {
+                    JavaScriptCompressor compressor = new JavaScriptCompressor();
+                    compressor.Encoding = Encoding.UTF8;
+                    script.Append(compressor.Compress(RenderJavascript()));
+                }
                 script.AppendLine("</script>");
 
                 // Insert grid id where needed (in columns)
@@ -143,7 +147,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 string primaryKey = _dbContext.Columns(table.Value.TableName).FirstOrDefault(f => f.RefTable == _fapTable.TableName)?.ColName ?? "";
                 Guard.Against.NullOrWhiteSpace(primaryKey, nameof(primaryKey));
 
-                Grid grid = new Grid(_dbContext, _rbacService, _applicationContext, _multiLangService, $"grid-{table.Value.TableName}");
+                Grid grid = new Grid(_dbContext, _rbacService, _applicationContext, _multiLangService,_env, $"grid-{table.Value.TableName}");
                 QuerySet qs = new QuerySet();
                 qs.TableName = table.Value.TableName;
                 qs.GlobalWhere = $"{primaryKey}='{FidValue}'";

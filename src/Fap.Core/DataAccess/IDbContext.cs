@@ -270,6 +270,12 @@ namespace Fap.Core.DataAccess
         /// <param name="tableName"></param>
         /// <returns></returns>
         FapDynamicObject GetDefualtData(string tableName);
+        /// <summary>
+        /// 转化默认值
+        /// </summary>
+        /// <param name="defaultValue"></param>
+        /// <returns></returns>
+        object GetColDefualtValue(string defaultValue);
         IEnumerable<DataChangeHistory> QueryDataHistory(string tableName, string fid);
 
         #region metadata

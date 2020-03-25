@@ -23,11 +23,13 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Fap.AspNetCore.Controls.DataForm
 {
     internal abstract class BaseForm : HtmlString
     {
+        protected IWebHostEnvironment _env;
         //表单formid
         protected string FormId { get; set; }
         //data fid
@@ -37,8 +39,16 @@ namespace Fap.AspNetCore.Controls.DataForm
         protected FapTable _fapTable;
         protected IEnumerable<FapColumn> _fapColumns;
         protected List<FapField> formFields = new List<FapField>();
+        #region childtables 
+        //存在模板上的字段
+        protected List<FapField> _existTemplateFields = new List<FapField>();
         //子表是否只读
         protected bool childGridReadOnly { get; set; }
+        //模板上的子表
+        protected Dictionary<string, FapTable> _childTableList = new Dictionary<string, FapTable>();
+        //子表默认值集合
+        protected IEnumerable<SubTableDefaultValue> _subTableListDefaultData;
+        #endregion
         //设置自定义默认值
         protected Dictionary<string, string> _cutomDefault = new Dictionary<string, string>();
         //是否为单据
@@ -48,8 +58,6 @@ namespace Fap.AspNetCore.Controls.DataForm
         protected IFapApplicationContext _applicationContext;
         protected IMultiLangService _multiLangService;
         protected IRbacService _rbacService;
-        //子表默认值集合
-        protected IEnumerable<SubTableDefaultValue> _subTableListDefaultData;
         protected IServiceProvider _serviceProvider;
         protected string _formTemplate = string.Empty;
         public BaseForm(IServiceProvider serviceProvider, string id, FormStatus formStatus = FormStatus.Add) : base("")
@@ -60,6 +68,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             _rbacService = serviceProvider.GetService<IRbacService>(); ;
             _applicationContext = serviceProvider.GetService<IFapApplicationContext>();
             _serviceProvider = serviceProvider;
+            _env = serviceProvider.GetService<IWebHostEnvironment>();
             FormId = id;
         }
         /// <summary>
@@ -152,7 +161,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     {
                         fvc = _cutomDefault[col.ColName + "MC"];
                     }
-                    FapField frmField = new FapField(_dbContext, _multiLangService) { FormData = FormData, FieldName=col.ColName, FieldComment=col.ColComment, CurrentColumn = col, FieldGroup = col.ColGroup.IsMissing() ? "默认分组" : col.ColGroup, FieldValue = (fv == null ? "" : fv), FieldMCValue = (fvc == null ? "" : fvc) };
+                    FapField frmField = new FapField(_dbContext, _multiLangService) { FormData = FormData, FieldName = col.ColName, FieldComment = col.ColComment, CurrentColumn = col, FieldGroup = col.ColGroup.IsMissing() ? "默认分组" : col.ColGroup, FieldValue = (fv == null ? "" : fv), FieldMCValue = (fvc == null ? "" : fvc) };
                     #region 权限（只读可编辑）判断
                     if (readOnlyCols.Any() && readOnlyCols.Contains(col.ColName, new Fap.Core.Utility.FapStringEqualityComparer()))
                     {
@@ -447,7 +456,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 #region 富文本控件
                 else if (column.CtrlType == FapColumn.CTRL_TYPE_RICHTEXTBOX)
                 {
-                    script.AppendLine("var wysiwyg_"+ column.ColName + " =$(\"###formid## #" + column.ColName + ".wysiwyg-editor\").ace_wysiwyg({" + @"
+                    script.AppendLine("var wysiwyg_" + column.ColName + " =$(\"###formid## #" + column.ColName + ".wysiwyg-editor\").ace_wysiwyg({" + @"
 						toolbar:
 						[
                             'font',
@@ -795,6 +804,22 @@ namespace Fap.AspNetCore.Controls.DataForm
             #endregion
 
             script.AppendLine(" });");
+            #region 子表js注入
+            //存在子表时注入js
+            if (_childTableList.Any() && _formStatus != FormStatus.View && !childGridReadOnly)
+            {
+                foreach (var childtb in _childTableList)
+                {
+                    jsfilePath = Path.Combine(new string[] { Directory.GetCurrentDirectory(), "wwwroot", "Scripts", "FapFormPlugin", $"frm.plugin.grid.{childtb.Value.TableName}.js" });
+                    if (File.Exists(jsfilePath))
+                    {
+                        script.AppendLine(File.ReadAllText(jsfilePath, Encoding.UTF8));
+                    }
+                }
+            }
+
+            #endregion
+
             return script.ToString();
         }
 

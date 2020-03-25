@@ -16,6 +16,9 @@ using System.Text;
 using System.Web;
 using Fap.Core.Infrastructure.Enums;
 using Fap.Core.Rbac;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
+using Yahoo.Yui.Compressor;
 
 namespace Fap.AspNetCore.Controls.JqGrid
 {
@@ -162,27 +165,29 @@ namespace Fap.AspNetCore.Controls.JqGrid
         private OperEnum _dataFormType = OperEnum.Search;
         private string _postData;
 
-        private IDbContext _dataAccessor;
+        private IDbContext _dbContext;
         private IRbacService _rbacService;
         private IFapApplicationContext _applicationContext;
         private IMultiLangService _multiLang;
+        private IWebHostEnvironment _env;
         //分布式缓存
         //IDistributedCache
         /// <summary>
         ///     Constructor
         /// </summary>
         /// <param name = "id">Id of grid</param>
-        public Grid(IDbContext dataAccessor, IRbacService rbacService, IFapApplicationContext applicationContext, IMultiLangService multiLang, string id) : base("")
+        public Grid(IDbContext dataAccessor, IRbacService rbacService, IFapApplicationContext applicationContext, IMultiLangService multiLang,IWebHostEnvironment env, string id) : base("")
         {
             if (id.IsMissing())
             {
                 throw new ArgumentException("Id must contain a value to identify the grid");
             }
             _id = id;
-            _dataAccessor = dataAccessor;
+            _dbContext = dataAccessor;
             _rbacService = rbacService;
             _applicationContext = applicationContext;
             _multiLang = multiLang;
+            _env = env;
         }
         private string TableName
         {
@@ -271,8 +276,8 @@ namespace Fap.AspNetCore.Controls.JqGrid
             {
                 _defaultValues = queryset.DefaultValues;
             }
-            Pageable queryOption = new Pageable(_dataAccessor) { TableName = queryset.TableName, QueryCols = queryset.QueryCols };
-            _fapColumns = _dataAccessor.Columns(queryset.TableName);
+            Pageable queryOption = new Pageable(_dbContext) { TableName = queryset.TableName, QueryCols = queryset.QueryCols };
+            _fapColumns = _dbContext.Columns(queryset.TableName);
             if (!queryset.QueryCols.EqualsWithIgnoreCase("*"))
             {
                 var queryColList = queryset.QueryCols.ToLower().SplitComma();
@@ -281,7 +286,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
             if (_fapColumns.Any())
             {
 
-                List<Column> grdColumns = _fapColumns.OrderBy(c => c.ColOrder).ToColumns(_dataAccessor, _multiLang).ToList();
+                List<Column> grdColumns = _fapColumns.OrderBy(c => c.ColOrder).ToColumns(_dbContext, _multiLang).ToList();
 
                 _columns.AddRange(grdColumns);
             }
@@ -297,7 +302,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
         //    if (fapColumns != null)
         //    {
         //        _fapColumns = fapColumns;
-        //        _columns.AddRange(fapColumns.ToColumns(_dataAccessor,_multiLang));
+        //        _columns.AddRange(fapColumns.ToColumns(_dbContext,_multiLang));
         //    }
         //    return this;
         //}
@@ -1884,7 +1889,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
 
             //DynamicParameters param = new DynamicParameters();
             //param.Add("TableName", TableName);
-            //var dataEncrypt = _dataAccessor.QueryWhere<FapDataEncrypt>($"{nameof(FapDataEncrypt.RefTable)}=@TableName", param);
+            //var dataEncrypt = _dbContext.QueryWhere<FapDataEncrypt>($"{nameof(FapDataEncrypt.RefTable)}=@TableName", param);
             //StringBuilder encryptJs = new StringBuilder();
             //if (dataEncrypt.Any())
             //{
@@ -2181,7 +2186,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                     List<string> list = new List<string>();
                     foreach (var dv in _defaultValues)
                     {
-                        list.Add($"'{dv.Field}':'{dv.Value}'");
+                        list.Add($"'{dv.Field}':'{_dbContext.GetColDefualtValue(dv.Value)}'");
                     }
                     initData.Append(string.Join(",", list));
                 }
@@ -2216,8 +2221,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                     sb.AppendLine("            var lastSelection_" + gid + ";");
                     sb.AppendLine("            function editRow(id) {");
                     sb.AppendLine("                if (id &&id !== lastSelection_" + gid + ") {");
-                    sb.AppendLine("                    var grid = $('###gridid##');");
-                    sb.AppendLine("                     grid.jqGrid('editRow',id, {keys: true} );");
+                    sb.AppendLine("                     $('###gridid##').jqGrid('editRow',id, {keys: true} );");
                     sb.AppendLine("                     lastSelection_" + gid + " = id;");
                     sb.AppendLine("                }");
                     sb.AppendLine("             window.setTimeout(function () {");
@@ -2483,11 +2487,17 @@ namespace Fap.AspNetCore.Controls.JqGrid
 
             // Start script
             script.AppendLine("<script type=\"text/javascript\">");
-            //压缩js
-            //JavaScriptCompressor compressor = new JavaScriptCompressor();
-            //compressor.Encoding = Encoding.UTF8;
-            //script.Append(compressor.Compress(RenderJavascript()));
-            script.AppendLine(RenderJavascript());
+            if (_env.IsDevelopment())
+            {
+                script.AppendLine(RenderJavascript());
+            }
+            else
+            {
+                //压缩js
+                JavaScriptCompressor compressor = new JavaScriptCompressor();
+                compressor.Encoding = Encoding.UTF8;
+                script.Append(compressor.Compress(RenderJavascript()));
+            }
             script.AppendLine("</script>");
 
             // Return script + required elements

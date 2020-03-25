@@ -415,7 +415,6 @@
 
             //表格可排序
             var tables = root.querySelectorAll('table');
-            debugger
             utils.each(tables, function (table) {
                 if (table.attributes.length== 0) {
                     table.className = "wyftable";

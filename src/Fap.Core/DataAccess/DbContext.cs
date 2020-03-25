@@ -165,54 +165,52 @@ namespace Fap.Core.DataAccess
         }
         private object GetFieldDefaultValue(FapColumn column)
         {
-            string key = column.ColName;
-            //判断表单中是否存在此字段，存在就跳过
-            if (column.ColDefault.StartsWith("sql:"))
+            if (column.ColName.EndsWith("MC"))
             {
-
+                return string.Empty;
             }
-            else if (column.ColDefault.EqualsWithIgnoreCase(FapDbConstants.CurrentDate))
+            return GetColDefualtValue(column.ColDefault);
+        }
+        public object GetColDefualtValue(string defaultValue)
+        {
+            //判断表单中是否存在此字段，存在就跳过
+            if (defaultValue.StartsWith("sql:"))
+            {
+                return ExecuteScalar(defaultValue.Substring(4));
+            }
+            else if (defaultValue.EqualsWithIgnoreCase(FapDbConstants.CurrentDate))
             {
                 //当前时间
                 return DateTimeUtils.CurrentDateTimeStr;
             }
-            else if (column.ColDefault.EqualsWithIgnoreCase(FapDbConstants.CurrentEmployee))
+            else if (defaultValue.EqualsWithIgnoreCase(FapDbConstants.CurrentEmployee))
             {
-                if (!column.ColName.EndsWith("MC"))
-                {
-                    return _applicationContext.EmpUid;
-                }
+                return _applicationContext.EmpUid;
             }
-            else if (column.ColDefault.EqualsWithIgnoreCase(FapDbConstants.CurrentDept))
+            else if (defaultValue.EqualsWithIgnoreCase(FapDbConstants.CurrentDept))
             {
-                if (!column.ColName.EndsWith("MC"))
-                {
-                    return _applicationContext.DeptUid;
-                }
+                return _applicationContext.DeptUid;
+
             }
-            else if (column.ColDefault.EqualsWithIgnoreCase(FapDbConstants.CurrentDeptCode))
+            else if (defaultValue.EqualsWithIgnoreCase(FapDbConstants.CurrentDeptCode))
             {
                 return _applicationContext.DeptCode;
             }
-            else if (column.ColDefault.EqualsWithIgnoreCase(FapDbConstants.CurrentUser))
+            else if (defaultValue.EqualsWithIgnoreCase(FapDbConstants.CurrentUser))
             {
-                if (!column.ColName.EndsWith("MC"))
-                {
-                    return _applicationContext.UserUid;
-                }
+                return _applicationContext.UserUid;
+
             }
-            else if (column.ColDefault.EqualsWithIgnoreCase(FapDbConstants.UUID))
+            else if (defaultValue.EqualsWithIgnoreCase(FapDbConstants.UUID))
             {
-                if (!column.ColName.EndsWith("MC"))
-                {
-                    return UUIDUtils.Fid;
-                }
+
+                return UUIDUtils.Fid;
+
             }
             else
             {
-                return column.ColDefault;
+                return defaultValue;
             }
-            return "";
         }
         /// <summary>
         /// 初始化默认值

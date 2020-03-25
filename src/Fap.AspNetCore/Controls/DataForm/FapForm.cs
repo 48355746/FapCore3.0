@@ -1,5 +1,6 @@
 ﻿using Fap.Core.DataAccess;
 using Fap.Core.Infrastructure.Metadata;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Linq;
 using System.Text;
@@ -32,11 +33,18 @@ namespace Fap.AspNetCore.Controls.DataForm
                 var script = new StringBuilder();
                 // Start script
                 script.AppendLine("<script type=\"text/javascript\">");
-                //压缩js
-                JavaScriptCompressor compressor = new JavaScriptCompressor();
-                compressor.Encoding = Encoding.UTF8;
                 string js = RenderJavascript().Replace("##formid##", $"frm-{FormId}");
-                script.Append(compressor.Compress(js));
+                if (_env.IsDevelopment())
+                {
+                    script.Append(js);
+                }
+                else
+                {
+                    //压缩js
+                    JavaScriptCompressor compressor = new JavaScriptCompressor();
+                    compressor.Encoding = Encoding.UTF8;
+                    script.Append(compressor.Compress(js));
+                }
                 script.AppendLine("</script>");
                 // Return script + required elements
                 return script.ToString() + RenderHtmlElements();

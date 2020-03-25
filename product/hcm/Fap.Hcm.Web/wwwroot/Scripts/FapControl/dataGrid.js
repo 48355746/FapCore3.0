@@ -695,7 +695,7 @@ var unformatReference = function (cellValue, options, cellObject) {
 var searchOptionReference = function (el, title, fid, reftype) {
     $(el).addClass("hide");
     var $ctrlRef = $(`<span class="input-icon input-icon-right">
-												<input type="text" id="form-field-icon-2">
+												<input type="text" >
 												<i class="ace-icon fa fa-search block"></i>
 											</span>`);
     $(el).parent().append($ctrlRef);
@@ -923,7 +923,8 @@ function unformatCheckboxList(cellValue, options, cellObject) {
 function createReferenceEditElement(value, editOptions, rowObject) {
     var colName = editOptions.name + "MC";
     var txt = rowObject[colName];
-    return $('<span class="col-sm-11"><span class="input-icon input-icon-right"><input type="text" id="form-field-icon-2" data-value="' + value + '" value="' + txt + '" /> <i class="ace-icon fa fa-search block"></i>        </span></span >');
+    var rowIndex = editOptions.rowId;
+    return $('<span class="col-sm-11"><span class="input-icon input-icon-right"><input type="text" id="' + rowIndex + '_' + colName + '" name="' + colName + '" rowid="' + rowIndex + '" data-value="' + value + '" value="' + txt + '" /> <i class="ace-icon fa fa-search block"></i>        </span></span >');
 }
 function getReferenceElementValue(elem, oper, value) {
     if (oper === "set") {
