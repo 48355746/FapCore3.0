@@ -538,8 +538,29 @@ var loadExportWordMessageBox = function (title, gid, qryCols, tablename, callbac
             });
         }
     });
+};
+var loadChartMessageBox = function (title, gridid, tablename) {
+    var dialog = bootbox.dialog({
+        title: '<i class="ace-icon fa fa-bar-chart"></i> ' + $.lang("chart", "图表"),
+        message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+        size:"fullscreen",
+        buttons: {
+            cancel: {
+                label: $.lang("close", "关闭"), className: "btn-default"
+            }
+        }
 
-
+    });
+    dialog.on("shown.bs.modal", function () {
+        setTimeout(function () {
+            $('.dd').nestable({ maxDepth: 1 });
+        }, 0);
+    });
+    dialog.init(function () {
+        $.get(basePath + '/Component/ChartSet', { tablename: tablename }, function (ev) {
+            dialog.find(".modal-body").html(ev);
+        });
+    });
 };
 //导出excel模板
 //title 标题

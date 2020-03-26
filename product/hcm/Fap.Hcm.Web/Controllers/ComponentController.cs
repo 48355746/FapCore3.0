@@ -932,6 +932,11 @@ namespace Fap.Hcm.Web.Controllers
             var columns = _dbContext.Columns(tableName).Where(f => f.ComboxSource.IsPresent());
             return PartialView(columns);
         }
+        public PartialViewResult ChartSet(string tableName)
+        {
+            var columns = _dbContext.Columns(tableName).Where(f => f.ComboxSource.IsPresent());
+            return PartialView(columns);
+        }
         #endregion
     }
 }

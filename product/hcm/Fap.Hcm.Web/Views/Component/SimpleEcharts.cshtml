@@ -1,5 +1,4 @@
-﻿@model IEnumerable<Fap.Core.Infrastructure.Metadata.FapColumn>
-    <script src="~/lib/echarts/echarts.common.min.js"></script>
+﻿@model IEnumerable<Fap.Core.Infrastructure.Metadata.FapColumn>  
 <script>
     var simpleChart = echarts.init(document.getElementById('simpleChart'));
     $("#selCategory").on("change", function () {
@@ -16,7 +15,7 @@
             var legendData= $.map(rv.data, function (d,i) {
                 return d.name;
             });
-            debugger
+           
             var option = {
                 title: {
                     text: title,

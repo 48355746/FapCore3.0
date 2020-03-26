@@ -1,0 +1,179 @@
+﻿@model IEnumerable<Fap.Core.Infrastructure.Metadata.FapColumn>
+<div class="row">
+    <div class="col-xs-12 col-sm-2">
+        <div class="widget-box light-border" style="opacity: 1;">
+            <div class="widget-header widget-header-small widget-header-flat">
+                <h5 class="widget-title smaller">项</h5>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main padding-6">
+                    <div class="dd" id="nestable">
+                        <ol class="dd-list">
+                            @foreach (var column in Model)
+                            {
+                                <li class="dd-item" data-id="@column.ColName" data-title="@column.ColComment">
+                                    <div class="dd-handle">
+                                        @column.ColComment
+                                        <i class="pull-right dd-nodrag ace-icon fa fa-bars orange2"></i>
+                                    </div>
+                                </li>
+                            }
+                        </ol>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-12 col-sm-2" style="min-height: 106px;">
+        <div class="widget-box  light-border" style="opacity: 1;">
+            <div class="widget-header widget-header-small widget-header-flat">
+                <h5 class="widget-title smaller">选择区</h5>
+                <div class="widget-toolbar">
+                    <a href="javascript:void(0)" id="btnPreView" title="预览">
+                        <i class="ace-icon fa fa-eye"></i>
+                    </a>
+
+                    <a href="#" data-action="reload">
+                        <i class="ace-icon fa fa-save"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main padding-6">
+                    <div>
+                        <span>类型: &nbsp;</span>
+
+                        <div data-toggle="buttons" class="btn-group charttype">
+                            <label class="btn btn-white btn-info active">
+                                <input type="radio" value="bar" checked />
+                                <i class="icon-only ace-icon fa fa-bar-chart"></i>
+                            </label>
+
+                            <label class="btn btn-white btn-info">
+                                <input type="radio" value="pie" />
+                                <i class="icon-only ace-icon fa fa-pie-chart"></i>
+                            </label>
+
+                            <label class="btn btn-white btn-info">
+                                <input type="radio" value="line" />
+                                <i class="icon-only ace-icon fa fa-line-chart"></i>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="space-10"></div>
+                    <div>
+                        <span>统计: &nbsp;</span>
+                        <div data-toggle="buttons" class="btn-group chartstat">
+                            <label class="btn btn-white btn-info active">
+                                <input type="radio" value="C" checked />
+                                计数
+                            </label>
+
+                            <label class="btn btn-white btn-info">
+                                <input type="radio" value="S" />
+                                求和
+                            </label>
+
+                        </div>
+                    </div>
+
+                    <h4 class="header">选择项</h4>
+
+                    <div class="dd dd-draghandle">
+
+                        <div class="dd-empty" data-title="拖拽至此"></div>
+
+
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-12 col-sm-8">
+        <div class="widget-box">
+            <div class="widget-header widget-header-small widget-header-flat">
+                <h6 class="widget-title smaller">图表</h6>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main">
+                    <div id="fapChart" style="width: 600px;height:350px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var fapChart = echarts.init(document.getElementById('fapChart'));
+    var option = {
+        toolbox: {
+            show: true,
+            orient: 'horizontal',
+            left: 'right',
+            top: 'center',
+            feature: {
+                mark: { show: true },
+                dataView: { show: true, readOnly: false },
+                saveAsImage: {
+                    show: true
+                }
+            }
+        }
+        , tooltip: {
+            trigger: 'item',
+            formatter: '{a} <br/>{b} : {c} ({d}%)'
+        }
+
+    };
+    $("#btnPreView").on(ace.click_event, function () {
+        var chartType = $(".charttype .active").find("input[type=radio]:checked").val();
+        if (chartType === "") {
+            chartType = "bar";
+        }
+        var stat = $(".chartstat .active").find("input[type=radio]:checked").val();
+        if (stat === "") {
+            stat = "C";
+        }
+        var colName = $(".dd-draghandle li:first").data("id");
+        var colTitle = $(".dd-draghandle li:first").data("title");
+        var jqPostData = $('#grid-employee').jqGrid("getGridParam", "postData");
+        $.post(basePath + '/Api/Core/EChart', { colName: colName, statType: stat, jqGridPostData: jqPostData }, function (rv) {
+            var legendData = $.map(rv.data, function (d, i) {
+                return d.name;
+            });
+            option.title = {
+                text: colTitle,
+                left: 'center'
+            };
+            option.legend = {
+                orient: 'vertical',
+                left: 'right',
+                data: legendData
+            };
+            option.series = [{
+                name: '访问来源',
+                type: chartType,
+                radius: '55%',
+                center: ['50%', '60%'],
+                data: rv.data,
+                emphasis: {
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    }
+                }
+            }]
+            fapChart.setOption(option);
+        });
+
+
+    })
+</script>

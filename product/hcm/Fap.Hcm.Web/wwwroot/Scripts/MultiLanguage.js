@@ -98,7 +98,8 @@ var MultiLangHelper = (function () {
       'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' },
       'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' },
       'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'chart': { 'ZhCn': '图表', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

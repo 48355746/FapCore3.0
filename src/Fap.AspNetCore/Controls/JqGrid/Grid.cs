@@ -2122,7 +2122,10 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 if ((_dataFormType & OperEnum.ExportWord) > 0)
                 {
                     ExportWordToolbar(script);
-
+                }
+                if ((_dataFormType & OperEnum.Chart) > 0)
+                {
+                    ChartToolbar(script);
                 }
                 //以下工具栏向前排
                 //查看工具
@@ -2300,6 +2303,20 @@ namespace Fap.AspNetCore.Controls.JqGrid
                       onClickButton : function() {
                       
                         loadExportWordMessageBox('"+title+@"','##gridid##','" + HttpUtility.UrlEncode(_querySet.QueryCols) + "','" + TableName + @"',0);
+                    }
+                  });");
+        }
+        private void ChartToolbar(StringBuilder script)
+        {
+            string title = OperEnum.Chart.Description(_multiLang);
+            script.AppendLine(@" 
+                    jQuery('###gridid##').jqGrid('navButtonAdd', '###pager##',{
+                      caption:'',
+                      title:'" + title + @"',
+                      position:'last',  
+                      buttonicon:'ace-icon fa fa-bar-chart',
+                      onClickButton : function() {                      
+                        loadChartMessageBox('" + title + @"','##gridid##','" + TableName + @"');
                     }
                   });");
         }

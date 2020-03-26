@@ -20542,13 +20542,28 @@ th[aria-selected=true] {
 .dd-empty {
     border-color: #AAA;
     border-style: solid;
-    background-color: #e5e5e5;
+    /*background-color: #e5e5e5;*/
+    text-align: center;
+    border: 1px dashed #aaaaaa;
+    border-radius: 4px;
 }
-
+    .dd-empty:before {
+        display: inline-block;
+        content: attr(data-title);
+        position: relative;
+        right: 0;
+        left: 0;
+        margin: 12px;
+        line-height: 22px;       
+        color: #CCC;
+        font-size: 18px;
+        font-weight: bold;
+        border-width: 0;
+    }
 .dd-dragel {
     position: absolute;
     pointer-events: none;
-    z-index: 999;
+    z-index: 1055;
     opacity: 0.8;
 }
 

@@ -61,7 +61,13 @@ namespace Fap.Core.Infrastructure.Enums
         /// 查询方案
         /// </summary>
         [Description("查询方案")]
-        QueryProgram = 1024
+        QueryProgram = 1024,
+        /// <summary>
+        /// 图表
+        /// </summary>
+        [Description("图表")]
+        Chart=2048
+
 
 
     }
