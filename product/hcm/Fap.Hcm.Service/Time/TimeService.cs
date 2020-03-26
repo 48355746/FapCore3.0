@@ -708,7 +708,7 @@ namespace Fap.Hcm.Service.Time
         /// </summary>
         /// <param name="EmpUid"></param>
         /// <returns></returns>
-        public double ValidAnnualLeaveDays(string EmpUid,string startTime)
+        public double ValidAnnualLeaveDays(string empUid,string startTime)
         {
             int annual = DateTime.Now.Year;
             if (startTime.IsPresent())
@@ -717,7 +717,7 @@ namespace Fap.Hcm.Service.Time
             }
             DynamicParameters param = new DynamicParameters();
             //根据当前列获取值
-            param.Add("EmpUid", EmpUid);
+            param.Add("EmpUid", empUid);
             param.Add("Annual", annual);
             double c = _dbContext.ExecuteScalar<double>("select RemainderNum from  TmAnnualLeave where EmpUid=@EmpUid and Annual=@Annual", param);
             //检查审批中是否有年假
@@ -725,7 +725,21 @@ namespace Fap.Hcm.Service.Time
             return c+cc;
 
         }
-
+        /// <summary>
+        /// 获取有效的加班小时数
+        /// </summary>
+        /// <param name="empUid"></param>
+        /// <returns></returns>
+        public double OvertimeValidHours(string empUid)
+        {
+            var param = new DynamicParameters(new { EmpUid = empUid });
+            //审批通过的加班数据
+            string sql = "select HoursLength-DaysoffHours from TmOvertimeStat where EmpUid=@EmpUid and Invalid=0";
+            double c= _dbContext.ExecuteScalar<double>(sql, param);
+            //流程中的调休小时数
+            double cc = _dbContext.ExecuteScalar<double>("select IntervalHour from TmLeaveApply where LeaveType='Tuneoff' and AppEmpUid=@EmpUid  and BillStatus='PROCESSING'", param);
+            return Math.Round((c + cc),2);
+        }
 
 
         /// <summary>

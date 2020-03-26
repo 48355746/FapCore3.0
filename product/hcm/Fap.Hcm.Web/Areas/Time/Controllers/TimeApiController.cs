@@ -152,5 +152,11 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
             double days = _timeService.ValidAnnualLeaveDays(empUid, startTime);
             return Json(new ResponseViewModel { success = true, data = days });
         }
+        [HttpGet("Overtime/ValidDays")]
+        public JsonResult OvertimeValidDays(string empUid)
+        {
+            double hours=_timeService.OvertimeValidHours(empUid);
+            return Json(new ResponseViewModel { success = true, data = hours });
+        }
     }
 }

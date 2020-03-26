@@ -148,11 +148,12 @@ namespace Fap.Workflow.Engine.Node
             _logger = _loggerFactory.CreateLogger<NodeMediator>();
             Linker.FromActivity = forwardContext.Activity;
         }
-        internal NodeMediator(WfAppRunner appRunner, IDbContext dbContext,  ILoggerFactory loggerFactory)
+        internal NodeMediator(WfAppRunner appRunner, IServiceProvider serviceProvider)
         {
             AppRunner = appRunner;
-            _dataAccessor = dbContext;
-            _loggerFactory = loggerFactory;
+            _serviceProvider = serviceProvider;
+            _dataAccessor = _serviceProvider.GetService<IDbContext>();
+            _loggerFactory = _serviceProvider.GetService<ILoggerFactory>(); 
             _logger = _loggerFactory.CreateLogger<NodeMediator>();
         }
         /// <summary>
@@ -267,7 +268,7 @@ namespace Fap.Workflow.Engine.Node
                     if (fromActivityInstance.ActivityState == ActivityStateEnum.Completed.ToString())
                     {
                         //创建新任务节点
-                        NodeMediator taskNodeMediator = new NodeMediatorTask(AppRunner, _dataAccessor, _loggerFactory);
+                        NodeMediator taskNodeMediator = new NodeMediatorTask(AppRunner, _serviceProvider);
                         taskNodeMediator.CreateActivityTaskTransitionInstance(comp.Activity,
                             ActivityForwardContext.ProcessInstance,
                             fromActivityInstance,
@@ -294,7 +295,7 @@ namespace Fap.Workflow.Engine.Node
                     if (fromActivityInstance.ActivityState ==ActivityStateEnum.Completed.ToString())
                     {
                         //实例化subprocess节点数据
-                        NodeMediator subNodeMediator = new NodeMediatorSubProcess(AppRunner,_dataAccessor,_loggerFactory);
+                        NodeMediator subNodeMediator = new NodeMediatorSubProcess(AppRunner,_serviceProvider);
                         subNodeMediator.CreateActivityTaskTransitionInstance(comp.Activity,
                             ActivityForwardContext.ProcessInstance,
                             fromActivityInstance,

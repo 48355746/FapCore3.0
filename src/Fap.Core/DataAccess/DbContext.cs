@@ -1888,11 +1888,8 @@ namespace Fap.Core.DataAccess
         {
             string tableName = fapDynData.TableName;
             Guard.Against.NullOrWhiteSpace(tableName, nameof(tableName));
-
             FapTable table = Table(tableName);
-
             Guard.Against.Null(table, nameof(table));
-
             try
             {
                 BeginTransaction();
@@ -1905,7 +1902,7 @@ namespace Fap.Core.DataAccess
                 Rollback();
                 _logger.LogError($"insert dynamic error:{ex.Message}");
                 throw ex;
-            }
+            }        
             long InsertDynamicData()
             {
                 InitDynamicToInsert(fapDynData);

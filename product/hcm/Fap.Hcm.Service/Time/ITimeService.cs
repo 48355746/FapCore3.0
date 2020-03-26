@@ -19,6 +19,12 @@ namespace Fap.Hcm.Service.Time
         /// <returns></returns>
         double ValidAnnualLeaveDays(string EmpUid, string startTime);
         /// <summary>
+        /// 获取有效加班小时数
+        /// </summary>
+        /// <param name="empUid"></param>
+        /// <returns></returns>
+        double OvertimeValidHours(string empUid);
+        /// <summary>
         /// 请假天数时长
         /// </summary>
         /// <param name="empUid"></param>

@@ -20,8 +20,8 @@ namespace Fap.Workflow.Engine.Node
 
         }
 
-        internal NodeMediatorTask(WfAppRunner runner, IDbContext dbContext, ILoggerFactory loggerFactory)
-            : base(runner,dbContext,loggerFactory)
+        internal NodeMediatorTask(WfAppRunner runner, IServiceProvider serviceProvider)
+            : base(runner, serviceProvider)
         {
 
         }

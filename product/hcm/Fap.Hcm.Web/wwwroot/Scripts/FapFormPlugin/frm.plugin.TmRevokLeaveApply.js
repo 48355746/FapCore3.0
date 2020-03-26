@@ -8,6 +8,13 @@ $('#frm-TmRevokLeaveApply').on("mouseover", "#IntervalDay", function () {
 $('#frm-TmRevokLeaveApply').on("mouseout", "#IntervalDay", function () {
     $(this).removeAttr('disabled');
 });
+$('#frm-TmRevokLeaveApply').on("mouseover", "#IntervalHour", function () {
+    $(this).prop('disabled', "disabled");
+});
+
+$('#frm-TmRevokLeaveApply').on("mouseout", "#IntervalHour", function () {
+    $(this).removeAttr('disabled');
+});
 var leavelDays = function () {
     var startTime = $("#StartTime").val();
     var endTime = $("#EndTime").val();
@@ -19,6 +26,7 @@ var leavelDays = function () {
     $.post(basePath + "/Time/Api/LeavelDays", { empUid: empUid, startDateTime: startTime, endDateTime: endTime }, function (rv) {
         if (rv.success) {
             var days = rv.data.days;
+            var hours = rv.data.hours;
             $("#IntervalDay").val(rv.data.days);
             $("#IntervalHour").val(rv.data.hours);
             if (leaveType === "Annaul") {
@@ -36,6 +44,23 @@ var leavelDays = function () {
                         }
                     } else {
                         bootbox.alert(rva.msg);
+                    }
+                });
+            } else if (leaveType === "Tuneoff") {//调休
+                $.get(basePath + "/Time/Api/Overtime/ValidDays", { empUid: empUid }, function (rvb) {
+                    if (rvb.success) {
+                        var oriHours = $("#OriIntervalHour").val();//获取的调休时长不包括审批通过的调休时长，这里要加上
+                        var h = parseFloat(rvb.data) + parseFloat(oriHours);
+                        if (hours > h) {
+                            $("#IntervalHour").rules("add", {
+                                range: [0, rvb.data],
+                                messages: {
+                                    range: "你最多只能调休" + rvb.data + "小时！"
+                                }
+                            });
+                        }
+                    } else {
+                        bootbox.alert(rvb.msg);
                     }
                 });
             }
