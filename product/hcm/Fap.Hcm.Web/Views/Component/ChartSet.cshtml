@@ -1,13 +1,14 @@
 ﻿@model IEnumerable<Fap.Core.Infrastructure.Metadata.FapColumn>
+@using Fap.Core.Infrastructure.Metadata
 <div class="row">
     <div class="col-xs-12 col-sm-2">
         <div class="widget-box light-border" style="opacity: 1;">
-            <div class="widget-header widget-header-small widget-header-flat">
+            <div class="widget-header  widget-header-flat">
                 <h5 class="widget-title smaller">项</h5>
             </div>
 
             <div class="widget-body">
-                <div class="widget-main padding-6">
+                <div class="widget-main padding-6 scrollable" data-size="500">
                     <div class="dd" id="nestable">
                         <ol class="dd-list">
                             @foreach (var column in Model)
@@ -15,7 +16,45 @@
                                 <li class="dd-item" data-id="@column.ColName" data-title="@column.ColComment">
                                     <div class="dd-handle">
                                         @column.ColComment
-                                        <i class="pull-right dd-nodrag ace-icon fa fa-bars orange2"></i>
+                                        @if (column.CtrlType == FapColumn.COL_TYPE_DATETIME || column.CtrlType == FapColumn.CTRL_TYPE_DATE)
+                                        {
+                                            <div class="pull-right dd-nodrag">
+                                                <a href="#" data-action="settings" data-toggle="dropdown">
+                                                    F
+                                                </a>
+                                                <ul class="dropdown-menu dropdown-menu-right dropdown-light-blue dropdown-caret dropdown-closer">
+                                                    <li>
+                                                        <a data-toggle="format" data-setting="yyyy" href="javascript:void(0)">年</a>
+                                                    </li>
+                                                    <li>
+                                                        <a data-toggle="format" data-setting="yyyymm" href="javascript:void(0)">年月</a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        }
+                                        else if (column.ColType == FapColumn.COL_TYPE_INT || column.ColType == FapColumn.COL_TYPE_LONG
+                                           || column.ColType == FapColumn.CTRL_TYPE_MONEY || column.ColType == FapColumn.COL_TYPE_DOUBLE)
+                                        {
+                                            <div class="pull-right dd-nodrag">
+                                                <a href="#" data-action="settings" data-toggle="dropdown">
+                                                    ∑
+                                                </a>
+
+                                                <ul class="dropdown-menu dropdown-menu-right dropdown-light-blue dropdown-caret dropdown-closer">
+                                                    <li>
+                                                        <a data-toggle="aggregate" data-setting="count" href="javascript:void(0)">计数</a>
+                                                    </li>
+
+                                                    <li>
+                                                        <a data-toggle="aggregate" data-setting="sum" href="javascript:void(0)">求和</a>
+                                                    </li>
+                                                    <li>
+                                                        <a data-toggle="aggregate" data-setting="avg" href="javascript:void(0)">平均值</a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        }
+
                                     </div>
                                 </li>
                             }
@@ -29,7 +68,7 @@
 
     <div class="col-xs-12 col-sm-2" style="min-height: 106px;">
         <div class="widget-box  light-border" style="opacity: 1;">
-            <div class="widget-header widget-header-small widget-header-flat">
+            <div class="widget-header  widget-header-flat">
                 <h5 class="widget-title smaller">选择区</h5>
                 <div class="widget-toolbar">
                     <a href="javascript:void(0)" id="btnPreView" title="预览">
@@ -65,31 +104,22 @@
                         </div>
                     </div>
                     <div class="space-10"></div>
-                    <div>
-                        <span>统计: &nbsp;</span>
-                        <div data-toggle="buttons" class="btn-group chartstat">
-                            <label class="btn btn-white btn-info active">
-                                <input type="radio" value="C" checked />
-                                计数
-                            </label>
+                   
 
-                            <label class="btn btn-white btn-info">
-                                <input type="radio" value="S" />
-                                求和
-                            </label>
+                    <h4 class="header">统计项</h4>
 
-                        </div>
-                    </div>
-
-                    <h4 class="header">选择项</h4>
-
-                    <div class="dd dd-draghandle">
+                    <div class="dd dd-draghandle item-aggregate">
 
                         <div class="dd-empty" data-title="拖拽至此"></div>
 
+                    </div>
+                    <h4 class="header">分组项</h4>
+
+                    <div class="dd dd-draghandle item-group">
+
+                        <div class="dd-empty" data-title="拖拽至此"></div>
 
                     </div>
-
 
                 </div>
             </div>
@@ -98,7 +128,7 @@
 
     <div class="col-xs-12 col-sm-8">
         <div class="widget-box">
-            <div class="widget-header widget-header-small widget-header-flat">
+            <div class="widget-header  widget-header-flat">
                 <h6 class="widget-title smaller">图表</h6>
             </div>
 
@@ -111,8 +141,27 @@
     </div>
 </div>
 <script>
+    setTimeout(function () {
+        $('.dd').nestable({ maxDepth: 1 });
+        $('.scrollable').each(function () {
+            var $this = $(this);
+            $(this).ace_scroll({
+                size: $this.attr('data-size') || 500,
+                styleClass: 'scroll-left scroll-margin scroll-thin  no-track '
+            });
+        });
+        $("a[data-toggle=format]").on(ace.click_event, function () {
+            $(this).closest(".dd-nodrag").find("a[data-action=settings]").text("F(" + $(this).text() + ")");
+            $(this).closest(".dd-item").data("setting", $(this).data("setting"));
+        });
+        $("a[data-toggle=aggregate]").on(ace.click_event, function () {
+            $(this).closest(".dd-nodrag").find("a[data-action=settings]").text("∑(" + $(this).text() + ")");
+            $(this).closest(".dd-item").data("setting", $(this).data("setting"));
+        });
+    }, 0);
     var fapChart = echarts.init(document.getElementById('fapChart'));
     var option = {
+         legend: {},
         toolbox: {
             show: true,
             orient: 'horizontal',
@@ -125,52 +174,66 @@
                     show: true
                 }
             }
-        }
-        , tooltip: {
-            trigger: 'item',
-            formatter: '{a} <br/>{b} : {c} ({d}%)'
-        }
-
+        },
+        xAxis: { type: 'category' },
+        yAxis: {},
+        tooltip: {}
     };
     $("#btnPreView").on(ace.click_event, function () {
         var chartType = $(".charttype .active").find("input[type=radio]:checked").val();
         if (chartType === "") {
             chartType = "bar";
         }
-        var stat = $(".chartstat .active").find("input[type=radio]:checked").val();
-        if (stat === "") {
-            stat = "C";
-        }
-        var colName = $(".dd-draghandle li:first").data("id");
-        var colTitle = $(".dd-draghandle li:first").data("title");
+        var charModel = {Aggregates:[],Groups:[]};
+        var aggregates = $(".item-aggregate .dd-item");
+        $.each(aggregates, function (i, d) {
+            let field = $(d).data("id");
+            let tp = $(d).data("setting");
+            if (tp === undefined) {
+                tp = "count";
+            }
+            charModel.Aggregates.push({ Field: field, AggType: tp });
+        })
+        var grps = $(".item-group .dd-item");
+           $.each(grps, function (i,d) {
+            let field = $(d).data("id");
+            let fmt = $(d).data("setting");
+            if (fmt === undefined) {
+                fmt = "";
+            }
+            charModel.Groups.push({ Field: field, Format: fmt });
+        })
+        var colTitle = $(".item-group li:first").data("title");
         var jqPostData = $('#grid-employee').jqGrid("getGridParam", "postData");
-        $.post(basePath + '/Api/Core/EChart', { colName: colName, statType: stat, jqGridPostData: jqPostData }, function (rv) {
-            var legendData = $.map(rv.data, function (d, i) {
-                return d.name;
-            });
+        $.post(basePath + '/Api/Core/EChart', { chartViewModel:charModel, jqGridPostData: jqPostData }, function (rv) {          
             option.title = {
                 text: colTitle,
                 left: 'center'
             };
-            option.legend = {
-                orient: 'vertical',
-                left: 'right',
-                data: legendData
+            option.dataset = {
+                dimensions: Object.keys(rv.data[0]),
+                source: rv.data
             };
-            option.series = [{
-                name: '访问来源',
-                type: chartType,
-                radius: '55%',
-                center: ['50%', '60%'],
-                data: rv.data,
-                emphasis: {
-                    itemStyle: {
-                        shadowBlur: 10,
-                        shadowOffsetX: 0,
-                        shadowColor: 'rgba(0, 0, 0, 0.5)'
-                    }
-                }
-            }]
+            var series = [];
+            $.each(rv.data, function (i, d) {
+                series.push({ type: chartType });
+            })
+            option.xAxis={ type: 'category' };
+            option.series = series;
+            //option.series = [{
+            //    type: chartType,
+            //    radius: '55%',
+            //    center: ['50%', '60%'],
+            //    data: rv.data,
+            //    emphasis: {
+            //        itemStyle: {
+            //            shadowBlur: 10,
+            //            shadowOffsetX: 0,
+            //            shadowColor: 'rgba(0, 0, 0, 0.5)'
+            //        }
+            //    }
+            //}]
+            debugger;
             fapChart.setOption(option);
         });
 

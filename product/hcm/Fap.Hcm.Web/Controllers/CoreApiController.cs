@@ -19,6 +19,8 @@ using Fap.AspNetCore.Model;
 using System.Data;
 using System.Collections.Generic;
 using Fap.Core.Utility;
+using Fap.Hcm.Web.Models;
+using Fap.Core.Infrastructure.Metadata;
 
 namespace Fap.Hcm.Web.Controllers
 {
@@ -172,7 +174,7 @@ namespace Fap.Hcm.Web.Controllers
                 var queryColList = HttpUtility.UrlDecode(qryCols).ToLower().SplitComma();
                 colCacheList = colCacheList.Where(c => queryColList.Contains(c.ColName.ToLower()));
             }
-            return Json(colCacheList.OrderBy(c=>c.ColOrder));
+            return Json(colCacheList.OrderBy(c => c.ColOrder));
         }
         [HttpPost("MultiLanguage")]
         public JsonResult RegisterMultiLanguage(string langKey, string langValue)
@@ -210,37 +212,6 @@ namespace Fap.Hcm.Web.Controllers
             string tableName = jqGridPostData.QuerySet.TableName;
             //页面级条件
             JsonFilterToSql jfs = new JsonFilterToSql(_dbContext);
-            List<string> lwhere=new List<string>();
-            if (jqGridPostData.PageCondition.IsPresent())
-            {
-                lwhere.Add(jfs.BuilderFilter(tableName, jqGridPostData.PageCondition));
-            }
-            //构造jqgrid过滤条件
-            if (jqGridPostData.Filters.IsPresent())
-            {
-                lwhere.Add(jfs.BuilderFilter(tableName, jqGridPostData.Filters));
-            }
-            string where = string.Empty;
-            if (lwhere.Count > 0)
-            {
-                where =" where "+ string.Join(" and ", lwhere);
-            }
-            string sql = $"select {colName} as name,count(0) as value from {tableName} {where} group by {colName}";
-            var dataList = _dbContext.Query(sql);
-            string category = _dbContext.Column(tableName, colName).ComboxSource;
-            var dics = _dbContext.Dictionarys(category);
-            dataList.ToList().ForEach((di) =>
-            {
-                di.name = dics.FirstOrDefault(d => d.Code == di.name)?.Name ?? "未知";
-            });
-            return Json(new ResponseViewModel() { success = true, data = dataList });
-        }
-        [HttpPost("EChart")]
-        public JsonResult EChart(string colName,string statType, JqGridPostData jqGridPostData)
-        {
-            string tableName = jqGridPostData.QuerySet.TableName;
-            //页面级条件
-            JsonFilterToSql jfs = new JsonFilterToSql(_dbContext);
             List<string> lwhere = new List<string>();
             if (jqGridPostData.PageCondition.IsPresent())
             {
@@ -256,16 +227,7 @@ namespace Fap.Hcm.Web.Controllers
             {
                 where = " where " + string.Join(" and ", lwhere);
             }
-            string statSql = string.Empty;
-            if (statType.EqualsWithIgnoreCase("C"))
-            {
-                statSql= "Count(0)";
-            }
-            else
-            {
-                statSql = $"Sum({colName})";
-            }
-            string sql = $"select {colName} as name,{statSql} as value from {tableName} {where} group by {colName}";
+            string sql = $"select {colName} as name,count(0) as value from {tableName} {where} group by {colName}";
             var dataList = _dbContext.Query(sql);
             string category = _dbContext.Column(tableName, colName).ComboxSource;
             var dics = _dbContext.Dictionarys(category);
@@ -273,6 +235,100 @@ namespace Fap.Hcm.Web.Controllers
             {
                 di.name = dics.FirstOrDefault(d => d.Code == di.name)?.Name ?? "未知";
             });
+            return Json(new ResponseViewModel() { success = true, data = dataList });
+        }
+        [HttpPost("EChart")]
+        public JsonResult EChart(ChartViewModel chartViewModel, JqGridPostData jqGridPostData)
+        {
+            string tableName = jqGridPostData.QuerySet.TableName;
+            //页面级条件
+            JsonFilterToSql jfs = new JsonFilterToSql(_dbContext);
+            List<string> lwhere = new List<string>();
+            if (jqGridPostData.PageCondition.IsPresent())
+            {
+                lwhere.Add(jfs.BuilderFilter(tableName, jqGridPostData.PageCondition));
+            }
+            //构造jqgrid过滤条件
+            if (jqGridPostData.Filters.IsPresent())
+            {
+                lwhere.Add(jfs.BuilderFilter(tableName, jqGridPostData.Filters));
+            }
+            string where = $" where {tableName}.EnableDate<='{DateTimeUtils.CurrentDateTimeStr}' and {tableName}.DisableDate>='{DateTimeUtils.CurrentDateTimeStr}' and {tableName}.Dr=0 ";
+            if (lwhere.Count > 0)
+            {
+                where += " and " + string.Join(" and ", lwhere);
+            }
+
+            string groupBy = string.Empty;
+            string colName = string.Empty;
+            var gf = chartViewModel.Groups.FirstOrDefault();
+            if (gf != null)
+            {
+                if (gf.Format.IsPresent())
+                {
+                    if (_dbContext.DatabaseDialect == Core.DataAccess.DatabaseDialectEnum.MSSQL)
+                    {
+                        if (gf.Format.EqualsWithIgnoreCase("yyyy"))
+                        {
+                            groupBy = $" group by  CONVERT(varchar(4) ,{gf.Field}, 120) ";
+                            colName = $"CONVERT(varchar(4) ,{gf.Field}, 120) as {gf.Field}";
+                        }
+                        else if (gf.Format.EqualsWithIgnoreCase("yyyymm"))
+                        {
+                            groupBy = $" group by CONVERT(varchar(7) ,{gf.Field}, 120)";
+                            colName = $"CONVERT(varchar(7) ,{gf.Field}, 120) as {gf.Field}";
+                        }                      
+                    }
+                    else if (_dbContext.DatabaseDialect == Core.DataAccess.DatabaseDialectEnum.MYSQL)
+                    {
+                        if (gf.Format.EqualsWithIgnoreCase("yyyy"))
+                        {
+                            groupBy = $" group by DATE_FORMAT({gf.Field},'%Y')";
+                            colName = $"DATE_FORMAT({gf.Field},'%Y') as {gf.Field}";
+                        }
+                        else if (gf.Format.EqualsWithIgnoreCase("yyyymm"))
+                        {
+                            groupBy = $" group by DATE_FORMAT({gf.Field},'%Y-%m')";
+                            colName = $"DATE_FORMAT({gf.Field},'%Y-%m')  as {gf.Field}";
+                        }                        
+                    }
+                }
+                else
+                {
+                    groupBy = $" group by {gf.Field}";
+                    colName = gf.Field;
+                }
+            }
+
+            List<string> aggCols = new List<string>();
+            if (chartViewModel.Aggregates!=null)
+            {
+                foreach (var aggregate in chartViewModel.Aggregates)
+                {
+                    if (aggregate.AggType == StatSymbolEnum.None || aggregate.AggType == StatSymbolEnum.Description)
+                    {
+                        aggregate.AggType = StatSymbolEnum.COUNT;
+                    }
+                    aggCols.Add($"{aggregate.AggType}({aggregate.Field}) as {aggregate.Field}");
+                }
+            }
+            else
+            {
+                aggCols.Add("Count(0) as DefCount");
+            }
+
+            string sql = $"select {colName},{string.Join(',', aggCols)} from {tableName} {where} {groupBy}";
+            var dataList = _dbContext.QueryOriSql(sql);
+            var column = _dbContext.Column(tableName, gf.Field);
+            if (column.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX&& column.ComboxSource.IsPresent())
+            {
+                var dics = _dbContext.Dictionarys(column.ComboxSource);
+                dataList.ToList().ForEach((di) =>
+                {
+                   var diDic=(di as IDictionary<string, object>);
+                    diDic[gf.Field]= dics.FirstOrDefault(d => d.Code == diDic[gf.Field]?.ToString())?.Name ?? "未知";
+                });
+            }
             return Json(new ResponseViewModel() { success = true, data = dataList });
         }
         #endregion
@@ -321,7 +377,7 @@ namespace Fap.Hcm.Web.Controllers
         public JsonResult PostValideSqlCondition(string tableName, string conditionSql)
         {
             var cols = _dbContext.Columns(tableName);
-            conditionSql= SqlUtils.ParsingSql(cols, conditionSql, _dbContext.DatabaseDialect);
+            conditionSql = SqlUtils.ParsingSql(cols, conditionSql, _dbContext.DatabaseDialect);
             string sql = $"select count(0) from {tableName} where " + conditionSql;
             _dbContext.ExecuteScalar(sql);
             return Json(ResponseViewModelUtils.Sueecss());

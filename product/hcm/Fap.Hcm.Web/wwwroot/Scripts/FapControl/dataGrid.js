@@ -551,11 +551,11 @@ var loadChartMessageBox = function (title, gridid, tablename) {
         }
 
     });
-    dialog.on("shown.bs.modal", function () {
-        setTimeout(function () {
-            $('.dd').nestable({ maxDepth: 1 });
-        }, 0);
-    });
+    //dialog.on("shown.bs.modal", function () {
+    //    setTimeout(function () {
+    //        $('.dd').nestable({ maxDepth: 1 });
+    //    }, 0);
+    //});
     dialog.init(function () {
         $.get(basePath + '/Component/ChartSet', { tablename: tablename }, function (ev) {
             dialog.find(".modal-body").html(ev);

@@ -934,7 +934,7 @@ namespace Fap.Hcm.Web.Controllers
         }
         public PartialViewResult ChartSet(string tableName)
         {
-            var columns = _dbContext.Columns(tableName).Where(f => f.ComboxSource.IsPresent());
+            var columns = _dbContext.Columns(tableName).Where(f => f.IsDefaultCol==0);
             return PartialView(columns);
         }
         #endregion
