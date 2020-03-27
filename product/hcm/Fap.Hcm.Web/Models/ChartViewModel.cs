@@ -13,12 +13,29 @@ namespace Fap.Hcm.Web.Models
     }
     public class Group
     {
+        /// <summary>
+        /// 字段
+        /// </summary>
         public string Field { get; set; }
+        /// <summary>
+        /// 别名
+        /// </summary>
+        public string Alias { get; set; }
+        /// <summary>
+        /// 格式（year,year-month）
+        /// </summary>
         public string Format { get; set; }
     }
     public class Aggregate
     {
+        /// <summary>
+        /// 字段
+        /// </summary>
         public string Field { get; set; }
+        /// <summary>
+        /// 别名
+        /// </summary>
+        public string Alias { get; set; }
         public StatSymbolEnum AggType { get; set; }
     }
 }

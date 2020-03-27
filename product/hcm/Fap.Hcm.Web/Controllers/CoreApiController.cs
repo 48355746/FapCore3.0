@@ -271,32 +271,41 @@ namespace Fap.Hcm.Web.Controllers
                         if (gf.Format.EqualsWithIgnoreCase("yyyy"))
                         {
                             groupBy = $" group by  CONVERT(varchar(4) ,{gf.Field}, 120) ";
-                            colName = $"CONVERT(varchar(4) ,{gf.Field}, 120) as {gf.Field}";
+                            colName = $"CONVERT(varchar(4) ,{gf.Field}, 120) as '{gf.Alias}'";
                         }
                         else if (gf.Format.EqualsWithIgnoreCase("yyyymm"))
                         {
                             groupBy = $" group by CONVERT(varchar(7) ,{gf.Field}, 120)";
-                            colName = $"CONVERT(varchar(7) ,{gf.Field}, 120) as {gf.Field}";
-                        }                      
+                            colName = $"CONVERT(varchar(7) ,{gf.Field}, 120) as '{gf.Alias}'";
+                        }
+                        else if (gf.Format.EqualsWithIgnoreCase("yyyymmdd"))
+                        {
+                            groupBy = $" group by CONVERT(varchar(10) ,{gf.Field}, 120)";
+                            colName = $"CONVERT(varchar(10) ,{gf.Field}, 120) as '{gf.Alias}'";
+                        }
                     }
                     else if (_dbContext.DatabaseDialect == Core.DataAccess.DatabaseDialectEnum.MYSQL)
                     {
                         if (gf.Format.EqualsWithIgnoreCase("yyyy"))
                         {
                             groupBy = $" group by DATE_FORMAT({gf.Field},'%Y')";
-                            colName = $"DATE_FORMAT({gf.Field},'%Y') as {gf.Field}";
+                            colName = $"DATE_FORMAT({gf.Field},'%Y') as '{gf.Alias}'";
                         }
                         else if (gf.Format.EqualsWithIgnoreCase("yyyymm"))
                         {
                             groupBy = $" group by DATE_FORMAT({gf.Field},'%Y-%m')";
-                            colName = $"DATE_FORMAT({gf.Field},'%Y-%m')  as {gf.Field}";
+                            colName = $"DATE_FORMAT({gf.Field},'%Y-%m')  as '{gf.Alias}'";
+                        }else if (gf.Format.EqualsWithIgnoreCase("yyyymmdd"))
+                        {
+                            groupBy = $" group by DATE_FORMAT({gf.Field},'%Y-%m-%d')";
+                            colName = $"DATE_FORMAT({gf.Field},'%Y-%m-%d')  as '{gf.Alias}'";
                         }                        
                     }
                 }
                 else
                 {
                     groupBy = $" group by {gf.Field}";
-                    colName = gf.Field;
+                    colName = $"{gf.Field} as '{gf.Alias}'";
                 }
             }
 
@@ -309,12 +318,8 @@ namespace Fap.Hcm.Web.Controllers
                     {
                         aggregate.AggType = StatSymbolEnum.COUNT;
                     }
-                    aggCols.Add($"{aggregate.AggType}({aggregate.Field}) as {aggregate.Field}");
+                    aggCols.Add($"{aggregate.AggType}({aggregate.Field}) as '{aggregate.Alias}'");
                 }
-            }
-            else
-            {
-                aggCols.Add("Count(0) as DefCount");
             }
 
             string sql = $"select {colName},{string.Join(',', aggCols)} from {tableName} {where} {groupBy}";
@@ -326,7 +331,7 @@ namespace Fap.Hcm.Web.Controllers
                 dataList.ToList().ForEach((di) =>
                 {
                    var diDic=(di as IDictionary<string, object>);
-                    diDic[gf.Field]= dics.FirstOrDefault(d => d.Code == diDic[gf.Field]?.ToString())?.Name ?? "未知";
+                    diDic[gf.Alias]= dics.FirstOrDefault(d => d.Code == diDic[gf.Alias]?.ToString())?.Name ?? "未知";
                 });
             }
             return Json(new ResponseViewModel() { success = true, data = dataList });
