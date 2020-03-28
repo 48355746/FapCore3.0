@@ -93,10 +93,10 @@
                 <h5 class="widget-title smaller">选择区</h5>
                 <div class="widget-toolbar">
                     <a href="javascript:void(0)" id="btnPreView" title="预览">
-                        <i class="ace-icon fa fa-eye"></i>
+                        <i class="ace-icon fa fa-binoculars"></i>
                     </a>
 
-                    <a href="#" data-action="reload">
+                    <a href="javascript:void(0)" id="btnSave" title="保存">
                         <i class="ace-icon fa fa-save"></i>
                     </a>
                 </div>
@@ -156,6 +156,7 @@
             <div class="widget-body">
                 <div class="widget-main">
                     <div id="fapChart" style="width:600px;height:500px"></div>
+
                 </div>
             </div>
         </div>
@@ -178,7 +179,7 @@
         $("a[data-toggle=aggregate]").on(ace.click_event, function () {
             $(this).closest(".dd-nodrag").find("a[data-action=settings]").text("∑(" + $(this).text() + ")");
             $(this).closest(".dd-item").data("setting", $(this).data("setting"));
-        }); 
+        });
         $("a[data-toggle=chart]").on(ace.click_event, function () {
             let t = $(this).data("setting");
             if (t === "bar") {
@@ -186,7 +187,7 @@
             } else {
                 $(this).closest(".dd-nodrag").find("a[data-action=settings]").html(" <i class='icon-only ace-icon fa fa-line-chart'></i>");
             }
-            $(this).closest(".dd-item").data("charttype",t);
+            $(this).closest(".dd-item").data("charttype", t);
         });
     }, 0);
     var fapChart = echarts.init(document.getElementById('fapChart'));
@@ -223,7 +224,7 @@
             chartModel.Aggregates.push({ Field: field, Alias: name, AggType: tp, SpecifyType: specifyType });
         })
         if (chartModel.Aggregates.length == 0) {
-            chartModel.Aggregates.push({ Field: "1", Alias: "计数", AggType: "count",SpecifyType:"default" })
+            chartModel.Aggregates.push({ Field: "1", Alias: "计数", AggType: "count", SpecifyType: "default" })
         }
         return chartModel;
 
@@ -277,7 +278,126 @@
 
             fapChart.setOption(option);
         });
+    })
+    $("#btnSave").on(ace.click_event, function () {
+        var $content = $(`                    <div>
+                        <label for="subject" class="control-label bolder">标题:</label>
+                        <input type="text" class="form-control" id="subject" />
+                    </div>
+                    <div class="space-10"></div>
+                    <div>
+                        <label class="control-label bolder">条件:</label>
+                        <div class="control-group form-inline" >
+                            <div class="radio">
+                                <label>
+                                    <input name="form-condition-radio" type="radio" value="1" checked class="ace" />
+                                    <span class="lbl"> 当前条件</span>
+                                </label>
+                            </div>
+                            <div class="radio">
+                                <label>
+                                    <input name="form-condition-radio" type="radio" value="2" class="ace" />
+                                    <span class="lbl">无条件</span>
+                                </label>
+                            </div>
+                            <div class="radio">
+                                <label>
+                                    <input name="form-condition-radio" type="radio" value="3" class="ace" />
+                                    <span class="lbl">自定义条件:</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="subject">自定义条件</label>
 
+                        <textarea type="text" class="form-control" id="specifyCondition"></textarea>
+                    </div>
+                    <div class="space-10"></div>
+                    <div>
+                        <label class="control-label bolder ">授权:</label>
+                        <div class="control-group form-inline">
+                            <!-- #section:custom/checkbox -->
+                            <div class="checkbox">
+                                <label>
+                                    <input name="form-authorize-checkbox" type="checkbox" value="1" class="ace" />
+                                    <span class="lbl"> 个人</span>
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input name="form-authorize-checkbox" type="checkbox" value="2" class="ace" />
+                                    <span class="lbl">部门</span>
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input name="form-authorize-checkbox" class="ace ace-checkbox-2" value="3" type="checkbox" />
+                                    <span class="lbl"> CEO</span>
+                                </label>
+                            </div>
+                        </div>
+                        <!-- /section:custom/checkbox -->
+                    </div>`);
 
+        var dialog = bootbox.dialog({
+            title: '保存图表',
+            message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+            buttons: {
+                success: {
+                    label: $.lang("ok", "确定"),
+                    className: "btn-primary",
+                    callback: function () {
+                        debugger;
+                        var jqPostData = $('#' + gridId).jqGrid("getGridParam", "postData");
+                        let subject = $content.find("#subject").val();
+                        let condition = "";
+                        var rdCondition = $content.find("input[name=form-condition-radio]:checked").val();
+                        if (rdCondition === "2") {
+                            jqPostData.filters = "";
+                            jqPostData.pageCondition = "";
+                            jqPostData.QuerySet.GlobalWhere = "";
+                        } else if (rdCondition === "3") {
+                            condition = $content.find("#specifyCondition").val();
+                            jqPostData.filters = "";
+                            jqPostData.pageCondition = "";
+                            jqPostData.QuerySet.GlobalWhere = condition;
+                        }
+                        var personal = 0;
+                        var ceo = 0;
+                        var department = 0;
+                        $content.find("input[name=form-authorize-checkbox]:checked").each(function (i, d) {
+                            if ($(d).val() === "1") {
+                                personal = 1;
+                            } else if ($(d).val() === "2") {
+                                department = 1;
+                            } else {
+                                ceo = 1;
+                            }
+                        });
+                        var chartModel = initChartModel();
+                        debugger
+                        var rptChart = { Subject: subject, ChartModel: JSON.stringify(chartModel), EntityModel: JSON.stringify(jqPostData), EntityCondition: condition, Personal: personal, Department: department, CEO: ceo };
+                        $.post(basePath + "/Api/Core/Add/EChart", { rptChart: rptChart }, function (rv) {
+                            if (rv.success) {
+                                $.msg(rv.msg);
+                            } else {
+                                bootbox.alert(rv.msg);
+                            }
+                        })
+                    }
+                },
+                cancel: {
+                    label: $.lang("cancel", "取消"), className: "btn-default"
+                }
+            }
+        });
+        dialog.init(function () {
+            dialog.find('.bootbox-body').html("");
+            $content.remove();
+            dialog.find('.bootbox-body').append($content);
+            let subject= $(".item-group li:first").data("title");
+            $content.find("#subject").val(subject);
+        });
     })
 </script>

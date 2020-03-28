@@ -2717,7 +2717,7 @@ select[multiple].form-group-lg .form-control {
   }
   .form-inline .radio label,
   .form-inline .checkbox label {
-    padding-left: 0;
+    padding-left: 10px;
   }
   .form-inline .radio input[type="radio"],
   .form-inline .checkbox input[type="checkbox"] {

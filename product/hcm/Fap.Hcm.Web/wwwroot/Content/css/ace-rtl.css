@@ -706,7 +706,7 @@
 
 @media (min-width: 768px) {
 .rtl .form-inline .radio label,.rtl .form-inline .checkbox label {
-	padding-left: 0;
+	padding-left: 10px;
 	padding-right: 0;
 }
 .rtl .form-inline .radio input[type="radio"],.rtl .form-inline .checkbox input[type="checkbox"] {

@@ -243,6 +243,12 @@ namespace Fap.Hcm.Web.Controllers
             var dataList= _gridFormService.EChart(chartViewModel, jqGridPostData);
             return Json(new ResponseViewModel() { success = true, data = dataList });
         }
+        [HttpPost("Add/EChart")]
+        public JsonResult SaveEchart(RptChart rptChart)
+        {
+            _dbContext.Insert(rptChart);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
         #endregion
 
         #region validateForm
