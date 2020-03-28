@@ -22,5 +22,6 @@ namespace Fap.AspNetCore.Serivce
         bool ImportWordTemplate(string tableName);
         bool ImportExcelReportTemplate(string fid);
         string PrintWordTemplate(GridModel gridModel);
+        IEnumerable<dynamic> EChart(ChartViewModel chartViewModel, JqGridPostData jqGridPostData);
     }
 }

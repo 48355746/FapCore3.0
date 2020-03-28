@@ -4,7 +4,7 @@
     <div class="col-xs-12 col-sm-2">
         <div class="widget-box light-border" style="opacity: 1;">
             <div class="widget-header  widget-header-flat">
-                <h5 class="widget-title smaller">项</h5>
+                <h5 class="widget-title smaller">待选项</h5>
             </div>
 
             <div class="widget-body">
@@ -17,22 +17,26 @@
                                     <div class="dd-handle">
                                         @column.ColComment
                                         <div class="pull-right dd-nodrag" style="margin-left:10px">
-                                            <a href="#" data-action="settings" data-toggle="dropdown">
-                                                <i class="icon-only ace-icon fa fa-bar-chart"></i>
+                                            <a href="#" data-action="settings" data-toggle="dropdown" title="自定义图表类型">
+                                                <i class="icon-only ace-icon fa fa-area-chart"></i>
                                             </a>
                                             <ul class="dropdown-menu dropdown-menu-right dropdown-light-blue dropdown-caret dropdown-closer">
                                                 <li>
-                                                    <a data-toggle="chart" data-setting="bar" href="javascript:void(0)">柱状图</a>
+                                                    <a data-toggle="chart" data-setting="bar" href="javascript:void(0)">
+                                                        <i class="icon-only ace-icon fa fa-bar-chart"></i>
+                                                    </a>
                                                 </li>
                                                 <li>
-                                                    <a data-toggle="chart" data-setting="line" href="javascript:void(0)">线状图</a>
+                                                    <a data-toggle="chart" data-setting="line" href="javascript:void(0)">
+                                                        <i class="icon-only ace-icon fa fa-line-chart"></i>
+                                                    </a>
                                                 </li>
                                             </ul>
                                         </div>
                                         @if (column.CtrlType == FapColumn.COL_TYPE_DATETIME || column.CtrlType == FapColumn.CTRL_TYPE_DATE)
                                         {
                                             <div class="pull-right dd-nodrag">
-                                                <a href="#" data-action="settings" data-toggle="dropdown">
+                                                <a href="#" data-action="settings" data-toggle="dropdown" title="格式">
                                                     F
                                                 </a>
                                                 <ul class="dropdown-menu dropdown-menu-right dropdown-light-blue dropdown-caret dropdown-closer">
@@ -52,7 +56,7 @@
                                            || column.ColType == FapColumn.CTRL_TYPE_MONEY || column.ColType == FapColumn.COL_TYPE_DOUBLE)
                                         {
                                             <div class="pull-right dd-nodrag">
-                                                <a href="#" data-action="settings" data-toggle="dropdown">
+                                                <a href="#" data-action="settings" data-toggle="dropdown" title="统计类型">
                                                     ∑
                                                 </a>
 
@@ -123,14 +127,14 @@
                     <div class="space-10"></div>
 
 
-                    <h4 class="header">统计项</h4>
+                    <h4 class="header">Y轴(统计项)</h4>
 
                     <div class="dd dd-draghandle item-aggregate">
 
                         <div class="dd-empty" data-title="拖拽至此"></div>
 
                     </div>
-                    <h4 class="header">分组项</h4>
+                    <h4 class="header">X轴(分组项)</h4>
 
                     <div class="dd dd-draghandle item-group">
 
@@ -186,26 +190,12 @@
         });
     }, 0);
     var fapChart = echarts.init(document.getElementById('fapChart'));
-    var option = {
-        legend: {},
-        toolbox: {
-            feature: {
-                dataView: { show: true, readOnly: false },
-                magicType: { show: true, type: ['line', 'bar'] },
-                restore: { show: true },
-                saveAsImage: { show: true }
-            }
-        },
-        xAxis: { type: 'category' },
-        yAxis: {},
-        tooltip: {}
-    };
-    $("#btnPreView").on(ace.click_event, function () {
+    function initChartModel() {
         var chartType = $(".charttype .active").find("input[type=radio]:checked").val();
         if (chartType === "") {
             chartType = "bar";
         }
-        var charModel = { Aggregates: [], Groups: [] };
+        var chartModel = { Aggregates: [], Groups: [], chartType: chartType };
         //分组
         var grps = $(".item-group .dd-item");
         $.each(grps, function (i, d) {
@@ -215,7 +205,7 @@
             if (fmt === undefined) {
                 fmt = "";
             }
-            charModel.Groups.push({ Field: field, Alias: name, Format: fmt });
+            chartModel.Groups.push({ Field: field, Alias: name, Format: fmt });
         })
         //统计
         var aggregates = $(".item-aggregate .dd-item");
@@ -230,36 +220,54 @@
             if (specifyType === undefined) {
                 specifyType = "default";
             }
-            charModel.Aggregates.push({ Field: field, Alias: name, AggType: tp, SpecifyType: specifyType });
+            chartModel.Aggregates.push({ Field: field, Alias: name, AggType: tp, SpecifyType: specifyType });
         })
-        debugger
-        if (charModel.Aggregates.length == 0) {
-            charModel.Aggregates.push({ Field: "1", Alias: "计数", AggType: "count" })
+        if (chartModel.Aggregates.length == 0) {
+            chartModel.Aggregates.push({ Field: "1", Alias: "计数", AggType: "count",SpecifyType:"default" })
         }
+        return chartModel;
+
+    }
+    function initChartOption() {
+        var option = {
+            legend: {},
+            toolbox: {
+                feature: {
+                    dataView: { show: true, readOnly: false },
+                    saveAsImage: { show: true }
+                }
+            },
+            xAxis: { type: 'category' },
+            yAxis: {},
+            tooltip: {}
+        };
         var colTitle = $(".item-group li:first").data("title");
         option.title = {
             text: colTitle,
         };
-        //if (charModel.Aggregates.length > 0) {
-        //    let legend= charModel.Aggregates.map(function (d) {
-        //        return d.Alias;
-        //    });
-        //    option.legend = { data: legend };
-        //}
-
-        var jqPostData = $('#grid-employee').jqGrid("getGridParam", "postData");
-        $.post(basePath + '/Api/Core/EChart', { chartViewModel: charModel, jqGridPostData: jqPostData }, function (rv) {
+        return option;
+    }
+    var gridId;
+    function initGridId(grdid) {
+        gridId = grdid;
+    }
+    $("#btnPreView").on(ace.click_event, function () {
+        var chartModel = initChartModel();
+        var jqPostData = $('#' + gridId).jqGrid("getGridParam", "postData");
+        $.post(basePath + '/Api/Core/EChart', { chartViewModel: chartModel, jqGridPostData: jqPostData }, function (rv) {
+            fapChart.clear();
+            var option = initChartOption();
             option.dataset = {
                 dimensions: Object.keys(rv.data[0]),
                 source: rv.data
             };
             var series = [];
-            $.each(charModel.Aggregates, function (i, d) {
-                if (chartType === "pie") {
-                    series.push({ type: chartType, radius: '50%' });
+            $.each(chartModel.Aggregates, function (i, d) {
+                if (chartModel.chartType === "pie") {
+                    series.push({ type: chartModel.chartType, radius: '50%' });
                 } else {
                     if (d.SpecifyType === "default") {
-                        series.push({ type: chartType });
+                        series.push({ type: chartModel.chartType });
                     } else {
                         series.push({ type: d.SpecifyType });
                     }
@@ -267,7 +275,6 @@
             })
             option.series = series;
 
-            debugger;
             fapChart.setOption(option);
         });
 

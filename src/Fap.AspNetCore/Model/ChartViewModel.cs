@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Fap.Hcm.Web.Models
+namespace Fap.AspNetCore.Model
 {
     public class ChartViewModel
     {

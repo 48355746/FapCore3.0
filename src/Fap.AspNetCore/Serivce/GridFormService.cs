@@ -498,7 +498,7 @@ namespace Fap.AspNetCore.Serivce
                             {
                                 //赋值外键
                                 data.SetValue(foreignKey, mainData.Get("Fid").ToString());
-                                long id= _dbContext.InsertDynamicData(data);
+                                long id = _dbContext.InsertDynamicData(data);
                                 ids.Add(id);
                             }
                             else
@@ -510,7 +510,7 @@ namespace Fap.AspNetCore.Serivce
                         if (ids.Count > 0)
                         {
                             //先删除后增加
-                            _dbContext.DeleteExec(item.Key, $"{foreignKey}='{mainData.Get("Fid")}' and Id not in @Ids",new DynamicParameters(new { Ids=ids}));
+                            _dbContext.DeleteExec(item.Key, $"{foreignKey}='{mainData.Get("Fid")}' and Id not in @Ids", new DynamicParameters(new { Ids = ids }));
                         }
                     }
                 }
@@ -716,7 +716,116 @@ namespace Fap.AspNetCore.Serivce
             zipHelper.ZipMultiFiles(oriFile, Path.Combine(Environment.CurrentDirectory, FapPlatformConstants.TemporaryFolder, zipFileName));
             return zipFileName;
         }
+        public IEnumerable<dynamic> EChart(ChartViewModel chartViewModel, JqGridPostData jqGridPostData)
+        {
+            string tableName = jqGridPostData.QuerySet.TableName;
+            //页面级条件
+            JsonFilterToSql jfs = new JsonFilterToSql(_dbContext);
+            List<string> lwhere = new List<string>();
+            if (jqGridPostData.PageCondition.IsPresent())
+            {
+                lwhere.Add(jfs.BuilderFilter(tableName, jqGridPostData.PageCondition));
+            }
+            //构造jqgrid过滤条件
+            if (jqGridPostData.Filters.IsPresent())
+            {
+                lwhere.Add(jfs.BuilderFilter(tableName, jqGridPostData.Filters));
+            }
+            string where = $" where {tableName}.EnableDate<='{DateTimeUtils.CurrentDateTimeStr}' and {tableName}.DisableDate>='{DateTimeUtils.CurrentDateTimeStr}' and {tableName}.Dr=0 ";
+            if (lwhere.Count > 0)
+            {
+                where += " and " + string.Join(" and ", lwhere);
+            }
 
+            string groupBy = string.Empty;
+            string colName = string.Empty;
+            var gf = chartViewModel.Groups.FirstOrDefault();
+            if (gf != null)
+            {
+                if (gf.Format.IsPresent())
+                {
+                    if (_dbContext.DatabaseDialect == Core.DataAccess.DatabaseDialectEnum.MSSQL)
+                    {
+                        if (gf.Format.EqualsWithIgnoreCase("yyyy"))
+                        {
+                            groupBy = $" group by  CONVERT(varchar(4) ,{gf.Field}, 120) ";
+                            colName = $"CONVERT(varchar(4) ,{gf.Field}, 120) as '{gf.Alias}'";
+                        }
+                        else if (gf.Format.EqualsWithIgnoreCase("yyyymm"))
+                        {
+                            groupBy = $" group by CONVERT(varchar(7) ,{gf.Field}, 120)";
+                            colName = $"CONVERT(varchar(7) ,{gf.Field}, 120) as '{gf.Alias}'";
+                        }
+                        else if (gf.Format.EqualsWithIgnoreCase("yyyymmdd"))
+                        {
+                            groupBy = $" group by CONVERT(varchar(10) ,{gf.Field}, 120)";
+                            colName = $"CONVERT(varchar(10) ,{gf.Field}, 120) as '{gf.Alias}'";
+                        }
+                    }
+                    else if (_dbContext.DatabaseDialect == Core.DataAccess.DatabaseDialectEnum.MYSQL)
+                    {
+                        if (gf.Format.EqualsWithIgnoreCase("yyyy"))
+                        {
+                            groupBy = $" group by DATE_FORMAT({gf.Field},'%Y')";
+                            colName = $"DATE_FORMAT({gf.Field},'%Y') as '{gf.Alias}'";
+                        }
+                        else if (gf.Format.EqualsWithIgnoreCase("yyyymm"))
+                        {
+                            groupBy = $" group by DATE_FORMAT({gf.Field},'%Y-%m')";
+                            colName = $"DATE_FORMAT({gf.Field},'%Y-%m')  as '{gf.Alias}'";
+                        }
+                        else if (gf.Format.EqualsWithIgnoreCase("yyyymmdd"))
+                        {
+                            groupBy = $" group by DATE_FORMAT({gf.Field},'%Y-%m-%d')";
+                            colName = $"DATE_FORMAT({gf.Field},'%Y-%m-%d')  as '{gf.Alias}'";
+                        }
+                    }
+                }
+                else
+                {
+                    groupBy = $" group by {gf.Field}";
+                    colName = $"{gf.Field} as '{gf.Alias}'";
+                }
+            }
+
+            List<string> aggCols = new List<string>();
+            if (chartViewModel.Aggregates != null)
+            {
+                foreach (var aggregate in chartViewModel.Aggregates)
+                {
+                    if (aggregate.AggType == StatSymbolEnum.None || aggregate.AggType == StatSymbolEnum.Description)
+                    {
+                        aggregate.AggType = StatSymbolEnum.COUNT;
+                    }
+                    aggCols.Add($"{aggregate.AggType}({aggregate.Field}) as '{aggregate.Alias}'");
+                }
+            }
+
+            string sql = $"select {colName},{string.Join(',', aggCols)} from {tableName} {where} {groupBy}";
+            var dataList = _dbContext.QueryOriSql(sql);
+            var column = _dbContext.Column(tableName, gf.Field);
+            if (column.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX && column.ComboxSource.IsPresent())
+            {
+                var dics = _dbContext.Dictionarys(column.ComboxSource);
+                dataList.ToList().ForEach((di) =>
+                {
+                    var diDic = (di as IDictionary<string, object>);
+                    diDic[gf.Alias] = dics.FirstOrDefault(d => d.Code == diDic[gf.Alias]?.ToString())?.Name ?? "未知";
+                });
+            }
+            else if (column.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
+            {
+                string refSql = $"select {column.RefID} Code, {column.RefName} Name from {column.RefTable} where {column.RefID} in @Ids";
+                var Ids = dataList.Select(d => (d as IDictionary<string, object>)[gf.Alias]);
+                var refs = _dbContext.Query(refSql, new DynamicParameters(new { Ids = Ids }));
+                dataList.ToList().ForEach((di) =>
+                {
+                    var diRef = (di as IDictionary<string, object>);
+                    diRef[gf.Alias] = refs.FirstOrDefault(d => d.Code == diRef[gf.Alias]?.ToString())?.Name ?? "未知";
+                });
+            }
+            return dataList;
+        }
     }
 
     public enum FormOperEnum
