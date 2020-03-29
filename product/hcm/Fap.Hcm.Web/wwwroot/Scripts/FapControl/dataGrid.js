@@ -550,14 +550,9 @@ var loadChartMessageBox = function (title, gridid, tablename) {
             }
         }
 
-    });
-    dialog.on("shown.bs.modal", function () {
-        setTimeout(function () {
-            initGridId(gridid);
-        }, 0);
-    });
+    }); 
     dialog.init(function () {
-        $.get(basePath + '/Component/ChartSet', { tablename: tablename }, function (ev) {
+        $.get(basePath + '/Component/ChartSet', { tablename: tablename, gridId: gridid }, function (ev) {
             dialog.find(".modal-body").html(ev);
         });
     });

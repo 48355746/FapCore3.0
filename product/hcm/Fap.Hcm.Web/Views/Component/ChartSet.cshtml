@@ -52,6 +52,24 @@
                                                 </ul>
                                             </div>
                                         }
+                                        else if (column.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX)
+                                        {
+                                            <div class="pull-right dd-nodrag">
+                                                <a href="#" data-action="settings" data-toggle="dropdown" title="统计类型">
+                                                    ∑
+                                                </a>
+
+                                                <ul class="dropdown-menu dropdown-menu-right dropdown-light-blue dropdown-caret dropdown-closer">
+                                                    <li>
+                                                        <a data-toggle="aggregate" data-setting="count" href="javascript:void(0)">计数</a>
+                                                    </li>
+
+                                                    <li>
+                                                        <a data-toggle="aggregate" data-setting="ccount" href="javascript:void(0)">分类计数</a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        }
                                         else if (column.ColType == FapColumn.COL_TYPE_INT || column.ColType == FapColumn.COL_TYPE_LONG
                                            || column.ColType == FapColumn.CTRL_TYPE_MONEY || column.ColType == FapColumn.COL_TYPE_DOUBLE)
                                         {
@@ -151,6 +169,20 @@
         <div class="widget-box">
             <div class="widget-header  widget-header-flat">
                 <h6 class="widget-title smaller">图表</h6>
+                <div class="widget-toolbar  no-border">
+                    <a href="javascript:void(0)" id="btnDelete" title="删除">
+                        <i class="ace-icon fa fa-trash-o red"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar">
+                    <select class="chosen-select form-control" style="width:300px" id="selcharts" multi-placeholder="查看已有图表...">
+                        <option value="">  </option>
+                        @foreach (var chart in ViewBag.Charts)
+                        {
+                            <option value="@chart.Fid">@chart.Subject</option>
+                        }
+                    </select>
+                </div>
             </div>
 
             <div class="widget-body">
@@ -221,10 +253,10 @@
             if (specifyType === undefined) {
                 specifyType = "default";
             }
-            chartModel.Aggregates.push({ Field: field, Alias: name, AggType: tp, SpecifyType: specifyType });
+            chartModel.Aggregates.push({ Field: field, Alias: name, AggType: tp, chartType: specifyType });
         })
         if (chartModel.Aggregates.length == 0) {
-            chartModel.Aggregates.push({ Field: "1", Alias: "计数", AggType: "count", SpecifyType: "default" })
+            chartModel.Aggregates.push({ Field: "1", Alias: "计数", AggType: "count", chartType: "default" })
         }
         return chartModel;
 
@@ -248,38 +280,47 @@
         };
         return option;
     }
-    var gridId;
-    function initGridId(grdid) {
-        gridId = grdid;
-    }
+    var gridId='@ViewBag.GridId';
+
     $("#btnPreView").on(ace.click_event, function () {
         var chartModel = initChartModel();
         var jqPostData = $('#' + gridId).jqGrid("getGridParam", "postData");
+        if (chartModel.Groups.length < 1) {
+            $.msg("请设置分组项");
+            return;
+        }
+        DrawChart(chartModel, jqPostData);
+    })
+    function DrawChart(chartModel,jqPostData) {
         $.post(basePath + '/Api/Core/EChart', { chartViewModel: chartModel, jqGridPostData: jqPostData }, function (rv) {
             fapChart.clear();
             var option = initChartOption();
             option.dataset = {
-                dimensions: Object.keys(rv.data[0]),
-                source: rv.data
+                dimensions: Object.keys(rv.data.dataSet[0]),
+                source: rv.data.dataSet
             };
             var series = [];
-            $.each(chartModel.Aggregates, function (i, d) {
+            $.each(rv.data.aggregates, function (i, d) {
                 if (chartModel.chartType === "pie") {
                     series.push({ type: chartModel.chartType, radius: '50%' });
                 } else {
-                    if (d.SpecifyType === "default") {
+                    if (d.chartType === "default") {
                         series.push({ type: chartModel.chartType });
                     } else {
-                        series.push({ type: d.SpecifyType });
+                        series.push({ type: d.chartType });
                     }
                 }
             })
             option.series = series;
-
             fapChart.setOption(option);
         });
-    })
+    }
     $("#btnSave").on(ace.click_event, function () {
+        var chartModel = initChartModel();
+        if (chartModel.Groups.length < 1) {
+            $.msg("请设置分组项");
+            return;
+        }
         var $content = $(`                    <div>
                         <label for="subject" class="control-label bolder">标题:</label>
                         <input type="text" class="form-control" id="subject" />
@@ -317,17 +358,16 @@
                     <div>
                         <label class="control-label bolder ">授权:</label>
                         <div class="control-group form-inline">
-                            <!-- #section:custom/checkbox -->
                             <div class="checkbox">
                                 <label>
-                                    <input name="form-authorize-checkbox" type="checkbox" value="1" class="ace" />
+                                    <input name="form-authorize-checkbox" type="checkbox" value="1" checked class="ace" />
                                     <span class="lbl"> 个人</span>
                                 </label>
                             </div>
                             <div class="checkbox">
                                 <label>
                                     <input name="form-authorize-checkbox" type="checkbox" value="2" class="ace" />
-                                    <span class="lbl">部门</span>
+                                    <span class="lbl">公开</span>
                                 </label>
                             </div>
                             <div class="checkbox">
@@ -337,7 +377,6 @@
                                 </label>
                             </div>
                         </div>
-                        <!-- /section:custom/checkbox -->
                     </div>`);
 
         var dialog = bootbox.dialog({
@@ -365,21 +404,23 @@
                         }
                         var personal = 0;
                         var ceo = 0;
-                        var department = 0;
+                        var publicity = 0;
                         $content.find("input[name=form-authorize-checkbox]:checked").each(function (i, d) {
                             if ($(d).val() === "1") {
                                 personal = 1;
                             } else if ($(d).val() === "2") {
-                                department = 1;
+                                publicity = 1;
                             } else {
                                 ceo = 1;
                             }
                         });
-                        var chartModel = initChartModel();
-                        debugger
-                        var rptChart = { Subject: subject, ChartModel: JSON.stringify(chartModel), EntityModel: JSON.stringify(jqPostData), EntityCondition: condition, Personal: personal, Department: department, CEO: ceo };
+
+                        var rptChart = { Subject: subject, ChartModel: JSON.stringify(chartModel), EntityModel: JSON.stringify(jqPostData), EntityName: jqPostData.QuerySet.TableName, EntityCondition: condition, Personal: personal, Publicity: publicity, CEO: ceo };
                         $.post(basePath + "/Api/Core/Add/EChart", { rptChart: rptChart }, function (rv) {
                             if (rv.success) {
+                                debugger;
+                                $("#selcharts").append(`<option value="` + rv.data.fid + `">` + rv.data.subject + `</option>`);
+                                 $("#selcharts").trigger("chosen:updated");
                                 $.msg(rv.msg);
                             } else {
                                 bootbox.alert(rv.msg);
@@ -396,8 +437,41 @@
             dialog.find('.bootbox-body').html("");
             $content.remove();
             dialog.find('.bootbox-body').append($content);
-            let subject= $(".item-group li:first").data("title");
+            let subject = $(".item-group li:first").data("title");
             $content.find("#subject").val(subject);
         });
+    });
+    $('.chosen-select').chosen({ allow_single_deselect: true,width:"300px" }).on("change", function () {
+        var c = $(this).val();
+        if (c === "") {
+            return;
+        }
+        $.get(basePath + "/Api/Core/Echart/" + c, function (rv) {
+            if (rv.success) {
+                DrawChart(JSON.parse(rv.data.chartModel), JSON.parse(rv.data.entityModel));
+            } else {
+                boobox.alert(rv.msg);
+            }
+        })
+    });
+    $("#btnDelete").on(ace.click_event, function () {
+        bootbox.confirm($.lang("confirm_delete", "确认删除吗"), function (result) {
+            if (result) {
+                var fid = $("#selcharts").val();
+                if (fid !== "") {
+                    $.get(basePath + "/Api/Core/Delete/EChart/" + fid, function (rv) {
+                        if (rv.success) {
+                            $("#selcharts option[value='" + fid + "']").remove();
+                            $("#selcharts").trigger("chosen:updated");
+                            $.msg(rv.msg);
+                        } else {
+                            bootbox.alert(rv.msg);
+                        }
+                    })
+                } else {
+                    $.msg($.lang("no_selected","未选中数据"));
+                }
+            }
+        })
     })
 </script>

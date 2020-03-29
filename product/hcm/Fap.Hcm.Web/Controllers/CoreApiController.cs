@@ -240,14 +240,33 @@ namespace Fap.Hcm.Web.Controllers
         [HttpPost("EChart")]
         public JsonResult EChart(ChartViewModel chartViewModel, JqGridPostData jqGridPostData)
         {
-            var dataList= _gridFormService.EChart(chartViewModel, jqGridPostData);
-            return Json(new ResponseViewModel() { success = true, data = dataList });
+            var charResult = _gridFormService.EChart(chartViewModel, jqGridPostData);
+            return Json(new ResponseViewModel() { success = true, data = charResult });
         }
         [HttpPost("Add/EChart")]
         public JsonResult SaveEchart(RptChart rptChart)
         {
-            _dbContext.Insert(rptChart);
-            return Json(ResponseViewModelUtils.Sueecss());
+             _dbContext.Insert(rptChart);
+            return Json(ResponseViewModelUtils.Sueecss(rptChart));
+        }
+        [HttpGet("Delete/EChart/{fid}")]
+        public JsonResult DeleteEchart(string fid)
+        {
+            var d = _dbContext.Get<RptChart>(fid);
+            if (d.CreateBy == _applicationContext.EmpUid)
+            {
+                _dbContext.DeleteExec(nameof(RptChart), "Fid=@Fid", new DynamicParameters(new { Fid = fid }));
+                return Json(ResponseViewModelUtils.Sueecss());
+            }
+            else
+            {
+                return Json(ResponseViewModelUtils.Failure());
+            }
+        }
+        [HttpGet("Echart/{fid}")]
+        public JsonResult GetEchart(string fid)
+        {
+            return Json(ResponseViewModelUtils.Sueecss(_dbContext.Get<RptChart>(fid)));
         }
         #endregion
 

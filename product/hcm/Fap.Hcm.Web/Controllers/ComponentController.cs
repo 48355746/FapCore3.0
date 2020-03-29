@@ -927,14 +927,13 @@ namespace Fap.Hcm.Web.Controllers
         #endregion
 
         #region echarts
-        public PartialViewResult SimpleEcharts(string tableName)
+
+        public PartialViewResult ChartSet(string tableName,string gridId)
         {
-            var columns = _dbContext.Columns(tableName).Where(f => f.ComboxSource.IsPresent());
-            return PartialView(columns);
-        }
-        public PartialViewResult ChartSet(string tableName)
-        {
+            var rptCharts= _dbContext.QueryWhere<RptChart>("EntityName=@TableName and CreateBy=@EmpUid and Personal=1", new DynamicParameters(new { EmpUid = _applicationContext.EmpUid,TableName =tableName}));
             var columns = _dbContext.Columns(tableName).Where(f => f.IsDefaultCol==0);
+            ViewBag.GridId = gridId;
+            ViewBag.Charts = rptCharts;
             return PartialView(columns);
         }
         #endregion

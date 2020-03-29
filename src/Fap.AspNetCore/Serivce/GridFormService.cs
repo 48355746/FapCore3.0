@@ -4,7 +4,6 @@ using Fap.Core.DI;
 using System;
 using Fap.Core.Extensions;
 using System.Collections.Generic;
-using System.Text;
 using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.DataAccess;
@@ -12,20 +11,16 @@ using System.Linq;
 using Fap.Core.Rbac;
 using Dapper;
 using Fap.Core.Infrastructure.Query;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
-using Ardalis.GuardClauses;
 using Fap.AspNetCore.Infrastructure;
 using Microsoft.AspNetCore.Antiforgery;
 using System.Threading.Tasks;
-using Fap.AspNetCore.Extensions;
-using Newtonsoft.Json.Linq;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Fap.Core.Utility;
 using System.IO;
 using Fap.Core.Office.Excel.Export;
 using Fap.Core.Office;
+using Fap.Core.Extensions;
 using Fap.Core.Annex.Utility.Zip;
 using Fap.AspNetCore.Binder;
 using Microsoft.Extensions.Caching.Memory;
@@ -716,7 +711,7 @@ namespace Fap.AspNetCore.Serivce
             zipHelper.ZipMultiFiles(oriFile, Path.Combine(Environment.CurrentDirectory, FapPlatformConstants.TemporaryFolder, zipFileName));
             return zipFileName;
         }
-        public IEnumerable<dynamic> EChart(ChartViewModel chartViewModel, JqGridPostData jqGridPostData)
+        public ChartResult EChart(ChartViewModel chartViewModel, JqGridPostData jqGridPostData)
         {
             string tableName = jqGridPostData.QuerySet.TableName;
             //页面级条件
@@ -730,6 +725,10 @@ namespace Fap.AspNetCore.Serivce
             if (jqGridPostData.Filters.IsPresent())
             {
                 lwhere.Add(jfs.BuilderFilter(tableName, jqGridPostData.Filters));
+            }
+            if (jqGridPostData.QuerySet.GlobalWhere.IsPresent())
+            {
+                lwhere.Add(jqGridPostData.QuerySet.GlobalWhere);
             }
             string where = $" where {tableName}.EnableDate<='{DateTimeUtils.CurrentDateTimeStr}' and {tableName}.DisableDate>='{DateTimeUtils.CurrentDateTimeStr}' and {tableName}.Dr=0 ";
             if (lwhere.Count > 0)
@@ -787,44 +786,82 @@ namespace Fap.AspNetCore.Serivce
                     colName = $"{gf.Field} as '{gf.Alias}'";
                 }
             }
-
+            //统计列
             List<string> aggCols = new List<string>();
+            //存放ccount得sql
+            Dictionary<string, string> ccSqlDics = new Dictionary<string, string>();
+            //统计项
+            List<Aggregate> agglist = new List<Aggregate>();
             if (chartViewModel.Aggregates != null)
             {
                 foreach (var aggregate in chartViewModel.Aggregates)
                 {
-                    if (aggregate.AggType == StatSymbolEnum.None || aggregate.AggType == StatSymbolEnum.Description)
+                    if (aggregate.AggType == AggregateEnum.CCOUNT)
                     {
-                        aggregate.AggType = StatSymbolEnum.COUNT;
+                        //特殊处理CCount
+                        ccSqlDics.Add(aggregate.Field, $"select {colName},{aggregate.Field},COUNT({aggregate.Field}) as C from {tableName} {where} {groupBy},{aggregate.Field}");
                     }
-                    aggCols.Add($"{aggregate.AggType}({aggregate.Field}) as '{aggregate.Alias}'");
+                    else
+                    {
+                        aggCols.Add($"{aggregate.AggType}({aggregate.Field}) as '{aggregate.Alias}'");
+                    }
+                    agglist.Add(aggregate);
                 }
             }
-
-            string sql = $"select {colName},{string.Join(',', aggCols)} from {tableName} {where} {groupBy}";
+            string sql = $"select {colName} from {tableName} {where} {groupBy}";
+            if (aggCols.Count > 0)
+            {
+                sql = $"select {colName},{string.Join(',', aggCols)} from {tableName} {where} {groupBy}";
+            }
             var dataList = _dbContext.QueryOriSql(sql);
-            var column = _dbContext.Column(tableName, gf.Field);
+            DataProcessed(ccSqlDics, tableName, gf, dataList, agglist);
+            return new ChartResult { Aggregates = agglist, DataSet = dataList }; ;
+        }
+
+        private void DataProcessed(Dictionary<string, string> ccSqlDics, string tableName, GroupBy groupBy, IEnumerable<dynamic> dataList, List<Aggregate> agglist)
+        {
+            var dataResult = dataList as IEnumerable<IDictionary<string, object>>;
+            var column = _dbContext.Column(tableName, groupBy.Field);
             if (column.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX && column.ComboxSource.IsPresent())
             {
                 var dics = _dbContext.Dictionarys(column.ComboxSource);
-                dataList.ToList().ForEach((di) =>
+                dataResult.ToList().ForEach((di) =>
                 {
-                    var diDic = (di as IDictionary<string, object>);
-                    diDic[gf.Alias] = dics.FirstOrDefault(d => d.Code == diDic[gf.Alias]?.ToString())?.Name ?? "未知";
+                    di[groupBy.Alias] = dics.FirstOrDefault(d => d.Code == di[groupBy.Alias]?.ToString())?.Name ?? "未知";
                 });
             }
             else if (column.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
             {
                 string refSql = $"select {column.RefID} Code, {column.RefName} Name from {column.RefTable} where {column.RefID} in @Ids";
-                var Ids = dataList.Select(d => (d as IDictionary<string, object>)[gf.Alias]);
+                var Ids = dataList.Select(d => (d as IDictionary<string, object>)[groupBy.Alias]);
                 var refs = _dbContext.Query(refSql, new DynamicParameters(new { Ids = Ids }));
-                dataList.ToList().ForEach((di) =>
+                dataResult.ToList().ForEach((di) =>
                 {
-                    var diRef = (di as IDictionary<string, object>);
-                    diRef[gf.Alias] = refs.FirstOrDefault(d => d.Code == diRef[gf.Alias]?.ToString())?.Name ?? "未知";
+                    di[groupBy.Alias] = refs.FirstOrDefault(d => d.Code == di[groupBy.Alias]?.ToString())?.Name ?? "未知";
                 });
             }
-            return dataList;
+            foreach (var ccSqlDic in ccSqlDics)
+            {
+                string colName = ccSqlDic.Key;
+                column = _dbContext.Column(tableName, colName);
+                var dics = _dbContext.Dictionarys(column.ComboxSource);
+                var ca= agglist.First(a => a.Field == colName);
+                foreach (var dic in dics)
+                {
+                    agglist.Add(new Aggregate { Field = dic.Code, AggType = ca.AggType, Alias = dic.Name, ChartType = ca.ChartType });
+                }
+                agglist.Remove(ca);
+                var ccDataList = _dbContext.QueryOriSql(ccSqlDic.Value);
+                dataResult.ToList().ForEach((di) =>
+                {
+                    foreach (var dic in dics)
+                    {
+                        var d = ccDataList.FirstOrDefault(d => (d as IDictionary<string, object>)[groupBy.Alias].ToString().EqualsWithIgnoreCase(di[groupBy.Alias].ToString())
+                         && (d as IDictionary<string, object>)[colName].ToString().EqualsWithIgnoreCase(dic.Code));
+                        di[dic.Name] = d?.C ?? 0;
+                    }
+                });
+            }
         }
     }
 

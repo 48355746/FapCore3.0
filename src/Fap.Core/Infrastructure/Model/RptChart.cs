@@ -5,6 +5,7 @@ using System.Text;
 namespace Fap.Core.Infrastructure.Model
 {
 
+
 	/// <summary>
 	/// 图表
 	/// </summary>
@@ -23,6 +24,10 @@ namespace Fap.Core.Infrastructure.Model
 		/// </summary>
 		public string EntityModel { get; set; }
 		/// <summary>
+		/// 实体
+		/// </summary>
+		public string EntityName { get; set; }
+		/// <summary>
 		/// 实体自定义 条件
 		/// </summary>
 		public string EntityCondition { get; set; }
@@ -31,13 +36,13 @@ namespace Fap.Core.Infrastructure.Model
 		/// </summary>
 		public int Personal { get; set; }
 		/// <summary>
+		/// 部门
+		/// </summary>
+		public int Publicity { get; set; }
+		/// <summary>
 		/// 总裁
 		/// </summary>
 		public int CEO { get; set; }
-		/// <summary>
-		/// 部门
-		/// </summary>
-		public int Department { get; set; }
 
 	}
 }
