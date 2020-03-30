@@ -930,7 +930,7 @@ namespace Fap.Hcm.Web.Controllers
 
         public PartialViewResult ChartSet(string tableName,string gridId)
         {
-            var rptCharts= _dbContext.QueryWhere<RptChart>("EntityName=@TableName and CreateBy=@EmpUid and Personal=1", new DynamicParameters(new { EmpUid = _applicationContext.EmpUid,TableName =tableName}));
+            var rptCharts= _dbContext.QueryWhere<RptChart>("EntityName=@TableName and CreateBy=@EmpUid and Personal=1 or Publicity=1", new DynamicParameters(new { EmpUid = _applicationContext.EmpUid,TableName =tableName}));
             var columns = _dbContext.Columns(tableName).Where(f => f.IsDefaultCol==0);
             ViewBag.GridId = gridId;
             ViewBag.Charts = rptCharts;

@@ -205,38 +205,8 @@ namespace Fap.Hcm.Web.Controllers
         }
         #endregion
 
-        #region SimpleCharts
-        [HttpPost("SimpleChart")]
-        public JsonResult SimpleChart(string colName, JqGridPostData jqGridPostData)
-        {
-            string tableName = jqGridPostData.QuerySet.TableName;
-            //页面级条件
-            JsonFilterToSql jfs = new JsonFilterToSql(_dbContext);
-            List<string> lwhere = new List<string>();
-            if (jqGridPostData.PageCondition.IsPresent())
-            {
-                lwhere.Add(jfs.BuilderFilter(tableName, jqGridPostData.PageCondition));
-            }
-            //构造jqgrid过滤条件
-            if (jqGridPostData.Filters.IsPresent())
-            {
-                lwhere.Add(jfs.BuilderFilter(tableName, jqGridPostData.Filters));
-            }
-            string where = string.Empty;
-            if (lwhere.Count > 0)
-            {
-                where = " where " + string.Join(" and ", lwhere);
-            }
-            string sql = $"select {colName} as name,count(0) as value from {tableName} {where} group by {colName}";
-            var dataList = _dbContext.Query(sql);
-            string category = _dbContext.Column(tableName, colName).ComboxSource;
-            var dics = _dbContext.Dictionarys(category);
-            dataList.ToList().ForEach((di) =>
-            {
-                di.name = dics.FirstOrDefault(d => d.Code == di.name)?.Name ?? "未知";
-            });
-            return Json(new ResponseViewModel() { success = true, data = dataList });
-        }
+        #region ECharts
+        
         [HttpPost("EChart")]
         public JsonResult EChart(ChartViewModel chartViewModel, JqGridPostData jqGridPostData)
         {
@@ -260,7 +230,7 @@ namespace Fap.Hcm.Web.Controllers
             }
             else
             {
-                return Json(ResponseViewModelUtils.Failure());
+                return Json(ResponseViewModelUtils.Failure("不能删除别人创建的图表"));
             }
         }
         [HttpGet("Echart/{fid}")]
