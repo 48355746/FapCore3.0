@@ -96,6 +96,8 @@
     <Folder Include="Areas\Employee\Models\" />
     <Folder Include="Areas\Organization\Data\" />
     <Folder Include="Areas\Organization\Models\" />
+    <Folder Include="Areas\Payroll\Data\" />
+    <Folder Include="Areas\Payroll\Models\" />
     <Folder Include="Areas\System\Data\" />
     <Folder Include="Areas\Time\Data\" />
     <Folder Include="Areas\Workflow\Data\" />

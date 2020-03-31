@@ -711,7 +711,7 @@ var unformatReference = function (cellValue, options, cellObject) {
 var searchOptionReference = function (el, title, fid, reftype) {
     $(el).addClass("hide");
     var $ctrlRef = $(`<span class="input-icon input-icon-right">
-												<input type="text" >
+												<input type="text" style="width:100%;height:30px">
 												<i class="ace-icon fa fa-search block"></i>
 											</span>`);
     $(el).parent().append($ctrlRef);
@@ -723,7 +723,9 @@ var searchOptionReference = function (el, title, fid, reftype) {
             $(el).trigger("change");
             $ref.val(name);
         }, function () {
-            $(el).val("");
+                $(el).val("");
+                $ref.val("");
+                $(el).trigger("change");
         }, "1");
     });
 }

@@ -1,0 +1,131 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+   
+}
+<title><fap-multilang lang-key="payroll_todo" default-content="薪资待处理"></fap-multilang></title>
+
+
+<div class="row">
+    <div class="col-xs-12">
+        <div id="widget-box-orgdept" class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title"><fap-multilang lang-key="payroll_todo" default-content="薪资待处理"></fap-multilang></h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>            
+                <div class="widget-toolbar">
+                    <!-- #section:basics/content.searchbox -->
+                    <div class="nav-search" style="top:6px">
+
+                        <span class="input-icon">
+                            <input type="text" placeholder="员工编码/姓名" class="nav-search-input" id="nav-search-input" autocomplete="off" />
+                            <i class="ace-icon fa fa-search nav-search-icon"></i>
+                        </span>
+
+                    </div><!-- /.nav-search -->
+                    <!-- /section:basics/content.searchbox -->
+
+                </div>
+                <div class="widget-toolbar no-border">
+                    <fap-button id="btnApply" btn-tag="link" content="应用" icon-before="fa fa-check blue" class-name="info"></fap-button>
+                    <fap-button id="btnShelve" btn-tag="link" content="搁置" icon-before="fa fa-lock blue" class-name="info"></fap-button>
+                    <fap-button id="btnDelete" btn-tag="link" content="删除" icon-before="fa fa-trash-o blue" class-name="info"></fap-button>
+                </div>
+
+
+            </div>
+
+            <div class="widget-body">            
+                <div class="widget-main">
+                    <fap-grid id="paytodo" grid-model="Model"  auto-width="true" multi-box-only="true" multi-select="true" view-records="true"></fap-grid>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {           
+            //快速查找
+            $("#nav-search-input").change(function () {
+                var v = $(this).val();
+                var filter = { "groupOp": "OR" };
+                var rules = [];
+                rules.push({ "field": "EmpCode", "op": "cn", "data": v });
+                rules.push({ "field": "EmpUidMC", "op": "cn", "data": v })
+                filter.rules = rules;
+                reloadGrid(filter);
+            })
+            function reloadGrid(filter) {
+                $("#grid-paytodo").jqGrid('setGridParam', {
+                    datatype: 'json',
+                    postData: { filters: JSON.stringify(filter) }, //发送数据
+                    page: 1
+                }).trigger("reloadGrid"); //重新载入
+            }
+            //应用变动
+            $("#btnApply").on(ace.click_event, function () {
+                var rowDatas = getSelectedRows("grid-paytodo");
+                if (rowDatas) {
+                    var validDatas = $.grep(rowDatas, function (value) {
+                        return value.OperFlag == 0|| value.OperFlag == 2;
+                    })
+                    if (validDatas && validDatas.length > 0) {
+                        $.post(basePath + "/api/pay/PayTodoApply", { paytodo: validDatas }, function (rv) {
+                            if (rv.success == false) {
+                                bootbox.alert(rv.msg);
+                            } else {
+                                $.msg(rv.msg);
+                            }
+                            refreshGrid("grid-paytodo");
+                        })
+                    } else {
+                        $.msg("没有有效的数据要处理！");
+                    }
+                }
+            })
+            //搁置变动
+            $("#btnShelve").on(ace.click_event, function () {
+                var rowDatas = getSelectedRows("grid-paytodo");
+                if (rowDatas) {
+                    var validDatas = $.grep(rowDatas, function (value) {
+                        return value.OperFlag == 0 ;
+                    })
+                    if (validDatas && validDatas.length > 0) {
+                        $.post(basePath + "/api/pay/PayTodoShelve", { paytodo: validDatas }, function (rv) {
+                            $.msg(rv.msg);
+                            refreshGrid("grid-paytodo");
+                        })
+                    } else {
+                        $.msg("没有有效的数据要处理！");
+                    }
+                }
+            })
+            //删除变动
+            $("#btnDelete").on(ace.click_event, function () {
+                var rowDatas = getSelectedRows("grid-instodo");
+                if (rowDatas) {
+                    var validDatas = $.grep(rowDatas, function (value) {
+                        return value.OperFlag == 0 || value.OperFlag == 2;
+                    })
+                    if (validDatas && validDatas.length > 0) {
+                        bootbox.confirm("确定删除?", function (result) {
+                            if (result) {
+                                $.post(basePath + "/api/pay/PayTodoDelete", { instodo: validDatas }, function (rv) {
+                                    $.msg(rv.msg);
+                                    refreshGrid("grid-instodo");
+                                })
+                            }
+                        });
+                    } else {
+                        $.msg("没有有效的数据要处理！");
+                    }
+                }
+            })
+        })
+    })
+</script>

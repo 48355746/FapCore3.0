@@ -187,7 +187,7 @@
 
             <div class="widget-body">
                 <div class="widget-main">
-                    <div id="fapChart" style="width:600px;height:500px"></div>
+                    <div id="fapChart" style="width:auto;height:500px"></div>
 
                 </div>
             </div>
@@ -313,6 +313,7 @@
             })
             option.series = series;
             fapChart.setOption(option);
+            //fapChart.resize()
         });
     }
     $("#btnSave").on(ace.click_event, function () {

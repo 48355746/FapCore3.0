@@ -25,13 +25,13 @@ namespace Fap.AspNetCore.Controls.JqGrid.Extensions
                         if (systemDefaultFields.Contains(fc.ColName))
                             continue;
                         yield return fc.ToColumn( multiLang,dbContext);
-                        if(fc.CtrlType==FapColumn.CTRL_TYPE_REFERENCE)
-                        {
-                            FapColumn fcMC= (FapColumn)fc.Clone();
-                            fcMC.ColName = fc.ColName + "MC";
-                            fcMC.ShowAble = 0;
-                            yield return fcMC.ToColumn(multiLang, dbContext);
-                        }
+                        //if(fc.CtrlType==FapColumn.CTRL_TYPE_REFERENCE)
+                        //{
+                        //    FapColumn fcMC= (FapColumn)fc.Clone();
+                        //    fcMC.ColName = fc.ColName + "MC";
+                        //    fcMC.ShowAble = 0;
+                        //    yield return fcMC.ToColumn(multiLang, dbContext);
+                        //}
                        
                     }
                 }

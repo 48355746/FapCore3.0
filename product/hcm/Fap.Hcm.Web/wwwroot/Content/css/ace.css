@@ -19691,6 +19691,7 @@ img.editable-click:hover {
 
 .ui-jqgrid .ui-search-toolbar {
     border-top: 1px solid #E1E1E1;
+    height:40px;
 }
 
 .ui-jqgrid .ui-jqgrid-labels {
