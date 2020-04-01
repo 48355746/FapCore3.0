@@ -64,9 +64,9 @@ namespace Fap.Core.Infrastructure.Metadata
         /// </summary>
         public int IsTree { get; set; }
         /// <summary>
-        /// 是否分页
+        /// 是否基础表格（导出sql包含insert）
         /// </summary>
-        public int IsPagination { get; set; }
+        public int IsBasic { get; set; }
         /// <summary>
         /// 是否同步
         /// </summary>
@@ -127,7 +127,7 @@ namespace Fap.Core.Infrastructure.Metadata
             hashCode = hashCode * 23 + (TableMode == null ? 0 : TableMode.GetHashCode());
             hashCode = hashCode * 23 + (SubTable == null ? 0 : SubTable.GetHashCode());
             hashCode = hashCode * 23 + IsTree.GetHashCode();
-            hashCode = hashCode * 23 + IsPagination.GetHashCode();
+            hashCode = hashCode * 23 + IsBasic.GetHashCode();
             hashCode = hashCode * 23 + IsSync.GetHashCode();
 
             return hashCode;
