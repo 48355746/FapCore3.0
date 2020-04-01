@@ -39,7 +39,7 @@ namespace Fap.Core.DataAccess.SqlParser
                 sqlBuilder.Append("PRIMARY KEY (").Append(pkField.ColName).Append("),");
             }
             sqlBuilder.Remove(sqlBuilder.Length - 1, 1);
-            sqlBuilder.Append(");").Append(Environment.NewLine);
+            sqlBuilder.AppendLine(");");
             //默认值
             //foreach (var field in columns)
             //{
@@ -53,7 +53,7 @@ namespace Fap.Core.DataAccess.SqlParser
             foreach (var field in columns.OrderBy(c => c.ColOrder))
             {
                 //字段注释
-                sqlBuilder.Append(MakeColumnCommentSql(field)).AppendLine();
+                sqlBuilder.AppendLine(MakeColumnCommentSql(field));
                 if (field.IsMultiLang == 1)
                 {
                     var languageList = typeof(MultiLanguage.MultiLanguageEnum).EnumItems();
@@ -63,7 +63,7 @@ namespace Fap.Core.DataAccess.SqlParser
                         column.ColName = field.ColName + lang.Value;
                         column.ColComment = field.ColComment + lang.Description;
                         //多余字段注释
-                        sqlBuilder.Append(MakeColumnCommentSql(column)).AppendLine();
+                        sqlBuilder.AppendLine(MakeColumnCommentSql(column));
                     }
                 }
             }
@@ -76,7 +76,7 @@ namespace Fap.Core.DataAccess.SqlParser
                     sqlBuilder.Append(table.TableComment);
                     sqlBuilder.Append("' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'TABLE',@level1name=N'");
                     sqlBuilder.Append(table.TableName);
-                    sqlBuilder.Append("';").Append(Environment.NewLine);
+                    sqlBuilder.AppendLine("';");
                 }
             }
 
@@ -114,7 +114,7 @@ namespace Fap.Core.DataAccess.SqlParser
                 sqlBuilder.Append(fapColumn.TableName);
                 sqlBuilder.Append("', @level2type=N'COLUMN',@level2name=N'");
                 sqlBuilder.Append(fapColumn.ColName);
-                sqlBuilder.Append("';").Append(Environment.NewLine);
+                sqlBuilder.Append("';");
             }
             return sqlBuilder.ToString();
 
@@ -278,9 +278,9 @@ namespace Fap.Core.DataAccess.SqlParser
         public string DropTableSql(FapTable fapTable)
         {
             StringBuilder builder = new StringBuilder();
-            builder.AppendLine("-- 删除表");
+            //builder.AppendLine("-- 删除表");
             builder.AppendLine($"if exists(select * from sysobjects where id = object_id(N'[{fapTable.TableName}]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)");
-            builder.AppendLine($"drop table {fapTable.TableName}");            
+            builder.AppendLine($"drop table {fapTable.TableName};");            
             return builder.ToString();
         }
 

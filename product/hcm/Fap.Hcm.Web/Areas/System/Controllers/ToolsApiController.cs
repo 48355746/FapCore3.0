@@ -175,9 +175,10 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             {
                 var dics = _dbContext.Dictionarys("TableCategory").OrderBy(d => d.SortBy);
                 StringBuilder sbALLSql = new StringBuilder();
+                sbALLSql.AppendLine("use FapCore30;");
                 foreach (var dic in dics)
                 {
-                    sbALLSql.AppendLine(_dbMetadataContext.ExportSql(dialect, string.Empty, dic.Code, includCreate, includInsert));
+                    sbALLSql.Append(_dbMetadataContext.ExportSql(dialect, string.Empty, dic.Code, includCreate, includInsert));
                 }
                 string allFileName = $"{database}.sql";
                 string allFilePath = Path.Combine(Environment.CurrentDirectory, FapPlatformConstants.TemporaryFolder, allFileName);

@@ -9,9 +9,13 @@
 
   <ItemGroup>
     <Compile Remove="Areas\Department\**" />
+    <Compile Remove="Temporary\679175051240538112\**" />
     <Content Remove="Areas\Department\**" />
+    <Content Remove="Temporary\679175051240538112\**" />
     <EmbeddedResource Remove="Areas\Department\**" />
+    <EmbeddedResource Remove="Temporary\679175051240538112\**" />
     <None Remove="Areas\Department\**" />
+    <None Remove="Temporary\679175051240538112\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -102,7 +106,6 @@
     <Folder Include="Areas\Time\Data\" />
     <Folder Include="Areas\Workflow\Data\" />
     <Folder Include="Areas\Workflow\Models\" />
-    <Folder Include="Temporary\679175051240538112\" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>

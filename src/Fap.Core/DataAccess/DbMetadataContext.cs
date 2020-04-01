@@ -96,7 +96,7 @@ namespace Fap.Core.DataAccess
             {
                 if (includCreate)
                 {
-                    sql.AppendLine(ExportCreateSql(generator,tableName));
+                    sql.Append(ExportCreateSql(generator,tableName));
                 }
                 ExportSingleTableSql(tableName);
             }
@@ -108,7 +108,7 @@ namespace Fap.Core.DataAccess
                 {
                     foreach (var table in tables)
                     {
-                        sql.AppendLine(ExportCreateSql(generator, table.TableName));
+                        sql.Append(ExportCreateSql(generator, table.TableName));
                     }
                 }
                 foreach (var table in tables)
@@ -119,10 +119,10 @@ namespace Fap.Core.DataAccess
             return sql.ToString();
             void ExportSingleTableSql(string tn)
             {
-                sql.AppendLine(ExportMetadataSql(generator, tn));
+                sql.Append(ExportMetadataSql(generator, tn));
                 if (includInsert)
                 {
-                    sql.AppendLine(ExportInsertSql(generator, tn));
+                    sql.Append(ExportInsertSql(generator, tn));
                 }
             }
         }
@@ -130,7 +130,7 @@ namespace Fap.Core.DataAccess
         {
             FapTable table = _dbSession.QueryFirstOrDefault<FapTable>("select * from FapTable where TableName=@TableName and Dr=0", new DynamicParameters(new { TableName = tableName }));
             var columns = _dbSession.Query<FapColumn>("select * from FapColumn where TableName=@TableName and Dr=0", new DynamicParameters(new { TableName = tableName }));
-            return new StringBuilder(generator.DropTableSql(table)).AppendLine().AppendLine("GO").AppendLine(generator.CreateTableSql(table, columns)).AppendLine("GO").ToString();
+            return new StringBuilder(generator.DropTableSql(table)).Append(generator.CreateTableSql(table, columns)).ToString();
         }
         private string ExportInsertSql(IDDLSqlGenerator generator, string tableName)
         {
@@ -146,7 +146,7 @@ namespace Fap.Core.DataAccess
             StringBuilder tableSql = new StringBuilder();
             foreach (var d in datas)
             {
-                tableSql.AppendLine(generator.InsertSql(d as IDictionary<string, object>, fapColumns)).AppendLine("GO");
+                tableSql.AppendLine(generator.InsertSql(d as IDictionary<string, object>, fapColumns));
             }
             return tableSql.ToString();
         }
@@ -158,16 +158,16 @@ namespace Fap.Core.DataAccess
             string sql = GetSqlGenerator().PhysicalTableColumnSql(nameof(FapTable));
             var fapColumns = _dbSession.Query<FapColumn>(sql);
             StringBuilder metaSql = new StringBuilder();
-            metaSql.AppendLine("--FapTable元数据");
-            metaSql.AppendLine($"delete from FapTable where TableName='{tableName}'");
-            metaSql.AppendLine(generator.InsertSql(data as IDictionary<string, object>, fapColumns)).AppendLine("GO");
-            metaSql.AppendLine("--FapColumn元数据");
-            metaSql.AppendLine($"delete from FapColumn where TableName='{tableName}'");
+            //metaSql.AppendLine("--FapTable元数据");
+            metaSql.AppendLine($"delete from FapTable where TableName='{tableName}';");
+            metaSql.AppendLine(generator.InsertSql(data as IDictionary<string, object>, fapColumns));
+            //metaSql.AppendLine("--FapColumn元数据");
+            metaSql.AppendLine($"delete from FapColumn where TableName='{tableName}';");
             sql = GetSqlGenerator().PhysicalTableColumnSql(nameof(FapColumn));
             fapColumns = _dbSession.Query<FapColumn>(sql);
             foreach (var d in dataList)
             {
-                metaSql.AppendLine(generator.InsertSql(d as IDictionary<string, object>, fapColumns)).AppendLine("GO");
+                metaSql.AppendLine(generator.InsertSql(d as IDictionary<string, object>, fapColumns));
             }
             return metaSql.ToString();
         }

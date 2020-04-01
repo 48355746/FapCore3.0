@@ -57,7 +57,7 @@ namespace Fap.Core.DataAccess.SqlParser
 
             if (FapColumn.COL_TYPE_STRING.Equals(fapColumn.ColType)) //字符串字段需要处理多语情况
             {
-                if (fapColumn.ColLength > 4000)
+                if (fapColumn.ColLength > 1000)
                 {
                     sql.Append(" TEXT ");
                 }
@@ -130,7 +130,7 @@ namespace Fap.Core.DataAccess.SqlParser
         public string CreateTableSql(FapTable table, IEnumerable<FapColumn> columns)
         {
             StringBuilder sqlBuilder = new StringBuilder();
-            sqlBuilder.AppendLine("-- 创建表");
+            //sqlBuilder.AppendLine("-- 创建表");
             sqlBuilder.AppendLine($"CREATE TABLE `{table.TableName}`( ");
             foreach (var fapColumn in columns.OrderBy(c => c.ColOrder))
             {
@@ -156,9 +156,7 @@ namespace Fap.Core.DataAccess.SqlParser
                 sqlBuilder.Append("PRIMARY KEY (").Append(pkField.ColName).Append("),");
             }
             sqlBuilder.Remove(sqlBuilder.Length - 1, 1);
-            sqlBuilder.AppendFormat(")comment='{0}' ENGINE = InnoDB DEFAULT CHARSET = utf8mb4", table.TableComment).Append(Environment.NewLine);
-
-            sqlBuilder.AppendLine();
+            sqlBuilder.AppendFormat(")comment='{0}' ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;", table.TableComment).AppendLine();
 
             return sqlBuilder.ToString();
         }
@@ -182,8 +180,8 @@ namespace Fap.Core.DataAccess.SqlParser
         public string DropTableSql(FapTable fapTable)
         {
             StringBuilder builder = new StringBuilder();
-            builder.AppendLine("-- 删除表");
-            builder.AppendLine($"drop table if exists  {fapTable.TableName}");
+            //builder.AppendLine("-- 删除表");
+            builder.AppendLine($"drop table if exists  {fapTable.TableName};");
             return builder.ToString();
         }
 
@@ -256,7 +254,7 @@ namespace Fap.Core.DataAccess.SqlParser
                 }
             }
             sql.Append(sqlCol.ToString().TrimEnd(',')).Append(") VALUES(")
-                .Append(sqlValue.ToString().TrimEnd(',')).Append(")");
+                .Append(sqlValue.ToString().TrimEnd(',')).Append(");");
             return sql.ToString();
         }
     }
