@@ -65,16 +65,28 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
         /// <returns></returns>
         public PartialViewResult PayEmployee(string caseUid)
         {
-            return PartialView();
+            JqGridViewModel model = this.GetJqGridModel("PayCaseEmployee", (q) =>
+            {
+                q.GlobalWhere = "CaseUid=@CaseUid";
+                q.AddParameter("CaseUid", caseUid);
+            });
+            return PartialView(model);
         }
         /// <summary>
         /// 薪资套权限
         /// </summary>
         /// <param name="caseUid"></param>
         /// <returns></returns>
-        public PartialViewResult PayAuthority(string caseUid)
+        public PartialViewResult PayAuthority(string caseUid,string caseName)
         {
-            return PartialView();
+            JqGridViewModel model = this.GetJqGridModel("PayCaseEmployee", (q) =>
+            {
+                q.AddDefaultValue("CaseUid", caseUid);
+                q.AddDefaultValue("CaseUidMC", caseName);
+                q.GlobalWhere = "CaseUid=@CaseUid";
+                q.AddParameter("CaseUid", caseUid);
+            });
+            return PartialView(model);
         }
         /// <summary>
         /// 薪资套公式

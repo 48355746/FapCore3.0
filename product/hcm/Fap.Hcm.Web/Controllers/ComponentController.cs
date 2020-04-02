@@ -410,7 +410,7 @@ namespace Fap.Hcm.Web.Controllers
         {
             if (_platformDomain.MenuColumnSet.TryGetValue(menuid, out IEnumerable<FapMenuColumn> menuColumns))
             {
-                var menuColumn = menuColumns.Where(r => gid.StartsWith(r.GridId)).FirstOrDefault();
+                var menuColumn = menuColumns.Where(r => gid.EqualsWithIgnoreCase(r.GridId)).FirstOrDefault();
                 if (menuColumn != null)
                 {
                     //检查权限

@@ -101,11 +101,11 @@ var MultiLangHelper = (function () {
       'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' },
       'chart': { 'ZhCn': '图表', 'ZhTW': '', 'En': '', 'Ja': '' },
       'payitem': { 'ZhCn': '薪资项', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'refrence_set': { 'ZhCn': '引用', 'ZhTW': '', 'En': '', 'Ja': '' },
       'refrence_item_set': { 'ZhCn': '引用设置', 'ZhTW': '', 'En': '', 'Ja': '' },
       'add_payitem': { 'ZhCn': '添加薪资项', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'selected_payitem': { 'ZhCn': '选中工资项', 'ZhTW': '', 'En': '', 'Ja': '' },
       'all_payitem': { 'ZhCn': '所有工资项', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'selected_payitem': { 'ZhCn': '选中工资项', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'paycase_authority': { 'ZhCn': '薪资套权限', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

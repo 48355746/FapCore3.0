@@ -72,6 +72,15 @@
                     }
                 })
             })
+            $("#btnPaycaseAuthority").on(ace.click_event, function () {
+                var rw = getSelectedRow("grid-paycase");
+                if (rw == null) {
+                    return;
+                }
+                let caseUid = rw.Fid;
+                let caseName = rw.CaseName;
+                bootboxWindow($.lang("paycase_authority", "薪资套权限"), basePath + "/Payroll/Manage/PayAuthority?caseUid=" + caseUid + "&caseName=" + caseName + "&menuUrl=~/Payroll/Manage/PaySet");
+            })
         })
     })
 </script>
