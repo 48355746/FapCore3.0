@@ -30,6 +30,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E7F88132-8E9D-4B4E-B4EC-8254035E7E4F}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		product\hcm\Fap.Hcm.Web\Dockerfile = product\hcm\Fap.Hcm.Web\Dockerfile
+		Dockerfile = Dockerfile
 		Fap部署.docx = Fap部署.docx
 		metadata.sql = metadata.sql
 		update1.sql = update1.sql
