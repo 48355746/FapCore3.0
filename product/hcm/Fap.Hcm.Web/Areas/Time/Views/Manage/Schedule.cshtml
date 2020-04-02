@@ -190,6 +190,7 @@
                 $('.modal.aside').remove();
                 $(window).off('.aside');
             })
+            $("#grid-Employee").jqGrid('setGridParam', { datatype: 'json' });
             $('#fuelux-wizard-container')
                 .ace_wizard()
                 .on('actionclicked.fu.wizard', function (e, info) {
@@ -272,9 +273,8 @@
                     $.each(sels, function (i, d) {
                         depts.push(d);
                     })
-
-                        var filter = '{"groupOp":"AND","rules":[{"field":"DeptUid","op":"in","data":"' + depts.join() + '"}]}';
-                        reloadGrid("grid-Employee", { filters: filter });
+                    var filter = '{"groupOp":"AND","rules":[{"field":"DeptUid","op":"in","data":"' + depts.join() + '"}]}';
+                    reloadGrid("grid-Employee", { filters: filter });
 
                 }
                 //console.log(data.selected);

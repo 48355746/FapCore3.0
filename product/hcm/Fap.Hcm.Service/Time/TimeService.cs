@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using Fap.AspNetCore.ViewModel;
 using Fap.Core.DataAccess;
 using Fap.Core.DI;
 using Fap.Core.Infrastructure.Domain;
@@ -14,10 +13,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Fap.Core.Extensions;
 using Fap.Core.Utility;
-using Fap.Core.Infrastructure.Metadata;
 using Ardalis.GuardClauses;
 using Fap.Core.Exceptions;
-using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Config;
 using Fap.Core.Infrastructure.Model;
 

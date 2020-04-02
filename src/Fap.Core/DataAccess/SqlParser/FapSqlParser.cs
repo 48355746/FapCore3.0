@@ -389,7 +389,7 @@ namespace Fap.Core.DataAccess.SqlParser
                 new LessThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_EnableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
                 new GreaterThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
                 new EqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_Dr)));
-            if (column.RefTable.EqualsWithIgnoreCase(nameof(FapColumn)))
+            if (column.RefTable.EqualsWithIgnoreCase(nameof(FapColumn))&&column.RefID!="Fid")
             {
                 IFilter filter = new EqualToFilter(innerTable.Column("TableName"), table.Column("TableName"));
                 joinFilter.AddFilter(filter);
@@ -410,7 +410,7 @@ namespace Fap.Core.DataAccess.SqlParser
                 new GreaterThanEqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_DisableDate), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_CurrentDate)),
                 new EqualToFilter(innerTable.Column(FapDbConstants.FAPCOLUMN_FIELD_Dr), new ParameterLiteral(FapDbConstants.FAPCOLUMN_PARAM_Dr)));
 
-            if (column.RefTable.EqualsWithIgnoreCase(nameof(FapColumn)))
+            if (column.RefTable.EqualsWithIgnoreCase(nameof(FapColumn)) && column.RefID != "Fid")
             {
                 //fapcolumn存在重复colName，加一个去重
                 IFilter filter = new EqualToFilter(innerTable.Column("TableName"), table.Column("RefTable"));

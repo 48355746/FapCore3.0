@@ -39,15 +39,13 @@ var layerWindow = function (url) {
 var bootboxWindow = function (title, url, buttons, data,onBeforeShow) {
     if (buttons === undefined || buttons === null) {
         buttons = {
-            cancel: {
-                label: $.lang("global_oper_close", "关闭"), className: "btn-default"
-            }
         };
     }
     var dialog = bootbox.dialog({
         title: title,
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
         size: "large",
+        footer: false,
         buttons: buttons       
     });
     dialog.on("shown.bs.modal", function () {

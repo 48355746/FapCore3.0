@@ -16,7 +16,7 @@ function getSelectedRows(grdid) {
     var grid = $("#" + grdid);
     var rowKey = grid.getGridParam("selrow");
     if (!rowKey) {
-        $.msg($.lang("select_row", "请选中数据操作"));
+        $.msg($.lang("select_row_empty", "请选中数据操作"));
         return null;
     }
     else {
@@ -34,7 +34,7 @@ function getSelectedRow(grdid) {
     var grid = $("#" + grdid);
     var rowKey = grid.getGridParam("selrow");
     if (!rowKey) {
-        $.msg($.lang("select_row", "请选中数据操作"));
+        $.msg($.lang("select_row_empty", "请选中数据操作"));
         return null;
     }
     else {
@@ -243,7 +243,7 @@ var deleteGridRow = function (gid, tableName, onCompletedCallback) {
             }
         });
     } else {
-        $.msg($.lang("select_row", "请选中数据操作"));
+        $.msg($.lang("select_row_empty", "请选中数据操作"));
     }
 };
 //isSearch 查询控件参照，这时候多选
@@ -271,7 +271,7 @@ var openRefrenceWindow = function (title, colfid, refurl, selectcallback, clearc
                         res = GetRefResult();
                         if (res) {
                             selectcallback && selectcallback(res.code, res.name);
-                        } else { $.msg($.lang("select_row", "请选中数据操作")); return; }
+                        } else { $.msg($.lang("select_row_empty", "请选中数据操作")); return; }
                     }
                 }
             },
@@ -306,7 +306,7 @@ var openRefrenceWindow = function (title, colfid, refurl, selectcallback, clearc
 var loadBatchUpdateMessageBox = function (title, gid, qryCols, tablename, menuUid, callback) {
     var rowDatas = getSelectedRows(gid);
     if (rowDatas === null || rowDatas.length === 0) {
-        $.msg($.lang("select_row", "请选中数据操作"));
+        $.msg($.lang("select_row_empty", "请选中数据操作"));
         return;
     }
     var dialog = bootbox.dialog({
@@ -379,7 +379,7 @@ var loadBatchUpdateMessageBox = function (title, gid, qryCols, tablename, menuUi
             if (info.step === 1) {
                 var fields = $fieldList.val();
                 if (fields === null) {
-                    $.msg($.lang("select_row", "请选中数据操作"));
+                    $.msg($.lang("select_row_empty", "请选中数据操作"));
                     e.preventDefault();
                     return;
                 }
@@ -452,7 +452,7 @@ var loadExportExcelMessageBox = function (title, gid, qryCols, tablename, callba
                 callback: function () {
                     var fields = $fieldList.val();
                     if (fields === null) {
-                        $.msg($.lang("select_row", "请选中数据操作"));
+                        $.msg($.lang("select_row_empty", "请选中数据操作"));
                         return;
                     }
                     var postData = $('#' + gid).jqGrid("getGridParam", "postData");
