@@ -79,11 +79,11 @@ namespace Fap.AspNetCore.Controls.DataForm
             _saveModel = saveModel;
             if (saveModel == XEditableSaveModel.Single)
             {
-                _editUrl = "/Api/Core/SaveSingleField/";
+                _editUrl = "/Core/Api/SaveSingleField/";
             }
             else
             {
-                _editUrl = "/Api/Core/Persistence/";
+                _editUrl = "/Core/Api/Persistence/";
             }
             return this;
         }

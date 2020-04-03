@@ -224,7 +224,7 @@ var deleteGridRow = function (gid, tableName, onCompletedCallback) {
     if (dr) {
         bootbox.confirm($.lang("confirm_delete", "确定要删除选中的数据吗?"), function (result) {
             if (result) {
-                $.post(basePath + "/Api/Core/Persistence",
+                $.post(basePath + "/Core/Api/Persistence",
                     { "oper": "del", "tableName": tableName, maindata: { "Fid": dr } }, function (rv) {
                         if (rv.success) {
                             if ($.isFunction(onCompletedCallback)) {
@@ -358,7 +358,7 @@ var loadBatchUpdateMessageBox = function (title, gid, qryCols, tablename, menuUi
 											</div>`);
         var $fieldList = $("<select multiple='multiple' size='10' id='dualfieldlistbox_" + tablename + "' name='dualfieldlistbox_" + tablename + "'></select>");
         dialog.find(".modal-body .step-content [data-step=1]").append($fieldList);
-        $.get(basePath + "/Api/Core/FieldList/" + tablename, { qryCols: qryCols }, function (data) {
+        $.get(basePath + "/Core/Api/FieldList/" + tablename, { qryCols: qryCols }, function (data) {
             $fieldList.empty();
             $.each(data, function (i, d) {
                 if (d.isDefaultCol === 1 || d.showAble === 0) {
@@ -411,7 +411,7 @@ var loadBatchUpdateMessageBox = function (title, gid, qryCols, tablename, menuUi
             entityData.Ids = ids.join();
             $.ajax({
                 type: "post",
-                url: basePath + '/Api/Core/Persistence?from=form',//这里不用带tn 因为 表单中有tn值
+                url: basePath + '/Core/Api/Persistence?from=form',//这里不用带tn 因为 表单中有tn值
                 data: entityData,
                 async: false,
                 dataType: "json",
@@ -457,7 +457,7 @@ var loadExportExcelMessageBox = function (title, gid, qryCols, tablename, callba
                     }
                     var postData = $('#' + gid).jqGrid("getGridParam", "postData");
                     postData.QuerySet.ExportCols = fields.join();
-                    $.post(basePath + "/Api/Core/ExportExcelData", postData, function (data) {
+                    $.post(basePath + "/Core/Api/ExportExcelData", postData, function (data) {
                         if (data.success) {
                             window.location.href = basePath + "/" + data.data;
                             //bootbox.alert("生成成功");
@@ -477,7 +477,7 @@ var loadExportExcelMessageBox = function (title, gid, qryCols, tablename, callba
     dialog.init(function () {
         dialog.find('.bootbox-body').html('');
         dialog.find('.bootbox-body').append($fieldList);
-        $.get(basePath + "/Api/Core/FieldList/" + tablename, { qryCols: qryCols }, function (data) {
+        $.get(basePath + "/Core/Api/FieldList/" + tablename, { qryCols: qryCols }, function (data) {
             $fieldList.empty();
             $.each(data, function (i, d) {
                 if (d.colName === "Id" || d.colName === "Fid") {
@@ -503,7 +503,7 @@ var loadExportWordMessageBox = function (title, gid, qryCols, tablename, callbac
     var rowDatas = getSelectedRows(gid);
     if (rowDatas === null)
         return;
-    $.post(basePath + "/Api/Core/PrintWordTemplate", { rows: rowDatas, tablename: tablename }, function (rv) {
+    $.post(basePath + "/Core/Api/PrintWordTemplate", { rows: rowDatas, tablename: tablename }, function (rv) {
         if (rv.success) {
             window.location.href = basePath + "/" + rv.data;
         } else {
@@ -530,7 +530,7 @@ var loadExportWordMessageBox = function (title, gid, qryCols, tablename, callbac
                 dialog.find('.bootbox-body').empty().append(title).append($file);
                 $file.fileinput({
                     language: language,
-                    uploadUrl: basePath + '/Api/Core/ImportWordTemplate/' + tablename,
+                    uploadUrl: basePath + '/Core/Api/ImportWordTemplate/' + tablename,
                     showCaption: false,
                     allowedFileExtensions: ["docx"],
                     showClose: true
@@ -562,7 +562,7 @@ var loadChartMessageBox = function (title, gridid, tablename) {
 //tablename 表名
 var loadExportExcelTmpl = function (qryCols, tableName) {
     var postData = { TableName: tableName, QueryCols: qryCols };
-    $.post(basePath + "/Api/Core/ExportExcelTmpl", postData, function (data) {
+    $.post(basePath + "/Core/Api/ExportExcelTmpl", postData, function (data) {
         if (data.success) {
             window.location.href = basePath + "/" + data.data;
             //bootbox.alert("生成成功");
@@ -574,7 +574,7 @@ var loadExportExcelTmpl = function (qryCols, tableName) {
 var loadExportExcelTemplData = function (qryCols, gid) {
     var postData = $('#' + gid).jqGrid("getGridParam", "postData");
     postData.QuerySet.ExportCols = qryCols;
-    $.post(basePath + "/Api/Core/ExportExcelTmplData", postData, function (data) {
+    $.post(basePath + "/Core/Api/ExportExcelTmplData", postData, function (data) {
         if (data.success) {
             window.location.href = basePath + "/" + data.data;
             //bootbox.alert("生成成功");
@@ -622,7 +622,7 @@ var loadImportDataMessageBox = function (title, gid, qryCols, tablename, callbac
         });
         $file.fileinput({
             language: language,
-            uploadUrl: basePath + '/Api/Core/ImportExcelData/' + tablename,
+            uploadUrl: basePath + '/Core/Api/ImportExcelData/' + tablename,
             showCaption: false,
             allowedFileExtensions: ["xls", "xlsx"],
             showClose: true
@@ -711,11 +711,22 @@ var unformatReference = function (cellValue, options, cellObject) {
 var searchOptionReference = function (el, title, fid, reftype) {
     $(el).addClass("hide");
     var $ctrlRef = $(`<span class="input-icon input-icon-right">
-												<input type="text" style="width:100%;height:30px">
+												<input type="text" style="width:100%;height:30px;padding-right: 25px !important;">
 												<i class="ace-icon fa fa-search block"></i>
 											</span>`);
     $(el).parent().append($ctrlRef);
     var $ref = $ctrlRef.find('input:text');
+    let v = $(el).val();
+    //赋值txt
+    if (v !== undefined && v !== "") {
+        $.post(basePath + "/Core/Api/RefSearchText", { rv: v, colUid: fid }, function (rv) {
+            if (rv.success) {
+                $ref.val(rv.data);
+            } else {
+                $.msg(rv.msg);
+            }
+        })
+    }
     $ref.on(ace.click_event, function (e) { $(this).next().trigger(ace.click_event); e.preventDefault(); });
     $ref.next().on(ace.click_event, function () {
         openRefrenceWindow(title, fid, reftype, function (code, name) {
@@ -822,7 +833,7 @@ function loadQueryProgram(form, gridid, tn) {
     var $selQryPrm = $(`<select id=fbox_"` + gridid + `_selectqry"><option value=''>---` + $.lang("common_query", "常用查询") + `---</option></select>`);
 
     if (buttons.find('.EditButton select[id*="_selectqry"]')[0] === undefined) {
-        $.get(basePath + "/Api/Core/QueryProgram/" + tn, function (rvm) {
+        $.get(basePath + "/Core/Api/QueryProgram/" + tn, function (rvm) {
             if (rvm.success) {
                 $("#" + gridid).data("queryprogram", rvm.data);
                 $.each(rvm.data, function (i, d) {
@@ -861,7 +872,7 @@ function addQueryProgram(form, gridid, tn) {
                 //alert(1);
             } else {
                 if (result !== "") {
-                    $.post(basePath + "/Api/Core/QueryProgram", { ProgramName: result, TableName: tn, QueryCondition: jqPostData.filters }, function (rvm) {
+                    $.post(basePath + "/Core/Api/QueryProgram", { ProgramName: result, TableName: tn, QueryCondition: jqPostData.filters }, function (rvm) {
                         if (rvm.success) {
                             $.msg($.lang("success", "成功"));
                             //添加新的查询方案

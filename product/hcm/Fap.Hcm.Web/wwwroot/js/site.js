@@ -32,7 +32,7 @@
         }) var initFilegrid - orgdept666831603552485376 = function() {
             $("#frm-grid-orgdept666831603552485376-FILE").fileinput({
                 language: 'zh',
-                uploadUrl: "https://localhost:5001/Api/Core/uploadfile/666831580395732992",
+                uploadUrl: "https://localhost:5001/Core/Api/uploadfile/666831580395732992",
                 fileType: "any",
                 uploadExtraData: {
                     fid: '666831580395732992'

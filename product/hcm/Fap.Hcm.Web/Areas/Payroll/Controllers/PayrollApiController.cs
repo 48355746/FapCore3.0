@@ -22,6 +22,13 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
         {
             _payrollService = payrollService;
         }
+        [HttpGet("PaySet/{caseUid}")]
+        public JsonResult GetPaySet(string caseUid)
+        {
+            Guard.Against.NullOrEmpty(caseUid, nameof(caseUid));
+            var pc= _dbContext.Get<PayCase>(caseUid);
+            return Json(ResponseViewModelUtils.Sueecss(pc));
+        }
         /// <summary>
         /// 选择工资项
         /// </summary>
@@ -30,6 +37,7 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
         [HttpGet("PayItems/{caseUid}")]
         public JsonResult GetPayItems(string caseUid)
         {
+            Guard.Against.NullOrEmpty(caseUid, nameof(caseUid));
             var payCaseItems= _payrollService.GetPayCaseItem(caseUid);
             
             return Json(ResponseViewModelUtils.Sueecss(payCaseItems));
@@ -39,6 +47,15 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
         {
             Guard.Against.NullOrEmpty(caseUid, nameof(caseUid));
             _payrollService.AddPayItem(caseUid, payItems);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+        [HttpPost("PayCondition")]
+        public JsonResult SavePayCaseEmployeeContion(string caseUid,string filters)
+        {
+            Guard.Against.NullOrEmpty(caseUid, nameof(caseUid));
+            var payCase=  _dbContext.Get<PayCase>(caseUid);
+            payCase.EmpCondition = filters;
+            _dbContext.Update(payCase);
             return Json(ResponseViewModelUtils.Sueecss());
         }
     }

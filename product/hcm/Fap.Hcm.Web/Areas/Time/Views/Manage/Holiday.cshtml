@@ -212,7 +212,7 @@
                 }
                 bootbox.confirm($.lang("confirm_delete","确认删除吗？"), function (result) {
                     if (result) {
-                        $.post(basePath + "/Api/Core/Persistence",
+                        $.post(basePath + "/Core/Api/Persistence",
                             { "oper": "del", "tableName": "TmHolidayCase", maindata: { "Fid": fid } }, function (rv) {
                                 if (rv.success) {
                                     $.msg($.lang("success", "操作成功"));

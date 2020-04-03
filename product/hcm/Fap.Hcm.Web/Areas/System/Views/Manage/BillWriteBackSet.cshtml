@@ -6,8 +6,8 @@
 <script src="~/Content/js/codemirror/mode/sql/sql.js"></script>*@
 <script>
     function initBillWriteback(billTable, bizTable, sqlContent) {
-        var urlBill = basePath + '/Api/Core/FieldList/' + billTable;
-        var urlBiz = basePath + '/Api/Core/FieldList/' + bizTable;
+        var urlBill = basePath + '/Core/Api/FieldList/' + billTable;
+        var urlBiz = basePath + '/Core/Api/FieldList/' + bizTable;
         $.get(urlBill, function (ev) {
             var selBill = $("#selBillField2");
             var selBiz = $("#selBizField2");

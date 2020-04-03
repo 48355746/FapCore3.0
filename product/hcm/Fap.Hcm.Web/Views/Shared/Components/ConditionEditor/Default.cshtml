@@ -38,7 +38,7 @@
     }
     $(function () {
 
-        $.get(basePath + "/Api/Core/FieldList/@ViewBag.TableName", function (data) {
+        $.get(basePath + "/Core/Api/FieldList/@ViewBag.TableName", function (data) {
             objFields = data;
             $.each(data, function (i, c) {
                 $("#sel_refformulaitems").append("<option value='" + c.colComment + "'>" + c.colComment + "[" + c.colName + "]</option>")
@@ -48,7 +48,7 @@
         //校验公式项
         $("#btnValidate").on(ace.click_event, function () {
             var cv = conditionEditor.getValue();
-            $.post("@Url.Content("~/Api/Core/VerifySql")", { tableName: '@ViewBag.TableName', conditionSql: cv }, function (data) {
+            $.post("@Url.Content("~/Core/Api/VerifySql")", { tableName: '@ViewBag.TableName', conditionSql: cv }, function (data) {
                 if (data.success == true) {
                     layer.msg("条件校验合法！");
                 } else {

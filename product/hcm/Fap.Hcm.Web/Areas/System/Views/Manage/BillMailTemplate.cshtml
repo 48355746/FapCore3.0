@@ -132,7 +132,7 @@
             }
         }
         var getColsByTableName = function (tableName) {
-            $.get("@Url.Content("~/Api/Core/fieldlist/")" + tableName, function (data) {
+            $.get("@Url.Content("~/Core/Api/fieldlist/")" + tableName, function (data) {
 
                 initColsToolBar(data);
             })

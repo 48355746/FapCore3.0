@@ -266,8 +266,8 @@ $("#RefReturnMapping").on("focus", function () {
 
         dialog.find('.bootbox-body').html(strVar);
 
-        var urlRef = basePath + '/Api/Core/FieldList/' + reftn;
-        var urlOri = basePath + '/Api/Core/FieldList/' + oritn;
+        var urlRef = basePath + '/Core/Api/FieldList/' + reftn;
+        var urlOri = basePath + '/Core/Api/FieldList/' + oritn;
         $.get(urlRef, function (ev) {
             var selRef = $("#filed-reftable");
             var selOri = $("#filed-oritable");

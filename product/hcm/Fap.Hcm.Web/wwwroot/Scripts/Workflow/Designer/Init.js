@@ -15,7 +15,7 @@ window.TRANSITION_URL = window.TRANSITION_URL || '/Workflow/Process/Transition';
 //单据模板
 window.BILLTEMPLATE_URL = window.BILLTEMPLATE_URL || '/Workflow/Api/BillTemplate';
 //单据字段
-window.FIELDLIST_URL = window.FIELDLIST_URL || '/Api/Core/FieldList';
+window.FIELDLIST_URL = window.FIELDLIST_URL || '/Core/Api/FieldList';
 //子流程模板
 window.SUBPROCESS_URL = window.SUBPROCESS_URL || '/Workflow/Api/WfProcess';
 //申请人选择

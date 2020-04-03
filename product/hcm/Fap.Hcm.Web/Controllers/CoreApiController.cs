@@ -5,6 +5,7 @@ using Ardalis.GuardClauses;
 using Fap.AspNetCore.Infrastructure;
 using Fap.AspNetCore.ViewModel;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Fap.Core.Extensions;
 using Dapper;
 using System.Threading.Tasks;
@@ -21,15 +22,18 @@ using System.Collections.Generic;
 using Fap.Core.Utility;
 using Fap.Hcm.Web.Models;
 using Fap.Core.Infrastructure.Metadata;
+using Fap.Core.Infrastructure.Cache;
 
 namespace Fap.Hcm.Web.Controllers
 {
     [Produces(MediaTypeNames.Application.Json)]
-    [Route("Api/Core")]
+    [Route("Core/Api")]
     public class CoreApiController : FapController
     {
+        private readonly ICacheService _cacheService;
         public CoreApiController(IServiceProvider serviceProvider) : base(serviceProvider)
         {
+            _cacheService = serviceProvider.GetService<ICacheService>();
         }
         /// <summary>
         /// 持久化表格数据
@@ -203,10 +207,29 @@ namespace Fap.Hcm.Web.Controllers
             var qryList = _dbContext.QueryWhere<CfgQueryProgram>(where, parameters);
             return Json(new ResponseViewModel() { success = true, data = qryList });
         }
+        [HttpPost("RefSearchText")]
+        public JsonResult RefSearchText(string rv, string colUid)
+        {
+            _platformDomain.ColumnSet.TryGetValue(colUid, out FapColumn fc);
+            if (fc != null)
+            {
+                string ckey = rv + colUid;
+                string cv = _cacheService.Get<string>(ckey);
+                if (cv.IsMissing())
+                {
+                    string sql = $"select {fc.RefName} Txt from {fc.RefTable} where {fc.RefID} in @Ids";
+                    var txts = _dbContext.Query(sql, new DynamicParameters(new { Ids = rv.SplitComma() })).Select(s => s.Txt);
+                    cv = string.Join(',', txts);
+                    _cacheService.Add(ckey, cv, TimeSpan.FromDays(1));
+                }
+                return Json(ResponseViewModelUtils.Sueecss(data: cv));
+            }
+            return Json(ResponseViewModelUtils.Failure("参照不存在"));
+        }
         #endregion
 
         #region ECharts
-        
+
         [HttpPost("EChart")]
         public JsonResult EChart(ChartViewModel chartViewModel, JqGridPostData jqGridPostData)
         {
@@ -216,7 +239,7 @@ namespace Fap.Hcm.Web.Controllers
         [HttpPost("Add/EChart")]
         public JsonResult SaveEchart(RptChart rptChart)
         {
-             _dbContext.Insert(rptChart);
+            _dbContext.Insert(rptChart);
             return Json(ResponseViewModelUtils.Sueecss(rptChart));
         }
         [HttpGet("Delete/EChart/{fid}")]
@@ -288,7 +311,6 @@ namespace Fap.Hcm.Web.Controllers
             string sql = $"select count(0) from {tableName} where " + conditionSql;
             _dbContext.ExecuteScalar(sql);
             return Json(ResponseViewModelUtils.Sueecss());
-
         }
         #endregion
     }

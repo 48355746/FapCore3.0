@@ -292,7 +292,7 @@
         DrawChart(chartModel, jqPostData);
     })
     function DrawChart(chartModel,jqPostData) {
-        $.post(basePath + '/Api/Core/EChart', { chartViewModel: chartModel, jqGridPostData: jqPostData }, function (rv) {
+        $.post(basePath + '/Core/Api/EChart', { chartViewModel: chartModel, jqGridPostData: jqPostData }, function (rv) {
             fapChart.clear();
             var option = initChartOption();
             option.dataset = {
@@ -417,7 +417,7 @@
                         });
 
                         var rptChart = { Subject: subject, ChartModel: JSON.stringify(chartModel), EntityModel: JSON.stringify(jqPostData), EntityName: jqPostData.QuerySet.TableName, EntityCondition: condition, Personal: personal, Publicity: publicity, CEO: ceo };
-                        $.post(basePath + "/Api/Core/Add/EChart", { rptChart: rptChart }, function (rv) {
+                        $.post(basePath + "/Core/Api/Add/EChart", { rptChart: rptChart }, function (rv) {
                             if (rv.success) {
                                 debugger;
                                 $("#selcharts").append(`<option value="` + rv.data.fid + `">` + rv.data.subject + `</option>`);
@@ -447,7 +447,7 @@
         if (c === "") {
             return;
         }
-        $.get(basePath + "/Api/Core/Echart/" + c, function (rv) {
+        $.get(basePath + "/Core/Api/Echart/" + c, function (rv) {
             if (rv.success) {
                 DrawChart(JSON.parse(rv.data.chartModel), JSON.parse(rv.data.entityModel));
             } else {
@@ -460,7 +460,7 @@
             if (result) {
                 var fid = $("#selcharts").val();
                 if (fid !== "") {
-                    $.get(basePath + "/Api/Core/Delete/EChart/" + fid, function (rv) {
+                    $.get(basePath + "/Core/Api/Delete/EChart/" + fid, function (rv) {
                         if (rv.success) {
                             $("#selcharts option[value='" + fid + "']").remove();
                             $("#selcharts").trigger("chosen:updated");

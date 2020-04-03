@@ -20,7 +20,7 @@ $annexBtn.on(ace.click_event, function () {
         dialog.find('.bootbox-body').empty().append(title).append($file);
         $file.fileinput({
             language: language,
-            uploadUrl: basePath + '/Api/Core/ImportExcelReportTemplate/' + $("#XlsFile").val(),
+            uploadUrl: basePath + '/Core/Api/ImportExcelReportTemplate/' + $("#XlsFile").val(),
             showCaption: false,
             allowedFileExtensions: ["xlsx"],
             maxFileCount: 1,

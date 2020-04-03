@@ -163,7 +163,7 @@ var Persistence = function (formid, tableName, beforeSaveCallback, afterSaveCall
         var rv = { success: false };
         $.ajax({
             type: "post",
-            url: basePath + '/Api/Core/Persistence?from=form',//这里不用带tn 因为 表单中有tn值
+            url: basePath + '/Core/Api/Persistence?from=form',//这里不用带tn 因为 表单中有tn值
             data: entityData,
             async: false,
             dataType: "json",

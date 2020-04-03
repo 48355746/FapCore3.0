@@ -407,7 +407,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     script.AppendLine("$(\"###formid##" + tempFid + "-FILE\").fileinput({");
                     script.AppendLine("language: language,");
                     script.AppendLine($"uploadUrl:\"{ _applicationContext.BaseUrl }/Component/UploadFile/{ field.FieldValue }\",");
-                    //script.AppendLine("deleteUrl:\"http://" + HttpContext.Current.Request.Url.Authority + HttpContext.Current.Request.ApplicationPath  + "/Api/Core/deletefile\",");
+                    //script.AppendLine("deleteUrl:\"http://" + HttpContext.Current.Request.Url.Authority + HttpContext.Current.Request.ApplicationPath  + "/Core/Api/deletefile\",");
                     if (allowExt.IsPresent())
                     {
                         script.AppendLine($"allowedFileExtensions : [{ allowExt }],");
@@ -776,7 +776,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                             }
                         }
                         jsonData += "}";
-                        script.AppendLine("$.post(basePath+'/Api/Core/frminjection'," + jsonData + ",function(result){");
+                        script.AppendLine("$.post(basePath+'/Core/Api/frminjection'," + jsonData + ",function(result){");
                         script.AppendLine("$.each(result,function(name,value) {");
                         script.AppendLine("$('#'+name).val(value)");
                         script.AppendLine("});");

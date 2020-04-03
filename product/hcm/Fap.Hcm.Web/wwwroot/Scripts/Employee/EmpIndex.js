@@ -111,7 +111,7 @@ $(document).on(ace.click_event, ".gritter-image", function () {
             file.ace_file_input('loading', true);
 
             deferred = $.ajax({
-                url: basePath + "/Api/Core/uploadfile/" + empphoto,
+                url: basePath + "/Core/Api/uploadfile/" + empphoto,
                 type: "POST",
                 processData: false,//important
                 contentType: false,//important

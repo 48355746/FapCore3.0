@@ -733,6 +733,19 @@ namespace Fap.Hcm.Web.Controllers
             ViewBag.TableName = entity;
             return PartialView();
         }
+        /// <summary>
+        /// 公式编辑器
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
+        public PartialViewResult FormulaEditor(string tableName)
+        {
+            DynamicParameters param = new DynamicParameters();
+            param.Add("TableName", tableName);
+            IEnumerable<FapFormulaCase> fcs = _dbContext.QueryWhere<FapFormulaCase>("TableName=@TableName", param);
+            ViewBag.TN = tableName;
+            return PartialView(fcs);
+        }
         #region 附件相关
         public PartialViewResult AttachmentInfo(string fid)
         {

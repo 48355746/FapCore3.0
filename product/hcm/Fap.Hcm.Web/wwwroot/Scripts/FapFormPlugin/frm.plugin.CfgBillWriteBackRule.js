@@ -51,8 +51,8 @@
 
         dialog.find('.bootbox-body').html(strVar);
 
-        var urlBill = basePath + '/Api/Core/FieldList/' + billTable;
-        var urlBiz = basePath + '/Api/Core/FieldList/' + bizTable;
+        var urlBill = basePath + '/Core/Api/FieldList/' + billTable;
+        var urlBiz = basePath + '/Core/Api/FieldList/' + bizTable;
         $.get(urlBill, function (ev) {
             var selBill = $("#filed-billtable");
             var selBiz = $("#filed-biztable");

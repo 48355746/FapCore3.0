@@ -251,11 +251,11 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             {
                 if (IsTreeGrid)
                 {
-                    grid.SetUrl($"{ _applicationContext.BaseUrl }/Api/Core/TreeDataList");
+                    grid.SetUrl($"{ _applicationContext.BaseUrl }/Core/Api/TreeDataList");
                 }
                 else
                 {
-                    grid.SetUrl($"{ _applicationContext.BaseUrl }/Api/Core/DataList");
+                    grid.SetUrl($"{ _applicationContext.BaseUrl }/Core/Api/DataList");
                 }
             }
             if (EditUrl.IsPresent())
@@ -270,7 +270,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                 }
                 else
                 {
-                    grid.SetEditUrl($"{_applicationContext.BaseUrl}/Api/Core/Inline/Persistence?from=grid");
+                    grid.SetEditUrl($"{_applicationContext.BaseUrl}/Core/Api/Inline/Persistence?from=grid");
                 }
             }
             if (Caption.IsPresent())

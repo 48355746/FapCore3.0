@@ -48,14 +48,17 @@ var bootboxWindow = function (title, url, buttons, data,onBeforeShow) {
         footer: false,
         buttons: buttons       
     });
-    dialog.on("shown.bs.modal", function () {
-        if ($.isFunction(onBeforeShow)) {
-            onBeforeShow();
-        } 
-    });    
+    //dialog.on("shown.bs.modal", function () {
+    //    if ($.isFunction(onBeforeShow)) {
+    //        onBeforeShow();
+    //    } 
+    //});    
     dialog.init(function () {       
         $.get(url,data, function (ev) {
             dialog.find('.bootbox-body').html(ev);
+            if ($.isFunction(onBeforeShow)) {
+                onBeforeShow();
+            } 
         });
     });
 };

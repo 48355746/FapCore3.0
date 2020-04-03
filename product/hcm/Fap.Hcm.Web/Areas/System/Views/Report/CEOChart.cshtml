@@ -75,7 +75,7 @@
 
 
             function DrawChart(chartModel, jqPostData, fapChart) {
-                $.post(basePath + '/Api/Core/EChart', { chartViewModel: chartModel, jqGridPostData: jqPostData }, function (rv) {
+                $.post(basePath + '/Core/Api/EChart', { chartViewModel: chartModel, jqGridPostData: jqPostData }, function (rv) {
                     fapChart.clear();
                     var option = initChartOption();
                     option.dataset = {
@@ -120,7 +120,7 @@
                 let fid = $(this).data("fid");
                 let fchart = $(this).get(0);
                 let $widget= $(this).closest(".widget-box");
-                $.get(basePath + "/Api/Core/Echart/" + fid, function (rv) {
+                $.get(basePath + "/Core/Api/Echart/" + fid, function (rv) {
                     if (rv.success) {
                         var chart = echarts.init(fchart);
                         reSize($widget, chart);

@@ -101,11 +101,15 @@ var MultiLangHelper = (function () {
       'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' },
       'chart': { 'ZhCn': '图表', 'ZhTW': '', 'En': '', 'Ja': '' },
       'payitem': { 'ZhCn': '薪资项', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'refrence_set': { 'ZhCn': '引用', 'ZhTW': '', 'En': '', 'Ja': '' },
       'refrence_item_set': { 'ZhCn': '引用设置', 'ZhTW': '', 'En': '', 'Ja': '' },
       'add_payitem': { 'ZhCn': '添加薪资项', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'selected_payitem': { 'ZhCn': '选中工资项', 'ZhTW': '', 'En': '', 'Ja': '' },
       'all_payitem': { 'ZhCn': '所有工资项', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'paycase_authority': { 'ZhCn': '薪资套权限', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'selected_payitem': { 'ZhCn': '选中工资项', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'paycase_condition': { 'ZhCn': '设置薪资套员工条件', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'save_employee_condition': { 'ZhCn': '保存员工条件', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'reference_item_set': { 'ZhCn': '引用设置', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'paycase_authority': { 'ZhCn': '薪资套公式', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种
@@ -115,7 +119,7 @@ var MultiLangHelper = (function () {
     //获得资源多语
     Helper.getResName = function (code, defaultName) {
         if (resArray[code] === undefined) {
-            $.post(basePath +'/Api/Core/MultiLanguage',{ langKey: code, langValue: defaultName }, function (rv) {
+            $.post(basePath +'/Core/Api/MultiLanguage',{ langKey: code, langValue: defaultName }, function (rv) {
 
             });
             return defaultName;

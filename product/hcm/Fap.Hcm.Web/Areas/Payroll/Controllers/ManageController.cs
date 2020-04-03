@@ -41,7 +41,10 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
         /// <returns></returns>
         public IActionResult PaySet()
         {
-            JqGridViewModel model = this.GetJqGridModel("PayCase");         
+            JqGridViewModel model = this.GetJqGridModel("PayCase",qs=> {
+                qs.GlobalWhere = "CreateBy=@EmpUid";
+                qs.AddParameter("EmpUid", _applicationContext.EmpUid);
+            });         
             return View(model);
         }
         /// <summary>
@@ -63,13 +66,9 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
         /// </summary>
         /// <param name="caseUid"></param>
         /// <returns></returns>
-        public PartialViewResult PayEmployee(string caseUid)
+        public PartialViewResult PayEmployee()
         {
-            JqGridViewModel model = this.GetJqGridModel("PayCaseEmployee", (q) =>
-            {
-                q.GlobalWhere = "CaseUid=@CaseUid";
-                q.AddParameter("CaseUid", caseUid);
-            });
+            JqGridViewModel model = this.GetJqGridModel("Employee");
             return PartialView(model);
         }
         /// <summary>
@@ -87,15 +86,6 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
                 q.AddParameter("CaseUid", caseUid);
             });
             return PartialView(model);
-        }
-        /// <summary>
-        /// 薪资套公式
-        /// </summary>
-        /// <param name="caseUid"></param>
-        /// <returns></returns>
-        public PartialViewResult PayFormula(string caseUid)
-        {
-            return PartialView();
-        }
+        }     
     }
 }

@@ -6,7 +6,7 @@ function initTemplate() {
     if (tn === '') {
         return;
     }
-    var furl = basePath + '/Api/Core/FieldList/' + tn;
+    var furl = basePath + '/Core/Api/FieldList/' + tn;
     $.get(furl, function (data) {
         var filterData = $.grep(data, function (d, i) {
             return d.isDefaultCol === 0 && d.colProperty !== 3;

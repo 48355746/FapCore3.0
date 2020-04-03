@@ -54,7 +54,7 @@
             e.preventDefault();
 
             var fid = $(this).data("filefid");
-            $.get("@Url.Content("~/Api/Core/viewfile/")" + fid, function (data) {
+            $.get("@Url.Content("~/Core/Api/viewfile/")" + fid, function (data) {
                 if (data.success) {
                     if (data.id == 'img') {
                         openNewWindow("@Url.Content("~/UploadFiles/View/")" + data.msg);
@@ -77,7 +77,7 @@
             bootbox.confirm("确定删除此附件?", function (result) {
                 if (result) {
                     //
-                    $.post("@Url.Content("~/Api/Core/deletefile/")", { key: fid }, function (rv) {
+                    $.post("@Url.Content("~/Core/Api/deletefile/")", { key: fid }, function (rv) {
                         if (rv == "1") {
                             df.parent().parent().remove();
                         }

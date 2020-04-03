@@ -1103,7 +1103,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
 
         /// <summary>
         ///     The url of the file that holds the request
-        ///     可以不设置，默认为 Api/Core/datalist
+        ///     可以不设置，默认为 Core/Api/datalist
         /// </summary>
         /// <param name = "url">Data url</param>
         public Grid SetUrl(string url)
@@ -1113,7 +1113,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
         }
         /// <summary>
         /// 持久化url，可以不设置，
-        /// 默认值为：Api/Core/Persistence
+        /// 默认值为：Core/Api/Persistence
         /// </summary>
         /// <param name="editUrl"></param>
         /// <returns></returns>
@@ -1784,11 +1784,11 @@ namespace Fap.AspNetCore.Controls.JqGrid
             {
                 if (_enabledTreeGrid)
                 {
-                    script.AppendLine($"url:'{ _applicationContext.BaseUrl }/Api/Core/TreeDataList',");
+                    script.AppendLine($"url:'{ _applicationContext.BaseUrl }/Core/Api/TreeDataList',");
                 }
                 else
                 {
-                    script.AppendLine($"url:'{ _applicationContext.BaseUrl }/Api/Core/DataList',");
+                    script.AppendLine($"url:'{ _applicationContext.BaseUrl }/Core/Api/DataList',");
                 }
             }
             script.AppendFormat("tn:'{0}',", TableName).AppendLine();
