@@ -247,7 +247,7 @@ var deleteGridRow = function (gid, tableName, onCompletedCallback) {
     }
 };
 //isSearch 查询控件参照，这时候多选
-var openRefrenceWindow = function (title, colfid, refurl, selectcallback, clearcallback, isSearch) {
+var openRefrenceWindow = function (title, colfid, refurl, selectcallback, clearcallback,afterShowcallback, isSearch) {
     if (isSearch === "undefined") {
         isSearch = "0";
     }
@@ -292,6 +292,7 @@ var openRefrenceWindow = function (title, colfid, refurl, selectcallback, clearc
     dialog.on("shown.bs.modal", function () {
         if (refurl.indexOf("GridReference") > -1)
             $(window).triggerHandler('resize.jqGrid');//触发窗口调整,使Grid得到正确的大小
+        afterShowcallback && afterShowcallback(dialog);
     });
     dialog.init(function () {
         var url = basePath + '/Component/' + refurl + '/' + colfid + "?isSearch=" + isSearch;
@@ -737,6 +738,10 @@ var searchOptionReference = function (el, title, fid, reftype) {
                 $(el).val("");
                 $ref.val("");
                 $(el).trigger("change");
+        }, function (dialog) {
+            var parentZ = $(el).parents("*[role=dialog]").filter(':first').css("z-index");
+            let zIndex = parseInt(parentZ, 10) + 2;
+            dialog.zIndex(zIndex);
         }, "1");
     });
 }

@@ -59,7 +59,7 @@ namespace Fap.AspNetCore.Serivce
             _memoryCache = memoryCache;
             _multiLangService = multiLangService;
         }
-        [Transactional]
+        
         public PageDataResultView QueryPageDataResultView(JqGridPostData jqGridPostData)
         {
             Pageable pageable = AnalysisPostData(jqGridPostData);

@@ -2085,7 +2085,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                         recreateForm: true,
                         afterShowSearch: function (e) {
                             var form = $(e[0]);
-                            form.closest('.ui-jqdialog').find('.ui-jqdialog-title').wrap('<div class=" + "\"widget-header\"" + @"  />')
+                            //form.closest('.ui-jqdialog').find('.ui-jqdialog-title').wrap('<div class=" + "\"widget-header\"" + @"  />')
                             style_search_form(form); ");
                 //显示查询方案下拉框
                 if ((_dataFormType & OperEnum.QueryProgram) > 0)
