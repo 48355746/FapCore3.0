@@ -173,7 +173,7 @@ namespace Fap.Hcm.Web.Controllers
         {
             Guard.Against.NullOrWhiteSpace(tableName, nameof(tableName));
             var colCacheList = _multiLangService.GetMultiLanguageColumns(tableName).ExcludeAuditColumns();
-            if (!qryCols.Equals("*"))
+            if (!qryCols.EqualsWithIgnoreCase("*"))
             {
                 var queryColList = HttpUtility.UrlDecode(qryCols).ToLower().SplitComma();
                 colCacheList = colCacheList.Where(c => queryColList.Contains(c.ColName.ToLower()));
@@ -310,6 +310,32 @@ namespace Fap.Hcm.Web.Controllers
             conditionSql = SqlUtils.ParsingSql(cols, conditionSql, _dbContext.DatabaseDialect);
             string sql = $"select count(0) from {tableName} where " + conditionSql;
             _dbContext.ExecuteScalar(sql);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+        #endregion
+
+        #region FormulaEditor
+        [HttpPost("FormulaCase")]
+        public JsonResult FormulaCase(FapFormulaCase formulaCase)
+        {
+            Guard.Against.Null(formulaCase,nameof(formulaCase));
+            if (formulaCase.Fid.IsMissing())
+            {
+                _dbContext.Insert(formulaCase);
+            }
+            else
+            {
+                var fc= _dbContext.Get<FapFormulaCase>(formulaCase.Fid);
+                fc.FcName = formulaCase.FcName;
+                fc.TableName = formulaCase.TableName;
+                _dbContext.Update(fc);
+            }
+            return Json(ResponseViewModelUtils.Sueecss(formulaCase));
+        }
+        [HttpDelete("FormulaCase/{fid}")]
+        public JsonResult FormulaCase(string fid)
+        {
+            _gridFormService.DeleteFormulaCase(fid);
             return Json(ResponseViewModelUtils.Sueecss());
         }
         #endregion

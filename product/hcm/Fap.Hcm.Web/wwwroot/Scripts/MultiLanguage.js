@@ -110,7 +110,8 @@ var MultiLangHelper = (function () {
       'save_employee_condition': { 'ZhCn': '保存员工条件', 'ZhTW': '', 'En': '', 'Ja': '' },
       'reference_item_set': { 'ZhCn': '引用设置', 'ZhTW': '', 'En': '', 'Ja': '' },
       'paycase_authority': { 'ZhCn': '薪资套公式', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'select_row_empty': { 'ZhCn': '请选中数据操作', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'select_row_empty': { 'ZhCn': '请选中数据操作', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'generate': { 'ZhCn': '生成', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

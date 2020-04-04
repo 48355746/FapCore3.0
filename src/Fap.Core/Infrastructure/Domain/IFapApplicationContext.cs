@@ -17,6 +17,10 @@ namespace Fap.Core.Infrastructure.Domain
         string EmpPhoto { get; }
         string GroupUid { get; }
         string OrgUid { get; }
+        /// <summary>
+        /// 租户
+        /// </summary>
+        string TenantID { get; }
         IEnumerable<string> Roles { get; }
         string CurrentRoleUid { get; set; }
         string UserName { get; }

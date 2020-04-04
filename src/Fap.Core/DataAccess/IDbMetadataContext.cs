@@ -8,7 +8,7 @@ namespace Fap.Core.DataAccess
 {
     public interface IDbMetadataContext
     {
-        void CreateTable(int id);
+        void CreateTable(long id);
         void AddMultiLangColumn(FapColumn fapColumn);
         void DropMultiLangColumn(FapColumn fapColumn);
         void AddColumn(FapColumn fapColumn);

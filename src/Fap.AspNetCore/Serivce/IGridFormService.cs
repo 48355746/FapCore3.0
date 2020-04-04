@@ -23,5 +23,6 @@ namespace Fap.AspNetCore.Serivce
         bool ImportExcelReportTemplate(string fid);
         string PrintWordTemplate(GridModel gridModel);
         ChartResult EChart(ChartViewModel chartViewModel, JqGridPostData jqGridPostData);
+        void DeleteFormulaCase(string caseUid);
     }
 }

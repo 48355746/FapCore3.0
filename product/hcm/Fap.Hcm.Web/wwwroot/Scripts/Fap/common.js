@@ -177,6 +177,23 @@ jQuery.randomUrl = function (url) {
     }
     return url;
 };
+/**
+ * 删除数据的ajax-delete请求
+ */
+$.delete = function (url, data, callback) {
+    if ($.isFunction(data)) {
+        callback = data;
+        data = undefined;
+    }
+    $.ajax({
+        url: url,
+        type: "delete",
+        contentType: "application/json",
+        dataType: "json",
+        data: data,
+        success: callback
+    });
+};
 //js 多语
 $.lang = function (langkey, langValue) {
    return MultiLangHelper.getResName(langkey, langValue);

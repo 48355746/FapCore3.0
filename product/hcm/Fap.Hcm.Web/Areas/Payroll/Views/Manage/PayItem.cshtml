@@ -51,6 +51,15 @@
             })
         })
     }
+    function generatePayItem(caseUid) {
+        $.post(basePath + "/Payroll/Api/GeneratePayCase", { caseUid: caseUid }, function (rv) {
+            if (rv.success) {
+                $.msg(rv.msg);
+            } else {
+                bootbox.alert(rv.msg);
+            }
+        })
+    }
 
     function refreshPayItems() {
         reloadGrid("grid-payitem");

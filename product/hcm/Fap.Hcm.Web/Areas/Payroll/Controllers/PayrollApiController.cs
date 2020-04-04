@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Ardalis.GuardClauses;
 using Fap.AspNetCore.Infrastructure;
 using Fap.AspNetCore.ViewModel;
+using Fap.Core.DataAccess;
 using Fap.Hcm.Service.Payroll;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,9 +19,11 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
     public class PayrollApiController : FapController
     {
         private readonly IPayrollService _payrollService;
-        public PayrollApiController(IServiceProvider serviceProvider, IPayrollService payrollService) : base(serviceProvider)
+        private readonly IDbMetadataContext _metadataContext;
+        public PayrollApiController(IServiceProvider serviceProvider, IDbMetadataContext metadataContext, IPayrollService payrollService) : base(serviceProvider)
         {
             _payrollService = payrollService;
+            _metadataContext = metadataContext;
         }
         [HttpGet("PaySet/{caseUid}")]
         public JsonResult GetPaySet(string caseUid)
@@ -56,6 +59,13 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
             var payCase=  _dbContext.Get<PayCase>(caseUid);
             payCase.EmpCondition = filters;
             _dbContext.Update(payCase);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+        [HttpPost("GeneratePayCase")]
+        public JsonResult GeneratePayCase(string caseUid)
+        {
+            long tbId= _payrollService.GenericPayCase(caseUid);
+            _metadataContext.CreateTable(tbId);
             return Json(ResponseViewModelUtils.Sueecss());
         }
     }

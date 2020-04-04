@@ -738,8 +738,13 @@ namespace Fap.Hcm.Web.Controllers
         /// </summary>
         /// <param name="tableName"></param>
         /// <returns></returns>
-        public PartialViewResult FormulaEditor(string tableName)
+        public IActionResult FormulaEditor(string tableName)
         {
+            var tb= _dbContext.Table(tableName);
+            if (tb == null)
+            {
+                return Content("项还没生成，不能设置公式");
+            }
             DynamicParameters param = new DynamicParameters();
             param.Add("TableName", tableName);
             IEnumerable<FapFormulaCase> fcs = _dbContext.QueryWhere<FapFormulaCase>("TableName=@TableName", param);

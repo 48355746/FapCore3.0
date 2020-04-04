@@ -863,6 +863,14 @@ namespace Fap.AspNetCore.Serivce
                 });
             }
         }
+        [Transactional]
+        public void DeleteFormulaCase(string caseUid)
+        {
+            DynamicParameters param = new DynamicParameters();
+            param.Add("FcUid", caseUid);
+            _dbContext.Execute("delete from FapFormula where FcUid=@FcUid", param);
+            _dbContext.Execute("delete from FapFormulaCase where Fid=@FcUid", param);
+        }
     }
 
     public enum FormOperEnum

@@ -62,6 +62,10 @@ namespace Fap.Core.Infrastructure.Domain
         /// </summary>
         public string GroupUid => _httpContextAccessor?.HttpContext == null ? "~" : _httpContextAccessor?.HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.DenyOnlyPrimaryGroupSid)?.Value;
         /// <summary>
+        /// 租户
+        /// </summary>
+        public string TenantID => _httpContextAccessor?.HttpContext == null ? "0" : _httpContextAccessor?.HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.AuthenticationInstant)?.Value;
+        /// <summary>
         /// 当前语言
         /// </summary>
         public MultiLanguageEnum Language

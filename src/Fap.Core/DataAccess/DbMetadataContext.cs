@@ -37,7 +37,7 @@ namespace Fap.Core.DataAccess
                 _ => throw new NotImplementedException()
             };
         }
-        public void CreateTable(int id)
+        public void CreateTable(long id)
         {
             _dbSession.TransactionProxy((connection, transaction) =>
             {
@@ -45,8 +45,10 @@ namespace Fap.Core.DataAccess
                 if (table != null)
                 {
                     var columns = connection.Query<FapColumn>("select * from FapColumn where TableName=@TableName", new { TableName = table.TableName }, transaction);
-                    var sql = GetSqlGenerator().CreateTableSql(table, columns);
-                    connection.Execute(sql, null, transaction);
+                    string dropSql= GetSqlGenerator().DropTableSql(table);
+                    var createSql = GetSqlGenerator().CreateTableSql(table, columns);
+                    connection.Execute(dropSql, null, transaction);
+                    connection.Execute(createSql, null, transaction);
                     connection.Execute("Update FapTable set IsSync=1 where Id=@Id", new { Id = id }, transaction);
                 }
             });

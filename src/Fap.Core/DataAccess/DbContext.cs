@@ -2332,10 +2332,8 @@ namespace Fap.Core.DataAccess
         #region Metadata
         public FapTable Table(string tableName)
         {
-            if (!_fapPlatformDomain.TableSet.TryGetValueByName(tableName, out FapTable fapTable))
-            {
-                Guard.Against.Null(fapTable, nameof(fapTable));
-            }
+            _fapPlatformDomain.TableSet.TryGetValueByName(tableName, out FapTable fapTable);
+            
             return fapTable;
         }
         public IEnumerable<FapTable> Tables(string tableCategory)

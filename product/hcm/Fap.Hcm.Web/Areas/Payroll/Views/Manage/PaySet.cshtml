@@ -43,7 +43,7 @@
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
             $(document).one('ajaxloadstart.page', function (e) {
-              
+
             })
             //薪资项
             $("#btnPayItem").on(ace.click_event, function () {
@@ -65,6 +65,18 @@
                         label: $.lang("reference_item_set", "引用设置"),
                         className: "btn-primary btn-link",
                         callback: function () {
+                            return false;
+                        }
+                    },
+                    generate: {
+                        label: $.lang("generate", "生成"),
+                        className: "btn-primary btn-link",
+                        callback: function () {
+                            bootbox.confirm("提示：如果之前生成过薪资项，本次生成将会删掉之前的数据，确定生成?", function (result) {
+                                if (result) {
+                                    generatePayItem(caseUid);
+                                }
+                            });
                             return false;
                         }
                     }

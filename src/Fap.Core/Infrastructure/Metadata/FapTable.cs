@@ -68,7 +68,7 @@ namespace Fap.Core.Infrastructure.Metadata
         /// </summary>
         public int IsBasic { get; set; }
         /// <summary>
-        /// 是否同步
+        /// 是否同步(已生成物理表)
         /// </summary>
         public int IsSync { get; set; }
         /// <summary>
