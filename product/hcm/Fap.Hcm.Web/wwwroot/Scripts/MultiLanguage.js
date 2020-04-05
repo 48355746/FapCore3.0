@@ -111,7 +111,11 @@ var MultiLangHelper = (function () {
       'reference_item_set': { 'ZhCn': '引用设置', 'ZhTW': '', 'En': '', 'Ja': '' },
       'paycase_authority': { 'ZhCn': '薪资套公式', 'ZhTW': '', 'En': '', 'Ja': '' },
       'select_row_empty': { 'ZhCn': '请选中数据操作', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'generate': { 'ZhCn': '生成', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'generate': { 'ZhCn': '生成', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'mapping': { 'ZhCn': '引用', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'pay_reffieldset_page_selrefitem': { 'ZhCn': '选择引用项', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'pay_reffieldsset_page_refitem': { 'ZhCn': '引用项', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'pay_index_page_salaryitem': { 'ZhCn': '薪资项', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

@@ -50,6 +50,12 @@ namespace Fap.Core.Infrastructure.Interceptor
             string langkey = $"{fapColumn.TableName}_{fapColumn.ColName}";
             _dbContext.Insert(new FapMultiLanguage { Qualifier = MultiLanguageOriginEnum.FapColumn.ToString(), LangKey = langkey, LangValue = fapColumn.ColComment });
         }
+        public override void AfterEntityInsert(object entity)
+        {
+            FapColumn fapColumn = entity as FapColumn;
+            string langkey = $"{fapColumn.TableName}_{fapColumn.ColName}";
+            _dbContext.Insert(new FapMultiLanguage { Qualifier = MultiLanguageOriginEnum.FapColumn.ToString(), LangKey = langkey, LangValue = fapColumn.ColComment });
+        }
         public override void BeforeDynamicObjectUpdate(FapDynamicObject fapDynamicData)
         {
             FapColumn newColumn = ToFapColumn(fapDynamicData);

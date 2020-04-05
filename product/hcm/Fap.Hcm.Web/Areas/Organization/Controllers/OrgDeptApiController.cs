@@ -213,16 +213,16 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
             //获取选中部门
             OrgDept parent = deptList.FirstOrDefault<OrgDept>(d => d.Fid == fid);
             //过滤子部门 根据DeptCode
-            IEnumerable<OrgDept> depts = deptList.Where(d => d.DeptCode.StartsWith(parent.DeptCode)).OrderBy(d => d.DeptOrder);
+            IEnumerable<OrgDept> depts = deptList.Where(d => d.DeptCode.StartsWith(parent.DeptCode,StringComparison.OrdinalIgnoreCase)).OrderBy(d => d.DeptOrder);
             var employees = _dbContext.QueryAll<Fap.Core.Rbac.Model.Employee>();
             //人数计算
             depts.ToList().ForEach((d) =>
             {
-                d.EmpNum = Convert.ToInt32(list.FirstOrDefault(e => e.DeptUid == d.Fid)?.Num.ToString() ?? "0");
+                d.EmpNum = (list.FirstOrDefault(e => e.DeptUid == d.Fid)?.Num.ToString() ?? "0").ToInt();
             });
             depts.ToList().ForEach((d) =>
             {
-                d.EmpNum = depts.Where(dd => dd.DeptCode.StartsWith(d.DeptCode)).Sum(dd => dd.EmpNum);
+                d.EmpNum = depts.Where(dd => dd.DeptCode.StartsWith(d.DeptCode,StringComparison.OrdinalIgnoreCase)).Sum(dd => dd.EmpNum);
                 if (d.DeptManager.IsPresent())
                 {
                     d.DeptManagerMC = employees.FirstOrDefault(e => e.Fid == d.DeptManager)?.EmpName;

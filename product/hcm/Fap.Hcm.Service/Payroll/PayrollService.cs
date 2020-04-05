@@ -83,7 +83,7 @@ namespace Fap.Hcm.Service.Payroll
             ft.TableCategory = "Pay";
             ft.TableComment = $"{payCase.CaseName}薪资套";
             ft.TableMode = "SINGLE";
-            ft.TableFeature = "PayCaseFeature";
+            ft.TableFeature = "";//根据ColProperty='3'过滤，不在用TableFeature
             ft.IsSync = 1;
             ft.IsBasic = 1;
             ft.ProductUid = "HCM";
@@ -102,6 +102,7 @@ namespace Fap.Hcm.Service.Payroll
             param.Add("TableName", ft.TableName);
             _dbContext.Execute("delete from FapTable where TableName=@TableName", param);
             _dbContext.Execute("delete from FapColumn where TableName=@TableName", param);
+            _dbContext.Execute($"delete from FapMultiLanguage where LangKey like '{ft.TableName}_%'");
             _dbContext.Insert<FapTable>(ft);
             _dbContext.InsertBatch<FapColumn>(cols);
             _platformDomain.TableSet.Refresh();

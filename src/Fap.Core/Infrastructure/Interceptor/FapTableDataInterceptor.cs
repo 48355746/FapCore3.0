@@ -27,9 +27,15 @@ namespace Fap.Core.Infrastructure.Interceptor
         public override void AfterDynamicObjectInsert(FapDynamicObject fapDynamicData)
         {
             string tableName = fapDynamicData.Get(nameof(FapTable.TableName)).ToString();
-            var columns = GetDefaultColumns(tableName);
             //根据table特性生成默认列元数据
             string tbFeature = fapDynamicData.Get(nameof(FapTable.TableFeature)).ToString();
+            string tableLabel = fapDynamicData.Get(nameof(FapTable.TableComment)).ToString();
+            AddColumns(tableName, tbFeature, tableLabel);
+        }
+
+        private void AddColumns(string tableName, string tbFeature, string tableLabel)
+        {
+            var columns = GetDefaultColumns(tableName);
             if (tbFeature.IsPresent())
             {
                 var features = tbFeature.SplitSemicolon();
@@ -45,9 +51,14 @@ namespace Fap.Core.Infrastructure.Interceptor
                 }
             }
             //多语
-            string tableLabel = fapDynamicData.Get(nameof(FapTable.TableComment)).ToString();
             _dbContext.Insert(new FapMultiLanguage { Qualifier = MultiLanguageOriginEnum.FapTable.ToString(), LangKey = tableName, LangValue = tableLabel });
             _dbContext.InsertBatch(columns);
+        }
+
+        public override void AfterEntityInsert(object entity)
+        {
+            FapTable tb = entity as FapTable;
+            AddColumns(tb.TableName, tb.TableFeature, tb.TableComment);
         }
         public override void BeforeDynamicObjectDelete(FapDynamicObject fapDynamicData)
         {

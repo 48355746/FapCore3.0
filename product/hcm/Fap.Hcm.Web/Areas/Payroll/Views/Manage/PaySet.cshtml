@@ -60,14 +60,7 @@
                             AddPayItem(caseUid);
                             return false;
                         }
-                    },
-                    refrence: {
-                        label: $.lang("reference_item_set", "引用设置"),
-                        className: "btn-primary btn-link",
-                        callback: function () {
-                            return false;
-                        }
-                    },
+                    },                
                     generate: {
                         label: $.lang("generate", "生成"),
                         className: "btn-primary btn-link",
@@ -77,6 +70,13 @@
                                     generatePayItem(caseUid);
                                 }
                             });
+                            return false;
+                        }
+                    },
+                    refrence: {
+                        label: $.lang("reference_item_set", "引用设置"),
+                        className: "btn-primary btn-link",
+                        callback: function () {
                             return false;
                         }
                     }

@@ -1,0 +1,63 @@
+﻿@using Fap.AspNetCore.Controls
+@using Fap.Core.Extensions
+@model IEnumerable<Fap.Core.Infrastructure.Metadata.FapColumn>
+@{
+    List<Select2DataItem> tableList = new List<Select2DataItem>
+    {
+        new Select2DataItem{Id="",Text="请选择"},
+        new Select2DataItem{Id="Employee",Text="员工"},
+        new Select2DataItem{Id="TmMonthResult",Text="考勤月结果"}
+    };
+}
+<script>
+    $(function () {
+        $("#selField").select2({ width: 300, placeholder: $.lang("select_field", "选择属性"), allowClear:true });
+        
+    })
+    //值变化事件，selEntity 触发
+    var tableChange = function (e) {
+        var tn= $("#sel-selEntity").val();
+        if (!tn) {
+            $("#selField").empty();
+            return;
+        }
+        $.get("@Url.Content("~/Core/Api/FieldList/")" + tn, function (data) {
+            if (data) {
+                var filter = $.grep(data, function (d, i) {
+                    return d.isDefaultCol != 1;
+                })
+                $("#selField").empty();
+                $("#selField").append("<option></option>");
+                $.each(filter, function (i, d) {
+                    $("#selField").append("<option value='" + d.colName + "'>" + d.colComment + "</option>");
+                })
+             
+                $("#selField").val('');
+            }
+        });
+    }   
+</script>
+
+<div class="row">
+    <div class="form-horizontal">
+        <div class="form-group">
+            <label class="col-sm-3 control-label no-padding-right" for="sel-selEntity">
+                <fap-multilang default-content="实体" lang-key="entity"></fap-multilang>
+            </label>
+            <div class="col-sm-9">
+                <fap-select id="selEntity" is-multi="false" placeholder="选择实体" on-change="tableChange" source-list="tableList"></fap-select>
+            </div>
+
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label no-padding-right" for="selField">
+                <fap-multilang default-content="属性" lang-key="field"></fap-multilang>
+            </label>
+            <div class="col-sm-9">
+                <select id="selField" class="select2-allowclear tag-input-style"></select>
+            </div>
+
+        </div>
+    
+    </div>
+</div>

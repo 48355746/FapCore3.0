@@ -1,4 +1,9 @@
-﻿@model IEnumerable<Fap.Core.Infrastructure.Model.FapFormulaCase>
+﻿@using System.Linq; 
+@model IEnumerable<Fap.Core.Infrastructure.Model.FapFormulaCase>
+@{ 
+    string tableName = ViewBag.TN;
+    IEnumerable<Fap.Core.Infrastructure.Metadata.FapColumn> columns = _dbContext.Columns(tableName).Where(c => c.IsDefaultCol == 1);
+}
 @*<link href="~/Content/css/codemirror/codemirror.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/Content/css/codemirror/theme/xq-light.css"/>
     <script src="~/Content/js/codemirror/codemirror.js"></script>
@@ -25,7 +30,7 @@
             <div class="widget-body">
                 <div class="widget-main no-padding">
                     <select class="form-control" id="field-select-formulacase">
-                        <option value="">无</option>
+                        <option value="">--请选择--</option>
                         @foreach (var item in Model)
                         {
                             <option value="@item.Fid">@item.FcName</option>
@@ -41,20 +46,14 @@
                     <a href="javascript:void(0)" title="添加" id="btnAddFormulaItem">
                         <i class="ace-icon fa fa-plus"></i>
                     </a>
+                    <a href="javascript:void(0)" title="保存" id="btnSaveFormulaItem">
+                        <i class="ace-icon fa fa-floppy-o"></i>
+                    </a>
                 </div>
             </div>
             <div class="widget-body">
-                <div class="widget-main no-padding" id="divformulaitems" style="overflow:auto;min-height:400px">
+                <div class="widget-main no-padding scrollable" data-size="360" id="divformulaitems" style="height:360px">
                     <ul id="formulaItems" class="item-list"></ul>
-                </div>
-            </div>
-
-            <div class="widget-toolbox  padding-4 clearfix">
-                <div class="btn-group pull-right">
-                    <button id="btnSave" class="btn btn-sm btn-purple">
-                        <i class="ace-icon fa fa-floppy-o bigger-125"></i>
-                        保存
-                    </button>
                 </div>
             </div>
         </div>
@@ -70,58 +69,67 @@
                     </button>
                 </div>
                 <div class="widget-toolbar">
-                    <a href="#" data-toggle="dropdown" aria-expanded="true">
-                        <i class="ace-icon fa fa-superscript"></i>
-                    </a>
-                    <div class="dropdown-menu dropdown-warning dropdown-menu-right dropdown-caret dropdown-close">
-                        <ul>
-                            <li>
-                                <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" [小时](开始时间,结束时间) ">时间间隔(小时)</a>
-                            </li>
-                            <li>
-                                <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" [天](开始时间,结束时间) ">时间间隔(天)</a>
-                            </li>
-                            <li>
-                                <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" [星期](开始时间,结束时间) ">时间间隔(星期)</a>
-                            </li>
-                            <li>
-                                <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" [月](开始时间,结束时间) ">时间间隔(月)</a>
-                            </li>
-                            <li>
-                                <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" [季度](开始时间,结束时间) ">时间间隔(季度)</a>
-                            </li>
-                            <li>
-                                <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" [年](开始时间,结束时间) ">时间间隔(年)</a>
-                            </li>
-                            <li>
-                                <a href="javascript:void(0)" data-provider="fap-formula" data-handler="[当前日期]">当前日期</a>
-                            </li>
-                            <li class="divider"></li>
+                    <div class="inline dropdown-hover">
+                        <a href="#" data-toggle="dropdown" aria-expanded="true">
+                            <i class="ace-icon fa fa-superscript"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-warning dropdown-menu-right dropdown-caret dropdown-close">
+                            <ul>
+                                <li>
+                                    <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" [小时](开始时间,结束时间) ">时间间隔(小时)</a>
+                                </li>
+                                <li>
+                                    <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" [天](开始时间,结束时间) ">时间间隔(天)</a>
+                                </li>
+                                <li>
+                                    <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" [星期](开始时间,结束时间) ">时间间隔(星期)</a>
+                                </li>
+                                <li>
+                                    <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" [月](开始时间,结束时间) ">时间间隔(月)</a>
+                                </li>
+                                <li>
+                                    <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" [季度](开始时间,结束时间) ">时间间隔(季度)</a>
+                                </li>
+                                <li>
+                                    <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" [年](开始时间,结束时间) ">时间间隔(年)</a>
+                                </li>
+                                <li>
+                                    <a href="javascript:void(0)" data-provider="fap-formula" data-handler="[当前日期]">当前日期</a>
+                                </li>
+                                <li class="divider"></li>
 
-                            <li>
-                                <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" [绝对值](字段) ">绝对值</a>
-                            </li>
-                        </ul>
+                                <li>
+                                    <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" [绝对值](字段) ">绝对值</a>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
                 <div class="widget-toolbar">
-                    <a href="#" data-toggle="dropdown" aria-expanded="true">
-                        <i class="ace-icon fa fa-bars"></i>
-                    </a>
-                    <div class="dropdown-menu dropdown-warning dropdown-menu-right dropdown-caret dropdown-close scrollable" data-size="300">
-                        <ul>
-                            @foreach (var col in _dbContext.Columns(ViewBag.TN))
-                            {
-                                <li>
-                                    <a href="javascript:void(0)" data-provider="fap-formula" data-handler="{@col.ColComment}">@col.ColComment</a>
-                                </li>
+                    <div class="inline dropdown-hover">
+                        <a href="#" data-toggle="dropdown" aria-expanded="true">
+                            <i class="ace-icon fa fa-bars"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-warning dropdown-menu-right dropdown-caret dropdown-close scrollable" data-size="300">
+                            <ul>
+                                @foreach (var col in columns)
+                                {
+                                    <li>
+                                        <a href="javascript:void(0)" data-provider="fap-formula" data-handler="{@col.ColComment}">@col.ColComment</a>
+                                    </li>
 
-                            }
-                        </ul>
+                                }
+                            </ul>
+                        </div>
                     </div>
                 </div>
+                <div class="widget-toolbar">
+                    <button id="btnMapping" class="btn btn-xs btn-link">
+                        <i class="ace-icon fa fa-exchange"></i>
+                        引用
+                    </button>
+                </div>
             </div>
-
             <div class="widget-body">
                 <div class="widget-main no-padding">
 
@@ -130,62 +138,59 @@
                 </div>
             </div>
         </div>
-            <div class="row clearfix" style="margin:0">
-                <h6 class="header smaller lighter ">运算符</h6>
-                <div class="col-xs-12">
+        <div class="row clearfix" style="margin:0">
+            <h6 class="header smaller lighter ">运算符</h6>
+            <div class="col-xs-12">
 
-                    <div class="btn-group">
-                        <button class="btn-light btn-sm btn btn-round" type="button" title="+" tabindex="-1" data-provider="fap-formula" data-handler="+"><span>+</span> </button>
-                        <button class="btn-light btn-sm btn btn-round" type="button" title="-" tabindex="-1" data-provider="fap-formula" data-handler="-"><span>-</span> </button>
-                        <button class="btn-light btn-sm btn btn-round" type="button" title="*" tabindex="-1" data-provider="fap-formula" data-handler="*"><span>*</span> </button>
-                        <button class="btn-light btn-sm btn btn-round" type="button" title="/" tabindex="-1" data-provider="fap-formula" data-handler="/"><span>/</span> </button>
-                    </div>
-                    <div class="btn-group">
-                        <button class="btn-light btn-sm btn btn-round" type="button" title=">" tabindex="-1" data-provider="fap-formula" data-handler=">"><span>></span> </button>
-                        <button class="btn-light btn-sm btn btn-round" type="button" title=">=" tabindex="-1" data-provider="fap-formula" data-handler=">="><span>>=</span> </button>
-                        <button class="btn-light btn-sm btn btn-round" type="button" title="<" tabindex="-1" data-provider="fap-formula" data-handler="<"><span><</span> </button>
-                        <button class="btn-light btn-sm btn btn-round" type="button" title="<=" tabindex="-1" data-provider="fap-formula" data-handler="<="><span><=</span> </button>
-                    </div>
-
-                    <div class="btn-group">
-                        <button class="btn-light btn-sm btn btn-round" type="button" title="=" tabindex="-1" data-provider="fap-formula" data-handler="="><span>=</span> </button>
-                        <button class="btn-light btn-sm btn btn-round" type="button" title="!=" tabindex="-1" data-provider="fap-formula" data-handler="!="><span>!=</span> </button>
-                        <button class="btn-light btn-sm btn btn-round" type="button" title="(" tabindex="-1" data-provider="fap-formula" data-handler="("><span>(</span> </button>
-                        <button class="btn-light btn-sm btn btn-round" type="button" title=")" tabindex="-1" data-provider="fap-formula" data-handler=")"><span>)</span> </button>
-                    </div>
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-light btn-sm btn-round" data-provider="fap-formula" data-handler="1">1</button>
-                        <button type="button" class="btn btn-light btn-sm btn-round" data-provider="fap-formula" data-handler="2">2</button>
-                        <button type="button" class="btn btn-light btn-sm btn-round" data-provider="fap-formula" data-handler="3">3</button>
-                        <button type="button" class="btn btn-light btn-sm btn-round" data-provider="fap-formula" data-handler="4">4</button>
-                    </div>
-                    <div class="space-2"></div>
-                    <div class="btn-group">
-
-                        <button type="button" class="btn btn-light btn-sm btn-round" data-provider="fap-formula" data-handler="5">5</button>
-                        <button type="button" class="btn btn-light btn-sm btn-round" data-provider="fap-formula" data-handler="6">6</button>
-                        <button type="button" class="btn btn-light btn-sm btn-round" data-provider="fap-formula" data-handler="7">7</button>
-                        <button type="button" class="btn btn-light btn-sm btn-round" data-provider="fap-formula" data-handler="8">8</button>
-                        <button type="button" class="btn btn-light btn-sm btn-round" data-provider="fap-formula" data-handler="9">9</button>
-                        <button type="button" class="btn btn-light btn-sm btn-round" data-provider="fap-formula" data-handler="0">0</button>
-                        <button class="btn-light btn-sm btn btn-round" type="button" title=">" tabindex="-1" data-provider="fap-formula" data-handler=" AND "><span>and</span> </button>
-                        <button class="btn-light btn-sm btn btn-round" type="button" title=">=" tabindex="-1" data-provider="fap-formula" data-handler=" OR "><span>or</span> </button>
-                    </div>
-
-                    <div class="btn-group">
-                        <button class="btn-light btn-sm btn btn-round" type="button" title="=" tabindex="-1" data-provider="fap-formula" data-handler=" CASE  WHEN 条件 THEN 结果 ELSE 结果 END "><span>case when</span> </button>
-                        <button class="btn-light btn-sm btn btn-round" type="button" title="<" tabindex="-1" data-provider="fap-formula" data-handler=" WHERE 条件"><span>where</span> </button>
-                        <button class="btn-light btn-sm btn btn-round" type="button" title="<=" tabindex="-1" data-provider="fap-formula" data-handler=" NOT "><span>not</span> </button>
-                        <button class="btn-light btn-sm btn btn-round" type="button" title="<=" tabindex="-1" data-provider="fap-formula" data-handler=" ISNULL(字段,0) "><span>isnull</span> </button>
-                    </div>
-
-                    <div class="space-2"></div>
-
-
-
+                <div class="btn-group">
+                    <button class="btn-light btn-sm btn btn-round" type="button" title="+" tabindex="-1" data-provider="fap-formula" data-handler="+"><span>+</span> </button>
+                    <button class="btn-light btn-sm btn btn-round" type="button" title="-" tabindex="-1" data-provider="fap-formula" data-handler="-"><span>-</span> </button>
+                    <button class="btn-light btn-sm btn btn-round" type="button" title="*" tabindex="-1" data-provider="fap-formula" data-handler="*"><span>*</span> </button>
+                    <button class="btn-light btn-sm btn btn-round" type="button" title="/" tabindex="-1" data-provider="fap-formula" data-handler="/"><span>/</span> </button>
+                </div>
+                <div class="btn-group">
+                    <button class="btn-light btn-sm btn btn-round" type="button" title=">" tabindex="-1" data-provider="fap-formula" data-handler=">"><span>></span> </button>
+                    <button class="btn-light btn-sm btn btn-round" type="button" title=">=" tabindex="-1" data-provider="fap-formula" data-handler=">="><span>>=</span> </button>
+                    <button class="btn-light btn-sm btn btn-round" type="button" title="<" tabindex="-1" data-provider="fap-formula" data-handler="<"><span><</span> </button>
+                    <button class="btn-light btn-sm btn btn-round" type="button" title="<=" tabindex="-1" data-provider="fap-formula" data-handler="<="><span><=</span> </button>
                 </div>
 
+                <div class="btn-group">
+                    <button class="btn-light btn-sm btn btn-round" type="button" title="=" tabindex="-1" data-provider="fap-formula" data-handler="="><span>=</span> </button>
+                    <button class="btn-light btn-sm btn btn-round" type="button" title="!=" tabindex="-1" data-provider="fap-formula" data-handler="!="><span>!=</span> </button>
+                    <button class="btn-light btn-sm btn btn-round" type="button" title="(" tabindex="-1" data-provider="fap-formula" data-handler="("><span>(</span> </button>
+                    <button class="btn-light btn-sm btn btn-round" type="button" title=")" tabindex="-1" data-provider="fap-formula" data-handler=")"><span>)</span> </button>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-light btn-sm btn-round" data-provider="fap-formula" data-handler="1">1</button>
+                    <button type="button" class="btn btn-light btn-sm btn-round" data-provider="fap-formula" data-handler="2">2</button>
+                    <button type="button" class="btn btn-light btn-sm btn-round" data-provider="fap-formula" data-handler="3">3</button>
+                    <button type="button" class="btn btn-light btn-sm btn-round" data-provider="fap-formula" data-handler="4">4</button>
+                </div>
+                <div class="space-2"></div>
+                <div class="btn-group">
+
+                    <button type="button" class="btn btn-light btn-sm btn-round" data-provider="fap-formula" data-handler="5">5</button>
+                    <button type="button" class="btn btn-light btn-sm btn-round" data-provider="fap-formula" data-handler="6">6</button>
+                    <button type="button" class="btn btn-light btn-sm btn-round" data-provider="fap-formula" data-handler="7">7</button>
+                    <button type="button" class="btn btn-light btn-sm btn-round" data-provider="fap-formula" data-handler="8">8</button>
+                    <button type="button" class="btn btn-light btn-sm btn-round" data-provider="fap-formula" data-handler="9">9</button>
+                    <button type="button" class="btn btn-light btn-sm btn-round" data-provider="fap-formula" data-handler="0">0</button>
+                    <button class="btn-light btn-sm btn btn-round" type="button" title=">" tabindex="-1" data-provider="fap-formula" data-handler=" AND "><span>and</span> </button>
+                    <button class="btn-light btn-sm btn btn-round" type="button" title=">=" tabindex="-1" data-provider="fap-formula" data-handler=" OR "><span>or</span> </button>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn-light btn-sm btn btn-round" type="button" title="=" tabindex="-1" data-provider="fap-formula" data-handler=" CASE  WHEN 条件 THEN 结果 ELSE 结果 END "><span>case when</span> </button>
+                    <button class="btn-light btn-sm btn btn-round" type="button" title="<" tabindex="-1" data-provider="fap-formula" data-handler=" WHERE 条件"><span>where</span> </button>
+                    <button class="btn-light btn-sm btn btn-round" type="button" title="<=" tabindex="-1" data-provider="fap-formula" data-handler=" NOT "><span>not</span> </button>
+                    <button class="btn-light btn-sm btn btn-round" type="button" title="<=" tabindex="-1" data-provider="fap-formula" data-handler=" ISNULL(字段,0) "><span>isnull</span> </button>
+                </div>
+
+                <div class="space-2"></div>
             </div>
+
+        </div>
 
     </div>
 </div>
@@ -205,7 +210,7 @@
             bootbox.prompt("公式套名称", function (result) {
                 if (result === null||result==='') {
                 } else {
-                    $.post("@Url.Content("~/Core/Api/FormulaCase")", { FcName: result, TableName: '@ViewBag.TN' }, function (rv) {
+                    $.post("@Url.Content("~/Core/Api/FormulaCase")", { FcName: result, TableName: '@tableName' }, function (rv) {
                         if (rv.success) {
                             let data = rv.data;
                             $("#field-select-formulacase").append("<option value='" + data.fid + "'>" + data.fcName + "</option>");
@@ -231,7 +236,7 @@
                 value:fcName,
                 callback: function (result) {
                     if (result != null) {
-                        $.post("@Url.Content("~/Core/Api/FormulaCase")", { Fid: fcUid, FcName: result, TableName: '@ViewBag.TN' }, function (rv) {
+                        $.post("@Url.Content("~/Core/Api/FormulaCase")", { Fid: fcUid, FcName: result, TableName: '@tableName' }, function (rv) {
                             if (rv.success) {
                                 $.msg(rv.msg);
                                 let data = rv.data;
@@ -271,10 +276,20 @@
             var fcuid = $(this).val();
             $("#formulaItems").children("li").remove();
             //已有公式项
-            $.get("@Url.Content("~/api/commctrlsapi/formula/")" + fcuid, function (data) {
+            $.get("@Url.Content("~/Core/Api/FormulaItems/")" + fcuid, function (rv) {
+                if (!rv.success) {
+                    bootbox.alert(rv.msg);
+                    return;
+                }
+                let data = rv.data;
                 $.each(data, function (i, d) {
-                    var str = '<li class="item-orange clearfix">' +
-                                     d.colComment +
+                    if (d.fmuContent === '' || d.fmuContent===null) {
+                        var str = '<li class="item-orange clearfix">';
+                    }
+                    else {
+                        str = '<li class="item-green clearfix">';
+                    }
+                    str+=d.colComment +
                                      '<div class="pull-right action-buttons">' +
                                      '<a href="javascript:void(0)" title="启用" class="green">';
                     if (d.enabled == 1) {
@@ -295,7 +310,6 @@
             })
         })
         //公式编辑器
-        window.filterItems = {};
         var formulaEditor = CodeMirror.fromTextArea(document.getElementById("formulaContent"), {
             mode: 'text/x-mssql',
             theme: 'xq-light',
@@ -313,25 +327,24 @@
             var fmudataStr = $this.data("fmudata");
             if (fmudataStr == undefined) {
                 return;
-
             }
             var fmudata = JSON.parse(fmudataStr);
-            fmuItems.push(fmudata);
-            $.post("@Url.Content("~/api/commctrlsapi/valideformula/")", { tableName: '@ViewBag.TN', formulas: fmuItems }, function (data) {
-                if (data.success == true) {
-                    bootbox.alert("公式校验合法！");
+
+            $.post("@Url.Content("~/Core/Api/VerifyFormula")", { entity: '@tableName', verfiyField: fmudata.colName, verfiyContent: fmudata.fmuContent }, function (rv) {
+                if (rv.success) {
+                    $.msg("公式校验合法！");
                 } else {
-                    bootbox.alert("公式校验失败！" + data.message);
+                    bootbox.alert(rv.msg);
                 }
             });
         });
         //保存公式项
-        $("#btnSave").on(ace.click_event, function () {
+        $("#btnSaveFormulaItem").on(ace.click_event, function () {
             var fmuItems = [];
             var fcUid = $("#field-select-formulacase").val();
-            if (fcUid == '')
+            if (fcUid === '')
             {
-                bootbox.alert("你没有选择工资套！不能保存");
+                $.msg("请选择要保存得公式套！");
                 return;
             }
             $("#formulaItems li").each(function (i) {
@@ -340,18 +353,21 @@
                 fmudata.orderBy = i;
                 fmuItems.push(fmudata);
             });
-            $.post("@Url.Content("~/api/commctrlsapi/saveformulas/")", { tableName: '@ViewBag.TN',fcUid:fcUid, formulas: fmuItems }, function (data) {
-                if (data.success == true) {
-                    bootbox.alert("公式项保存成功！");
+            if (fmuItems.length < 1) {
+                $.msg("请设置要保存得公式项");
+                return;
+            }
+            $.post("@Url.Content("~/Core/Api/Formula/")", { tableName: '@tableName',fcUid:fcUid, formulas: fmuItems }, function (rv) {
+                if (rv.success) {
+                    $.msg(rv.msg);
                 } else {
-                    bootbox.alert("公式项保存失败！");
+                    bootbox.alert(rv.msg);
                 }
             });
 
         });
         //公式内容变化的时候 及时赋值data对象
         formulaEditor.on("change", function (instance) {
-            debugger
             var $currLi = $("#formulaItems li").filter(".selected");
             var fmudataStr = $currLi.data("fmudata");
             if (fmudataStr == undefined)
@@ -362,6 +378,14 @@
             if (fmudata != undefined) {
                 fmudata.fmuContent = instance.getValue();
                 fmudata.fmuDesc = instance.getValue();
+                if ($currLi.hasClass("item-orange") && fmudata.fmuContent !== '') {
+                    $currLi.removeClass("item-orange");
+                    $currLi.addClass("item-green");
+                }
+                if ($currLi.hasClass("item-green") && fmudata.fmuContent === '') {
+                    $currLi.removeClass("item-green");
+                    $currLi.addClass("item-orange");
+                }
             }
             $currLi.data("fmudata", JSON.stringify(fmudata));
             //$currLi.data("oper", "default");
@@ -386,10 +410,8 @@
                 $(ui.item).css('z-index', 'auto');
             }
         });
-        //off掉注册事件，否则会每次增加
-        $(document).off(ace.click_event, "#formulaItems li a");
         //设置公式禁用
-        $(document).on(ace.click_event, "#formulaItems li a", function (e) {
+        $(document).off(ace.click_event, "#formulaItems li a").on(ace.click_event, "#formulaItems li a", function (e) {
             //debugger
             //阻止a的默认事件
             e.preventDefault();
@@ -414,12 +436,11 @@
             return false;
         });
         //公式项选中设置公式
-        $(document).on(ace.click_event, "#formulaItems li", function () {
+        $(document).off(ace.click_event, "#formulaItems li").on(ace.click_event, "#formulaItems li", function () {
             $("#formulaItems li").each(function () {
                 $(this).removeClass('selected');
             });
             $(this).addClass('selected');
-            debugger
             //alert($(this).data("test"));
             var fmudataStr = $(this).data("fmudata");
             var fmudata = JSON.parse(fmudataStr);
@@ -438,6 +459,11 @@
 
         //添加公式项
         $("#btnAddFormulaItem").on(ace.click_event, function () {
+            var fcase = $("#field-select-formulacase").val();
+            if (fcase === '') {
+                $.msg("请选择公式套");
+                return;
+            }
             //获取已有的公式项设置选中
             var exist = [];
             $("#formulaItems li").each(function () {
@@ -445,7 +471,8 @@
                 var fmudata = JSON.parse(fmudataStr);
                 exist.push(fmudata.colName);
             });
-            bootbox.dialog({
+            var formulaItems;
+            var dialog=  bootbox.dialog({
                 title: "添加公式项.",
                 message: '<select multiple="multiple" size="10" id="duallistbox_formulaitems" name="duallistbox_formulaitems"></select>',
                 buttons: {
@@ -458,7 +485,7 @@
                                 bootbox.alert("没有要添加的项！")
                             } else {
                                 //获取选中项json
-                                var filterVals = $.grep(window.filterItems, function (rd, i) {
+                                var filterVals = $.grep(formulaItems, function (rd, i) {
                                     return $.inArray(rd.colName, vals) > -1;
                                 });
                                 //如果这次没选则移除现有公式项
@@ -483,9 +510,8 @@
                                            ' </a>' +
                                        ' </div>' +
                                    ' </li>';
-                                        debugger
 
-                                        var fd = { tableName: '@ViewBag.TN', colName: d.colName, colComment: d.colComment, fmuContent: '', fmuDesc: '', enabled: 1, Fid: '' }
+                                        var fd = { tableName: '@tableName', colName: d.colName, colComment: d.colComment, fmuContent: '', fmuDesc: '', enabled: 1, Fid: '' }
                                         var $str = $(str);
 
                                         var fmudataStr = JSON.stringify(fd);
@@ -502,22 +528,52 @@
                     }
                 }
             });
+            dialog.init(function () {
+                $.get("@Url.Content("~/Core/Api/FieldList/")@tableName", function (data) {
+                    $("#duallistbox_formulaitems").empty();
+                    var fitems = $.grep(data, function (sd, i) {
+                        return sd.isDefaultCol == 0;
+                    });
+                    formulaItems = fitems;
+                    $.each(fitems, function (i, d) {
+                        var strSel = '';
+                        if ($.inArray(d.colName, exist) > -1) {
+                            strSel = 'selected = "selected"';
+                        }
+                        $("#duallistbox_formulaitems").append("<option value='" + d.colName + "' " + strSel + ">" + d.colComment + "</option>");
+                    });
+                    $('#duallistbox_formulaitems').bootstrapDualListbox({
+                        nonSelectedListLabel: '<span class="text-primary h5">所有项</span> ',
+                        selectedListLabel: '<span class="text-primary h5">选中项</span> ',
+                        preserveSelectionOnMove: 'moved',
+                        moveOnSelect: false
 
-
-            $.each(window.filterItems, function (i, d) {
-                var strSel = '';
-                if ($.inArray(d.colName, exist) > -1) {
-                    strSel = 'selected = "selected"';
-                }
-                $("#duallistbox_formulaitems").append("<option value='" + d.colName + "' " + strSel + ">" + d.colComment + "</option>");
-            });
-            $('#duallistbox_formulaitems').bootstrapDualListbox({
-                nonSelectedListLabel: '<span class="text-primary h5">所有项</span> ',
-                selectedListLabel: '<span class="text-primary h5">选中项</span> ',
-                preserveSelectionOnMove: 'moved',
-                moveOnSelect: false
-
+                    });
+                })
             });
         });
+        $("#btnMapping").on(ace.click_event, function () {
+            var dialog = bootbox.dialog({
+                title: $.lang("mapping", "引用"),
+                message: 'loading',
+                buttons: {
+                    success: {
+                        label: $.lang("ok", "确定"),
+                        className: "btn-primary",
+                        callback: function () {
+
+                        }
+                    },
+                    cancel: {
+                        label: $.lang("cancel", "取消"), className: "btn-default"
+                    }
+                }
+            });
+            dialog.init(function () {
+                $.get("@Url.Content("~/Component/FieldMapping/")?entity=@tableName", function (rv) {
+                    dialog.find('.bootbox-body').html(rv);
+                })
+            });
+        })
     })
 </script>

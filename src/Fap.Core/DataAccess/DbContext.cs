@@ -2562,7 +2562,7 @@ namespace Fap.Core.DataAccess
             foreach (var entity in entityListToUpdate)
             {
                 InitEntityToInsert(entity);
-                sql.AppendLine(_dbSession.EntityToUpdateSql(entity));
+                sql.AppendLine(_dbSession.EntityToUpdateSql(entity)+";");
                 i++;
                 if (i > 500)
                 {
@@ -2585,7 +2585,7 @@ namespace Fap.Core.DataAccess
             foreach (var entity in entityListToInsert)
             {
                 InitEntityToInsert(entity);
-                sql.AppendLine(_dbSession.EntityToInsertSql(entity));
+                sql.AppendLine(_dbSession.EntityToInsertSql(entity)+";");
                 i++;
                 if (i > 500)
                 {

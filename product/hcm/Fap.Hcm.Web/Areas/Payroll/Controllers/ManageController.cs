@@ -61,6 +61,7 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
             });
             return PartialView(payItemModel);
         }
+        
         /// <summary>
         /// 薪资员工
         /// </summary>

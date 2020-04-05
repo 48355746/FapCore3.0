@@ -61,8 +61,8 @@ namespace Fap.Hcm.Web.Controllers
         /// 表格参照
         /// </summary>
         /// <returns></returns>
-        public IActionResult GridReference(string fid,int isSearch=0)
-        {            
+        public IActionResult GridReference(string fid, int isSearch = 0)
+        {
             string refcondition = string.Empty;
             _platformDomain.ColumnSet.TryGetValue(fid, out FapColumn fc);
             //fc.RefCondition替换参数的值
@@ -192,7 +192,7 @@ namespace Fap.Hcm.Web.Controllers
         /// 树参照
         /// </summary>
         /// <returns></returns>
-        public IActionResult TreeReference(string fid,int isSearch=0)
+        public IActionResult TreeReference(string fid, int isSearch = 0)
         {
             string refcondition = string.Empty;
             _platformDomain.ColumnSet.TryGetValue(fid, out FapColumn fc);
@@ -356,7 +356,7 @@ namespace Fap.Hcm.Web.Controllers
             {
                 treeModel.IsMulti = true;
             }
-            treeModel.CtrlName = fc.TableName+"-"+ fc.ColName;
+            treeModel.CtrlName = fc.TableName + "-" + fc.ColName;
             treeModel.JsonData = rej;
             treeModel.TempData.Add("refid", fc.RefID);
             treeModel.TempData.Add("refcode", fc.RefCode);
@@ -457,7 +457,7 @@ namespace Fap.Hcm.Web.Controllers
         {
             FormViewModel fd = this.GetFormViewModel(tn, frm, fid);
 
-            return View("DataForm",fd);
+            return View("DataForm", fd);
         }
         /// <summary>
         /// 自由表单
@@ -740,7 +740,7 @@ namespace Fap.Hcm.Web.Controllers
         /// <returns></returns>
         public IActionResult FormulaEditor(string tableName)
         {
-            var tb= _dbContext.Table(tableName);
+            var tb = _dbContext.Table(tableName);
             if (tb == null)
             {
                 return Content("项还没生成，不能设置公式");
@@ -750,6 +750,15 @@ namespace Fap.Hcm.Web.Controllers
             IEnumerable<FapFormulaCase> fcs = _dbContext.QueryWhere<FapFormulaCase>("TableName=@TableName", param);
             ViewBag.TN = tableName;
             return PartialView(fcs);
+        }
+        /// <summary>
+        /// 字段映射
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult FieldMapping(string entity)
+        {
+            var columns = _dbContext.Columns(entity);
+            return PartialView(columns);
         }
         #region 附件相关
         public PartialViewResult AttachmentInfo(string fid)
@@ -946,10 +955,10 @@ namespace Fap.Hcm.Web.Controllers
 
         #region echarts
 
-        public PartialViewResult ChartSet(string tableName,string gridId)
+        public PartialViewResult ChartSet(string tableName, string gridId)
         {
-            var rptCharts= _dbContext.QueryWhere<RptChart>("EntityName=@TableName and CreateBy=@EmpUid and Personal=1 or Publicity=1", new DynamicParameters(new { EmpUid = _applicationContext.EmpUid,TableName =tableName}));
-            var columns = _dbContext.Columns(tableName).Where(f => f.IsDefaultCol==0);
+            var rptCharts = _dbContext.QueryWhere<RptChart>("EntityName=@TableName and CreateBy=@EmpUid and Personal=1 or Publicity=1", new DynamicParameters(new { EmpUid = _applicationContext.EmpUid, TableName = tableName }));
+            var columns = _dbContext.Columns(tableName).Where(f => f.IsDefaultCol == 0);
             ViewBag.GridId = gridId;
             ViewBag.Charts = rptCharts;
             return PartialView(columns);

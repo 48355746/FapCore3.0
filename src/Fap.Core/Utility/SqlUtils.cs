@@ -11,6 +11,7 @@ namespace Fap.Core.Utility
 {
     public class SqlUtils
     {
+        public const string MatchBigParantheses = @"\{(.*?)\}";
         /// <summary>
         /// 返回sql where
         /// </summary>
@@ -19,7 +20,7 @@ namespace Fap.Core.Utility
         /// <returns></returns>
         public static string ParsingSql(IEnumerable<FapColumn> cols, string sqlDesc, DatabaseDialectEnum dialect)
         {
-            Regex rgx = new Regex(@"\{\S+\}");
+            Regex rgx = new Regex(MatchBigParantheses);
             MatchCollection matchs = rgx.Matches(sqlDesc);
             foreach (var mtch in matchs)
             {
@@ -71,7 +72,7 @@ namespace Fap.Core.Utility
         public static string ParsingConditionSql(IEnumerable<FapColumn> cols, IDictionary<string, object> data, string sqlDesc, DatabaseDialectEnum dialect)
         {
 
-            Regex rgx = new Regex(@"\{\S+\}");
+            Regex rgx = new Regex(MatchBigParantheses);
             MatchCollection matchs = rgx.Matches(sqlDesc);
             foreach (var mtch in matchs)
             {
@@ -101,6 +102,43 @@ namespace Fap.Core.Utility
             }
             return sql;
            
+        }
+        public static string ParsingFormulaSql(IEnumerable<FapColumn> cols,string field, string sqlDesc, DatabaseDialectEnum dialect)
+        {
+            string tableName = cols.First().TableName;
+            Regex rgx = new Regex(MatchBigParantheses);
+            MatchCollection matchs = rgx.Matches(sqlDesc);
+            foreach (var mtch in matchs)
+            {
+                var colLabel = mtch.ToString().TrimStart('{').TrimEnd('}').Trim();
+                FapColumn fcol = cols.FirstOrDefault(c => c.ColComment == colLabel);
+                if (fcol != null)
+                {
+                   sqlDesc = sqlDesc.Replace(mtch.ToString(), fcol.ColName);
+                   
+                }
+            }
+            sqlDesc = ReplaceFunc(sqlDesc, dialect);
+            sqlDesc = ReplaceConstant(sqlDesc);
+            string sql = string.Empty;
+            if (dialect == DatabaseDialectEnum.MSSQL)
+            {
+                sql = string.Format(@"
+                if exists(select * from tempdb..sysobjects where id=object_id('tempdb..#FmuValideTemp'))
+                begin
+                drop table #FmuValideTemp
+                end
+                select top 1 * into #FmuValideTemp from {0} where 1 = 2;
+                update #FmuValideTemp SET {1}={2};
+                drop table #FmuValideTemp;", tableName, field, sqlDesc);
+            }else if(dialect== DatabaseDialectEnum.MYSQL)
+            {
+                sql = string.Format(@"CREATE TEMPORARY TABLE FmuValideTemp(SELECT  * FROM {0} where 1=2 ); 
+update FmuValideTemp SET {1}={2};
+drop table FmuValideTemp;", tableName, field, sqlDesc);
+            }
+            return sql;
+
         }
     }
 }
