@@ -42,11 +42,16 @@ function getSelectedRow(grdid) {
         return rowData;
     }
 }
-function reloadGrid(grdid, postData) {
+//刷新
+function refreshGrid(gridid) {
+    $("#" + gridid).trigger("reloadGrid");
+}
+//重新加载
+function reloadGrid(gridid, postData) {
     if (postData === undefined || postData === null) {
         postData = { filters: null };
     }
-    $("#" + grdid).jqGrid('setGridParam', {
+    $("#" + gridid).jqGrid('setGridParam', {
         datatype: 'json',
         postData: postData, //发送数据
         page: 1
@@ -174,7 +179,7 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid, menuid, fro
     });
     function initDialog() {
         var url = $.randomUrl(basePath + '/Component/Dataform/' + fid);
-        $.get(url, { gid: gid, menuid: menuid, fs: 1 }, function (ev) {
+        $.get(url, { gid: gid, menuid: menuid, fs: 1, tn: tablename }, function (ev) {
             dialog.find('.bootbox-body').html(ev);
             if ($.isFunction(fromInitCallback)) {
                 fromInitCallback();

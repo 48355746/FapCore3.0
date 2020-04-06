@@ -29,7 +29,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         private IMultiLangService _multiLang;
         private readonly IRbacService _rbacService;
         private readonly IWebHostEnvironment _env;
-        public FapGridTagHelper(IDbContext dataAccessor, ILoggerFactory logger, IFapApplicationContext applicationContext, IMultiLangService multiLang, IRbacService rbacService,IWebHostEnvironment env)
+        public FapGridTagHelper(IDbContext dataAccessor, ILoggerFactory logger, IFapApplicationContext applicationContext, IMultiLangService multiLang, IRbacService rbacService, IWebHostEnvironment env)
         {
             _dbContext = dataAccessor;
             //_fapOption = fapOption;
@@ -234,14 +234,14 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             QuerySet querySet = GridModel.QuerySet;
             output.TagName = "div";
             output.Content.Clear();
-            string id =GridModel.JqgridId;
+            string id = GridModel.JqgridId;
             if (Id.IsPresent())
             {
                 id = Id;
             }
             this.Id = $"grid-{id}";
             string pager = $"pager-{id}";
-            Grid grid = new Grid(_dbContext, _rbacService, _applicationContext, _multiLang,_env, this.Id);
+            Grid grid = new Grid(_dbContext, _rbacService, _applicationContext, _multiLang, _env, this.Id);
 
             if (Url.IsPresent())
             {
@@ -291,25 +291,33 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             }
 
             //鉴权列
-            string cols = GetColumnPermission(querySet);
-            if (cols.IsPresent())
+            if (RegisterAuthority)
             {
-                querySet.QueryCols = cols;
+                string cols = GetColumnPermission(querySet);
+                if (cols.IsPresent())
+                {
+                    querySet.QueryCols = cols;
+                }
             }
             grid.SetQueryOption(querySet);
             //获取数据时ajax post数据
             grid.SetPostData(new { QuerySet = querySet });
             //鉴权操作
-            string authorize = AuthenticationButton(querySet);
-            //设置操作
-            SetGirdOper(grid, authorize);
-
+            if (RegisterAuthority)
+            {
+                string authorize = AuthenticationButton(querySet);
+                //设置操作
+                SetGirdOper(grid, authorize);
+            }
+            else
+            {
+                SetGridDefaultOper(grid);
+            }
             grid.SetAutoWidth(AutoWidth);
             grid.SetDataType(SourceType);
             grid.SetViewRecords(ViewRecords);
             grid.SetShrinkToFit(ShrinkFit);
             grid.SetColMenu(ColMenu);
-
             if (Height > 0)
             {
                 grid.SetHeight(Height);
@@ -427,6 +435,56 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             output.Content.AppendHtml(grid.ToString());
 
         }
+        private void SetGridDefaultOper(Grid grid)
+        {
+            OperEnum formType = OperEnum.Refresh;
+            if (OperCud)
+            {
+                formType = formType | OperEnum.Add | OperEnum.Update | OperEnum.Delete;
+            }
+            else
+            {
+                if (OperAdd)
+                {
+                    formType = formType | OperEnum.Add;
+                }
+                if (OperUpdate)
+                {
+                    formType |= OperEnum.Update;
+                }
+                if (OperDelete)
+                {
+                    formType |= OperEnum.Delete;
+                }
+            }
+            if (OperBatchUpdate)
+            {
+                formType |= OperEnum.BatchUpdate;
+            }
+
+            if (OperExport)
+            {
+                formType |= OperEnum.ExportExcel;
+                formType |= OperEnum.ExportWord;
+            }
+            if (OperExportExcel)
+            {
+                formType |= OperEnum.ExportExcel;
+            }
+            if (OperExportWord)
+            {
+                formType |= OperEnum.ExportWord;
+            }
+            if (OperImport)
+            {
+                formType |= OperEnum.Import;
+            }
+            if (OperSearch)
+            {
+                formType |= OperEnum.Search;
+            }
+            grid.SetFormType(formType);
+        }
         private void SetGirdOper(Grid grid, string authorize)
         {
             if (authorize.IsMissing())
@@ -448,47 +506,42 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         }
         private string AuthenticationButton(QuerySet querySet)
         {
-            if (RegisterAuthority)
+
+            string btnId = Id;
+            if (IsSubgrid)
             {
-                string btnId = Id;
-                if (IsSubgrid)
-                {
-                    btnId = Id.Substring(0, Id.LastIndexOf("_"));
-                }
-                FapMenuButton menuButton = new FapMenuButton()
-                {
-                    ButtonID = btnId,
-                    ButtonName = "表格按钮",
-                    ButtonType = FapMenuButtonType.Grid,
-                    Description = _dbContext.Table(querySet.TableName).TableComment
-                };
-                //注册按钮
-                return _rbacService.GetMenuButtonAuthority(_applicationContext.CurrentRoleUid, menuButton);
+                btnId = Id.Substring(0, Id.LastIndexOf("_"));
             }
-            return string.Empty;
+            FapMenuButton menuButton = new FapMenuButton()
+            {
+                ButtonID = btnId,
+                ButtonName = "表格按钮",
+                ButtonType = FapMenuButtonType.Grid,
+                Description = _dbContext.Table(querySet.TableName).TableComment
+            };
+            //注册按钮
+            return _rbacService.GetMenuButtonAuthority(_applicationContext.CurrentRoleUid, menuButton);
+
         }
         private string GetColumnPermission(QuerySet querySet)
         {
-            if (RegisterAuthority)
+            string btnId = Id;
+            if (IsSubgrid)
             {
-                string btnId = Id;
-                if (IsSubgrid)
-                {
-                    btnId = Id.Substring(0, Id.LastIndexOf("_"));
-                }
-                FapMenuColumn menuColumn = new FapMenuColumn()
-                {
-                    GridId = btnId,
-                    TableName = querySet.TableName,
-                    GridColumn = querySet.QueryCols,
-                    Enabled = 1,
-                    Description = _dbContext.Table(querySet.TableName).TableComment
-                };
-
-                //获取列权限
-                return _rbacService.GetMenuColumnAuthority(_applicationContext.CurrentRoleUid, menuColumn);
+                btnId = Id.Substring(0, Id.LastIndexOf("_"));
             }
-            return string.Empty;
+            FapMenuColumn menuColumn = new FapMenuColumn()
+            {
+                GridId = btnId,
+                TableName = querySet.TableName,
+                GridColumn = querySet.QueryCols,
+                Enabled = 1,
+                Description = _dbContext.Table(querySet.TableName).TableComment
+            };
+
+            //获取列权限
+            return _rbacService.GetMenuColumnAuthority(_applicationContext.CurrentRoleUid, menuColumn);
+
         }
 
     }

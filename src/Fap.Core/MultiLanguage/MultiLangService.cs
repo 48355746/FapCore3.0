@@ -60,7 +60,14 @@ namespace Fap.Core.MultiLanguage
             var fapColumns = _dbContext.Columns(tableName);
             foreach (var column in fapColumns)
             {
-                column.ColComment = GetMultiLangValue(MultiLanguageOriginEnum.FapColumn, $"{column.TableName}_{column.ColName}");
+                string label= GetMultiLangValue(MultiLanguageOriginEnum.FapColumn, $"{column.TableName}_{column.ColName}");
+                if (label.IsPresent()) {
+                    column.ColComment = label;
+                }
+                else
+                {
+                    column.ColComment = column.ColComment;
+                }
             }
             return fapColumns;
         }

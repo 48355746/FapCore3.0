@@ -115,7 +115,11 @@ var MultiLangHelper = (function () {
       'mapping': { 'ZhCn': '引用', 'ZhTW': '', 'En': '', 'Ja': '' },
       'pay_reffieldset_page_selrefitem': { 'ZhCn': '选择引用项', 'ZhTW': '', 'En': '', 'Ja': '' },
       'pay_reffieldsset_page_refitem': { 'ZhCn': '引用项', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'pay_index_page_salaryitem': { 'ZhCn': '薪资项', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'pay_index_page_salaryitem': { 'ZhCn': '薪资项', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'select_field': { 'ZhCn': '选择属性', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'associate_set': { 'ZhCn': '关联设置', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'associate': { 'ZhCn': '关联', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'property_associate_set': { 'ZhCn': '设置属性关联', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

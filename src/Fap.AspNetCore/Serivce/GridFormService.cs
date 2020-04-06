@@ -27,6 +27,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Fap.Core.Rbac.Model;
 using System.Text.RegularExpressions;
 using Fap.Core.MultiLanguage;
+using Fap.Core.Infrastructure.Model;
 
 namespace Fap.AspNetCore.Serivce
 {
@@ -59,7 +60,7 @@ namespace Fap.AspNetCore.Serivce
             _memoryCache = memoryCache;
             _multiLangService = multiLangService;
         }
-        
+
         public PageDataResultView QueryPageDataResultView(JqGridPostData jqGridPostData)
         {
             Pageable pageable = AnalysisPostData(jqGridPostData);
@@ -845,7 +846,7 @@ namespace Fap.AspNetCore.Serivce
                 string colName = ccSqlDic.Key;
                 column = _dbContext.Column(tableName, colName);
                 var dics = _dbContext.Dictionarys(column.ComboxSource);
-                var ca= agglist.First(a => a.Field == colName);
+                var ca = agglist.First(a => a.Field == colName);
                 foreach (var dic in dics)
                 {
                     agglist.Add(new Aggregate { Field = dic.Code, AggType = ca.AggType, Alias = dic.Name, ChartType = ca.ChartType });
@@ -870,6 +871,39 @@ namespace Fap.AspNetCore.Serivce
             param.Add("FcUid", caseUid);
             _dbContext.Execute("delete from FapFormula where FcUid=@FcUid", param);
             _dbContext.Execute("delete from FapFormulaCase where Fid=@FcUid", param);
+        }
+        /// <summary>
+        /// 保存公式项
+        /// </summary>
+        /// <param name="formula"></param>
+        [Transactional]
+        public void SaveFormulaItem(FapFormulaItems formula)
+        {
+            string tableName = formula.TableName;
+            IEnumerable<FapFormula> list = formula.Formulas;
+            //删除完毕重新加
+            _dbContext.Execute("delete from FapFormula where FcUid=@FcUid", new DynamicParameters(new { FcUid = formula.FcUid }));
+            if (list != null && list.Any())
+            {
+                var cols = _dbContext.Columns(formula.TableName);
+                var entityMappingList = _dbContext.QueryWhere<CfgEntityMapping>($"{nameof(CfgEntityMapping.OriEntity)}=@OriEntity", new DynamicParameters(new { OriEntity = formula.MappingTable }), true);
+                list.ToList().ForEach((f) =>
+                {
+                    f.FcUid = formula.FcUid;
+                    if (f.FmuDesc.IsPresent())
+                    {
+                        if (f.FmuDesc.StartsWith("[引用]", StringComparison.OrdinalIgnoreCase))
+                        {
+                            f.FmuContent = SqlUtils.ParsingFormulaMapping(entityMappingList,tableName, f.FmuDesc, _dbContext);
+                        }
+                        else
+                        {
+                            f.FmuContent = SqlUtils.ParsingFormulaVariable(cols, f.FmuDesc, _dbContext.DatabaseDialect);
+                        }
+                    }
+                });
+                _dbContext.InsertBatch(list);
+            }
         }
     }
 

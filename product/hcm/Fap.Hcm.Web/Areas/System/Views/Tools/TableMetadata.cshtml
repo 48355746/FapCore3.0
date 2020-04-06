@@ -95,6 +95,7 @@
                 $.get(basePath + "/System/Api/Tools/ForceSync/" + rowData.Id, function (rv) {
                     if (rv.success) {
                         $.msg(rv.msg);
+                        refreshGrid("grid-faptable");
                     } else {
                         bootbox.alert(rv.msg);
                     }

@@ -7,6 +7,7 @@ using Fap.Core.Infrastructure.Metadata;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 using Fap.AspNetCore.Binder;
+using Fap.Core.Infrastructure.Model;
 
 namespace Fap.AspNetCore.Serivce
 {
@@ -24,5 +25,6 @@ namespace Fap.AspNetCore.Serivce
         string PrintWordTemplate(GridModel gridModel);
         ChartResult EChart(ChartViewModel chartViewModel, JqGridPostData jqGridPostData);
         void DeleteFormulaCase(string caseUid);
+        void SaveFormulaItem(FapFormulaItems formula);
     }
 }

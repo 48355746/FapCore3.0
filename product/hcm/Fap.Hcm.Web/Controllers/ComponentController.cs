@@ -406,9 +406,25 @@ namespace Fap.Hcm.Web.Controllers
         /// <param name="fs">单据状态</param>
         /// <param name="qrycols">优先级高，指定的col</param>
         /// <returns></returns>
-        public IActionResult DataForm(string fid, string gid, string menuid, int fs, string qrycols)
+        public IActionResult DataForm(string fid, string gid, string menuid, int fs,string tn, string qrycols)
         {
-            if (_platformDomain.MenuColumnSet.TryGetValue(menuid, out IEnumerable<FapMenuColumn> menuColumns))
+            if (menuid.IsMissing())
+            {
+                FormViewModel fd = this.GetFormViewModel(tn, gid, fid, qs =>
+                {
+                    if (qrycols.IsPresent())
+                    {
+                        qs.QueryCols = qrycols;
+                    }
+                    else
+                    {
+                        qs.QueryCols = "*";
+                    }
+                });
+                fd.FormStatus = (FormStatus)fs;                
+                return View(fd);
+            }
+            else if (_platformDomain.MenuColumnSet.TryGetValue(menuid, out IEnumerable<FapMenuColumn> menuColumns))
             {
                 var menuColumn = menuColumns.Where(r => gid.EqualsWithIgnoreCase(r.GridId)).FirstOrDefault();
                 if (menuColumn != null)
@@ -575,7 +591,7 @@ namespace Fap.Hcm.Web.Controllers
             }
             if (!fc.TreeTableName.EqualsWithIgnoreCase("orgdept"))
             {
-                string sql = string.Format("select Fid as Id,{0} as Text,Pid,'{1}' as Icon from {2} ", fc.TreeDisplayField, icon, fc.TreeTableName);
+                string sql = $"select Fid as Id,{fc.TreeDisplayField} as Text,Pid,'{icon}' as Icon from {fc.TreeTableName} ";
                 if (!string.IsNullOrWhiteSpace(fc.TreeCondition))
                 {
                     sql += " where " + fc.TreeCondition;
@@ -736,9 +752,10 @@ namespace Fap.Hcm.Web.Controllers
         /// <summary>
         /// 公式编辑器
         /// </summary>
-        /// <param name="tableName"></param>
+        /// <param name="tableName">要设置公式的表</param>
+        /// <param name="mappingTable">设置引入的表</param>
         /// <returns></returns>
-        public IActionResult FormulaEditor(string tableName)
+        public IActionResult FormulaEditor(string tableName,string mappingTable)
         {
             var tb = _dbContext.Table(tableName);
             if (tb == null)
@@ -748,18 +765,38 @@ namespace Fap.Hcm.Web.Controllers
             DynamicParameters param = new DynamicParameters();
             param.Add("TableName", tableName);
             IEnumerable<FapFormulaCase> fcs = _dbContext.QueryWhere<FapFormulaCase>("TableName=@TableName", param);
-            ViewBag.TN = tableName;
+            ViewBag.Tn = tableName;
+            ViewBag.Mtn = mappingTable;
             return PartialView(fcs);
+        }
+        /// <summary>
+        /// 实体关联
+        /// </summary>
+        /// <param name="oriCode"></param>
+        /// <param name="oriName"></param>
+        /// <returns></returns>
+        public IActionResult EntityAssociate(string oriCode, string oriName)
+        {
+            var model = GetJqGridModel("CfgEntityMapping", qs =>
+            {
+                qs.GlobalWhere = "OriEntity=@OriEntity";
+                qs.AddParameter("OriEntity", oriCode);
+                qs.AddDefaultValue("OriEntity", oriCode);
+                qs.AddDefaultValue("OriEntityMC", oriName);
+            });
+            return PartialView(model);
         }
         /// <summary>
         /// 字段映射
         /// </summary>
         /// <returns></returns>
-        public IActionResult FieldMapping(string entity)
+        public IActionResult FieldMapping(string oriEntity)
         {
-            var columns = _dbContext.Columns(entity);
-            return PartialView(columns);
+            var mapping = _dbContext.QueryWhere<CfgEntityMapping>($"{nameof(CfgEntityMapping.OriEntity)}=@OriEntity",new DynamicParameters(new { OriEntity=oriEntity }),true);
+
+            return PartialView(mapping);
         }
+
         #region 附件相关
         public PartialViewResult AttachmentInfo(string fid)
         {

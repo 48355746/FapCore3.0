@@ -1,6 +1,9 @@
 ﻿using Fap.Core.DataAccess;
+using Fap.Core.Exceptions;
 using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Metadata;
+using Fap.Core.Infrastructure.Model;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,30 +39,44 @@ namespace Fap.Core.Utility
             if (dialect == DatabaseDialectEnum.MSSQL)
             {
                 sqlDesc = sqlDesc
-                .ReplaceIgnoreCase("[小时](", "DATEDIFF(hh,")
-                .ReplaceIgnoreCase("[天](", "DATEDIFF(dd,")
-                .ReplaceIgnoreCase("[星期](", "TimeStampDiff(wk,")
-                .ReplaceIgnoreCase("[月](", "TimeStampDiff(mm,")
-                .ReplaceIgnoreCase("[季度](", "TimeStampDiff(qq,")
-                .ReplaceIgnoreCase("[年](", "DATEDIFF(yy,")
-                .ReplaceIgnoreCase("[绝对值](", "ABS(");
+                .ReplaceIgnoreCase("[小时](", " DATEDIFF(hh,")
+                .ReplaceIgnoreCase("[天](", " DATEDIFF(dd,")
+                .ReplaceIgnoreCase("[星期](", " TimeStampDiff(wk,")
+                .ReplaceIgnoreCase("[月](", " TimeStampDiff(mm,")
+                .ReplaceIgnoreCase("[季度](", " TimeStampDiff(qq,")
+                .ReplaceIgnoreCase("[年](", " DATEDIFF(yy,")             
+                .ReplaceIgnoreCase("[空](", " ISNULL(")             
+                ;
             }
             else if (dialect == DatabaseDialectEnum.MYSQL)
             {
                 sqlDesc = sqlDesc
-              .ReplaceIgnoreCase("[小时](", "TimeStampDiff(HOUR,")
-              .ReplaceIgnoreCase("[天](", "TimeStampDiff(DAY,")
-              .ReplaceIgnoreCase("[星期](", "TimeStampDiff(WEEK,")
-              .ReplaceIgnoreCase("[月](", "TimeStampDiff(MONTH,")
+              .ReplaceIgnoreCase("[小时](", " TimeStampDiff(HOUR,")
+              .ReplaceIgnoreCase("[天](", " TimeStampDiff(DAY,")
+              .ReplaceIgnoreCase("[星期](", " TimeStampDiff(WEEK,")
+              .ReplaceIgnoreCase("[月](", " TimeStampDiff(MONTH,")
               .ReplaceIgnoreCase("[季度](", "TimeStampDiff(QUARTER,")
-              .ReplaceIgnoreCase("[年](", "TimeStampDiff(YEAR,")
-              .ReplaceIgnoreCase("[绝对值](", "ABS(");
+              .ReplaceIgnoreCase("[年](", " TimeStampDiff(YEAR,")
+              .ReplaceIgnoreCase("[空](", " IFNULL(");
             }
+            sqlDesc = sqlDesc.ReplaceIgnoreCase("[绝对值](", " ABS(")
+                .ReplaceIgnoreCase("[向上取整](", " CEILING(")
+                .ReplaceIgnoreCase("[向下取整](", " FLOOR(")
+                .ReplaceIgnoreCase("[四舍五入](", " ROUND(");
             return sqlDesc;
         }
         private static string ReplaceConstant(string sqlDesc)
         {
-            return sqlDesc.ReplaceIgnoreCase("[当前日期]", $"'{DateTimeUtils.CurrentDateStr}'");
+            return sqlDesc.ReplaceIgnoreCase("[当前日期]", $"'{DateTimeUtils.CurrentDateStr}'")
+                .ReplaceIgnoreCase("[多条件赋值]"," case ")
+                .ReplaceIgnoreCase("[当]"," when ")
+                .ReplaceIgnoreCase("[取]", " then ")
+                .ReplaceIgnoreCase("[否则]", " else ")
+                .ReplaceIgnoreCase("[结束]", " end ")
+                .ReplaceIgnoreCase("[条件]", " where ")
+                .ReplaceIgnoreCase("[或]", " or ")
+                .ReplaceIgnoreCase("[且]", " and ")                
+                ;
         }
         /// <summary>
         /// 返回数据sql
@@ -71,7 +88,6 @@ namespace Fap.Core.Utility
         /// <returns></returns>
         public static string ParsingConditionSql(IEnumerable<FapColumn> cols, IDictionary<string, object> data, string sqlDesc, DatabaseDialectEnum dialect)
         {
-
             Regex rgx = new Regex(MatchBigParantheses);
             MatchCollection matchs = rgx.Matches(sqlDesc);
             foreach (var mtch in matchs)
@@ -103,9 +119,8 @@ namespace Fap.Core.Utility
             return sql;
            
         }
-        public static string ParsingFormulaSql(IEnumerable<FapColumn> cols,string field, string sqlDesc, DatabaseDialectEnum dialect)
+        public static string ParsingFormulaVariable(IEnumerable<FapColumn> cols,string sqlDesc, DatabaseDialectEnum dialect)
         {
-            string tableName = cols.First().TableName;
             Regex rgx = new Regex(MatchBigParantheses);
             MatchCollection matchs = rgx.Matches(sqlDesc);
             foreach (var mtch in matchs)
@@ -114,12 +129,45 @@ namespace Fap.Core.Utility
                 FapColumn fcol = cols.FirstOrDefault(c => c.ColComment == colLabel);
                 if (fcol != null)
                 {
-                   sqlDesc = sqlDesc.Replace(mtch.ToString(), fcol.ColName);
-                   
+                    sqlDesc = sqlDesc.Replace(mtch.ToString(), fcol.ColName);
                 }
             }
             sqlDesc = ReplaceFunc(sqlDesc, dialect);
             sqlDesc = ReplaceConstant(sqlDesc);
+            return sqlDesc;
+        }
+        public static string ParsingFormulaMapping(IEnumerable<CfgEntityMapping> entityMappingList,string tableName, string sqlDesc,IDbContext dbContext)
+        {
+            sqlDesc = sqlDesc.ReplaceIgnoreCase("[引用]", "").TrimStart('(').TrimEnd(')');
+            string aimsTable = sqlDesc.Substring(0, sqlDesc.IndexOf("["));
+            string field = sqlDesc.Substring(sqlDesc.IndexOf("[")+1).TrimEnd(']');
+            var entityMapping = entityMappingList.FirstOrDefault(m => m.AimsEntityMC == aimsTable);
+            if (entityMapping != null)
+            {
+                var fieldCol = dbContext.Columns(entityMapping.AimsEntity).FirstOrDefault(c => c.ColComment == field);
+                IEnumerable<Associate> associates = JsonConvert.DeserializeObject<IEnumerable<Associate>>(entityMapping.Associate);
+                List<string> where = new List<string>();
+                foreach (var associate in associates)
+                {
+                    where.Add($"{tableName}.{associate.OriCol}={entityMapping.AimsEntity}.{associate.AimsCol}");
+                }
+                return $"{entityMapping.AimsEntity}.{fieldCol.ColName} from {entityMapping.AimsEntity} where {string.Join(" and ", where)}";
+            }
+            return "";
+        }
+        public static string ParsingFormulaMappingSql(IEnumerable<CfgEntityMapping> entityMappingList,string tableName,string field, string sqlDesc, IDbContext dbContext)
+        {
+            string sqlwhere = ParsingFormulaMapping(entityMappingList,tableName, sqlDesc, dbContext);
+            if (sqlwhere.IsMissing())
+            {
+                throw new FapException("格式化sql错误");
+            }
+            return $"update {tableName} set {field}={sqlwhere}";
+        }
+        public static string ParsingFormulaSql(IEnumerable<FapColumn> cols,string field, string sqlDesc, DatabaseDialectEnum dialect)
+        {
+            string tableName = cols.First().TableName;           
+            sqlDesc = ParsingFormulaVariable(cols,sqlDesc, dialect);
             string sql = string.Empty;
             if (dialect == DatabaseDialectEnum.MSSQL)
             {

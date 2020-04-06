@@ -58,6 +58,10 @@ namespace Fap.Core.Infrastructure.Model
     public class FapFormulaItems
     {
         /// <summary>
+        /// 映射引入表
+        /// </summary>
+        public string MappingTable { get; set; }
+        /// <summary>
         /// 表名
         /// </summary>
         public string TableName { get; set; }
@@ -70,5 +74,10 @@ namespace Fap.Core.Infrastructure.Model
         /// </summary>
         public IEnumerable<FapFormula> Formulas { get; set; }
 
+    }
+    public class Associate
+    {
+        public string AimsCol { get; set; }
+        public string OriCol { get; set; }
     }
 }

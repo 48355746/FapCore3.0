@@ -1,13 +1,11 @@
 ﻿@using Fap.AspNetCore.Controls
-@using Fap.Core.Extensions
-@model IEnumerable<Fap.Core.Infrastructure.Metadata.FapColumn>
+@model IEnumerable<Fap.Core.Infrastructure.Model.CfgEntityMapping>
 @{
-    List<Select2DataItem> tableList = new List<Select2DataItem>
+    List<Select2DataItem> tableList = new List<Select2DataItem>() { new Select2DataItem { Id = "", Text = "请选择" } };
+    foreach (var mapping in Model)
     {
-        new Select2DataItem{Id="",Text="请选择"},
-        new Select2DataItem{Id="Employee",Text="员工"},
-        new Select2DataItem{Id="TmMonthResult",Text="考勤月结果"}
-    };
+        tableList.Add(new Select2DataItem { Id = mapping.AimsEntity, Text = mapping.AimsEntityMC });
+    }
 }
 <script>
     $(function () {
@@ -30,12 +28,19 @@
                 $("#selField").append("<option></option>");
                 $.each(filter, function (i, d) {
                     $("#selField").append("<option value='" + d.colName + "'>" + d.colComment + "</option>");
-                })
-             
+                })             
                 $("#selField").val('');
             }
         });
-    }   
+    }
+    function getMappingResult() {
+        let dentity = $("#sel-selEntity").select2('data')[0];
+        let dfield = $("#selField").select2('data')[0];
+        if (dentity.id === '' || dfield.id === '') {
+            return null;
+        }
+        return '[引用]('+dentity.text + '[' + dfield.text + '])';
+    }
 </script>
 
 <div class="row">

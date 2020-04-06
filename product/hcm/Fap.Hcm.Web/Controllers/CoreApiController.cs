@@ -178,7 +178,7 @@ namespace Fap.Hcm.Web.Controllers
                 var queryColList = HttpUtility.UrlDecode(qryCols).ToLower().SplitComma();
                 colCacheList = colCacheList.Where(c => queryColList.Contains(c.ColName.ToLower()));
             }
-            return Json(colCacheList.Where(c=>c.IsDefaultCol==0).OrderBy(c => c.ColOrder));
+            return Json(colCacheList.OrderBy(c => c.ColOrder));
         }
         [HttpPost("MultiLanguage")]
         public JsonResult RegisterMultiLanguage(string langKey, string langValue)
@@ -318,11 +318,20 @@ namespace Fap.Hcm.Web.Controllers
         /// <param name="formulaItems"></param>
         /// <returns></returns>
         [HttpPost("VerifyFormula")]
-        public JsonResult VerifyFormulaEditor(string entity,string verfiyField, string verfiyContent)
+        public JsonResult VerifyFormulaEditor(string entity, string mappingEntity, string verfiyField, string verfiyContent)
         {
             var cols = _dbContext.Columns(entity);
-            string sql = SqlUtils.ParsingFormulaSql(cols, verfiyField, verfiyContent, _dbContext.DatabaseDialect);
-            _dbContext.ExecuteOriginal(sql);
+            if (verfiyContent.StartsWith("[引用]", StringComparison.OrdinalIgnoreCase))
+            {
+                var entityMappingList = _dbContext.QueryWhere<CfgEntityMapping>($"{nameof(CfgEntityMapping.OriEntity)}=@OriEntity", new DynamicParameters(new { OriEntity = mappingEntity }), true);
+                string sql = SqlUtils.ParsingFormulaMappingSql(entityMappingList, entity, verfiyField, verfiyContent, _dbContext);
+                _dbContext.ExecuteOriginal(sql);
+            }
+            else
+            {
+                string sql = SqlUtils.ParsingFormulaSql(cols, verfiyField, verfiyContent, _dbContext.DatabaseDialect);
+                _dbContext.ExecuteOriginal(sql);
+            }
             return Json(ResponseViewModelUtils.Sueecss());
         }
         #endregion
@@ -331,14 +340,14 @@ namespace Fap.Hcm.Web.Controllers
         [HttpPost("FormulaCase")]
         public JsonResult FormulaCase(FapFormulaCase formulaCase)
         {
-            Guard.Against.Null(formulaCase,nameof(formulaCase));
+            Guard.Against.Null(formulaCase, nameof(formulaCase));
             if (formulaCase.Fid.IsMissing())
             {
                 _dbContext.Insert(formulaCase);
             }
             else
             {
-                var fc= _dbContext.Get<FapFormulaCase>(formulaCase.Fid);
+                var fc = _dbContext.Get<FapFormulaCase>(formulaCase.Fid);
                 fc.FcName = formulaCase.FcName;
                 fc.TableName = formulaCase.TableName;
                 _dbContext.Update(fc);
@@ -362,18 +371,7 @@ namespace Fap.Hcm.Web.Controllers
         [HttpPost("Formula")]
         public JsonResult FormulaItem(FapFormulaItems formula)
         {
-            string tableName = formula.TableName;
-            IEnumerable<FapFormula> list = formula.Formulas;
-            //删除完毕重新加
-            _dbContext.Execute("delete from FapFormula where FcUid=@FcUid", new DynamicParameters(new { FcUid = formula.FcUid }));
-            if (list != null && list.Any())
-            {
-                list.ToList().ForEach((f) =>
-                {
-                    f.FcUid = formula.FcUid;
-                });
-                _dbContext.InsertBatch<FapFormula>(list.AsList());
-            }
+            _gridFormService.SaveFormulaItem(formula);
             return Json(ResponseViewModelUtils.Sueecss());
         }
         #endregion
