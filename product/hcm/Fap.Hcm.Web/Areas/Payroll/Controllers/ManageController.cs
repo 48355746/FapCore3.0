@@ -87,6 +87,22 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
                 q.AddParameter("CaseUid", caseUid);
             });
             return PartialView(model);
-        }     
+        }  
+        public IActionResult PayCalculate()
+        {
+            DynamicParameters param = new DynamicParameters();
+            param.Add("EmpUid", _applicationContext.EmpUid);
+            IEnumerable<PayCase> payCases = _dbContext.QueryWhere<PayCase>("TableName!='' and CreateBy=@EmpUid or  Fid in(select CaseUid from PayCaseEmployee where EmpUid=@EmpUid)",param);
+            return View(payCases);
+        }
+        public PartialViewResult PayInfo(string fid)
+        {
+            var pc= _dbContext.Get<PayCase>(fid);
+            var model = GetJqGridModel(pc.TableName,qs=> {
+                qs.AddDefaultValue("PayCaseUid", pc.Fid);
+                qs.AddDefaultValue("PayCaseUidMC", pc.CaseName);
+            });
+            return PartialView(model);
+        }
     }
 }

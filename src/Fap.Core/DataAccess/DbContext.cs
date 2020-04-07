@@ -862,6 +862,7 @@ namespace Fap.Core.DataAccess
         #region 基础操作
         public int ExecuteOriginal(string sqlOri, DynamicParameters parameters = null)
         {
+            parameters=InitParamers(parameters);
             return _dbSession.Execute(sqlOri, parameters);
         }
         public int Execute(string sqlOri, DynamicParameters parameters = null)
@@ -902,6 +903,7 @@ namespace Fap.Core.DataAccess
         /// <returns></returns>
         public IEnumerable<dynamic> QueryOriSql(string sqlOri, DynamicParameters parameters = null)
         {
+            parameters = InitParamers(parameters);
             return _dbSession.Query(sqlOri, parameters);
         }
         /// <summary>
@@ -912,6 +914,7 @@ namespace Fap.Core.DataAccess
         /// <returns></returns>
         public IEnumerable<T> QueryOriSql<T>(string sqlOri, DynamicParameters parameters = null) where T : class
         {
+            parameters = InitParamers(parameters);
             return _dbSession.Query<T>(sqlOri, parameters);
         }
         public IEnumerable<dynamic> Query(string sqlOri, DynamicParameters parameters = null, bool withMC = false)

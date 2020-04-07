@@ -52,12 +52,14 @@
         })
     }
     function generatePayItem(caseUid) {
+        var index= layer.load();
         $.post(basePath + "/Payroll/Api/GeneratePayCase", { caseUid: caseUid }, function (rv) {
             if (rv.success) {
                 $.msg(rv.msg);
             } else {
                 bootbox.alert(rv.msg);
             }
+            layer.close(index);
         })
     }
 

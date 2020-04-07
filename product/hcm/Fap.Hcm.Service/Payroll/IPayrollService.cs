@@ -7,5 +7,6 @@ namespace Fap.Hcm.Service.Payroll
         IEnumerable<PayCaseItem> GetPayCaseItem(string caseUid);
         void AddPayItem(string caseUid, string[] payItems);
         long GenericPayCase(string caseUid);
+        void UsePayPending(PayToDo payToDo);
     }
 }

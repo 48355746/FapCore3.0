@@ -11,6 +11,7 @@ using Fap.Core.Exceptions;
 using Dapper;
 using Ardalis.GuardClauses;
 using Fap.Core.Utility;
+using Fap.Core.Rbac.Model;
 
 namespace Fap.Hcm.Service.Payroll
 {
@@ -111,6 +112,74 @@ namespace Fap.Hcm.Service.Payroll
             payCase.TableName = ft.TableName;
             _dbContext.Update(payCase);
             return ft.Id;
+        }
+        /// <summary>
+        /// 应用待处理
+        /// </summary>
+        /// <param name="payToDo"></param>
+        [Transactional]
+        public void UsePayPending(PayToDo payToDo)
+        {
+            //薪资套
+            PayCase payCase= _dbContext.Get<PayCase>(payToDo.CaseUid);
+            //员工
+            Employee employee = _dbContext.Get<Employee>(payToDo.EmpUid);
+            //检查员工是否在薪资套
+            var caseEmployee = _dbContext.QueryFirstOrDefault($"select * from {payCase.TableName} where EmpUid=@EmpUid", new DynamicParameters(new { EmpUid=employee.Fid}));
+            if (caseEmployee!=null)
+            {
+                if (employee.EmpStatus == EmployeeStatus.Former)
+                {
+                    DeleteEmployeeFromPayCase();
+                }
+                else
+                {
+                    UpdateEmployeeToPayCase();
+                }
+            }else if (employee.EmpStatus == EmployeeStatus.Current)
+            {
+                AddEmployeeToPayCase();
+            }
+            MarkPayTodo();
+            void MarkPayTodo()
+            {
+                payToDo.OperDate = DateTimeUtils.CurrentDateTimeStr;
+                payToDo.OperEmpUid = _applicationContext.EmpUid;
+                payToDo.OperFlag = "1";
+                _dbContext.Update(payToDo);
+            }
+            void DeleteEmployeeFromPayCase()
+            {
+                string sql = $"delete from {payCase.TableName} where Fid=@Fid";
+                _dbContext.ExecuteOriginal(sql, new DynamicParameters(new { Fid = caseEmployee.Fid }));
+            }
+            void UpdateEmployeeToPayCase()
+            {
+                string sql = $"update {payCase.TableName} set EmpCode='{employee.EmpCode}',EmpCategory='{employee.EmpCategory}',DeptUid='{employee.DeptUid}' where Fid=@Fid";
+                _dbContext.ExecuteOriginal(sql, new DynamicParameters(new { Fid = caseEmployee.Fid }));
+            }
+            void AddEmployeeToPayCase()
+            {
+                FapDynamicObject caseEmp = new FapDynamicObject(_dbContext.Columns(payCase.TableName));
+                //将此人的放入薪资套
+                caseEmp.SetValue("EmpUid", employee.Fid);
+                caseEmp.SetValue("EmpCode", employee.EmpCode);
+                caseEmp.SetValue("DeptUid", employee.DeptUid);
+                caseEmp.SetValue("PayCaseUid",payCase.Fid);
+                caseEmp.SetValue("PaymentTimes",1);
+                caseEmp.SetValue("PayConfirm", 0);
+
+                if (payCase.PayYM.IsPresent())
+                {
+                    caseEmp.SetValue("PayYM", payCase.PayYM);
+                }
+                else
+                {
+                    caseEmp.SetValue("PayYM", payCase.InitYM);
+                }
+                _dbContext.InsertDynamicData(caseEmp);
+            }
+
         }
     }
 }

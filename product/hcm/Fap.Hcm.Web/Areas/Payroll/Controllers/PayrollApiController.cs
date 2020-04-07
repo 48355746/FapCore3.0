@@ -25,11 +25,35 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
             _payrollService = payrollService;
             _metadataContext = metadataContext;
         }
+        [HttpPost("UsePayTodo")]
+        public JsonResult UsePayTodo(IEnumerable<string> payToDoFids)
+        {
+            Guard.Against.Null(payToDoFids, nameof(payToDoFids));
+            var payToDos = _dbContext.QueryWhere<PayToDo>("Fid in @Fids", new Dapper.DynamicParameters(new { Fids = payToDoFids }));
+            foreach (var payTodo in payToDos)
+            {
+                _payrollService.UsePayPending(payTodo);
+            }
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+
+        [HttpPost("ShelvePayTodo")]
+        public JsonResult ShelvePayTodo(IEnumerable<string> payToDoFids)
+        {
+            Guard.Against.Null(payToDoFids, nameof(payToDoFids));
+            var payToDos = _dbContext.QueryWhere<PayToDo>("Fid in @Fids", new Dapper.DynamicParameters(new { Fids = payToDoFids }));
+            foreach (var payTodo in payToDos)
+            {
+                payTodo.OperFlag="2";
+            }
+            _dbContext.UpdateBatch(payToDos);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
         [HttpGet("PaySet/{caseUid}")]
         public JsonResult GetPaySet(string caseUid)
         {
             Guard.Against.NullOrEmpty(caseUid, nameof(caseUid));
-            var pc= _dbContext.Get<PayCase>(caseUid);
+            var pc = _dbContext.Get<PayCase>(caseUid);
             return Json(ResponseViewModelUtils.Sueecss(pc));
         }
         /// <summary>
@@ -41,22 +65,22 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
         public JsonResult GetPayItems(string caseUid)
         {
             Guard.Against.NullOrEmpty(caseUid, nameof(caseUid));
-            var payCaseItems= _payrollService.GetPayCaseItem(caseUid);
-            
+            var payCaseItems = _payrollService.GetPayCaseItem(caseUid);
+
             return Json(ResponseViewModelUtils.Sueecss(payCaseItems));
         }
         [HttpPost("PayItem")]
-        public JsonResult AddPayItem(string caseUid,string[] payItems)
+        public JsonResult AddPayItem(string caseUid, string[] payItems)
         {
             Guard.Against.NullOrEmpty(caseUid, nameof(caseUid));
             _payrollService.AddPayItem(caseUid, payItems);
             return Json(ResponseViewModelUtils.Sueecss());
         }
         [HttpPost("PayCondition")]
-        public JsonResult SavePayCaseEmployeeContion(string caseUid,string filters)
+        public JsonResult SavePayCaseEmployeeContion(string caseUid, string filters)
         {
             Guard.Against.NullOrEmpty(caseUid, nameof(caseUid));
-            var payCase=  _dbContext.Get<PayCase>(caseUid);
+            var payCase = _dbContext.Get<PayCase>(caseUid);
             payCase.EmpCondition = filters;
             _dbContext.Update(payCase);
             return Json(ResponseViewModelUtils.Sueecss());
@@ -64,7 +88,7 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
         [HttpPost("GeneratePayCase")]
         public JsonResult GeneratePayCase(string caseUid)
         {
-            long tbId= _payrollService.GenericPayCase(caseUid);
+            long tbId = _payrollService.GenericPayCase(caseUid);
             _metadataContext.CreateTable(tbId);
             return Json(ResponseViewModelUtils.Sueecss());
         }

@@ -125,4 +125,18 @@ namespace Fap.Core.Rbac.Model
         public int SortBy { get; set; }
 
     }
+    /// <summary>
+    /// 员工状态
+    /// </summary>
+    public class EmployeeStatus
+    {
+        /// <summary>
+        /// 离岗
+        /// </summary>
+        public const string Former= "Former";
+        /// <summary>
+        /// 在岗
+        /// </summary>
+        public const string Current = "Current";
+    }
 }

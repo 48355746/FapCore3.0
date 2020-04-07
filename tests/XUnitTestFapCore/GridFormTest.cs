@@ -26,7 +26,7 @@ namespace XUnitTestFapCore
             };
             var rv = _gridFormService.QueryPageDataResultView(jqGridPostData);
 
-            Assert.Equal(10, rv.Records);
+            Assert.Equal(10, rv.TotalCount);
 
             
         }

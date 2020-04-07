@@ -54,19 +54,7 @@ namespace Fap.Hcm.Service.Payroll
         /// 累加方式 的显性字段MC
         /// </summary>
         [Computed]
-        public string AddUpWayMC { get; set; }
-        /// <summary>
-        /// 引入表
-        /// </summary>
-        public string ImportTable { get; set; }
-        /// <summary>
-        /// 引入列
-        /// </summary>
-        public string ImportColumn { get; set; }
-        /// <summary>
-        /// 引入条件
-        /// </summary>
-        public string ImportWhere { get; set; }
+        public string AddUpWayMC { get; set; }        
         /// <summary>
         /// 变动影响字段
         /// </summary>

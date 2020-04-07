@@ -1,0 +1,70 @@
+﻿@model IEnumerable<Fap.Hcm.Service.Payroll.PayCase>
+
+<title><fap-multilang lang-key="pay_calculate" default-content="计算发放"></fap-multilang></title>
+
+<div class="row">
+    <div class="col-xs-12">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">
+                    <fap-multilang lang-key="pay_calculate" default-content="计算发放"></fap-multilang>
+                </h4>
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar">
+                    <select class="chosen-select form-control" style="width:200px" id="selPayCase" multi-placeholder="薪资套...">
+                        <option value="">  </option>
+                        @foreach (var payCase in Model)
+                        {
+                            <option value="@payCase.Fid">@payCase.CaseName</option>
+                        }
+                    </select>
+                </div>
+                <div class="widget-toolbar">
+                    <fap-button id="btnPayCancel" btn-tag="link" content="取消发放" icon-before="fa fa-times-circle blue" class-name="info"></fap-button>
+                    <fap-button id="btnPayNotice" btn-tag="link" content="发薪通知" icon-before="fa fa-paper-plane-o blue" class-name="info"></fap-button>
+                </div>
+                <div class="widget-toolbar">
+                    <fap-button id="btnInitData" btn-tag="link" content="初始化" icon-before="fa fa-refresh blue" class-name="info"></fap-button>
+                    <fap-button id="btnCalculate" btn-tag="link" content="计算" icon-before="fa fa-calculator blue" class-name="info"></fap-button>
+                    <fap-button id="btnGapAnalysis" btn-tag="link" content="差异比对" icon-before="fa fa-magic blue" class-name="info"></fap-button>
+                    <fap-button id="btnPay" btn-tag="link" content="发放" icon-before="fa fa-check-circle blue" class-name="info"></fap-button>
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main" id="payCaseContent">
+                   <h3 class="infobox-blue2 center">选择要计算的薪资套进行相应操作</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+                //$(document).off(ace.click_event, '.dropdown-menu>li');
+            })
+            $('.chosen-select').chosen({ allow_single_deselect: true }).on("change", function () {
+                var c = $(this).val();
+                if (c === "") {
+                    return;
+                }
+                $("#payCaseContent").empty();
+                var index=layer.load();
+                $.get(basePath + "/Payroll/Manage/PayInfo/"+c, { menuUrl:"~/Payroll/Manage/PayCalculate"}, function (content) {
+                    $("#payCaseContent").html(content);
+                    //完毕重新设置jqgrid宽度
+                    $(window).triggerHandler('resize.jqGrid');
+                    layer.close(index);
+                })
+            });
+            
+        })
+    });
+</script>

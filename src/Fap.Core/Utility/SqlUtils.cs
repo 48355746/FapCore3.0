@@ -15,6 +15,10 @@ namespace Fap.Core.Utility
     public class SqlUtils
     {
         public const string MatchBigParantheses = @"\{(.*?)\}";
+        public static string ValidWhere(string tableName)
+        {
+            return $"{tableName}.EnableDate <={FapDbConstants.FAPCOLUMN_PARAM_CurrentDate} AND {tableName}.DisableDate >={FapDbConstants.FAPCOLUMN_PARAM_CurrentDate} AND {tableName}.Dr = 0";
+        }
         /// <summary>
         /// 返回sql where
         /// </summary>
@@ -135,7 +139,7 @@ namespace Fap.Core.Utility
             }
             sqlDesc = ReplaceFunc(sqlDesc, dialect);
             sqlDesc = ReplaceConstant(sqlDesc);
-            return $"update {tableName} set {colName}={sqlDesc}";
+            return $"update {tableName} set {colName}={sqlDesc} where {ValidWhere(tableName)}";
         }
         public static string ParsingFormulaMappingSql(IEnumerable<CfgEntityMapping> entityMappingList, string tableName, string colName, string sqlDesc, IDbContext dbContext)
         {
@@ -155,11 +159,11 @@ namespace Fap.Core.Utility
                 string innerJoin = $" inner join  {entityMapping.AimsEntity} on {string.Join(" and ", where)}";
                 if (dbContext.DatabaseDialect == DatabaseDialectEnum.MSSQL)
                 {
-                    return $"update {tableName} set {tableName}.{colName}={entityMapping.AimsEntity}.{fieldCol.ColName} from {tableName} {innerJoin}";
+                    return $"update {tableName} set {tableName}.{colName}={entityMapping.AimsEntity}.{fieldCol.ColName} from {tableName} {innerJoin} and {ValidWhere(entityMapping.AimsEntity)}";
                 }
                 else if (dbContext.DatabaseDialect == DatabaseDialectEnum.MYSQL)
                 {
-                    return $"update {tableName} {innerJoin} set {tableName}.{colName}={entityMapping.AimsEntity}.{fieldCol.ColName}";
+                    return $"update {tableName} {innerJoin} and {ValidWhere(entityMapping.AimsEntity)} set {tableName}.{colName}={entityMapping.AimsEntity}.{fieldCol.ColName}";
                 }
                 return string.Empty;
             }

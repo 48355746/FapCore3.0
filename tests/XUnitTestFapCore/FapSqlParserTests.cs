@@ -88,5 +88,14 @@ namespace XUnitTestFapCore
             string rv = parser.ParserSqlStatement();
             Assert.True(rv.Length > 0);
         }
+        [Fact]
+        public void TestJionUpdate()
+        {
+            //不支持此类解析
+            string sql = "update PayCase001 set PayCase001.BasePay=Employee.BasePay from PayCase001 inner join  Employee on PayCase001.EmpUid=Employee.Fid";
+            FapSqlParser parser = new FapSqlParser(_appDomain, sql, true);
+            string rv = parser.ParserSqlStatement();
+            Assert.True(rv.Length > 0);
+        }
     }
 }
