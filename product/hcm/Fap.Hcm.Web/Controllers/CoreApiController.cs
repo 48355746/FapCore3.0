@@ -320,18 +320,22 @@ namespace Fap.Hcm.Web.Controllers
         [HttpPost("VerifyFormula")]
         public JsonResult VerifyFormulaEditor(string entity, string mappingEntity, string verfiyField, string verfiyContent)
         {
+            string sql = string.Empty;
             var cols = _dbContext.Columns(entity);
             if (verfiyContent.StartsWith("[引用]", StringComparison.OrdinalIgnoreCase))
             {
                 var entityMappingList = _dbContext.QueryWhere<CfgEntityMapping>($"{nameof(CfgEntityMapping.OriEntity)}=@OriEntity", new DynamicParameters(new { OriEntity = mappingEntity }), true);
-                string sql = SqlUtils.ParsingFormulaMappingSql(entityMappingList, entity, verfiyField, verfiyContent, _dbContext);
-                _dbContext.ExecuteOriginal(sql);
+                sql = SqlUtils.ParsingFormulaMappingSql(entityMappingList, entity, verfiyField, verfiyContent, _dbContext);
             }
             else
             {
-                string sql = SqlUtils.ParsingFormulaSql(cols, verfiyField, verfiyContent, _dbContext.DatabaseDialect);
-                _dbContext.ExecuteOriginal(sql);
+                sql = SqlUtils.ParsingFormulaVariableSql(cols, verfiyField, verfiyContent, _dbContext.DatabaseDialect);
             }
+            if (sql.IsMissing())
+            {
+                return Json(ResponseViewModelUtils.Failure("格式化sql错误"));
+            }
+            _dbContext.ExecuteOriginal(SqlUtils.ParsingFormulaCheckSql(entity, sql, _dbContext.DatabaseDialect));
             return Json(ResponseViewModelUtils.Sueecss());
         }
         #endregion

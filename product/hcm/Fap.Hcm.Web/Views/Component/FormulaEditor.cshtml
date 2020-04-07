@@ -186,13 +186,15 @@
 
 <script>
     $(function () {
-        $('.scrollable').each(function () {
-            var $this = $(this);
-            $(this).ace_scroll({
-                size: $this.attr('data-size') || 300,
-                //styleClass: 'scroll-left scroll-margin scroll-thin scroll-dark scroll-light no-track scroll-visible'
+        setTimeout(function () {
+            $('.scrollable').each(function () {
+                var $this = $(this);
+                $(this).ace_scroll({
+                    size: $this.attr('data-size') || 300,
+                    //styleClass: 'scroll-left scroll-margin scroll-thin scroll-dark scroll-light no-track scroll-visible'
+                });
             });
-        });
+        }, 0);     
         //添加公式套btnAddFormulaCase
         $("#btnAddFormulaCase").on(ace.click_event, function () {
             bootbox.prompt("公式套名称", function (result) {
@@ -326,6 +328,7 @@
                 }
             });
         });
+        var formulaHasChange = false;
         //保存公式项
         $("#btnSaveFormulaItem").on(ace.click_event, function () {
             var fmuItems = [];
@@ -348,6 +351,7 @@
             $.post("@Url.Content("~/Core/Api/Formula/")", { mappingTable:'@mappingTableName',tableName: '@tableName',fcUid:fcUid, formulas: fmuItems }, function (rv) {
                 if (rv.success) {
                     $.msg(rv.msg);
+                    formulaHasChange = false;
                 } else {
                     bootbox.alert(rv.msg);
                 }
@@ -364,6 +368,14 @@
             }
             var fmudata = JSON.parse(fmudataStr);
             if (fmudata != undefined) {
+                if (fmudata.fmuDesc === null) {
+                    fmudata.fmuDesc = "";
+                }
+                if (fmudata.fmuDesc != instance.getValue()) {
+                    //公式项有变化
+                    formulaHasChange = true;
+                    $.msg("公式有变化,请保存公式项");
+                }
                 fmudata.fmuDesc = instance.getValue();
                 if ($currLi.hasClass("item-orange") && fmudata.fmuDesc !== '') {
                     $currLi.removeClass("item-orange");
@@ -375,7 +387,7 @@
                 }
             }
             $currLi.data("fmudata", JSON.stringify(fmudata));
-            //$currLi.data("oper", "default");
+            
         });
         //操作符插入
         $(":button[data-provider='fap-formula']").on(ace.click_event, function () {
@@ -406,7 +418,6 @@
         });
         //设置公式禁用
         $(document).off(ace.click_event, "#formulaItems li a").on(ace.click_event, "#formulaItems li a", function (e) {
-            //debugger
             //阻止a的默认事件
             e.preventDefault();
             //阻止冒泡事件
@@ -426,7 +437,6 @@
                 fmudata.enabled = 1;
                 $(this).closest("li").data("fmudata", JSON.stringify(fmudata));
             }
-
             return false;
         });
         //公式项选中设置公式

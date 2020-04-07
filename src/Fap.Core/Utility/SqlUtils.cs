@@ -30,7 +30,7 @@ namespace Fap.Core.Utility
                 var colLabel = mtch.ToString().TrimStart('{').TrimEnd('}').Trim();
                 sqlDesc = sqlDesc.ReplaceIgnoreCase(mtch.ToString(), cols.FirstOrDefault(c => c.ColComment == colLabel)?.ColName ?? "");
             }
-            sqlDesc= ReplaceFunc(sqlDesc,dialect);
+            sqlDesc = ReplaceFunc(sqlDesc, dialect);
             sqlDesc = ReplaceConstant(sqlDesc);
             return sqlDesc;
         }
@@ -44,8 +44,8 @@ namespace Fap.Core.Utility
                 .ReplaceIgnoreCase("[星期](", " TimeStampDiff(wk,")
                 .ReplaceIgnoreCase("[月](", " TimeStampDiff(mm,")
                 .ReplaceIgnoreCase("[季度](", " TimeStampDiff(qq,")
-                .ReplaceIgnoreCase("[年](", " DATEDIFF(yy,")             
-                .ReplaceIgnoreCase("[空](", " ISNULL(")             
+                .ReplaceIgnoreCase("[年](", " DATEDIFF(yy,")
+                .ReplaceIgnoreCase("[空](", " ISNULL(")
                 ;
             }
             else if (dialect == DatabaseDialectEnum.MYSQL)
@@ -68,14 +68,14 @@ namespace Fap.Core.Utility
         private static string ReplaceConstant(string sqlDesc)
         {
             return sqlDesc.ReplaceIgnoreCase("[当前日期]", $"'{DateTimeUtils.CurrentDateStr}'")
-                .ReplaceIgnoreCase("[多条件赋值]"," case ")
-                .ReplaceIgnoreCase("[当]"," when ")
+                .ReplaceIgnoreCase("[多条件赋值]", " case ")
+                .ReplaceIgnoreCase("[当]", " when ")
                 .ReplaceIgnoreCase("[取]", " then ")
                 .ReplaceIgnoreCase("[否则]", " else ")
                 .ReplaceIgnoreCase("[结束]", " end ")
                 .ReplaceIgnoreCase("[条件]", " where ")
                 .ReplaceIgnoreCase("[或]", " or ")
-                .ReplaceIgnoreCase("[且]", " and ")                
+                .ReplaceIgnoreCase("[且]", " and ")
                 ;
         }
         /// <summary>
@@ -117,10 +117,11 @@ namespace Fap.Core.Utility
                 sql = $"select 1 from dual where {sqlDesc}";
             }
             return sql;
-           
+
         }
-        public static string ParsingFormulaVariable(IEnumerable<FapColumn> cols,string sqlDesc, DatabaseDialectEnum dialect)
+        public static string ParsingFormulaVariableSql(IEnumerable<FapColumn> cols,string colName, string sqlDesc, DatabaseDialectEnum dialect)
         {
+            string tableName = cols.First().TableName;
             Regex rgx = new Regex(MatchBigParantheses);
             MatchCollection matchs = rgx.Matches(sqlDesc);
             foreach (var mtch in matchs)
@@ -134,13 +135,13 @@ namespace Fap.Core.Utility
             }
             sqlDesc = ReplaceFunc(sqlDesc, dialect);
             sqlDesc = ReplaceConstant(sqlDesc);
-            return sqlDesc;
+            return $"update {tableName} set {colName}={sqlDesc}";
         }
-        public static string ParsingFormulaMapping(IEnumerable<CfgEntityMapping> entityMappingList,string tableName, string sqlDesc,IDbContext dbContext)
+        public static string ParsingFormulaMappingSql(IEnumerable<CfgEntityMapping> entityMappingList, string tableName, string colName, string sqlDesc, IDbContext dbContext)
         {
             sqlDesc = sqlDesc.ReplaceIgnoreCase("[引用]", "").TrimStart('(').TrimEnd(')');
             string aimsTable = sqlDesc.Substring(0, sqlDesc.IndexOf("["));
-            string field = sqlDesc.Substring(sqlDesc.IndexOf("[")+1).TrimEnd(']');
+            string field = sqlDesc.Substring(sqlDesc.IndexOf("[") + 1).TrimEnd(']');
             var entityMapping = entityMappingList.FirstOrDefault(m => m.AimsEntityMC == aimsTable);
             if (entityMapping != null)
             {
@@ -151,41 +152,41 @@ namespace Fap.Core.Utility
                 {
                     where.Add($"{tableName}.{associate.OriCol}={entityMapping.AimsEntity}.{associate.AimsCol}");
                 }
-                return $"{entityMapping.AimsEntity}.{fieldCol.ColName} from {entityMapping.AimsEntity} where {string.Join(" and ", where)}";
+                string innerJoin = $" inner join  {entityMapping.AimsEntity} on {string.Join(" and ", where)}";
+                if (dbContext.DatabaseDialect == DatabaseDialectEnum.MSSQL)
+                {
+                    return $"update {tableName} set {tableName}.{colName}={entityMapping.AimsEntity}.{fieldCol.ColName} from {tableName} {innerJoin}";
+                }
+                else if (dbContext.DatabaseDialect == DatabaseDialectEnum.MYSQL)
+                {
+                    return $"update {tableName} {innerJoin} set {tableName}.{colName}={entityMapping.AimsEntity}.{fieldCol.ColName}";
+                }
+                return string.Empty;
             }
-            return "";
+            return string.Empty;
         }
-        public static string ParsingFormulaMappingSql(IEnumerable<CfgEntityMapping> entityMappingList,string tableName,string field, string sqlDesc, IDbContext dbContext)
+        public static string ParsingFormulaCheckSql(string tableName, string checkSql, DatabaseDialectEnum dialect)
         {
-            string sqlwhere = ParsingFormulaMapping(entityMappingList,tableName, sqlDesc, dbContext);
-            if (sqlwhere.IsMissing())
-            {
-                throw new FapException("格式化sql错误");
-            }
-            return $"update {tableName} set {field}={sqlwhere}";
-        }
-        public static string ParsingFormulaSql(IEnumerable<FapColumn> cols,string field, string sqlDesc, DatabaseDialectEnum dialect)
-        {
-            string tableName = cols.First().TableName;           
-            sqlDesc = ParsingFormulaVariable(cols,sqlDesc, dialect);
-            string sql = string.Empty;
             if (dialect == DatabaseDialectEnum.MSSQL)
             {
-                sql = string.Format(@"
+                string sql = checkSql.ReplaceIgnoreCase("tableName", "#FmuValideTemp");
+                return string.Format(@"
                 if exists(select * from tempdb..sysobjects where id=object_id('tempdb..#FmuValideTemp'))
                 begin
                 drop table #FmuValideTemp
                 end
                 select top 1 * into #FmuValideTemp from {0} where 1 = 2;
-                update #FmuValideTemp SET {1}={2};
-                drop table #FmuValideTemp;", tableName, field, sqlDesc);
-            }else if(dialect== DatabaseDialectEnum.MYSQL)
-            {
-                sql = string.Format(@"CREATE TEMPORARY TABLE FmuValideTemp(SELECT  * FROM {0} where 1=2 ); 
-update FmuValideTemp SET {1}={2};
-drop table FmuValideTemp;", tableName, field, sqlDesc);
+                {1};
+                drop table #FmuValideTemp;", tableName,sql);
             }
-            return sql;
+            else if (dialect == DatabaseDialectEnum.MYSQL)
+            {
+                string sql = checkSql.ReplaceIgnoreCase("tableName", "FmuValideTemp");
+                return string.Format(@"CREATE TEMPORARY TABLE FmuValideTemp(SELECT  * FROM {0} where 1=2 ); 
+{1};
+drop table FmuValideTemp;", tableName, sql);
+            }
+            return string.Empty;
 
         }
     }

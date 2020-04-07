@@ -104,14 +104,14 @@
                 let tn = "PayCase"+rw.CaseCode;
                 bootboxWindow($.lang("paycase_authority", "薪资套公式"), basePath + "/Component/FormulaEditor", {
                     associate: {
-                        label: $.lang("associate_set", "关联设置"),
+                        label: $.lang("associate_set", "引用关联设置"),
                         className: "btn-primary btn-link",
                         callback: function () {
                             bootboxWindow($.lang("associate", "关联"), basePath + "/Component/EntityAssociate", null, {oriCode:"PayCenter",oriName:"薪资套"});
                             return false;
                         }
                     }
-                }, { tableName: tn, mappingTable:"PayCenter" });
+                }, { tableName: tn, mappingTable: "PayCenter" });
             })
             //权限
             $("#btnPaycaseAuthority").on(ace.click_event, function () {

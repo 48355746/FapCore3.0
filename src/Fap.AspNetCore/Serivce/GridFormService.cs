@@ -894,11 +894,11 @@ namespace Fap.AspNetCore.Serivce
                     {
                         if (f.FmuDesc.StartsWith("[引用]", StringComparison.OrdinalIgnoreCase))
                         {
-                            f.FmuContent = SqlUtils.ParsingFormulaMapping(entityMappingList,tableName, f.FmuDesc, _dbContext);
+                            f.FmuContent = SqlUtils.ParsingFormulaMappingSql(entityMappingList,tableName,f.ColName, f.FmuDesc, _dbContext);
                         }
                         else
                         {
-                            f.FmuContent = SqlUtils.ParsingFormulaVariable(cols, f.FmuDesc, _dbContext.DatabaseDialect);
+                            f.FmuContent = SqlUtils.ParsingFormulaVariableSql(cols,f.ColName, f.FmuDesc, _dbContext.DatabaseDialect);
                         }
                     }
                 });
