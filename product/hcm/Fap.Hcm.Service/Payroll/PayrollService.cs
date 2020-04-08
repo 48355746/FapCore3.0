@@ -12,6 +12,7 @@ using Dapper;
 using Ardalis.GuardClauses;
 using Fap.Core.Utility;
 using Fap.Core.Rbac.Model;
+using Fap.Core.Infrastructure.Model;
 
 namespace Fap.Hcm.Service.Payroll
 {
@@ -165,14 +166,14 @@ namespace Fap.Hcm.Service.Payroll
             string where = " PayYM='" + pRecord.PayYM + "' and PayCaseUid='" + pRecord.CaseUid + "' and PaymentTimes=" + pRecord.PayCount;
             var colList = _dbContext.Columns(payCase.TableName);
             //基础列和 特性列
-            List<FapColumn> baseCols = colList.Where(c => (c.IsDefaultCol == 1 || c.ColProperty == "3") && c.ColName != "Id"&&c.ColName!="Fid").ToList();
+            List<FapColumn> baseCols = colList.Where(c => (c.IsDefaultCol == 1 || c.ColProperty == "3") && c.ColName != "Id" && c.ColName != "Fid").ToList();
             string pCols = string.Join(",", baseCols.Select(c => c.ColName));
             if (payrollInitData.ReservedItems.IsPresent())
             {
                 pCols += "," + payrollInitData.ReservedItems;
             }
             pCols = pCols.ReplaceIgnoreCase("PayYM", "'" + payrollInitData.PayYm + "'");
-            
+
             //检查当月是否有发送记录
             DynamicParameters param = new DynamicParameters();
             param.Add("PayYM", payrollInitData.PayYm);
@@ -184,7 +185,7 @@ namespace Fap.Hcm.Service.Payroll
                 pcount = records.Max(r => r.PayCount) + 1;
             }
             pCols = pCols.ReplaceIgnoreCase("PaymentTimes", pcount.ToString());
-            pCols = pCols.ReplaceIgnoreCase("PayConfirm", "0");               
+            pCols = pCols.ReplaceIgnoreCase("PayConfirm", "0");
             string sql = $"select {pCols} from PayCenter where {where}";
             var pastData = _dbContext.QueryOriSql(sql);
             IList<FapDynamicObject> listCase = new List<FapDynamicObject>();
@@ -212,7 +213,7 @@ namespace Fap.Hcm.Service.Payroll
             payCase.PayCount = pcount;
             payCase.PayFlag = 0;
             _dbContext.Update(payCase);
-            
+
         }
         /// <summary>
         /// 应用待处理
@@ -282,6 +283,102 @@ namespace Fap.Hcm.Service.Payroll
                 _dbContext.InsertDynamicData(caseEmp);
             }
 
+        }
+
+        public IList<string> PayrollCalculate(string formulaCaseUid)
+        {
+            var formulas = _dbContext.QueryWhere<FapFormula>("FcUid=@FcUid and FmuDesc!=''", new DynamicParameters(new { FcUid = formulaCaseUid }));
+            //先计算引用
+            var associateList = formulas.Where(f => f.FmuDesc.StartsWith("[引用]", StringComparison.OrdinalIgnoreCase) && f.FmuContent.IsPresent()).OrderBy(f => f.OrderBy);
+            var formulaList = formulas.Where(f => !f.FmuDesc.StartsWith("[引用]", StringComparison.OrdinalIgnoreCase) && f.FmuContent.IsPresent()).OrderBy(f => f.OrderBy);
+            List<string> exceptionList = new List<string>();
+            foreach (var associate in associateList)
+            {
+                try
+                {
+                    _dbContext.ExecuteOriginal(associate.FmuContent);
+
+                }
+                catch (Exception ex)
+                {
+                    exceptionList.Add($"{associate.ColComment}:{ex.Message}");
+                }
+            }
+            foreach (var ff in formulaList)
+            {
+                try
+                {
+                    _dbContext.ExecuteOriginal(ff.FmuContent);
+                }
+                catch (Exception ex)
+                {
+                    exceptionList.Add($"{ff.ColComment}:{ex.Message}");
+                }
+            }
+            return exceptionList;
+
+        }
+
+        [Transactional]
+        public void PayrollOff(string caseUid)
+        {
+            PayCase payCase = _dbContext.Get<PayCase>(caseUid);
+            payCase.PayFlag = 1;
+            //标记已存在发放，不能再设置薪资套
+            payCase.Unchanged = 1;
+            _dbContext.Update(payCase);
+            //获取发放记录
+            DynamicParameters paramR = new DynamicParameters();
+            paramR.Add("PayYM", payCase.PayYM);
+            paramR.Add("PayCount", payCase.PayCount);
+            paramR.Add("CaseUid", payCase.Fid);
+            PayRecord payRecord = _dbContext.QueryFirstOrDefaultWhere<PayRecord>("PayYM=@PayYM and PayCount=@PayCount and CaseUid=@CaseUid and PayFlag=0", paramR);
+            if (payRecord != null)
+            {
+                payRecord.PayFlag = 1;
+                payRecord.PayDate = DateTimeUtils.CurrentDateTimeStr;
+                _dbContext.Update(payRecord);
+            }
+
+            var caseCols = _dbContext.Columns(payCase.TableName)
+                .Where(c => !c.ColName.EqualsWithIgnoreCase("Id"))
+                .Select(c => c.ColName);
+            string cols = string.Join(",", caseCols);
+            string insertSql = string.Format("insert into {0}({1}) (select {1} from {2})", "PayCenter", cols, payCase.TableName);
+            _dbContext.ExecuteOriginal(insertSql);
+            string updateSql = string.Format("update {0} set PayConfirm=1", payCase.TableName);
+            _dbContext.ExecuteOriginal(updateSql);
+        }
+        /// <summary>
+        /// 取消发放
+        /// </summary>
+        /// <param name="caseUid"></param>
+        /// <returns></returns>
+        public void PayrollOffCancel(string caseUid)
+        {
+            PayCase pc = _dbContext.Get<PayCase>(caseUid);
+            pc.PayFlag = 0;
+            if (pc.InitYM == pc.PayYM && pc.PayCount == 1)
+            {
+                pc.Unchanged = 0;
+            }
+            _dbContext.Update(pc);
+            //获取发放记录
+            DynamicParameters paramR = new DynamicParameters();
+            paramR.Add("PayYM", pc.PayYM);
+            paramR.Add("PayCount", pc.PayCount);
+            paramR.Add("CaseUid", pc.Fid);
+            PayRecord pr = _dbContext.QueryFirstOrDefaultWhere<PayRecord>("PayYM=@PayYM and PayCount=@PayCount and CaseUid=@CaseUid and PayFlag=1", paramR);
+            if (pr != null)
+            {
+                pr.PayFlag = 0;
+                pr.PayDate = "";
+                _dbContext.Update(pr);
+            }
+            string deleteSql = "delete from PayCenter where PayCaseUid=@CaseUid and PaymentTimes=@PayTimes and PayYM=@PayYM";
+            string updateSql = string.Format("update {0} set PayConfirm=0", pc.TableName);
+            _dbContext.Execute(deleteSql, new DynamicParameters(new { CaseUid = pc.Fid, PayTimes = pc.PayCount, PayYM = pc.PayYM }));
+            _dbContext.Execute(updateSql);
         }
     }
 }

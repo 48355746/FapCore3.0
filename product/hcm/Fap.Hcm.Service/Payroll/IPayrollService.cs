@@ -10,5 +10,8 @@ namespace Fap.Hcm.Service.Payroll
         void InitEmployeeToPayCase(PayCase payCase, string empWhere);
         void InitPayrollData(PayrollInitDataViewModel payrollInitData);
         void UsePayPending(PayToDo payToDo);
+        IList<string> PayrollCalculate(string formulaCaseUid);
+        void PayrollOff(string caseUid);
+        void PayrollOffCancel(string caseUid);
     }
 }

@@ -9,6 +9,7 @@ using Fap.AspNetCore.Model;
 using Fap.AspNetCore.ViewModel;
 using Fap.Core.DataAccess;
 using Fap.Core.Extensions;
+using Fap.Core.Infrastructure.Model;
 using Fap.Hcm.Service.Payroll;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -119,6 +120,36 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
         public JsonResult InitPayrollData(PayrollInitDataViewModel model)
         {
             _payrollService.InitPayrollData(model);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+        [HttpGet("FormulaCase")]
+        public JsonResult FormulaCase(string caseUid)
+        {
+            var payCase = _dbContext.Get<PayCase>(caseUid);
+            if (payCase.PayFlag == 1)
+            {
+                return Json(ResponseViewModelUtils.Failure("薪资已发放不需要再计算"));
+            }
+            string tableName = payCase.TableName;
+            var data= _dbContext.QueryWhere<FapFormulaCase>("TableName=@TableName", new Dapper.DynamicParameters(new { TableName = tableName }));
+            return Json(ResponseViewModelUtils.Sueecss(data));
+        }
+        [HttpPost("PayrollCalculate")]
+        public JsonResult PayrollCalculate(string formulaCaseUid)
+        {
+            var errorList = _payrollService.PayrollCalculate(formulaCaseUid);
+            return Json(ResponseViewModelUtils.Sueecss(errorList));
+        }
+        [HttpPost("PayOff")]
+        public JsonResult PayOff(string caseUid)
+        {
+            _payrollService.PayrollOff(caseUid);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+        [HttpPost("PayOffCancel")]
+        public JsonResult PayOffCancel(string caseUid)
+        {
+            _payrollService.PayrollOffCancel(caseUid);
             return Json(ResponseViewModelUtils.Sueecss());
         }
     }
