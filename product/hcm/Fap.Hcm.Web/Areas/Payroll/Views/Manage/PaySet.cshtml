@@ -89,6 +89,14 @@
                             savePaycaseCondition(caseUid);
                             return false;
                         }
+                    },
+                    initPayCase: {
+                        label: $.lang("init", "初始化"),
+                        className: "btn-primary btn-link",
+                        callback: function () {
+                            initPaycaseEmployee(caseUid);
+                            return false;
+                        }
                     }
                 }, { caseUid: caseUid }, function () {
                         loadPaycaseEmployee(caseUid);

@@ -63,6 +63,62 @@ namespace Fap.Core.DataAccess
             if (wasClosed) connection.Close();
             return returnVal;
         }
+        public static string FapDynamicDataToInsertSql(this IDbConnection connection, string tableName, IEnumerable<FapColumn> columnList, FapDynamicObject fdo)
+        {
+            var sbColumnList = new StringBuilder(null);
+            var sbValueList = new StringBuilder(null);
+            var adapter = GetFormatter(connection);
+            foreach (var col in columnList)
+            {
+                if (col.ColProperty.EqualsWithIgnoreCase("0"))
+                {
+                    //主键
+                    continue;
+                }
+                adapter.AppendColumnName(sbColumnList, col.ColName);
+                sbColumnList.Append(",");
+                if (col.ColType == FapColumn.COL_TYPE_INT
+                    || col.ColType == FapColumn.COL_TYPE_LONG
+                    || col.ColType == FapColumn.COL_TYPE_DOUBLE
+                    || col.ColType == FapColumn.COL_TYPE_BOOL)
+                {
+                    sbValueList.AppendFormat("{0}", fdo.Get(col.ColName)??0);
+                }
+                else
+                {
+                    sbValueList.AppendFormat("'{0}'", fdo.Get(col.ColName)?.ToString().ReplaceIgnoreCase("'", "''"));
+                }
+                sbValueList.Append(",");
+            }
+            return $"insert into {tableName}({sbColumnList.ToString().TrimEnd(',')}) values({sbValueList.ToString().TrimEnd(',')})";
+        }
+        public static string FapDynamicDataToUpdateSql(this IDbConnection connection, string tableName, IEnumerable<FapColumn> columnList, FapDynamicObject fdo)
+        {
+            var adapter = GetFormatter(connection);
+            StringBuilder sqlBuilder = new StringBuilder();
+            sqlBuilder.Append(" UPDATE ").Append(tableName).Append(" SET ");
+            foreach (var col in columnList)
+            {
+                if (col.ColProperty.EqualsWithIgnoreCase("0"))
+                {
+                    continue;
+                }
+                adapter.AppendColumnNameEqualsValue(sqlBuilder, col.ColName);
+                if (col.ColType == FapColumn.COL_TYPE_INT
+                 || col.ColType == FapColumn.COL_TYPE_LONG
+                 || col.ColType == FapColumn.COL_TYPE_DOUBLE
+                 || col.ColType == FapColumn.COL_TYPE_BOOL)
+                {
+                    sqlBuilder.Replace($"@{col.ColName}", $"{fdo.Get(col.ColName)??0}");
+                }
+                else
+                {
+                    sqlBuilder.Replace($"@{col.ColName}", $"'{fdo.Get(col.ColName)?.ToString().ReplaceIgnoreCase("'", "''")}'");
+                }
+                sqlBuilder.Append(",");
+            }
+            return sqlBuilder.ToString().TrimEnd(',') + " where Id=" + fdo.Get("Id");
+        }
         public static string EntityToInsertSql<T>(this IDbConnection connection, T entity) where T : class
         {
             var type = typeof(T);

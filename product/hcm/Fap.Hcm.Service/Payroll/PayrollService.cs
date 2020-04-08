@@ -20,7 +20,7 @@ namespace Fap.Hcm.Service.Payroll
     {
         private const string PAYROLLCENTER = "PayCenter";
         private readonly IDbContext _dbContext;
-       
+
         private readonly IFapApplicationContext _applicationContext;
         private readonly IFapPlatformDomain _platformDomain;
         public PayrollService(IDbContext dataAccessor, IFapPlatformDomain platformDomain, IFapApplicationContext applicationContext)
@@ -38,8 +38,8 @@ namespace Fap.Hcm.Service.Payroll
             }
             DynamicParameters param = new DynamicParameters();
             param.Add("CaseUid", caseUid);
-            int pcount = _dbContext.Count("PayRecord", "CaseUid=@CaseUid  and PayFlag=1", param);
-            if (pcount > 0)
+            var payCase = _dbContext.Get<PayCase>(caseUid);
+            if (payCase.Unchanged == 1)
             {
                 throw new FapException("已经存在发放记录，不能再调整薪资项");
             }
@@ -75,7 +75,7 @@ namespace Fap.Hcm.Service.Payroll
         [Transactional]
         public long GenericPayCase(string caseUid)
         {
-            var payCase= _dbContext.Get<PayCase>(caseUid);
+            var payCase = _dbContext.Get<PayCase>(caseUid);
             //生成工资套对应表元数据
             FapTable ft = new FapTable();
             ft.Fid = UUIDUtils.Fid;
@@ -95,7 +95,7 @@ namespace Fap.Hcm.Service.Payroll
             List<FapColumn> cols = new List<FapColumn>();
             foreach (var col in centerCols.Where(c => caseItems.Contains(c.Fid)))
             {
-                col.Fid =null;
+                col.Fid = null;
                 col.TableName = ft.TableName;
                 cols.Add(col);
             }
@@ -113,6 +113,107 @@ namespace Fap.Hcm.Service.Payroll
             _dbContext.Update(payCase);
             return ft.Id;
         }
+        [Transactional]
+        public void InitEmployeeToPayCase(PayCase payCase, string empWhere)
+        {
+            if (payCase.Unchanged == 1)
+            {
+                throw new FapException("已存在薪资方法记录，不能再初始化员工");
+            }
+            if (!empWhere.Contains("IsMainJob", StringComparison.OrdinalIgnoreCase))
+            {
+                empWhere = empWhere.IsMissing() ? " IsMainJob=1" : empWhere + " and IsMainJob=1";
+            }
+            var employees = _dbContext.QueryWhere<Employee>(empWhere);
+            IList<FapDynamicObject> listCase = new List<FapDynamicObject>();
+            foreach (var emp in employees)
+            {
+                FapDynamicObject fdo = new FapDynamicObject(_dbContext.Columns(payCase.TableName));
+                fdo.SetValue("EmpUid", emp.Fid);
+                fdo.SetValue("EmpCode", emp.EmpCode);
+                fdo.SetValue("EmpCategory", emp.EmpCategory);
+                fdo.SetValue("DeptUid", emp.DeptUid);
+                fdo.SetValue("PayCaseUid", payCase.Fid);
+                fdo.SetValue("PayYM", payCase.PayYM.IsPresent() ? payCase.PayYM : payCase.InitYM);
+                fdo.SetValue("PaymentTimes", 1);
+                fdo.SetValue("PayConfirm", 0);
+                listCase.Add(fdo);
+            }
+            _dbContext.ExecuteOriginal($"truncate table {payCase.TableName}");
+            _dbContext.InsertDynamicDataBatchSql(listCase);
+            //添加发放记录
+            var records = _dbContext.DeleteExec(nameof(PayRecord), "CaseUid=@CaseUid"
+                , new DynamicParameters(new { CaseUid = payCase.Fid }));
+            PayRecord pr = new PayRecord();
+            pr.CaseUid = payCase.Fid;
+            pr.PayCount = 1;
+            pr.PayYM = payCase.InitYM;
+            pr.PayFlag = 0;
+            _dbContext.Insert<PayRecord>(pr);
+            //更新薪资套本次发放内容
+            payCase.PayYM = payCase.InitYM;
+            payCase.PayCount = 1;
+            payCase.PayFlag = 0;
+            _dbContext.Update(payCase);
+        }
+        [Transactional]
+        public void InitPayrollData(PayrollInitDataViewModel payrollInitData)
+        {
+            PayCase payCase = _dbContext.Get<PayCase>(payrollInitData.CaseUid);
+            PayRecord pRecord = _dbContext.Get<PayRecord>(payrollInitData.PayRecordUid);
+
+            string where = " PayYM='" + pRecord.PayYM + "' and PayCaseUid='" + pRecord.CaseUid + "' and PaymentTimes=" + pRecord.PayCount;
+            var colList = _dbContext.Columns(payCase.TableName);
+            //基础列和 特性列
+            List<FapColumn> baseCols = colList.Where(c => (c.IsDefaultCol == 1 || c.ColProperty == "3") && c.ColName != "Id"&&c.ColName!="Fid").ToList();
+            string pCols = string.Join(",", baseCols.Select(c => c.ColName));
+            if (payrollInitData.ReservedItems.IsPresent())
+            {
+                pCols += "," + payrollInitData.ReservedItems;
+            }
+            pCols = pCols.ReplaceIgnoreCase("PayYM", "'" + payrollInitData.PayYm + "'");
+            
+            //检查当月是否有发送记录
+            DynamicParameters param = new DynamicParameters();
+            param.Add("PayYM", payrollInitData.PayYm);
+            param.Add("CaseUid", payrollInitData.CaseUid);
+            var records = _dbContext.QueryWhere<PayRecord>(" PayYM=@PayYM and CaseUid=@CaseUid", param);
+            int pcount = 1;
+            if (records.Any())
+            {
+                pcount = records.Max(r => r.PayCount) + 1;
+            }
+            pCols = pCols.ReplaceIgnoreCase("PaymentTimes", pcount.ToString());
+            pCols = pCols.ReplaceIgnoreCase("PayConfirm", "0");               
+            string sql = $"select {pCols} from PayCenter where {where}";
+            var pastData = _dbContext.QueryOriSql(sql);
+            IList<FapDynamicObject> listCase = new List<FapDynamicObject>();
+            foreach (var pd in pastData)
+            {
+                var dicPd = pd as IDictionary<string, object>;
+                FapDynamicObject fdo = new FapDynamicObject(_dbContext.Columns(payCase.TableName));
+                foreach (var key in dicPd.Keys)
+                {
+                    fdo.SetValue(key, dicPd[key]);
+                }
+                listCase.Add(fdo);
+            }
+            _dbContext.ExecuteOriginal($"truncate table {payCase.TableName}");
+            _dbContext.InsertDynamicDataBatchSql(listCase);
+            //添加发放记录
+            PayRecord newRecord = new PayRecord();
+            newRecord.CaseUid = payCase.Fid;
+            newRecord.PayCount = pcount;
+            newRecord.PayYM = payrollInitData.PayYm;
+            newRecord.PayFlag = 0;
+            _dbContext.Insert(newRecord);
+            //更新工资套
+            payCase.PayYM = payrollInitData.PayYm;
+            payCase.PayCount = pcount;
+            payCase.PayFlag = 0;
+            _dbContext.Update(payCase);
+            
+        }
         /// <summary>
         /// 应用待处理
         /// </summary>
@@ -121,12 +222,12 @@ namespace Fap.Hcm.Service.Payroll
         public void UsePayPending(PayToDo payToDo)
         {
             //薪资套
-            PayCase payCase= _dbContext.Get<PayCase>(payToDo.CaseUid);
+            PayCase payCase = _dbContext.Get<PayCase>(payToDo.CaseUid);
             //员工
             Employee employee = _dbContext.Get<Employee>(payToDo.EmpUid);
             //检查员工是否在薪资套
-            var caseEmployee = _dbContext.QueryFirstOrDefault($"select * from {payCase.TableName} where EmpUid=@EmpUid", new DynamicParameters(new { EmpUid=employee.Fid}));
-            if (caseEmployee!=null)
+            var caseEmployee = _dbContext.QueryFirstOrDefault($"select * from {payCase.TableName} where EmpUid=@EmpUid", new DynamicParameters(new { EmpUid = employee.Fid }));
+            if (caseEmployee != null)
             {
                 if (employee.EmpStatus == EmployeeStatus.Former)
                 {
@@ -136,7 +237,8 @@ namespace Fap.Hcm.Service.Payroll
                 {
                     UpdateEmployeeToPayCase();
                 }
-            }else if (employee.EmpStatus == EmployeeStatus.Current)
+            }
+            else if (employee.EmpStatus == EmployeeStatus.Current)
             {
                 AddEmployeeToPayCase();
             }
@@ -165,8 +267,8 @@ namespace Fap.Hcm.Service.Payroll
                 caseEmp.SetValue("EmpUid", employee.Fid);
                 caseEmp.SetValue("EmpCode", employee.EmpCode);
                 caseEmp.SetValue("DeptUid", employee.DeptUid);
-                caseEmp.SetValue("PayCaseUid",payCase.Fid);
-                caseEmp.SetValue("PaymentTimes",1);
+                caseEmp.SetValue("PayCaseUid", payCase.Fid);
+                caseEmp.SetValue("PaymentTimes", 1);
                 caseEmp.SetValue("PayConfirm", 0);
 
                 if (payCase.PayYM.IsPresent())

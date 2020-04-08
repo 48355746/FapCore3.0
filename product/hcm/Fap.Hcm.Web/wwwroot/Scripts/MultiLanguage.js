@@ -119,7 +119,11 @@ var MultiLangHelper = (function () {
       'select_field': { 'ZhCn': '选择属性', 'ZhTW': '', 'En': '', 'Ja': '' },
       'associate_set': { 'ZhCn': '关联设置', 'ZhTW': '', 'En': '', 'Ja': '' },
       'associate': { 'ZhCn': '关联', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'property_associate_set': { 'ZhCn': '设置属性关联', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'property_associate_set': { 'ZhCn': '设置属性关联', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'init': { 'ZhCn': '初始化', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'all_item': { 'ZhCn': '所有工资项', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'reserved_item': { 'ZhCn': '保留工资项', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'init_payroll_data': { 'ZhCn': '初始化薪资数据', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

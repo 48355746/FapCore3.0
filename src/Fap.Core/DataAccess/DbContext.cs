@@ -862,7 +862,7 @@ namespace Fap.Core.DataAccess
         #region 基础操作
         public int ExecuteOriginal(string sqlOri, DynamicParameters parameters = null)
         {
-            parameters=InitParamers(parameters);
+            parameters = InitParamers(parameters);
             return _dbSession.Execute(sqlOri, parameters);
         }
         public int Execute(string sqlOri, DynamicParameters parameters = null)
@@ -1905,7 +1905,7 @@ namespace Fap.Core.DataAccess
                 Rollback();
                 _logger.LogError($"insert dynamic error:{ex.Message}");
                 throw ex;
-            }        
+            }
             long InsertDynamicData()
             {
                 InitDynamicToInsert(fapDynData);
@@ -2336,7 +2336,7 @@ namespace Fap.Core.DataAccess
         public FapTable Table(string tableName)
         {
             _fapPlatformDomain.TableSet.TryGetValueByName(tableName, out FapTable fapTable);
-            
+
             return fapTable;
         }
         public IEnumerable<FapTable> Tables(string tableCategory)
@@ -2557,15 +2557,78 @@ namespace Fap.Core.DataAccess
         #endregion
 
         #region batch sql
-
+        public void InsertDynamicDataBatchSql(IEnumerable<FapDynamicObject> dataObjects)
+        {
+            string tableName = string.Empty;
+            IEnumerable<FapColumn> columns=Enumerable.Empty<FapColumn>();
+            if (dataObjects.Any())
+            {
+                tableName = dataObjects.First().TableName;
+                columns = Columns(tableName);
+            }
+            if (tableName.IsMissing())
+            {
+                return;
+            }
+            StringBuilder sql = new StringBuilder(null);
+            int i = 0;
+            foreach (var fdo in dataObjects)
+            {
+                InitDynamicToInsert(fdo);
+                sql.AppendLine(_dbSession.FapDynamicToInsertSql(fdo, tableName,columns));
+                i++;
+                if (i > 500)
+                {
+                    _dbSession.Execute(sql.ToString());
+                    sql.Clear();
+                    i = 0;
+                }
+            }
+            if (sql.Length > 0)
+            {
+                _dbSession.Execute(sql.ToString());
+            }
+        }
+        public void UpdateDynamicDataBatchSql(IEnumerable<FapDynamicObject> dataObjects)
+        {
+            string tableName = string.Empty;
+            IEnumerable<FapColumn> columns = Enumerable.Empty<FapColumn>();
+            if (dataObjects.Any())
+            {
+                tableName = dataObjects.First().TableName;
+                columns = Columns(tableName);
+            }
+            if (tableName.IsMissing())
+            {
+                return;
+            }
+            StringBuilder sql = new StringBuilder(null);
+            int i = 0;
+            foreach (var fdo in dataObjects)
+            {
+                InitDynamicToUpdate(fdo);
+                sql.AppendLine(_dbSession.FapDynamicToUpdateSql(fdo, tableName, columns));
+                i++;
+                if (i > 500)
+                {
+                    _dbSession.Execute(sql.ToString());
+                    sql.Clear();
+                    i = 0;
+                }
+            }
+            if (sql.Length > 0)
+            {
+                _dbSession.Execute(sql.ToString());
+            }
+        }
         public void UpdateBatchSql<T>(IEnumerable<T> entityListToUpdate) where T : BaseModel
         {
             StringBuilder sql = new StringBuilder(null);
             int i = 0;
             foreach (var entity in entityListToUpdate)
             {
-                InitEntityToInsert(entity);
-                sql.AppendLine(_dbSession.EntityToUpdateSql(entity)+";");
+                InitEntityToUpdate(entity);
+                sql.AppendLine(_dbSession.EntityToUpdateSql(entity) + ";");
                 i++;
                 if (i > 500)
                 {
@@ -2588,7 +2651,7 @@ namespace Fap.Core.DataAccess
             foreach (var entity in entityListToInsert)
             {
                 InitEntityToInsert(entity);
-                sql.AppendLine(_dbSession.EntityToInsertSql(entity)+";");
+                sql.AppendLine(_dbSession.EntityToInsertSql(entity) + ";");
                 i++;
                 if (i > 500)
                 {
@@ -2596,7 +2659,6 @@ namespace Fap.Core.DataAccess
                     sql.Clear();
                     i = 0;
                 }
-
             }
             if (sql.Length > 0)
             {

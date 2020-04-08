@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Dapper;
 using Fap.AspNetCore.Infrastructure;
 using Fap.AspNetCore.ViewModel;
+using Fap.Core.Infrastructure.Metadata;
 using Fap.Hcm.Service.Payroll;
 using Microsoft.AspNetCore.Mvc;
 
@@ -103,6 +104,21 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
                 qs.AddDefaultValue("PayCaseUidMC", pc.CaseName);
             });
             return PartialView(model);
+        }
+        public IActionResult PayDataInit(string fid)
+        {
+            PayCase pc = _dbContext.Get<PayCase>(fid);
+            IEnumerable<FapColumn> cList = _dbContext.Columns(pc.TableName);
+            ViewBag.GridId = $"grid-{pc.TableName}";
+            DynamicParameters param = new DynamicParameters();
+            param.Add("CaseUid", pc.Fid);
+            IEnumerable<PayRecord> records = _dbContext.QueryWhere<PayRecord>("CaseUid=@CaseUid and PayFlag=1", param).OrderByDescending(c => c.PayYM).OrderByDescending(c => c.PayFlag);
+            if (!records.Any())
+            {
+                return Content("无薪资发放记录，不用初始化");
+            }
+            ViewBag.Records = records;
+            return PartialView(cList);
         }
     }
 }

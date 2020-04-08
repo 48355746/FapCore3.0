@@ -262,6 +262,8 @@ namespace Fap.Core.DataAccess
         void UpdateDynamicDataBatch(IEnumerable<FapDynamicObject> dataObjects);
         void UpdateBatchSql<T>(IEnumerable<T> entityListToUpdate) where T : BaseModel;
         void InsertBatchSql<T>(IEnumerable<T> entityListToInsert) where T : BaseModel;
+        void UpdateDynamicDataBatchSql(IEnumerable<FapDynamicObject> dataObjects);
+        void InsertDynamicDataBatchSql(IEnumerable<FapDynamicObject> dataObjects);
         PageInfo<T> QueryPage<T>(Pageable pageable) where T : BaseModel;
         PageInfo<dynamic> QueryPage(Pageable pageable);
         /// <summary>

@@ -5,8 +5,10 @@ using System.Net.Mime;
 using System.Threading.Tasks;
 using Ardalis.GuardClauses;
 using Fap.AspNetCore.Infrastructure;
+using Fap.AspNetCore.Model;
 using Fap.AspNetCore.ViewModel;
 using Fap.Core.DataAccess;
+using Fap.Core.Extensions;
 using Fap.Hcm.Service.Payroll;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -90,6 +92,33 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
         {
             long tbId = _payrollService.GenericPayCase(caseUid);
             _metadataContext.CreateTable(tbId);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+        [HttpPost("InitPaycaseEmployee")]
+        public JsonResult InitPaycaseEmployee(string caseUid)
+        {
+            var payCase= _dbContext.Get<PayCase>(caseUid);
+            if (payCase.TableName.IsMissing())
+            {
+                return Json(ResponseViewModelUtils.Failure("请先生成薪资项"));
+            }
+            if (payCase.EmpCondition.IsMissing())
+            {
+                return Json(ResponseViewModelUtils.Failure("请先保存员工条件"));
+            }
+            if (payCase.Unchanged == 1)
+            {
+                return Json(ResponseViewModelUtils.Failure("已经有发放记录，不能再初始化员工了"));
+            }
+            JsonFilterToSql jfs = new JsonFilterToSql(_dbContext);
+            string filterWhere = jfs.BuilderFilter("Employee", payCase.EmpCondition);
+            _payrollService.InitEmployeeToPayCase(payCase, filterWhere);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+        [HttpPost("InitPayrollData")]
+        public JsonResult InitPayrollData(PayrollInitDataViewModel model)
+        {
+            _payrollService.InitPayrollData(model);
             return Json(ResponseViewModelUtils.Sueecss());
         }
     }

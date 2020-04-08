@@ -9,7 +9,7 @@ namespace Fap.Hcm.Service.Payroll
     /// <summary>
     /// 工资套
     /// </summary>
-    public class PayCase :BaseModel
+    public class PayCase : BaseModel
     {
         /// <summary>
         /// 编码
@@ -60,6 +60,10 @@ namespace Fap.Hcm.Service.Payroll
         /// 发放标识
         /// </summary>
         public int PayFlag { get; set; }
+        /// <summary>
+        /// 不可变
+        /// </summary>
+        public int Unchanged { get; set; }
 
     }
 }

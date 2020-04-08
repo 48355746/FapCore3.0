@@ -479,10 +479,9 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             {
                 formType |= OperEnum.Import;
             }
-            if (OperSearch)
-            {
-                formType |= OperEnum.Search;
-            }
+           
+            formType |= OperEnum.Search;
+           
             grid.SetFormType(formType);
         }
         private void SetGirdOper(Grid grid, string authorize)

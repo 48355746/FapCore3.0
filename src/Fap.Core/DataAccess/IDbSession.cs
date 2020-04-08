@@ -58,6 +58,8 @@ namespace Fap.Core.DataAccess
         Task<bool> UpdateAsync<T>(T entityToUpdate) where T : class;
         string EntityToInsertSql<T>(T entity) where T : class;
         string EntityToUpdateSql<T>(T entity) where T : class;
+        string FapDynamicToInsertSql(FapDynamicObject fdo, string tableName, IEnumerable<FapColumn> columns);
+        string FapDynamicToUpdateSql(FapDynamicObject fdo, string tableName, IEnumerable<FapColumn> columns);
         public void BeginTransaction();
 
         public void Commit();

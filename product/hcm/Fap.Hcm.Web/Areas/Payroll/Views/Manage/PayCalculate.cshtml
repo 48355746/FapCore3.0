@@ -48,7 +48,6 @@
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
             $(document).one('ajaxloadstart.page', function (e) {
-                //$(document).off(ace.click_event, '.dropdown-menu>li');
             })
             $('.chosen-select').chosen({ allow_single_deselect: true }).on("change", function () {
                 var c = $(this).val();
@@ -64,6 +63,31 @@
                     layer.close(index);
                 })
             });
+            $("#btnInitData").on(ace.click_event, function () {
+                var caseUid = $("#selPayCase").val();
+                if (caseUid === "") {
+                    return;
+                }
+                var dialog = bootbox.dialog({
+                    title: $.lang("init_payroll_data","初始化薪资数据"),
+                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                    footer: false,
+                    buttons: {
+                        init: {
+                            label: $.lang("init", "初始化"),
+                            className: "btn-primary btn-link",
+                            callback: function () {
+                                   initPayrollData(caseUid);                              
+                            }
+                        }
+                    }
+                });   
+                dialog.init(function () {
+                    $.get(basePath + "/Payroll/Manage/PayDataInit/" + caseUid,function (ev) {
+                        dialog.find('.bootbox-body').html(ev);
+                    });
+                });
+            })
             
         })
     });

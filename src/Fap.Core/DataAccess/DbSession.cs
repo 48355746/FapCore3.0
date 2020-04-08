@@ -720,7 +720,30 @@ namespace Fap.Core.DataAccess
                 return connection.EntityToInsertSql(entity);
             }
         }
-
+        public string FapDynamicToInsertSql(FapDynamicObject fdo,string tableName,IEnumerable<FapColumn> columns)
+        {
+            if (CurrentConnection != null)
+            {
+                return CurrentConnection.FapDynamicDataToInsertSql(tableName,columns,fdo);
+            }
+            else
+            {
+                using var connection = GetDbConnection(DataSourceEnum.MASTER);
+                return connection.FapDynamicDataToInsertSql(tableName, columns, fdo);
+            }
+        }
+        public string FapDynamicToUpdateSql(FapDynamicObject fdo,string tableName,IEnumerable<FapColumn> columns)
+        {
+            if (CurrentConnection != null)
+            {
+                return CurrentConnection.FapDynamicDataToUpdateSql(tableName, columns, fdo);
+            }
+            else
+            {
+                using var connection = GetDbConnection(DataSourceEnum.MASTER);
+                return connection.FapDynamicDataToUpdateSql(tableName, columns, fdo);
+            }
+        }
         public string EntityToUpdateSql<T>(T entity) where T : class
         {
             if (CurrentConnection != null)
