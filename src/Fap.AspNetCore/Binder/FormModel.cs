@@ -14,6 +14,10 @@ namespace Fap.AspNetCore.Binder
         /// </summary>
         public FormOperEnum Oper { get; set; }
         /// <summary>
+        /// 逻辑删除
+        /// </summary>
+        public bool LogicDelete { get; set; } = true;
+        /// <summary>
         /// 批量处理Ids
         /// </summary>
         public string Ids { get; set; }

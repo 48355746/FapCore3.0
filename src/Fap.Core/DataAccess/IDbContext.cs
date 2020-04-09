@@ -27,6 +27,7 @@ namespace Fap.Core.DataAccess
         void DeleteBatch<T>(IEnumerable<T> entityListToDelete) where T : BaseModel;
         Task DeleteBatchAsync<T>(IEnumerable<T> entityListToDelete) where T : BaseModel;
         bool DeleteDynamicData(FapDynamicObject dataObject);
+        bool DeleteNoLogicDynamicData(FapDynamicObject delDynamicData);
         void DeleteDynamicDataBatch(IEnumerable<FapDynamicObject> dataObjects);
         int DeleteExec(string tableName, string where = "", DynamicParameters parameters = null);
         Task<int> DeleteExecAsync(string tableName, string where = "", DynamicParameters parameters = null);

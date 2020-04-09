@@ -55,6 +55,11 @@ namespace Fap.AspNetCore.Binder
             {
                 return Task.CompletedTask;
             }
+            var logicDeleteProviderResult = bindingContext.ValueProvider.GetValue("logicDelete");
+            if (logicDeleteProviderResult != null)
+            {
+                formModel.LogicDelete = logicDeleteProviderResult.FirstValue.ToBool();
+            }
             formModel.TableName = tableName;
             formModel.Oper = operProviderResult.FirstValue.ParseEnum<FormOperEnum>();
             formModel.AvoidDuplicateKey = avoidDuplicateKey.FirstValue;

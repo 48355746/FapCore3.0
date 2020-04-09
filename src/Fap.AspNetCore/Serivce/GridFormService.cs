@@ -458,8 +458,16 @@ namespace Fap.AspNetCore.Serivce
             }
             else if (formModel.Oper == FormOperEnum.del)
             {
-                //删除可能存在批量
-                bool rv = _dbContext.DeleteDynamicData(mainData);
+                bool rv = false;
+                if (formModel.LogicDelete)
+                {
+                    //删除可能存在批量
+                    rv = _dbContext.DeleteDynamicData(mainData);
+                }
+                else
+                {
+                    rv = _dbContext.DeleteNoLogicDynamicData(mainData);
+                }
                 DeleteChildData(mainData);
                 rvm.success = rv;
                 rvm.msg = rv ? _multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page, "delete_success", "删除成功") : _multiLangService.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page, "delete_failure", "删除失败，请重试");
@@ -898,7 +906,7 @@ namespace Fap.AspNetCore.Serivce
                         }
                         else if (f.FmuDesc.StartsWith("[累计]", StringComparison.OrdinalIgnoreCase))
                         {
-                            f.FmuContent = SqlUtils.ParsingFormulaGrandTotalSql(cols, f.ColName, formula.MappingTable, f.FmuDesc,_dbContext.DatabaseDialect);
+                            f.FmuContent = SqlUtils.ParsingFormulaGrandTotalSql(cols, f.ColName, formula.MappingTable, f.FmuDesc, _dbContext.DatabaseDialect);
                         }
                         else
                         {

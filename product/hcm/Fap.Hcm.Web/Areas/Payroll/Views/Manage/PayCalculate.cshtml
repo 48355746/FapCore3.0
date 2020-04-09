@@ -44,7 +44,7 @@
 </div>
 
 <script>
-    var scripts = [null, null]
+    var scripts = [null,"/Content/js/jquery.tmpl.min.js", null]
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
             $(document).one('ajaxloadstart.page', function (e) {
@@ -167,6 +167,29 @@
                     }
                 })                
             })
+            $("#btnGapAnalysis").on(ace.click_event, function () {
+                var caseUid = $("#selPayCase").val();
+                if (caseUid === "") {
+                    return;
+                }
+                bootboxWindow($.lang("gap_analysis", "差异比对"), basePath + "/Payroll/Manage/PayGapAnalysis/" + caseUid);
+            })
+            $("#btnPayNotice").on(ace.click_event, function () {
+                var caseUid = $("#selPayCase").val();
+                if (caseUid === "") {
+                    return;
+                }
+                var index = layer.load();
+                $.post(basePath + "/Payroll/Api/PayOffNotice", { caseUid: caseUid }, function (rv) {
+                    if (rv.success) {
+                        $.msg(rv.msg);
+                    } else {
+                        bootbox.alert(rv.msg);
+                    }
+                    layer.close(index);
+                })
+            })
+            
             function refreshPaycase() {
                 var grdId = "grid-" + $("#selPayCase").find("option:selected").data("tn");
                 refreshGrid(grdId);

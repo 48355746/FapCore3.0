@@ -128,7 +128,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
         private bool _stringResult = true;
         private bool? _ignoreCase;
         private string _rowAttr;
-
+        private bool _logicDelete=true;
 
         //列头分组设置
         private IEnumerable<GroupHeader> _groupHeaders;
@@ -1478,6 +1478,11 @@ namespace Fap.AspNetCore.Controls.JqGrid
             _rowAttr = rowAttr;
             return this;
         }
+        public Grid SetLogicDelete(bool logicDelete)
+        {
+            _logicDelete = logicDelete;
+            return this;
+        }
         /// <summary>
         /// 设置树表 点击展开的 列名，点击此列 会展开
         /// </summary>
@@ -2406,7 +2411,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                       position:'first',  
                       buttonicon:'ace-icon fa fa-trash-o red',
                       onClickButton : function() {
-                        deleteGridRow('##gridid##','" + TableName + @"');
+                        deleteGridRow('##gridid##','" + TableName + "',"+(_logicDelete?"true":"false")+ @");
                     }
                   });");
         }

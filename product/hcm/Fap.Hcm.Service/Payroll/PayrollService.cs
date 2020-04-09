@@ -172,7 +172,7 @@ namespace Fap.Hcm.Service.Payroll
             {
                 pCols += "," + payrollInitData.ReservedItems;
             }
-            pCols = pCols.ReplaceIgnoreCase("PayYM", "'" + payrollInitData.PayYm + "'");
+            pCols = pCols.ReplaceIgnoreCase("PayYM", "'" + payrollInitData.PayYm + "' as PayYM");
 
             //检查当月是否有发送记录
             DynamicParameters param = new DynamicParameters();
@@ -199,8 +199,8 @@ namespace Fap.Hcm.Service.Payroll
                     pcount = existRecord.PayCount;
                 }
             }
-            pCols = pCols.ReplaceIgnoreCase("PaymentTimes", pcount.ToString());
-            pCols = pCols.ReplaceIgnoreCase("PayConfirm", "0");
+            pCols = pCols.ReplaceIgnoreCase("PaymentTimes", pcount.ToString()+ " as PaymentTimes");
+            pCols = pCols.ReplaceIgnoreCase("PayConfirm", "0 as PayConfirm");
             string sql = $"select {pCols} from PayCenter where {where}";
             var pastData = _dbContext.QueryOriSql(sql);
             IList<FapDynamicObject> listCase = new List<FapDynamicObject>();
@@ -395,6 +395,68 @@ namespace Fap.Hcm.Service.Payroll
             string updateSql = string.Format("update {0} set PayConfirm=0", pc.TableName);
             _dbContext.Execute(deleteSql, new DynamicParameters(new { CaseUid = pc.Fid, PayTimes = pc.PayCount, PayYM = pc.PayYM }));
             _dbContext.Execute(updateSql);
+        }
+        public PayGapEmployee PayGapAnalysis(string recordUid)
+        {
+            PayRecord payRecord= _dbContext.Get<PayRecord>(recordUid);
+            PayCase payCase = _dbContext.Get<PayCase>(payRecord.CaseUid);
+            //当前月有 历史数据没有的语句（入职的）
+            string sql1 = string.Format($"select EmpUid from {payCase.TableName} where PaymentTimes={payCase.PayCount} and EmpUid NOT IN(select EmpUid from {PAYROLLCENTER} where  PayYM='{payRecord.PayYM}' and PayCaseUid='{payRecord.CaseUid}' and PaymentTimes={payRecord.PayCount})");
+            //当前月没有 历史数据有的（离职的）
+            string sql2 = string.Format($"select EmpUid from {PAYROLLCENTER} where  PayYM='{payRecord.PayYM}' and PayCaseUid='{payRecord.CaseUid}' and PaymentTimes={payRecord.PayCount} and EmpUid NOT IN(select EmpUid from {payCase.TableName} where PaymentTimes={payCase.PayCount})");
+            var list1 = _dbContext.QueryOriSql(sql1);
+            var list2 = _dbContext.QueryOriSql(sql2);
+            PayGapEmployee emps = new PayGapEmployee();
+            if (list1.Any())
+            {
+                emps.AddedList = _dbContext.QueryWhere<Employee>("Fid in @Fids",new DynamicParameters(new { Fids=list1.Select(l=>l.EmpUid) }));
+            }
+            if (list2.Any())
+            {
+                emps.RemovedList = _dbContext.QueryWhere<Employee>("Fid in @Fids", new DynamicParameters(new { Fids = list2.Select(l => l.EmpUid) }));
+            }
+            return emps;
+        }
+        public void PayrollOffNotice(string caseUid)
+        {
+            PayCase pc = _dbContext.Get<PayCase>(caseUid);
+            if (pc.PayFlag == 0)
+            {
+                throw new FapException("薪资还未发放，还不能发送通知");
+            }
+            string sql = $"select {pc.TableName}.EmpUid,Employee.Mailbox,Employee.EmpName from {pc.TableName} left join Employee on {pc.TableName}.EmpUid=Employee.Fid";
+            var empList = _dbContext.Query(sql);
+            if (empList.Any())
+            {
+                string mailContent = pc.PayYM + "份薪资已发放，请登录HCM系统查看。员工自助--》我的薪资";
+                string msgContent = pc.PayYM + "份薪资已发放。";
+                string sendTime = DateTimeUtils.CurrentDateTimeStr;             
+                List<string> lmail = new List<string>();
+                List<FapMessage> lmsg = new List<FapMessage>();
+                foreach (var emp in empList)
+                {
+                    FapMessage message = new FapMessage { HasRead = 0, MsgCategory = "Notice", MsgContent = msgContent, REmpUid = emp.EmpUid, SendTime = sendTime, Title = "薪资发放通知" };
+                    lmsg.Add(message);
+                    string mailBox = emp.Mailbox;
+                    if (mailBox.IsPresent())
+                    {
+                        lmail.Add($"{emp.EmpName}<{emp.Mailbox}>");
+                    }
+                }
+                _dbContext.InsertBatchSql<FapMessage>(lmsg);
+                if (lmail.Any())
+                {
+                    FapMail fmail = new FapMail();
+                    fmail.IsSeparate = 1;
+                    fmail.Recipient = "薪资套人员";
+                    fmail.Subject = "薪资发放通知";
+                    fmail.MailContent = mailContent;
+                    fmail.RecipientEmailAddress = string.Join(";", lmail);
+                    fmail.SendStatus = 0;
+                    _dbContext.Insert<FapMail>(fmail);
+                }
+
+            }
         }
     }
 }

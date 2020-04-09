@@ -205,7 +205,7 @@ var viewFormMessageBox = function (fid, gid, menuid) {
 };
 //删除数据
 //logicDelete 逻辑删除
-var deleteGridRow = function (gid, tableName, onCompletedCallback) {
+var deleteGridRow = function (gid, tableName,logicDelete, onCompletedCallback) {
     var multiselect = $('#' + gid).jqGrid('getGridParam', 'multiselect');
     var dr;
     if (multiselect) {
@@ -230,7 +230,7 @@ var deleteGridRow = function (gid, tableName, onCompletedCallback) {
         bootbox.confirm($.lang("confirm_delete", "确定要删除选中的数据吗?"), function (result) {
             if (result) {
                 $.post(basePath + "/Core/Api/Persistence",
-                    { "oper": "del", "tableName": tableName, maindata: { "Fid": dr } }, function (rv) {
+                    { "oper": "del", "logicDelete": logicDelete, "tableName": tableName, maindata: { "Fid": dr } }, function (rv) {
                         if (rv.success) {
                             if ($.isFunction(onCompletedCallback)) {
                                 onCompletedCallback();

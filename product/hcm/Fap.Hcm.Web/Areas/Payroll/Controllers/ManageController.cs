@@ -6,6 +6,7 @@ using Dapper;
 using Fap.AspNetCore.Infrastructure;
 using Fap.AspNetCore.ViewModel;
 using Fap.Core.Infrastructure.Metadata;
+using Fap.Core.Infrastructure.Query;
 using Fap.Hcm.Service.Payroll;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,7 +33,7 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
             DynamicParameters param = new DynamicParameters();
             param.Add("EmpUid", _applicationContext.EmpUid);
             var payCases = _dbContext.Query<PayCase>("select * from PayCase where CreateBy=@EmpUid or fid in(select CaseUid from PayCaseEmployee where EmpUid=@EmpUid)", param);
-         
+
             ViewBag.PayCase = payCases;
             return View(jqModel);
         }
@@ -42,10 +43,11 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
         /// <returns></returns>
         public IActionResult PaySet()
         {
-            JqGridViewModel model = this.GetJqGridModel("PayCase",qs=> {
+            JqGridViewModel model = this.GetJqGridModel("PayCase", qs =>
+            {
                 qs.GlobalWhere = "CreateBy=@EmpUid";
                 qs.AddParameter("EmpUid", _applicationContext.EmpUid);
-            });         
+            });
             return View(model);
         }
         /// <summary>
@@ -62,7 +64,7 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
             });
             return PartialView(payItemModel);
         }
-        
+
         /// <summary>
         /// 薪资员工
         /// </summary>
@@ -78,7 +80,7 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
         /// </summary>
         /// <param name="caseUid"></param>
         /// <returns></returns>
-        public PartialViewResult PayAuthority(string caseUid,string caseName)
+        public PartialViewResult PayAuthority(string caseUid, string caseName)
         {
             JqGridViewModel model = this.GetJqGridModel("PayCaseEmployee", (q) =>
             {
@@ -88,20 +90,27 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
                 q.AddParameter("CaseUid", caseUid);
             });
             return PartialView(model);
-        }  
+        }
         public IActionResult PayCalculate()
         {
             DynamicParameters param = new DynamicParameters();
             param.Add("EmpUid", _applicationContext.EmpUid);
-            IEnumerable<PayCase> payCases = _dbContext.QueryWhere<PayCase>("TableName!='' and CreateBy=@EmpUid or  Fid in(select CaseUid from PayCaseEmployee where EmpUid=@EmpUid)",param);
+            IEnumerable<PayCase> payCases = _dbContext.QueryWhere<PayCase>("TableName!='' and CreateBy=@EmpUid or  Fid in(select CaseUid from PayCaseEmployee where EmpUid=@EmpUid)", param);
             return View(payCases);
         }
         public PartialViewResult PayInfo(string fid)
         {
-            var pc= _dbContext.Get<PayCase>(fid);
-            var model = GetJqGridModel(pc.TableName,qs=> {
+            var pc = _dbContext.Get<PayCase>(fid);
+            var statistics = _dbContext.Columns(pc.TableName).Where(c => c.CtrlType == FapColumn.CTRL_TYPE_MONEY);
+            var model = GetJqGridModel(pc.TableName, qs =>
+            {
                 qs.AddDefaultValue("PayCaseUid", pc.Fid);
                 qs.AddDefaultValue("PayCaseUidMC", pc.CaseName);
+                qs.AddStatSet(StatSymbolEnum.Description, "'合计:' as PayYM");
+                foreach (var statistic in statistics)
+                {
+                    qs.AddStatSet(StatSymbolEnum.SUM, statistic.ColName);
+                }
             });
             return PartialView(model);
         }
@@ -119,6 +128,16 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
             }
             ViewBag.Records = records;
             return PartialView(cList);
+        }
+        public IActionResult PayGapAnalysis(string fid)
+        {
+            var payRecords= _dbContext.QueryWhere<PayRecord>($"{nameof(PayRecord.CaseUid)}=@CaseUid and {nameof(PayRecord.PayFlag)}=1",
+                new DynamicParameters(new { CaseUid = fid }));
+            if (payRecords.Any())
+            {
+                return PartialView(payRecords);
+            }
+            return Content("还没发薪记录，不能比对");
         }
     }
 }

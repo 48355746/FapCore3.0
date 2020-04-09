@@ -152,5 +152,17 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
             _payrollService.PayrollOffCancel(caseUid);
             return Json(ResponseViewModelUtils.Sueecss());
         }
+        [HttpGet("PayGapAnalysis/{recordUid}")]
+        public JsonResult PayGapAnalysis(string recordUid)
+        {
+            var emps= _payrollService.PayGapAnalysis(recordUid);
+            return Json(ResponseViewModelUtils.Sueecss(emps));
+        }
+        [HttpPost("PayOffNotice")]
+        public JsonResult PayOffNotice(string caseUid)
+        {
+            _payrollService.PayrollOffNotice(caseUid);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
     }
 }

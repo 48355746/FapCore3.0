@@ -1,0 +1,101 @@
+﻿@model IEnumerable<Fap.Hcm.Service.Payroll.PayRecord>
+<div class="row form-horizontal">
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right">历史发放记录:</label>
+        <div class="col-sm-4">
+            <select id="selPayYM">
+                <option value="">---选择---</option>
+                @foreach (var record in Model)
+                {
+                    string txt = record.PayYM + "第" + record.PayCount+"次发放记录";
+                    <option value="@record.Fid" data-count="@record.PayCount">@txt</option>
+                }
+            </select>
+        </div>
+        @*<button type="button" id="btnExportGap" class="btn btn-success btn-sm">
+            <i class="ace-icon fa fa-file-excel-o bigger-110"></i>导出
+        </button>*@
+
+    </div>
+</div>
+<hr />
+<div class="row" id="empcontainer">
+
+</div>
+<script id="tmplEmployee" type="text/x-jquery-tmpl">
+    <div class="col-xs-6 pricing-box">
+        <div class="widget-box widget-color-red">
+            <div class="widget-header">
+                <h5 class="widget-title bigger">减员(${removedList?removedList.length:0})</h5>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main">
+                    <ul class="list-unstyled spaced2">
+                        {{each(i,emp) removedList}}
+                        <li>
+                            <i class="ace-icon fa fa-times red"></i>
+                            ${i+1},${emp.empName}(${emp.empCode})
+                        </li>
+                        {{/each}}
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-6 pricing-box">
+        <div class="widget-box widget-color-green">
+            <div class="widget-header">
+                <h5 class="widget-title bigger lighter">增员(${addedList?addedList.length:0})</h5>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main">
+                    <ul class="list-unstyled spaced2">
+                        {{each(i,emp) addedList}}
+                        <li>
+                            <i class="ace-icon fa fa-plus green"></i>
+                            ${i+1},${emp.empName}(${emp.empCode})
+                        </li>
+                        {{/each}}
+                    </ul>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</script>
+<script>
+    $(function () {
+        $("#selPayYM").change(function () {
+            var recordUid = $(this).val();
+            if (recordUid == '')
+                return;
+            $.get(basePath + "/Payroll/Api/PayGapAnalysis/" + recordUid, function (rv) {
+                if (rv.success) {
+                    debugger
+                    $("#empcontainer").empty();
+                    $("#tmplEmployee").tmpl(rv.data).appendTo('#empcontainer');
+                } else {
+                    bootbox.alert(rv.msg);
+                }
+            })
+        })
+        $("#btnExportGap").on(ace.click_event, function () {
+            var ym = $("#selPayYM").val();
+            if (ym == '')
+                return;
+            $.get(basePath + "/Payroll/Api/GapAnalysisExport/" + recordUid, function (data) {
+                if (data.rv) {
+                    window.location.href = basePath + "/UploadFiles/" + data.fn;
+                } else {
+                    $.msg("生成文件异常！");
+                }
+            })
+        })
+    })
+</script>

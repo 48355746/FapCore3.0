@@ -13,5 +13,7 @@ namespace Fap.Hcm.Service.Payroll
         IList<string> PayrollCalculate(string formulaCaseUid);
         void PayrollOff(string caseUid);
         void PayrollOffCancel(string caseUid);
+        PayGapEmployee PayGapAnalysis(string recordUid);
+        void PayrollOffNotice(string caseUid);
     }
 }

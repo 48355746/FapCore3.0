@@ -2058,6 +2058,28 @@ namespace Fap.Core.DataAccess
                 UpdateDynamicData(d);
             }
         }
+        public bool DeleteNoLogicDynamicData(FapDynamicObject delDynamicData)
+        {
+            string tableName = delDynamicData.TableName;
+            Guard.Against.NullOrEmpty(tableName, nameof(tableName));
+            string fids = delDynamicData.Get(FapDbConstants.FAPCOLUMN_FIELD_Fid)?.ToString();
+            string ids = delDynamicData.Get(FapDbConstants.FAPCOLUMN_FIELD_Id)?.ToString();
+            if (fids.IsMissing() && ids.IsMissing())
+            {
+                throw new FapException("删除数据请设置Fid或Id");
+            }
+            if (ids.IsPresent())
+            {
+                var idList = ids.SplitComma();
+                ExecuteOriginal($"delete from {tableName} where Id in @Ids", new DynamicParameters(new { Ids = idList }));
+            }
+            else
+            {
+                var fidList = fids.SplitComma();
+                ExecuteOriginal($"delete from {tableName} where Fid in @Fids", new DynamicParameters(new { Fids = fidList }));
+            }
+            return true;
+        }
         /// <summary>
         /// 删除，批量删除请设置Fid多个 用逗号隔开，或Id用逗号隔开
         /// </summary>
@@ -2560,7 +2582,7 @@ namespace Fap.Core.DataAccess
         public void InsertDynamicDataBatchSql(IEnumerable<FapDynamicObject> dataObjects)
         {
             string tableName = string.Empty;
-            IEnumerable<FapColumn> columns=Enumerable.Empty<FapColumn>();
+            IEnumerable<FapColumn> columns = Enumerable.Empty<FapColumn>();
             if (dataObjects.Any())
             {
                 tableName = dataObjects.First().TableName;
@@ -2575,7 +2597,7 @@ namespace Fap.Core.DataAccess
             foreach (var fdo in dataObjects)
             {
                 InitDynamicToInsert(fdo);
-                sql.AppendLine(_dbSession.FapDynamicToInsertSql(fdo, tableName,columns));
+                sql.AppendLine(_dbSession.FapDynamicToInsertSql(fdo, tableName, columns));
                 i++;
                 if (i > 500)
                 {

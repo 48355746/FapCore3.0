@@ -203,6 +203,10 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// </summary>
         public bool OperDelete { get; set; }
         /// <summary>
+        /// 逻辑删除
+        /// </summary>
+        public bool LogicDelete { get; set; } = true;
+        /// <summary>
         /// 显示查询按钮
         /// </summary>
         public bool OperSearch { get; set; }
@@ -289,7 +293,8 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             {
                 grid.AddColumns(AttachColumns);
             }
-
+            
+            grid.SetLogicDelete(LogicDelete);
             //鉴权列
             if (RegisterAuthority)
             {
