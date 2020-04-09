@@ -11,61 +11,43 @@ namespace Fap.Hcm.Service.Payroll
     /// </summary>
     public class PayItem : BaseModel
     {
-        /// <summary>
-        /// 工资套
-        /// </summary>
-        public string CaseUid { get; set; }
-        /// <summary>
-        /// 工资套 的显性字段MC
-        /// </summary>
-        [Computed]
-        public string CaseUidMC { get; set; }
-        /// <summary>
-        /// 项目
-        /// </summary>
-        public string ColumnUid { get; set; }
-        /// <summary>
-        /// 项目 的显性字段MC
-        /// </summary>
-        [Computed]
-        public string ColumnUidMC { get; set; }
-        /// <summary>
-        /// 排序
-        /// </summary>
-        public int ItemSort { get; set; }
-        /// <summary>
-        /// 可见
-        /// </summary>
-        public int ShowAble { get; set; }
-        /// <summary>
-        /// 类型
-        /// </summary>
-        public string ItemType { get; set; }
-        /// <summary>
-        /// 类型 的显性字段MC
-        /// </summary>
-        [Computed]
-        public string ItemTypeMC { get; set; }
-        /// <summary>
-        /// 累加方式
-        /// </summary>
-        public string AddUpWay { get; set; }
-        /// <summary>
-        /// 累加方式 的显性字段MC
-        /// </summary>
-        [Computed]
-        public string AddUpWayMC { get; set; }        
-        /// <summary>
-        /// 变动影响字段
-        /// </summary>
-        public int TransEnable { get; set; }
-        /// <summary>
-        /// 工资条展示项
-        /// </summary>
-        public int ShowCard { get; set; }
+		/// <summary>
+		/// 薪资套
+		/// </summary>
+		public string CaseUid { get; set; }
+		/// <summary>
+		/// 薪资套 的显性字段MC
+		/// </summary>
+		[Computed]
+		public string CaseUidMC { get; set; }
+		/// <summary>
+		/// 薪资项目
+		/// </summary>
+		public string ColumnUid { get; set; }
+		/// <summary>
+		/// 薪资项目 的显性字段MC
+		/// </summary>
+		[Computed]
+		public string ColumnUidMC { get; set; }
+		/// <summary>
+		/// 排序
+		/// </summary>
+		public int ItemSort { get; set; }
+		/// <summary>
+		/// 可见
+		/// </summary>
+		public int ShowAble { get; set; }
+		/// <summary>
+		/// 变动影响字段
+		/// </summary>
+		public int TransEnable { get; set; }
+		/// <summary>
+		/// 工资条展示项
+		/// </summary>
+		public int ShowCard { get; set; }
 
-    }
-    public class PayItemAddData
+	}
+	public class PayItemAddData
     {
         public IEnumerable<FapColumn> Items { get; set; }
         public object JsonData { get; set; }
