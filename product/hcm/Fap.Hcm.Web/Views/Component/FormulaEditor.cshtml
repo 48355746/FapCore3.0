@@ -173,14 +173,12 @@
                     <button class="btn-light btn-sm btn btn-round" type="button" title="条件" data-provider="fap-formula" data-handler="[条件]"><span>条件</span> </button>
                     @*<button class="btn-light btn-sm btn btn-round" type="button" title="<="  data-provider="fap-formula" data-handler=" NOT "><span>not</span> </button>*@
                     <button class="btn-light btn-sm btn btn-round" type="button" title="空函数" data-provider="fap-formula" data-handler="[空](字段,0)"><span>空函数</span> </button>
-                    <button class="btn-light btn-sm btn btn-round" type="button" title="累计函数" data-provider="fap-formula" data-handler="[累计]"><span>累计函数</span> </button>
+                    <button class="btn-light btn-sm btn btn-round" type="button" title="累计函数" data-provider="fap-formula" data-handler="[累计](字段)"><span>累计函数</span> </button>
                 </div>
 
                 <div class="space-2"></div>
             </div>
-
         </div>
-
     </div>
 </div>
 
@@ -323,7 +321,7 @@
 
             $.post("@Url.Content("~/Core/Api/VerifyFormula")", { entity: '@tableName', mappingEntity:'@mappingTableName', verfiyField: fmudata.colName, verfiyContent: fmudata.fmuDesc }, function (rv) {
                 if (rv.success) {
-                    $.msg("公式校验合法！");
+                    $.msg("公式校验合法！" + rv.data);
                 } else {
                     bootbox.alert(rv.msg);
                 }
@@ -499,7 +497,6 @@
                                         $(this).remove();
                                     }
                                 });
-                                debugger
                                 $.each(filterVals, function (i, d) {
                                     if ($.inArray(d.colName, exist) > -1) {
                                         //列表中已存在
@@ -516,7 +513,6 @@
 
                                         var fd = { tableName: '@tableName', colName: d.colName, colComment: d.colComment, fmuContent: '', fmuDesc: '', enabled: 1, Fid: '' }
                                         var $str = $(str);
-
                                         var fmudataStr = JSON.stringify(fd);
                                         $("#formulaItems").append($str);
                                         $str.data("fmudata", fmudataStr);

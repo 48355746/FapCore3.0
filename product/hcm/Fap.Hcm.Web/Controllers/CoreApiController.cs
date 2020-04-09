@@ -336,7 +336,7 @@ namespace Fap.Hcm.Web.Controllers
                 return Json(ResponseViewModelUtils.Failure("格式化sql错误"));
             }
             _dbContext.ExecuteOriginal(SqlUtils.ParsingFormulaCheckSql(entity, sql, _dbContext.DatabaseDialect));
-            return Json(ResponseViewModelUtils.Sueecss());
+            return Json(ResponseViewModelUtils.Sueecss(data:sql));
         }
         #endregion
 

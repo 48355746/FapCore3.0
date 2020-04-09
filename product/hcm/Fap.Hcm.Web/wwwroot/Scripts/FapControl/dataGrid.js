@@ -461,6 +461,7 @@ var loadExportExcelMessageBox = function (title, gid, qryCols, tablename, callba
                         $.msg($.lang("select_row_empty", "请选中数据操作"));
                         return;
                     }
+                    var index = layer.load();
                     var postData = $('#' + gid).jqGrid("getGridParam", "postData");
                     postData.QuerySet.ExportCols = fields.join();
                     $.post(basePath + "/Core/Api/ExportExcelData", postData, function (data) {
@@ -470,6 +471,7 @@ var loadExportExcelMessageBox = function (title, gid, qryCols, tablename, callba
                         } else {
                             $.msg($.lang("error", "错误"));
                         }
+                        layer.close(index);
                     });
                 }
             },

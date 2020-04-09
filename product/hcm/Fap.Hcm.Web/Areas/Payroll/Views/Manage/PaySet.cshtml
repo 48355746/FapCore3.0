@@ -8,37 +8,35 @@
 
 <div class="row">
     <div class="col-xs-12">
-                <div class="widget-box">
-                    <div class="widget-header widget-header-flat">
-                        <h4 class="widget-title">
-                            <fap-multilang default-content="薪资套" lang-key="payset"></fap-multilang>
-                        </h4>
-                        <div class="widget-toolbar">
-                            <a href="#" data-action="fullscreen" class="orange2">
-                                <i class="ace-icon fa fa-expand"></i>
-                            </a>
-                        </div>
-                        <div class="widget-toolbar">
-                            <fap-button id="btnPaycaseAuthority" btn-tag="link" content="权限" icon-before="fa fa-cog blue" class-name="info"></fap-button>
-                        </div>
-                        <div class="widget-toolbar">
-                            <fap-button id="btnPayItem" btn-tag="link" content="薪资项" icon-before="fa fa-list-alt blue" class-name="info"></fap-button>
-                            <fap-button id="btnEmployee" btn-tag="link" content="员工" icon-before="fa fa-users blue" class-name="info"></fap-button>
-                            <fap-button id="btnFormula" btn-tag="link" content="公式" icon-before="fa fa-superscript blue" class-name="info"></fap-button>
-                        </div>
-                    </div>
-                    <div class="widget-body">
-                        <div class="widget-main">
-                           <fap-grid id="paycase" grid-model="Model" auto-width="true" ></fap-grid>
-                        </div>
-                    </div>
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">
+                    <fap-multilang default-content="薪资套" lang-key="payset"></fap-multilang>
+                </h4>
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
                 </div>
-            </div> 
+                <div class="widget-toolbar">
+                    <fap-button id="btnPaycaseAuthority" btn-tag="link" content="权限" icon-before="fa fa-cog blue" class-name="info"></fap-button>
+                </div>
+                <div class="widget-toolbar">
+                    <fap-button id="btnPayItem" btn-tag="link" content="薪资项" icon-before="fa fa-list-alt blue" class-name="info"></fap-button>
+                    <fap-button id="btnEmployee" btn-tag="link" content="员工" icon-before="fa fa-users blue" class-name="info"></fap-button>
+                    <fap-button id="btnFormula" btn-tag="link" content="公式" icon-before="fa fa-superscript blue" class-name="info"></fap-button>
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    <fap-grid id="paycase" grid-model="Model" auto-width="true"></fap-grid>
+                </div>
+            </div>
+        </div>
     </div>
-
-
+</div>
 <script>
-    var scripts = [null,"/Content/js/jquery.bootstrap-duallistbox.js","/Content/js/codemirror/codemirror.js","/Content/js/codemirror/mode/sql/sql.js", null]
+    var scripts = [null, "/Content/js/jquery.bootstrap-duallistbox.js", "/Content/js/codemirror/codemirror.js", "/Content/js/codemirror/mode/sql/sql.js", null]
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
             $(document).one('ajaxloadstart.page', function (e) {
@@ -59,7 +57,7 @@
                             AddPayItem(caseUid);
                             return false;
                         }
-                    },                
+                    },
                     generate: {
                         label: $.lang("generate", "生成"),
                         className: "btn-primary btn-link",
@@ -91,7 +89,7 @@
                         }
                     },
                     initPayCase: {
-                        label: $.lang("init", "初始化"),
+                        label: $.lang("init_payset", "初始化薪资套"),
                         className: "btn-primary btn-link",
                         callback: function () {
                             initPaycaseEmployee(caseUid);
@@ -99,8 +97,8 @@
                         }
                     }
                 }, { caseUid: caseUid }, function () {
-                        loadPaycaseEmployee(caseUid);
-                        $(window).triggerHandler('resize.jqGrid');
+                    loadPaycaseEmployee(caseUid);
+                    $(window).triggerHandler('resize.jqGrid');
                 })
             })
             $("#btnFormula").on(ace.click_event, function () {
@@ -108,13 +106,13 @@
                 if (rw == null) {
                     return;
                 }
-                let tn = "PayCase"+rw.CaseCode;
+                let tn = "PayCase" + rw.CaseCode;
                 bootboxWindow($.lang("paycase_authority", "薪资套公式"), basePath + "/Component/FormulaEditor", {
                     associate: {
                         label: $.lang("associate_set", "引用关联设置"),
                         className: "btn-primary btn-link",
                         callback: function () {
-                            bootboxWindow($.lang("associate", "关联"), basePath + "/Component/EntityAssociate", null, {oriCode:"PayCenter",oriName:"薪资套"});
+                            bootboxWindow($.lang("associate", "关联"), basePath + "/Component/EntityAssociate", null, { oriCode: "PayCenter", oriName: "薪资套" });
                             return false;
                         }
                     }

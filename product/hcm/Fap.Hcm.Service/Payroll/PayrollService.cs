@@ -182,7 +182,22 @@ namespace Fap.Hcm.Service.Payroll
             int pcount = 1;
             if (records.Any())
             {
-                pcount = records.Max(r => r.PayCount) + 1;
+                var existRecord= records.FirstOrDefault(r => r.PayFlag == 0);
+                if (existRecord==null)
+                {
+                    pcount = records.Max(r => r.PayCount) + 1;
+                    //添加发放记录
+                    PayRecord newRecord = new PayRecord();
+                    newRecord.CaseUid = payCase.Fid;
+                    newRecord.PayCount = pcount;
+                    newRecord.PayYM = payrollInitData.PayYm;
+                    newRecord.PayFlag = 0;
+                    _dbContext.Insert(newRecord);
+                }
+                else
+                {
+                    pcount = existRecord.PayCount;
+                }
             }
             pCols = pCols.ReplaceIgnoreCase("PaymentTimes", pcount.ToString());
             pCols = pCols.ReplaceIgnoreCase("PayConfirm", "0");
@@ -201,13 +216,7 @@ namespace Fap.Hcm.Service.Payroll
             }
             _dbContext.ExecuteOriginal($"truncate table {payCase.TableName}");
             _dbContext.InsertDynamicDataBatchSql(listCase);
-            //添加发放记录
-            PayRecord newRecord = new PayRecord();
-            newRecord.CaseUid = payCase.Fid;
-            newRecord.PayCount = pcount;
-            newRecord.PayYM = payrollInitData.PayYm;
-            newRecord.PayFlag = 0;
-            _dbContext.Insert(newRecord);
+
             //更新工资套
             payCase.PayYM = payrollInitData.PayYm;
             payCase.PayCount = pcount;
@@ -287,42 +296,44 @@ namespace Fap.Hcm.Service.Payroll
 
         public IList<string> PayrollCalculate(string formulaCaseUid)
         {
-            var formulas = _dbContext.QueryWhere<FapFormula>("FcUid=@FcUid and FmuDesc!=''", new DynamicParameters(new { FcUid = formulaCaseUid }));
+            var formulas = _dbContext.QueryWhere<FapFormula>("FcUid=@FcUid and FmuDesc!='' and Enabled=1", new DynamicParameters(new { FcUid = formulaCaseUid }));
             //先计算引用
             var associateList = formulas.Where(f => f.FmuDesc.StartsWith("[引用]", StringComparison.OrdinalIgnoreCase) && f.FmuContent.IsPresent()).OrderBy(f => f.OrderBy);
-            var formulaList = formulas.Where(f => !f.FmuDesc.StartsWith("[引用]", StringComparison.OrdinalIgnoreCase) && f.FmuContent.IsPresent()).OrderBy(f => f.OrderBy);
+            //非引用非累计
+            var formulaList = formulas.Where(f => !f.FmuDesc.StartsWith("[引用]", StringComparison.OrdinalIgnoreCase)
+            && !f.FmuDesc.StartsWith("[累计]", StringComparison.OrdinalIgnoreCase) && f.FmuContent.IsPresent()).OrderBy(f => f.OrderBy);
+            //累计
+            var grandTotalList = formulas.Where(f => f.FmuDesc.StartsWith("[累计]", StringComparison.OrdinalIgnoreCase) && f.FmuContent.IsPresent()).OrderBy(f => f.OrderBy);
+
             List<string> exceptionList = new List<string>();
-            foreach (var associate in associateList)
-            {
-                try
-                {
-                    _dbContext.ExecuteOriginal(associate.FmuContent);
-
-                }
-                catch (Exception ex)
-                {
-                    exceptionList.Add($"{associate.ColComment}:{ex.Message}");
-                }
-            }
-            foreach (var ff in formulaList)
-            {
-                try
-                {
-                    _dbContext.ExecuteOriginal(ff.FmuContent);
-                }
-                catch (Exception ex)
-                {
-                    exceptionList.Add($"{ff.ColComment}:{ex.Message}");
-                }
-            }
+            ExecFormula(associateList);
+            ExecFormula(formulaList);
+            ExecFormula(grandTotalList);
             return exceptionList;
-
+            void ExecFormula(IEnumerable<FapFormula> fapFormulas)
+            {
+                foreach (var ff in fapFormulas)
+                {
+                    try
+                    {
+                        _dbContext.ExecuteOriginal(ff.FmuContent);
+                    }
+                    catch (Exception ex)
+                    {
+                        exceptionList.Add($"{ff.ColComment}:{ex.Message}");
+                    }
+                }
+            }
         }
 
         [Transactional]
         public void PayrollOff(string caseUid)
         {
             PayCase payCase = _dbContext.Get<PayCase>(caseUid);
+            if (payCase.PayFlag == 1)
+            {
+                throw new FapException("薪资已经发放，请不要重复发放");
+            }
             payCase.PayFlag = 1;
             //标记已存在发放，不能再设置薪资套
             payCase.Unchanged = 1;
@@ -336,6 +347,7 @@ namespace Fap.Hcm.Service.Payroll
             if (payRecord != null)
             {
                 payRecord.PayFlag = 1;
+                payRecord.PayEmpUid = _applicationContext.EmpUid;
                 payRecord.PayDate = DateTimeUtils.CurrentDateTimeStr;
                 _dbContext.Update(payRecord);
             }
@@ -357,6 +369,10 @@ namespace Fap.Hcm.Service.Payroll
         public void PayrollOffCancel(string caseUid)
         {
             PayCase pc = _dbContext.Get<PayCase>(caseUid);
+            if (pc.PayFlag == 0)
+            {
+                throw new FapException("薪资未发放，不用取消");
+            }
             pc.PayFlag = 0;
             if (pc.InitYM == pc.PayYM && pc.PayCount == 1)
             {

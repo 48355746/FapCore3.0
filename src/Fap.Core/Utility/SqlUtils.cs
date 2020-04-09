@@ -123,7 +123,7 @@ namespace Fap.Core.Utility
             return sql;
 
         }
-        public static string ParsingFormulaVariableSql(IEnumerable<FapColumn> cols,string colName, string sqlDesc, DatabaseDialectEnum dialect)
+        public static string ParsingFormulaVariableSql(IEnumerable<FapColumn> cols, string colName, string sqlDesc, DatabaseDialectEnum dialect)
         {
             string tableName = cols.First().TableName;
             Regex rgx = new Regex(MatchBigParantheses);
@@ -169,11 +169,59 @@ namespace Fap.Core.Utility
             }
             return string.Empty;
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cols"></param>
+        /// <param name="colName"></param>
+        /// <param name="grandTableName">汇总表名</param>
+        /// <param name="sqlDesc"></param>
+        /// <param name="dialect"></param>
+        /// <returns></returns>
+        public static string ParsingFormulaGrandTotalSql(IEnumerable<FapColumn> cols, string colName, string grandTableName, string sqlDesc,DatabaseDialectEnum databaseDialect)
+        {
+            Regex rgx = new Regex(MatchBigParantheses);
+            MatchCollection matchs = rgx.Matches(sqlDesc);
+            if (matchs.Any())
+            {
+                var colLabel = matchs.First().Value.TrimStart('{').TrimEnd('}').Trim();
+                FapColumn fcol = cols.FirstOrDefault(c => c.ColComment == colLabel);
+                if (fcol != null)
+                {
+                    string associate = string.Empty;
+                    if (grandTableName.IsPresent() && !grandTableName.EqualsWithIgnoreCase(fcol.TableName))
+                    {
+                        if (grandTableName.EqualsWithIgnoreCase("PayCenter"))
+                        {
+                            associate = $"{grandTableName}.PayCaseUid = {fcol.TableName}.PayCaseUid and substring({grandTableName}.PayYM,1,4)= substring({fcol.TableName}.PayYM, 1, 4) and {grandTableName}.EmpUid = {fcol.TableName}.EmpUid";
+                        }
+                        else
+                        {
+                            associate = $"{grandTableName}.Fid={fcol.TableName}.Fid";
+                        }
+                        string sqlSum = string.Empty;
+                        if(databaseDialect== DatabaseDialectEnum.MSSQL)
+                        {
+                            sqlSum= $" ISNULL((select sum({fcol.ColName}) from {grandTableName} where  {associate}),0.0)";
+                        }else if(databaseDialect== DatabaseDialectEnum.MYSQL)
+                        {
+                            sqlSum= $" IFNULL((select sum({fcol.ColName}) from {grandTableName} where  {associate}),0.0)";
+                        }
+                        return $"update {fcol.TableName} set {colName} = {fcol.ColName} +" + sqlSum;
+                    }
+                    else
+                    {
+                        return string.Empty;//$"update {fcol.TableName} set {colName}=sum({fcol.ColName}) where {associate}";
+                    }
+                }
+            }
+            return string.Empty;
+        }
         public static string ParsingFormulaCheckSql(string tableName, string checkSql, DatabaseDialectEnum dialect)
         {
             if (dialect == DatabaseDialectEnum.MSSQL)
             {
-                string sql = checkSql.ReplaceIgnoreCase("tableName", "#FmuValideTemp");
+                string sql = checkSql.ReplaceIgnoreCase(tableName, "#FmuValideTemp");
                 return string.Format(@"
                 if exists(select * from tempdb..sysobjects where id=object_id('tempdb..#FmuValideTemp'))
                 begin
@@ -181,11 +229,11 @@ namespace Fap.Core.Utility
                 end
                 select top 1 * into #FmuValideTemp from {0} where 1 = 2;
                 {1};
-                drop table #FmuValideTemp;", tableName,sql);
+                drop table #FmuValideTemp;", tableName, sql);
             }
             else if (dialect == DatabaseDialectEnum.MYSQL)
             {
-                string sql = checkSql.ReplaceIgnoreCase("tableName", "FmuValideTemp");
+                string sql = checkSql.ReplaceIgnoreCase(tableName, "FmuValideTemp");
                 return string.Format(@"CREATE TEMPORARY TABLE FmuValideTemp(SELECT  * FROM {0} where 1=2 ); 
 {1};
 drop table FmuValideTemp;", tableName, sql);

@@ -71,6 +71,7 @@
             $.msg("薪资年月和发放记录必填");
             return false;;
         }
+        var index= layer.load();
         $.post("@Url.Content("~/Payroll/Api/InitPayrollData")", { caseUid: caseUid, payYm: payYm, reservedItems: cls, payRecordUid: pr }, function (data) {
             if (data.success) {
                 refreshGrid("@ViewBag.GridId");
@@ -78,7 +79,7 @@
             } else {
                 bootbox.alert(data.msg);
             }
-
+            layer.close(index);
         });
     }
 </script>

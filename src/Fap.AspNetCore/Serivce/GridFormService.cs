@@ -894,11 +894,15 @@ namespace Fap.AspNetCore.Serivce
                     {
                         if (f.FmuDesc.StartsWith("[引用]", StringComparison.OrdinalIgnoreCase))
                         {
-                            f.FmuContent = SqlUtils.ParsingFormulaMappingSql(entityMappingList,tableName,f.ColName, f.FmuDesc, _dbContext);
+                            f.FmuContent = SqlUtils.ParsingFormulaMappingSql(entityMappingList, tableName, f.ColName, f.FmuDesc, _dbContext);
+                        }
+                        else if (f.FmuDesc.StartsWith("[累计]", StringComparison.OrdinalIgnoreCase))
+                        {
+                            f.FmuContent = SqlUtils.ParsingFormulaGrandTotalSql(cols, f.ColName, formula.MappingTable, f.FmuDesc,_dbContext.DatabaseDialect);
                         }
                         else
                         {
-                            f.FmuContent = SqlUtils.ParsingFormulaVariableSql(cols,f.ColName, f.FmuDesc, _dbContext.DatabaseDialect);
+                            f.FmuContent = SqlUtils.ParsingFormulaVariableSql(cols, f.ColName, f.FmuDesc, _dbContext.DatabaseDialect);
                         }
                     }
                 });
