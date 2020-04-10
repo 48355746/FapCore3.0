@@ -108,7 +108,7 @@
                         ca.push({ text: d.fcName, value: d.fid });
                     })
                     bootbox.prompt({
-                        title: "公式套!",
+                        title: "选择公式套计算",
                         inputType: 'select',
                         inputOptions: ca,
                         callback: function (result) {
@@ -123,9 +123,10 @@
                                         refreshPaycase();
                                     } else {
                                         bootbox.alert(rv.msg);
-
                                     }
                                 })
+                            } else {
+                                $.msg("你没有选择计算公式套");
                             }
                         }
                     });

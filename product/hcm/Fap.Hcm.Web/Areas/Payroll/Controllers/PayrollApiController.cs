@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
 using Ardalis.GuardClauses;
+using Dapper;
 using Fap.AspNetCore.Infrastructure;
 using Fap.AspNetCore.Model;
 using Fap.AspNetCore.ViewModel;
@@ -72,11 +73,32 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
 
             return Json(ResponseViewModelUtils.Sueecss(payCaseItems));
         }
+      
         [HttpPost("PayItem")]
         public JsonResult AddPayItem(string caseUid, string[] payItems)
         {
             Guard.Against.NullOrEmpty(caseUid, nameof(caseUid));
             _payrollService.AddPayItem(caseUid, payItems);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+        /// <summary>
+        /// 薪资条项
+        /// </summary>
+        /// <param name="caseUid"></param>
+        /// <returns></returns>
+        [HttpGet("PayrollItems/{caseUid}")]
+        public JsonResult GetPayrollItems(string caseUid)
+        {
+            Guard.Against.NullOrEmpty(caseUid, nameof(caseUid));
+            var payrollItems = _dbContext.QueryWhere<PayItem>("CaseUid=@CaseUid", new DynamicParameters(new { CaseUid = caseUid }), true);
+
+            return Json(ResponseViewModelUtils.Sueecss(payrollItems));
+        }
+        [HttpPost("PayrollItem")]
+        public JsonResult AddPayrollItem(string caseUid, string[] payItems)
+        {
+            Guard.Against.NullOrEmpty(caseUid, nameof(caseUid));
+            _dbContext.Execute("update PayItem set ShowCard=1 where Fid in @Fids", new DynamicParameters(new { Fids = payItems }));
             return Json(ResponseViewModelUtils.Sueecss());
         }
         [HttpPost("PayCondition")]

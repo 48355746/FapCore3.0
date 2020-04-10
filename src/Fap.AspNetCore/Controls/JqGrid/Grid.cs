@@ -2154,6 +2154,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 {
                     AddToolbar(script);
                 }
+                
 
                 //设置列头分组
                 GroupHeaders(script);

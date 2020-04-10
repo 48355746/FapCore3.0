@@ -822,7 +822,12 @@ namespace Fap.AspNetCore.Serivce
             {
                 sql = $"select {colName},{string.Join(',', aggCols)} from {tableName} {where} {groupBy}";
             }
-            var dataList = _dbContext.QueryOriSql(sql);
+            DynamicParameters param = new DynamicParameters();
+            foreach (var p in jqGridPostData.QuerySet.Parameters)
+            {
+                param.Add(p.ParamKey, p.ParamValue);
+            }
+            var dataList = _dbContext.QueryOriSql(sql, param);
             DataProcessed(ccSqlDics, tableName, gf, dataList, agglist);
             return new ChartResult { Aggregates = agglist, DataSet = dataList }; ;
         }

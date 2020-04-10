@@ -48,12 +48,16 @@ namespace Fap.Hcm.Service.Payroll
             IList<PayItem> list = new List<PayItem>();
             foreach (var item in items)
             {
-                list.Add(new PayItem { CaseUid = caseUid, ColumnUid = item.Fid, ItemSort = item.ColOrder, ItemType = "Normal", ShowAble = 1, ShowCard = 0, AddUpWay = "No", TransEnable = 0 });
+                list.Add(new PayItem { CaseUid = caseUid, ColumnUid = item.Fid, ItemSort = item.ColOrder, ShowAble = 1, ShowCard = 0, TransEnable = 0 });
             }
             _dbContext.DeleteExec(nameof(PayItem), "CaseUid=@CaseUid", param);
             _dbContext.InsertBatchSql<PayItem>(list);
         }
-
+        /// <summary>
+        /// 薪资项
+        /// </summary>
+        /// <param name="caseUid"></param>
+        /// <returns></returns>
         public IEnumerable<PayCaseItem> GetPayCaseItem(string caseUid)
         {
             PayCaseItem pi = new PayCaseItem();
@@ -73,6 +77,7 @@ namespace Fap.Hcm.Service.Payroll
             }
             return payItems;
         }
+      
         [Transactional]
         public long GenericPayCase(string caseUid)
         {
@@ -199,6 +204,16 @@ namespace Fap.Hcm.Service.Payroll
                     pcount = existRecord.PayCount;
                 }
             }
+            else
+            {
+                //添加发放记录
+                PayRecord newRecord = new PayRecord();
+                newRecord.CaseUid = payCase.Fid;
+                newRecord.PayCount = pcount;
+                newRecord.PayYM = payrollInitData.PayYm;
+                newRecord.PayFlag = 0;
+                _dbContext.Insert(newRecord);
+            }
             pCols = pCols.ReplaceIgnoreCase("PaymentTimes", pcount.ToString()+ " as PaymentTimes");
             pCols = pCols.ReplaceIgnoreCase("PayConfirm", "0 as PayConfirm");
             string sql = $"select {pCols} from PayCenter where {where}";
@@ -304,11 +319,16 @@ namespace Fap.Hcm.Service.Payroll
             && !f.FmuDesc.StartsWith("[累计]", StringComparison.OrdinalIgnoreCase) && f.FmuContent.IsPresent()).OrderBy(f => f.OrderBy);
             //累计
             var grandTotalList = formulas.Where(f => f.FmuDesc.StartsWith("[累计]", StringComparison.OrdinalIgnoreCase) && f.FmuContent.IsPresent()).OrderBy(f => f.OrderBy);
+            string tableName = formulas.FirstOrDefault()?.TableName;
 
             List<string> exceptionList = new List<string>();
             ExecFormula(associateList);
             ExecFormula(formulaList);
             ExecFormula(grandTotalList);
+            if (tableName.IsPresent())
+            {
+                _dbContext.ExecuteOriginal($"update {tableName} set JoinCalculate=1");
+            }
             return exceptionList;
             void ExecFormula(IEnumerable<FapFormula> fapFormulas)
             {

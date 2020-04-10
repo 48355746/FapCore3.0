@@ -69,6 +69,14 @@
                             });
                             return false;
                         }
+                    },
+                    payrollShow: {
+                        label: $.lang("payroll_item", "薪资条项"),
+                        className: "btn-primary btn-link",
+                        callback: function () {
+                            setPayrollItemShow(caseUid);
+                            return false;
+                        }
                     }
                 })
             })
@@ -89,7 +97,7 @@
                         }
                     },
                     initPayCase: {
-                        label: $.lang("init_payset", "初始化薪资套"),
+                        label: $.lang("init_payset", "初始化薪资套员工"),
                         className: "btn-primary btn-link",
                         callback: function () {
                             initPaycaseEmployee(caseUid);

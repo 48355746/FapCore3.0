@@ -19,16 +19,7 @@ namespace Fap.Hcm.Service.Payroll
         /// 薪资套 的显性字段MC
         /// </summary>
         [Computed]
-        public string CaseUidMC { get; set; }
-        /// <summary>
-        /// 公式套
-        /// </summary>
-        public string FormulaUid { get; set; }
-        /// <summary>
-        /// 公式套 的显性字段MC
-        /// </summary>
-        [Computed]
-        public string FormulaUidMC { get; set; }
+        public string CaseUidMC { get; set; }        
         /// <summary>
         /// 薪资年月
         /// </summary>

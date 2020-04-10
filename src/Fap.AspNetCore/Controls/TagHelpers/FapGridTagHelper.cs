@@ -219,6 +219,10 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// </summary>
         public bool OperQueryprogram { get; set; }
         /// <summary>
+        /// 显示统计图表
+        /// </summary>
+        public bool OperChart { get; set; }
+        /// <summary>
         /// 是否注册表格权限
         /// </summary>
         public bool RegisterAuthority { get; set; } = true;
@@ -484,7 +488,10 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             {
                 formType |= OperEnum.Import;
             }
-           
+            if (OperChart)
+            {
+                formType |= OperEnum.Chart;
+            }
             formType |= OperEnum.Search;
            
             grid.SetFormType(formType);

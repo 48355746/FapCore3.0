@@ -139,5 +139,26 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
             }
             return Content("还没发薪记录，不能比对");
         }
+        public IActionResult PayCenter()
+        {
+            var payRecords = _dbContext.Query<PayRecord>($"select top 30 * from {nameof(PayRecord)} where {nameof(PayRecord.PayFlag)}=1",null,true);
+            return View(payRecords);
+        }
+        public IActionResult PayCenterInfo(string fid)
+        {
+            var pr = _dbContext.Get<PayRecord>(fid);
+            var pc = _dbContext.Get<PayCase>(pr.CaseUid);
+            var cols= _dbContext.Columns(pc.TableName).Select(c=>c.ColName);
+            var model = GetJqGridModel("PayCenter", qs =>
+            {
+                qs.QueryCols = string.Join(',', cols);
+                qs.GlobalWhere = "PayCaseUid=@CaseUid";
+                qs.InitWhere = "PayYM=@PayYM and  PaymentTimes=@Times";
+                qs.AddParameter("PayYM", pr.PayYM);
+                qs.AddParameter("CaseUid", pr.CaseUid);
+                qs.AddParameter("Times", pr.PayCount.ToString());
+            });
+            return PartialView(model);
+        }
     }
 }

@@ -125,7 +125,10 @@ var MultiLangHelper = (function () {
       'reserved_item': { 'ZhCn': '保留工资项', 'ZhTW': '', 'En': '', 'Ja': '' },
       'init_payroll_data': { 'ZhCn': '初始化薪资数据', 'ZhTW': '', 'En': '', 'Ja': '' },
       'init_payset': { 'ZhCn': '初始化薪资套', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'gap_analysis': { 'ZhCn': '差异比对', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'gap_analysis': { 'ZhCn': '差异比对', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'payroll_item': { 'ZhCn': '薪资条项', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'show_payitem': { 'ZhCn': '薪资条项', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'selected_payrollitem': { 'ZhCn': '薪资条项', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种
