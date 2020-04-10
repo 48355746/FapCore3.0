@@ -45,7 +45,7 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
         public JsonResult ShelvePayTodo(IEnumerable<string> payToDoFids)
         {
             Guard.Against.Null(payToDoFids, nameof(payToDoFids));
-            var payToDos = _dbContext.QueryWhere<PayToDo>("Fid in @Fids", new Dapper.DynamicParameters(new { Fids = payToDoFids }));
+            var payToDos = _dbContext.QueryWhere<PayToDo>("Fid in @Fids", new Dapper.DynamicParameters(new { Fids = payToDoFids })).AsList();
             foreach (var payTodo in payToDos)
             {
                 payTodo.OperFlag="2";

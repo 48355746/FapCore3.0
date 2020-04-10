@@ -1,16 +1,16 @@
 ﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
-<fap-grid id="payitem" grid-model="Model" wrapper="modal-body" auto-width="true"></fap-grid>
+<fap-grid id="insitem" grid-model="Model" wrapper="modal-body" auto-width="true"></fap-grid>
 <script>
     function AddPayItem(caseUid) {
         var dialog = bootbox.dialog({
-            title: $.lang("add_payitem", "添加薪资项"),
-            message: ' <select multiple="multiple" size="10" id="duallistbox_payitems" name="duallistbox_payitems"></select>',
+            title: $.lang("add_insitem", "添加保险项"),
+            message: ' <select multiple="multiple" size="10" id="duallistbox_insitems" name="duallistbox_insitems"></select>',
             buttons: {
                 success: {
                     label: $.lang("ok", "确定"),
                     className: "btn-primary",
                     callback: function () {
-                        var vals = $("#duallistbox_payitems").val();
+                        var vals = $("#duallistbox_insitems").val();
                         if (vals ===null) {
                             bootbox.alert($.lang("select_item_empty", "选择项为空"))
                         } else {
@@ -32,17 +32,17 @@
         dialog.init(function () {
             $.get("@Url.Content("~/Payroll/Api/PayItems/")" + caseUid, function (rv) {
                 if (rv.success) {
-                    $("#duallistbox_payitems").empty();
+                    $("#duallistbox_insitems").empty();
                     $.each(rv.data, function (i, d) {
                         let strSel='';
                         if (d.isSelected === true) {
                             strSel = 'selected = "selected"';
                         }
-                        $("#duallistbox_payitems").append("<option value='" + d.fid + "' " + strSel + ">" + d.colComment + "</option>");
+                        $("#duallistbox_insitems").append("<option value='" + d.fid + "' " + strSel + ">" + d.colComment + "</option>");
                     })
-                     $('#duallistbox_payitems').bootstrapDualListbox({
-                        nonSelectedListLabel: '<span class="text-primary h5">' + $.lang("all_payitem", "所有薪资项") + '</span> ',
-                        selectedListLabel: '<span class="text-primary h5">' + $.lang("selected_payitem", "选中薪资项") + '</span> ',
+                     $('#duallistbox_insitems').bootstrapDualListbox({
+                        nonSelectedListLabel: '<span class="text-primary h5">' + $.lang("all_insitem", "所有保险项") + '</span> ',
+                        selectedListLabel: '<span class="text-primary h5">' + $.lang("selected_insitem", "选中保险项") + '</span> ',
                          preserveSelectionOnMove: 'moved',
                          moveOnSelect: true,
 
@@ -64,7 +64,7 @@
     }
     function setPayrollItemShow(caseUid) {
         var dialog = bootbox.dialog({
-            title: $.lang("show_payitem", "薪资条项"),
+            title: $.lang("show_insitem", "保险条项"),
             message: ' <select multiple="multiple" size="10" id="duallistbox_payrollitems" name="duallistbox_payrollitems"></select>',
             buttons: {
                 success: {
@@ -102,8 +102,8 @@
                         $("#duallistbox_payrollitems").append("<option value='" + d.fid + "' " + strSel + ">" + d.columnUidMC + "</option>");
                     })
                     $('#duallistbox_payrollitems').bootstrapDualListbox({
-                        nonSelectedListLabel: '<span class="text-primary h5">' + $.lang("all_payitem", "所有薪资项") + '</span> ',
-                        selectedListLabel: '<span class="text-primary h5">' + $.lang("selected_payrollitem", "薪资条项") + '</span> ',
+                        nonSelectedListLabel: '<span class="text-primary h5">' + $.lang("all_insitem", "所有保险项") + '</span> ',
+                        selectedListLabel: '<span class="text-primary h5">' + $.lang("selected_payrollitem", "保险条项") + '</span> ',
                         preserveSelectionOnMove: 'moved',
                         moveOnSelect: true,
 
@@ -113,7 +113,7 @@
         })
     }
     function refreshPayItems() {
-        reloadGrid("grid-payitem");
+        reloadGrid("grid-insitem");
     }
 
 </script>

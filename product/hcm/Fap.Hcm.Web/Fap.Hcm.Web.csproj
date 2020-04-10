@@ -98,6 +98,8 @@
   <ItemGroup>
     <Folder Include="Areas\Employee\Data\" />
     <Folder Include="Areas\Employee\Models\" />
+    <Folder Include="Areas\Insurance\Data\" />
+    <Folder Include="Areas\Insurance\Models\" />
     <Folder Include="Areas\Organization\Data\" />
     <Folder Include="Areas\Organization\Models\" />
     <Folder Include="Areas\Payroll\Data\" />

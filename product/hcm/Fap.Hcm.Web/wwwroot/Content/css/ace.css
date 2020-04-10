@@ -5341,8 +5341,8 @@ body.mob-safari .sidebar.sidebar-fixed {
 }
 
 .modal-header h4 {
-    color: #478FCA;
-    font-family:'Microsoft YaHei'
+    color: #7b7b7b;
+    font-family: 'Microsoft YaHei'
 }
 
 .modal.aside-dark .modal-content {
@@ -12168,7 +12168,7 @@ td .lbl {
     background-image: linear-gradient(to bottom, #ffffff 0%, #eeeeee 100%);
     background-repeat: repeat-x;
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffffff', endColorstr='#ffeeeeee', GradientType=0);
-    color: #669fc7;
+    color: #747474;
     border-bottom: 1px solid #DDD;
     padding-left: 12px;
 }

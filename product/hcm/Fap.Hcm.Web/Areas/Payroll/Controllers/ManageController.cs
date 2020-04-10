@@ -29,12 +29,7 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
                 qs.GlobalWhere = "CaseUid in(select fid from PayCase where CreateBy=@EmpUid or fid in(select CaseUid from PayCaseEmployee where EmpUid=@EmpUid))";
                 qs.AddParameter("EmpUid", _applicationContext.EmpUid);
                 qs.InitWhere = "OperFlag=0";
-            });
-            DynamicParameters param = new DynamicParameters();
-            param.Add("EmpUid", _applicationContext.EmpUid);
-            var payCases = _dbContext.Query<PayCase>("select * from PayCase where CreateBy=@EmpUid or fid in(select CaseUid from PayCaseEmployee where EmpUid=@EmpUid)", param);
-
-            ViewBag.PayCase = payCases;
+            });        
             return View(jqModel);
         }
         /// <summary>

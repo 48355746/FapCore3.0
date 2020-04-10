@@ -292,6 +292,7 @@ namespace Fap.Hcm.Service.Payroll
                 caseEmp.SetValue("EmpUid", employee.Fid);
                 caseEmp.SetValue("EmpCode", employee.EmpCode);
                 caseEmp.SetValue("DeptUid", employee.DeptUid);
+                caseEmp.SetValue("EmpCategory", employee.EmpCategory);
                 caseEmp.SetValue("PayCaseUid", payCase.Fid);
                 caseEmp.SetValue("PaymentTimes", 1);
                 caseEmp.SetValue("PayConfirm", 0);

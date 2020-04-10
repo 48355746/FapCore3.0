@@ -47,9 +47,4 @@ namespace Fap.Hcm.Service.Payroll
 		public int ShowCard { get; set; }
 
 	}
-	public class PayItemAddData
-    {
-        public IEnumerable<FapColumn> Items { get; set; }
-        public object JsonData { get; set; }
-    }
 }
