@@ -36,10 +36,14 @@ var layerWindow = function (url) {
     layer.full(index);
 };
 //打开模态页面
-var bootboxWindow = function (title, url, buttons, data,onBeforeShow) {
+var bootboxWindow = function (title, url, buttons, data, callback) {
     if (buttons === undefined || buttons === null) {
         buttons = {
         };
+    }
+    if ($.isFunction(data)) {
+        callback = data;
+        data = undefined;
     }
     var dialog = bootbox.dialog({
         title: title,
@@ -48,17 +52,16 @@ var bootboxWindow = function (title, url, buttons, data,onBeforeShow) {
         footer: false,
         buttons: buttons       
     });
-    //dialog.on("shown.bs.modal", function () {
-    //    if ($.isFunction(onBeforeShow)) {
-    //        onBeforeShow();
-    //    } 
-    //});    
+    dialog.on("shown.bs.modal", function () {
+        if ($.isFunction(callback)) {
+            callback();
+        } 
+        $(window).triggerHandler('resize.jqGrid');
+    });    
     dialog.init(function () {       
         $.get(url,data, function (ev) {
             dialog.find('.bootbox-body').html(ev);
-            if ($.isFunction(onBeforeShow)) {
-                onBeforeShow();
-            } 
+          
         });
     });
 };

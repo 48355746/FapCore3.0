@@ -1,0 +1,42 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+<fap-grid id="inscaseEmployee" grid-model="Model" source-type="Local" shrink-fit="false" wrapper="modal-body" auto-width="true"></fap-grid>
+<script>
+    function loadInscaseEmployee(caseUid) {
+        $.get(basePath + "/Insurance/Api/InsSet/" + caseUid,function (rv) {
+            if (rv.success) {
+                if (rv.data.empCondition ===null||rv.data.empCondition==="") {
+                    $('#grid-inscaseEmployee').jqGrid('setGridParam', { datatype: 'json' });
+                    return;
+                }
+                $("#fbox_grid-inscaseEmployee").jqFilter("addFilter", JSON.parse(rv.data.empCondition));
+                reloadGrid("grid-inscaseEmployee", { filters: rv.data.empCondition });
+            }
+        })
+    }
+    function saveInscaseCondition(caseUid) {
+        var jqPostData = $('#grid-inscaseEmployee').jqGrid("getGridParam", "postData");
+        let filters = jqPostData.filters;
+        if (filters === undefined) {
+            bootbox.alert($("please_set_paycase_employee_condition", "请设置薪资套员工条件"));
+            return;
+        }
+        $.post(basePath + "/Insurance/Api/InsCondition", { caseUid: caseUid, filters: filters }, function (rv) {
+            if (rv.success) {
+                $.msg(rv.msg);
+            } else {
+                bootbox.alert(rv.msg);
+            }
+        })
+    }
+    function initInscaseEmployee(caseUid) {
+        var index= layer.load();
+        $.post(basePath + "/Insurance/Api/InitInscaseEmployee", { caseUid, caseUid }, function (rv) {
+            if (rv.success) {
+                $.msg(rv.msg);
+            } else {
+                bootbox.alert(rv.msg);
+            }
+            layer.close(index);
+        })
+    }
+</script>

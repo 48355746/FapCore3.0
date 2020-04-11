@@ -6,9 +6,9 @@ using System.Text;
 namespace Fap.Hcm.Service.Payroll
 {
     /// <summary>
-    /// 薪资套项
+    /// 组项
     /// </summary>
-    public class PayCaseItem
+    public class CaseItem
     {
         public string Fid { get; set; }
         public string ColName { get; set; }

@@ -74,7 +74,7 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
             return Json(ResponseViewModelUtils.Sueecss(payCaseItems));
         }
       
-        [HttpPost("PayItem")]
+        [HttpPost("PayItems")]
         public JsonResult AddPayItem(string caseUid, string[] payItems)
         {
             Guard.Against.NullOrEmpty(caseUid, nameof(caseUid));
@@ -110,10 +110,10 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
             _dbContext.Update(payCase);
             return Json(ResponseViewModelUtils.Sueecss());
         }
-        [HttpPost("GeneratePayCase")]
-        public JsonResult GeneratePayCase(string caseUid)
+        [HttpPost("CreatePayCase")]
+        public JsonResult CreatePayCase(string caseUid)
         {
-            long tbId = _payrollService.GenericPayCase(caseUid);
+            long tbId = _payrollService.CreatePayCase(caseUid);
             _metadataContext.CreateTable(tbId);
             return Json(ResponseViewModelUtils.Sueecss());
         }

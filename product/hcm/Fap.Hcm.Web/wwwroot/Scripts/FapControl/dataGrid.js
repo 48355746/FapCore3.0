@@ -773,26 +773,9 @@ function enableTooltips(table) {
     $(table).find('.ui-pg-div').tooltip({ container: 'body' });
 
 }
-function resetGridSize(table, wrapper) {
-    var offsetWidget = $(table).offset();
-    var availableHeight = $(window).height() - (offsetWidget.top < 0 ? 140 : offsetWidget.top) - 65;
-    var height = table.clientHeight;
-    if (availableHeight < height) {
-        $(table).setGridHeight(availableHeight);
-        setTimeout(function () {
-            var parent_width = $(table).closest(wrapper).width();
-            $(table).jqGrid('setGridWidth', parent_width);
-        }, 0);
-    } else {
-        if (!table.grid) { return; }
-        var bDiv = $(table.grid.bDiv);
-        bDiv.css({ height: "auto" });
-        setTimeout(function () {
-            var parent_width = $(table).closest(wrapper).width();
-            $(table).jqGrid('setGridWidth', parent_width);
-
-        }, 0);
-    }
+function resetGridSize(grdid, wrapper) {
+    var parent_width = $('#' + grdid).closest(wrapper).width();
+    $('#' + grdid).jqGrid('setGridWidth', parent_width);
 }
 
 //采用元数据生成表单，此js没用

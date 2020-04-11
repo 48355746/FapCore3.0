@@ -62,7 +62,7 @@
                         label: $.lang("generate", "生成"),
                         className: "btn-primary btn-link",
                         callback: function () {
-                            bootbox.confirm("提示：如果之前生成过薪资项，本次生成将会删掉之前的数据，确定生成?", function (result) {
+                            bootbox.confirm("提示：如果之前生成过保险项，本次生成将会删掉之前的数据，确定生成?", function (result) {
                                 if (result) {
                                     generateInsItem(caseUid);
                                 }
@@ -79,12 +79,12 @@
                     return;
                 }
                 let caseUid = rw.Fid;
-                bootboxWindow($.lang("inscase_condition", "设置保险组员工条件"), basePath + "/Insurance/Manage/PayEmployee", {
+                bootboxWindow($.lang("inscase_condition", "设置保险组员工条件"), basePath + "/Insurance/Manage/InsEmployee", {
                     add: {
                         label: $.lang("save_employee_condition", "保存员工条件"),
                         className: "btn-primary btn-link",
                         callback: function () {
-                            saveinscaseCondition(caseUid);
+                            saveInscaseCondition(caseUid);
                             return false;
                         }
                     },
@@ -92,13 +92,12 @@
                         label: $.lang("init_Insset", "初始化保险组员工"),
                         className: "btn-primary btn-link",
                         callback: function () {
-                            initinscaseEmployee(caseUid);
+                            initInscaseEmployee(caseUid);
                             return false;
                         }
                     }
                 }, { caseUid: caseUid }, function () {
-                    loadinscaseEmployee(caseUid);
-                    $(window).triggerHandler('resize.jqGrid');
+                        loadInscaseEmployee(caseUid);                        
                 })
             })
             $("#btnFormula").on(ace.click_event, function () {
@@ -112,11 +111,11 @@
                         label: $.lang("associate_set", "引用关联设置"),
                         className: "btn-primary btn-link",
                         callback: function () {
-                            bootboxWindow($.lang("associate", "关联"), basePath + "/Component/EntityAssociate", null, { oriCode: "PayCenter", oriName: "保险组" });
+                            bootboxWindow($.lang("associate", "关联"), basePath + "/Component/EntityAssociate", null, { oriCode: "InsCenter", oriName: "保险组" });
                             return false;
                         }
                     }
-                }, { tableName: tn, mappingTable: "PayCenter" });
+                }, { tableName: tn, mappingTable: "InsCenter" });
             })
             //权限
             $("#btnAuthority").on(ace.click_event, function () {
@@ -126,7 +125,7 @@
                 }
                 let caseUid = rw.Fid;
                 let caseName = rw.CaseName;
-                bootboxWindow($.lang("inscase_authority", "保险组权限"), basePath + "/Insurance/Manage/PayAuthority?caseUid=" + caseUid + "&caseName=" + caseName + "&menuUrl=~/Insurance/Manage/Insset");
+                bootboxWindow($.lang("inscase_authority", "保险组权限"), basePath + "/Insurance/Manage/InsAuthority?caseUid=" + caseUid + "&caseName=" + caseName + "&menuUrl=~/Insurance/Manage/InsSet");
             })
         })
     })

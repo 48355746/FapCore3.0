@@ -28,6 +28,7 @@ namespace Fap.Hcm.Web.Controllers
 {
     [Produces(MediaTypeNames.Application.Json)]
     [Route("Core/Api")]
+    [RequestFormLimits(ValueCountLimit = 5000)]
     public class CoreApiController : FapController
     {
         private readonly ICacheService _cacheService;

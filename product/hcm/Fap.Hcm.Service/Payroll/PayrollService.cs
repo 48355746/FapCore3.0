@@ -58,11 +58,11 @@ namespace Fap.Hcm.Service.Payroll
         /// </summary>
         /// <param name="caseUid"></param>
         /// <returns></returns>
-        public IEnumerable<PayCaseItem> GetPayCaseItem(string caseUid)
+        public IEnumerable<CaseItem> GetPayCaseItem(string caseUid)
         {
-            PayCaseItem pi = new PayCaseItem();
+            CaseItem pi = new CaseItem();
             var payItems = _dbContext.Columns(PAYROLLCENTER).Where(c => c.IsDefaultCol != 1 && !c.ColProperty.Trim().EqualsWithIgnoreCase("3"))
-                 .Select(c => new PayCaseItem { Fid = c.Fid, ColComment = c.ColComment, ColName = c.ColName, IsSelected = false }).ToList();
+                 .Select(c => new CaseItem { Fid = c.Fid, ColComment = c.ColComment, ColName = c.ColName, IsSelected = false }).ToList();
             var caseItems = _dbContext.QueryWhere<PayItem>("CaseUid=@CaseUid", new Dapper.DynamicParameters(new { CaseUid = caseUid }))
                 .Select(c => c.ColumnUid);
             if (caseItems.Any())
@@ -79,7 +79,7 @@ namespace Fap.Hcm.Service.Payroll
         }
       
         [Transactional]
-        public long GenericPayCase(string caseUid)
+        public long CreatePayCase(string caseUid)
         {
             var payCase = _dbContext.Get<PayCase>(caseUid);
             //生成工资套对应表元数据

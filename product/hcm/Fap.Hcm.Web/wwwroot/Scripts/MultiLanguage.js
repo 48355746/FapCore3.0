@@ -120,7 +120,18 @@ var MultiLangHelper = (function () {
       'reserved_item': { 'ZhCn': '保留工资项', 'ZhTW': '', 'En': '', 'Ja': '' },
       'all_item': { 'ZhCn': '所有工资项', 'ZhTW': '', 'En': '', 'Ja': '' },
       'select_row_empty': { 'ZhCn': '请选中数据操作', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'select_row_empty': { 'ZhCn': '请选中数据操作', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'select_row_empty': { 'ZhCn': '请选中数据操作', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'insitem': { 'ZhCn': '保险项', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'add_insitem': { 'ZhCn': '添加保险项', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'all_insitem': { 'ZhCn': '所有保险项', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'selected_insitem': { 'ZhCn': '选中保险项', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'inscase_condition': { 'ZhCn': '设置保险组员工条件', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'init_Insset': { 'ZhCn': '初始化保险组员工', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'inscase_authority': { 'ZhCn': '保险组公式', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'associate': { 'ZhCn': '关联', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'mapping': { 'ZhCn': '引用', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'select_field': { 'ZhCn': '选择属性', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'property_associate_set': { 'ZhCn': '设置属性关联', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

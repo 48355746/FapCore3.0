@@ -1,7 +1,7 @@
 ﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
 <fap-grid id="insitem" grid-model="Model" wrapper="modal-body" auto-width="true"></fap-grid>
 <script>
-    function AddPayItem(caseUid) {
+    function AddInsItem(caseUid) {
         var dialog = bootbox.dialog({
             title: $.lang("add_insitem", "添加保险项"),
             message: ' <select multiple="multiple" size="10" id="duallistbox_insitems" name="duallistbox_insitems"></select>',
@@ -14,9 +14,9 @@
                         if (vals ===null) {
                             bootbox.alert($.lang("select_item_empty", "选择项为空"))
                         } else {
-                            $.post("@Url.Content("~/Payroll/Api/PayItem")", { payItems: vals, caseUid: caseUid }, function (rv) {
+                            $.post("@Url.Content("~/Insurance/Api/InsItems")", { insItems: vals, caseUid: caseUid }, function (rv) {
                                 if (rv.success == true) {
-                                    refreshPayItems();
+                                    refreshInsItems();
                                 } else {
                                     bootbox.alert(rv.msg);
                                 }
@@ -30,7 +30,7 @@
             }
         });
         dialog.init(function () {
-            $.get("@Url.Content("~/Payroll/Api/PayItems/")" + caseUid, function (rv) {
+            $.get("@Url.Content("~/Insurance/Api/InsItems/")" + caseUid, function (rv) {
                 if (rv.success) {
                     $("#duallistbox_insitems").empty();
                     $.each(rv.data, function (i, d) {
@@ -40,70 +40,9 @@
                         }
                         $("#duallistbox_insitems").append("<option value='" + d.fid + "' " + strSel + ">" + d.colComment + "</option>");
                     })
-                     $('#duallistbox_insitems').bootstrapDualListbox({
+                    $('#duallistbox_insitems').bootstrapDualListbox({
                         nonSelectedListLabel: '<span class="text-primary h5">' + $.lang("all_insitem", "所有保险项") + '</span> ',
                         selectedListLabel: '<span class="text-primary h5">' + $.lang("selected_insitem", "选中保险项") + '</span> ',
-                         preserveSelectionOnMove: 'moved',
-                         moveOnSelect: true,
-
-                    });
-                }
-            })
-        })
-    }
-    function generatePayItem(caseUid) {
-        var index= layer.load();
-        $.post(basePath + "/Payroll/Api/GeneratePayCase", { caseUid: caseUid }, function (rv) {
-            if (rv.success) {
-                $.msg(rv.msg);
-            } else {
-                bootbox.alert(rv.msg);
-            }
-            layer.close(index);
-        })
-    }
-    function setPayrollItemShow(caseUid) {
-        var dialog = bootbox.dialog({
-            title: $.lang("show_insitem", "保险条项"),
-            message: ' <select multiple="multiple" size="10" id="duallistbox_payrollitems" name="duallistbox_payrollitems"></select>',
-            buttons: {
-                success: {
-                    label: $.lang("ok", "确定"),
-                    className: "btn-primary",
-                    callback: function () {
-                        var vals = $("#duallistbox_payrollitems").val();
-                        if (vals ===null) {
-                            bootbox.alert($.lang("select_item_empty", "选择项为空"))
-                        } else {
-                            $.post("@Url.Content("~/Payroll/Api/PayrollItem")", { payItems: vals, caseUid: caseUid }, function (rv) {
-                                if (rv.success == true) {
-                                    refreshPayItems();
-                                } else {
-                                    bootbox.alert(rv.msg);
-                                }
-                            })
-                        }
-                    }
-                },
-                cancel: {
-                    label: $.lang("cancel", "取消"), className: "btn-default"
-                }
-            }
-        });
-        dialog.init(function () {
-            $.get("@Url.Content("~/Payroll/Api/PayrollItems/")" + caseUid, function (rv) {
-                if (rv.success) {
-                    $("#duallistbox_payrollitems").empty();
-                    $.each(rv.data, function (i, d) {
-                        let strSel='';
-                        if (d.showCard === 1) {
-                            strSel = 'selected = "selected"';
-                        }
-                        $("#duallistbox_payrollitems").append("<option value='" + d.fid + "' " + strSel + ">" + d.columnUidMC + "</option>");
-                    })
-                    $('#duallistbox_payrollitems').bootstrapDualListbox({
-                        nonSelectedListLabel: '<span class="text-primary h5">' + $.lang("all_insitem", "所有保险项") + '</span> ',
-                        selectedListLabel: '<span class="text-primary h5">' + $.lang("selected_payrollitem", "保险条项") + '</span> ',
                         preserveSelectionOnMove: 'moved',
                         moveOnSelect: true,
 
@@ -112,7 +51,18 @@
             })
         })
     }
-    function refreshPayItems() {
+    function generateInsItem(caseUid) {
+        var index= layer.load();
+        $.post(basePath + "/Insurance/Api/CreateInsCase", { caseUid: caseUid }, function (rv) {
+            if (rv.success) {
+                $.msg(rv.msg);
+            } else {
+                bootbox.alert(rv.msg);
+            }
+            layer.close(index);
+        })
+    }  
+    function refreshInsItems() {
         reloadGrid("grid-insitem");
     }
 

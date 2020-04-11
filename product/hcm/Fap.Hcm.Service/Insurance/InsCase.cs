@@ -60,6 +60,10 @@ namespace Fap.Hcm.Service.Insurance
         /// 参保状态
         /// </summary>
         public int InsFlag { get; set; }
+        /// <summary>
+        /// 不能再改变item
+        /// </summary>
+        public int Unchanged { get; set; }
 
     }
 }

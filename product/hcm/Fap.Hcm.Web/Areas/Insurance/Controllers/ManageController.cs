@@ -55,5 +55,40 @@ namespace Fap.Hcm.Web.Areas.Insurance.Controllers
             });
             return PartialView(insItemModel);
         }
+        /// <summary>
+        /// 保险组员工
+        /// </summary>
+        /// <param name="caseUid"></param>
+        /// <returns></returns>
+        public PartialViewResult InsEmployee()
+        {
+            JqGridViewModel model = this.GetJqGridModel("Employee");
+            return PartialView(model);
+        }
+        /// <summary>
+        /// 保险组权限
+        /// </summary>
+        /// <param name="caseUid"></param>
+        /// <returns></returns>
+        public PartialViewResult InsAuthority(string caseUid, string caseName)
+        {
+            JqGridViewModel model = this.GetJqGridModel("InsCaseEmployee", (q) =>
+            {
+                q.AddDefaultValue("CaseUid", caseUid);
+                q.AddDefaultValue("CaseUidMC", caseName);
+                q.GlobalWhere = "CaseUid=@CaseUid";
+                q.AddParameter("CaseUid", caseUid);
+            });
+            return PartialView(model);
+        }
+        public IActionResult InsCalculate()
+        {
+            return View();
+        }
+        public IActionResult BaseAndRate()
+        {
+            JqGridViewModel model = this.GetJqGridModel("InsBaseRate");
+            return View(model);
+        }
     }
 }

@@ -8,5 +8,9 @@ namespace Fap.Hcm.Service.Insurance
     public interface IInsuranceService
     {
         void UseInsPending(InsToDo insToDo);
+        IEnumerable<CaseItem> GetInsItems(string caseUid);
+        void AddInsItems(string caseUid, string[] insItems);
+        long CreateInsCase(string caseUid);
+        void InitEmployeeToInsCase(InsCase insCase, string empWhere);
     }
 }

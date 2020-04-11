@@ -1917,7 +1917,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
             script.AppendFormat(@"
                     loadComplete: function(xhr) {{
                         var table = this;
-                        resetGridSize(table,'.##wrapper##'); 
+                        resetGridSize('##gridid##','.##wrapper##'); 
                         setTimeout(function(){{
                            updatePagerIcons(table);
                            enableTooltips(table);                            
