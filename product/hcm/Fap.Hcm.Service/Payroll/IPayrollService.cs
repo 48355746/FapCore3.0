@@ -8,12 +8,11 @@ namespace Fap.Hcm.Service.Payroll
         void AddPayItem(string caseUid, string[] payItems);
         long CreatePayCase(string caseUid);
         void InitEmployeeToPayCase(PayCase payCase, string empWhere);
-        void InitPayrollData(PayrollInitDataViewModel payrollInitData);
+        void InitPayrollData(InitDataViewModel payrollInitData);
         void UsePayPending(PayToDo payToDo);
-        IList<string> PayrollCalculate(string formulaCaseUid);
         void PayrollOff(string caseUid);
         void PayrollOffCancel(string caseUid);
-        PayGapEmployee PayGapAnalysis(string recordUid);
+        GapEmployee PayGapAnalysis(string recordUid);
         void PayrollOffNotice(string caseUid);
     }
 }

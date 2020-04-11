@@ -131,7 +131,11 @@ var MultiLangHelper = (function () {
       'associate': { 'ZhCn': '关联', 'ZhTW': '', 'En': '', 'Ja': '' },
       'mapping': { 'ZhCn': '引用', 'ZhTW': '', 'En': '', 'Ja': '' },
       'select_field': { 'ZhCn': '选择属性', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'property_associate_set': { 'ZhCn': '设置属性关联', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'property_associate_set': { 'ZhCn': '设置属性关联', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'init_insurance_data': { 'ZhCn': '初始化保险数据', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'gap_analysis': { 'ZhCn': '差异比对', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'all_insurance_item': { 'ZhCn': '所有保险项', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'reserved_insurance_item': { 'ZhCn': '保留保险项', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

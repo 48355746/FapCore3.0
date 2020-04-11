@@ -20,7 +20,6 @@ using Fap.Core.Utility;
 using System.IO;
 using Fap.Core.Office.Excel.Export;
 using Fap.Core.Office;
-using Fap.Core.Extensions;
 using Fap.Core.Annex.Utility.Zip;
 using Fap.AspNetCore.Binder;
 using Microsoft.Extensions.Caching.Memory;
@@ -920,6 +919,47 @@ namespace Fap.AspNetCore.Serivce
                     }
                 });
                 _dbContext.InsertBatch(list);
+            }
+        }
+        /// <summary>
+        /// 公式计算
+        /// </summary>
+        /// <param name="formulaCaseUid">公式套</param>
+        /// <returns>异常信息</returns>
+        public IList<string> FormulaCalculate(string formulaCaseUid)
+        {
+            var formulas = _dbContext.QueryWhere<FapFormula>("FcUid=@FcUid and FmuDesc!='' and Enabled=1", new DynamicParameters(new { FcUid = formulaCaseUid }));
+            //先计算引用
+            var associateList = formulas.Where(f => f.FmuDesc.StartsWith("[引用]", StringComparison.OrdinalIgnoreCase) && f.FmuContent.IsPresent()).OrderBy(f => f.OrderBy);
+            //非引用非累计
+            var formulaList = formulas.Where(f => !f.FmuDesc.StartsWith("[引用]", StringComparison.OrdinalIgnoreCase)
+            && !f.FmuDesc.StartsWith("[累计]", StringComparison.OrdinalIgnoreCase) && f.FmuContent.IsPresent()).OrderBy(f => f.OrderBy);
+            //累计
+            var grandTotalList = formulas.Where(f => f.FmuDesc.StartsWith("[累计]", StringComparison.OrdinalIgnoreCase) && f.FmuContent.IsPresent()).OrderBy(f => f.OrderBy);
+
+            List<string> exceptionList = new List<string>();
+            ExecFormula(associateList);
+            ExecFormula(formulaList);
+            ExecFormula(grandTotalList);
+            string tableName = formulas.FirstOrDefault()?.TableName;
+            if (tableName.IsPresent())
+            {
+                _dbContext.ExecuteOriginal($"update {tableName} set JoinCalculate=1");
+            }
+            return exceptionList;
+            void ExecFormula(IEnumerable<FapFormula> fapFormulas)
+            {
+                foreach (var ff in fapFormulas)
+                {
+                    try
+                    {
+                        _dbContext.ExecuteOriginal(ff.FmuContent);
+                    }
+                    catch (Exception ex)
+                    {
+                        exceptionList.Add($"{ff.ColComment}:{ex.Message}");
+                    }
+                }
             }
         }
     }

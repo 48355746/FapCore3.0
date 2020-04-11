@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Fap.Hcm.Service.Payroll
 {
-    public class PayGapEmployee
+    public class GapEmployee
     {
         /// <summary>
         /// 增加的员工

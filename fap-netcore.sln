@@ -33,6 +33,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Dockerfile = Dockerfile
 		Fap部署.docx = Fap部署.docx
 		metadata.sql = metadata.sql
+		MSSQL.zip = MSSQL.zip
+		MYSQL.zip = MYSQL.zip
 		update1.sql = update1.sql
 	EndProjectSection
 EndProject

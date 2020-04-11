@@ -15,7 +15,7 @@
                     </a>
                 </div>
                 <div class="widget-toolbar">
-                    <select class="chosen-select form-control" style="width:200px" id="selPayCase" multi-placeholder="薪资套...">
+                    <select class="chosen-select form-control" style="width:200px" id="selInsCase" multi-placeholder="保险组...">
                         <option value="">  </option>
                         @foreach (var insCase in Model)
                         {
@@ -24,8 +24,8 @@
                     </select>
                 </div>
                 <div class="widget-toolbar">
-                    <fap-button id="btnPayOff" btn-tag="link" content="发放" icon-before="fa fa-check-circle blue" class-name="info"></fap-button>
-                    <fap-button id="btnPayOffCancel" btn-tag="link" content="取消发放" icon-before="fa fa-times-circle blue" class-name="info"></fap-button>
+                    <fap-button id="btnInsOff" btn-tag="link" content="完成" icon-before="fa fa-check-circle blue" class-name="info"></fap-button>
+                    <fap-button id="btnInsOffCancel" btn-tag="link" content="取消完成" icon-before="fa fa-times-circle blue" class-name="info"></fap-button>
                 </div>
                 <div class="widget-toolbar">
                     <fap-button id="btnInitData" btn-tag="link" content="初始化" icon-before="fa fa-refresh blue" class-name="info"></fap-button>
@@ -55,7 +55,7 @@
                 }
                 $("#insCaseContent").empty();
                 var index = layer.load();
-                $.get(basePath + "/Payroll/Manage/PayInfo/" + c, { menuUrl: "~/Payroll/Manage/PayCalculate" }, function (content) {
+                $.get(basePath + "/Insurance/Manage/InsInfo/" + c, { menuUrl: "~/Insurance/Manage/InsCalculate" }, function (content) {
                     $("#insCaseContent").html(content);
                     //完毕重新设置jqgrid宽度
                     $(window).triggerHandler('resize.jqGrid');
@@ -63,12 +63,12 @@
                 })
             });
             $("#btnInitData").on(ace.click_event, function () {
-                var caseUid = $("#selPayCase").val();
+                var caseUid = $("#selInsCase").val();
                 if (caseUid === "") {
                     return;
                 }
                 var dialog = bootbox.dialog({
-                    title: $.lang("init_payroll_data", "初始化薪资数据"),
+                    title: $.lang("init_insurance_data", "初始化保险数据"),
                     message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
                     footer: false,
                     buttons: {
@@ -76,23 +76,23 @@
                             label: $.lang("init", "初始化"),
                             className: "btn-primary btn-link",
                             callback: function () {
-                                initPayrollData(caseUid);
+                                initInsuranceData(caseUid);
                             }
                         }
                     }
                 });
                 dialog.init(function () {
-                    $.get(basePath + "/Payroll/Manage/PayDataInit/" + caseUid, function (ev) {
+                    $.get(basePath + "/Insurance/Manage/InsDataInit/" + caseUid, function (ev) {
                         dialog.find('.bootbox-body').html(ev);
                     });
                 });
             })
             $("#btnCalculate").on(ace.click_event, function () {
-                var caseUid = $("#selPayCase").val();
+                var caseUid = $("#selInsCase").val();
                 if (caseUid === "") {
                     return;
                 }
-                $.get("@Url.Content("~/Payroll/Api/FormulaCase")", { caseUid: caseUid }, function (rv) {
+                $.get("@Url.Content("~/Insurance/Api/FormulaCase")", { caseUid: caseUid }, function (rv) {
                     if (!rv.success) {
                         bootbox.alert(rv.msg);
                         return;
@@ -112,14 +112,14 @@
                         inputOptions: ca,
                         callback: function (result) {
                             if (result) {
-                                $.post("@Url.Content("~/Payroll/Api/PayrollCalculate")", { formulaCaseUid: result }, function (rv) {
+                                $.post("@Url.Content("~/Core/Api/FormulaCalculate")", { formulaCaseUid: result }, function (rv) {
                                     if (rv.success) {
                                         if (rv.data.length > 1) {
                                             bootbox.alert(rv.data.join());
                                         } else {
                                             $.msg(rv.msg);
                                         }
-                                        refreshPaycase();
+                                        refreshInscase();
                                     } else {
                                         bootbox.alert(rv.msg);
                                     }
@@ -131,17 +131,17 @@
                     });
                 })
             });
-            $("#btnPayOff").on(ace.click_event, function () {
-                var caseUid = $("#selPayCase").val();
+            $("#btnInsOff").on(ace.click_event, function () {
+                var caseUid = $("#selInsCase").val();
                 if (caseUid === "") {
                     return;
                 }
-                bootbox.confirm("确认发放薪资吗", function (result) {
+                bootbox.confirm("确认完成保险吗", function (result) {
                     if (result) {
-                        $.post(basePath + "/Payroll/Api/PayOff", { caseUid: caseUid }, function (rv) {
+                        $.post(basePath + "/Insurance/Api/InsOff", { caseUid: caseUid }, function (rv) {
                             if (rv.success) {
                                 $.msg(rv.msg);
-                                refreshPaycase();
+                                refreshInscase();
                             } else {
                                 bootbox.alert(rv.msg);
                             }
@@ -149,17 +149,17 @@
                     }
                 })
             })
-            $("#btnPayOffCancel").on(ace.click_event, function () {
-                var caseUid = $("#selPayCase").val();
+            $("#btnInsOffCancel").on(ace.click_event, function () {
+                var caseUid = $("#selInsCase").val();
                 if (caseUid === "") {
                     return;
                 }
-                bootbox.confirm("确认取消发放吗", function (result) {
+                bootbox.confirm("确认取消完成吗", function (result) {
                     if (result) {
-                        $.post(basePath + "/Payroll/Api/PayOffCancel", { caseUid: caseUid }, function (rv) {
+                        $.post(basePath + "/Insurance/Api/InsOffCancel", { caseUid: caseUid }, function (rv) {
                             if (rv.success) {
                                 $.msg(rv.msg);
-                                refreshPaycase();
+                                refreshInscase();
                             } else {
                                 bootbox.alert(rv.msg);
                             }
@@ -168,15 +168,15 @@
                 })
             })
             $("#btnGapAnalysis").on(ace.click_event, function () {
-                var caseUid = $("#selPayCase").val();
+                var caseUid = $("#selInsCase").val();
                 if (caseUid === "") {
                     return;
                 }
-                bootboxWindow($.lang("gap_analysis", "差异比对"), basePath + "/Payroll/Manage/PayGapAnalysis/" + caseUid);
+                bootboxWindow($.lang("gap_analysis", "差异比对"), basePath + "/Insurance/Manage/InsGapAnalysis/" + caseUid);
             })
    
-            function refreshPaycase() {
-                var grdId = "grid-" + $("#selPayCase").find("option:selected").data("tn");
+            function refreshInscase() {
+                var grdId = "grid-" + $("#selInsCase").find("option:selected").data("tn");
                 refreshGrid(grdId);
             }
         });

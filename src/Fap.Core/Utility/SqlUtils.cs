@@ -178,7 +178,7 @@ namespace Fap.Core.Utility
         /// <param name="sqlDesc"></param>
         /// <param name="dialect"></param>
         /// <returns></returns>
-        public static string ParsingFormulaGrandTotalSql(IEnumerable<FapColumn> cols, string colName, string grandTableName, string sqlDesc,DatabaseDialectEnum databaseDialect)
+        public static string ParsingFormulaGrandTotalSql(IEnumerable<FapColumn> cols, string colName, string grandTableName, string sqlDesc, DatabaseDialectEnum databaseDialect)
         {
             Regex rgx = new Regex(MatchBigParantheses);
             MatchCollection matchs = rgx.Matches(sqlDesc);
@@ -195,17 +195,22 @@ namespace Fap.Core.Utility
                         {
                             associate = $"{grandTableName}.PayCaseUid = {fcol.TableName}.PayCaseUid and substring({grandTableName}.PayYM,1,4)= substring({fcol.TableName}.PayYM, 1, 4) and {grandTableName}.EmpUid = {fcol.TableName}.EmpUid";
                         }
+                        else if (grandTableName.EqualsWithIgnoreCase("InsCenter"))
+                        {
+                            associate = $"{grandTableName}.InsCaseUid = {fcol.TableName}.InsCaseUid and substring({grandTableName}.InsYM,1,4)= substring({fcol.TableName}.InsYM, 1, 4) and {grandTableName}.EmpUid = {fcol.TableName}.EmpUid";
+                        }
                         else
                         {
                             associate = $"{grandTableName}.Fid={fcol.TableName}.Fid";
                         }
                         string sqlSum = string.Empty;
-                        if(databaseDialect== DatabaseDialectEnum.MSSQL)
+                        if (databaseDialect == DatabaseDialectEnum.MSSQL)
                         {
-                            sqlSum= $" ISNULL((select sum({fcol.ColName}) from {grandTableName} where  {associate}),0.0)";
-                        }else if(databaseDialect== DatabaseDialectEnum.MYSQL)
+                            sqlSum = $" ISNULL((select sum({fcol.ColName}) from {grandTableName} where  {associate}),0.0)";
+                        }
+                        else if (databaseDialect == DatabaseDialectEnum.MYSQL)
                         {
-                            sqlSum= $" IFNULL((select sum({fcol.ColName}) from {grandTableName} where  {associate}),0.0)";
+                            sqlSum = $" IFNULL((select sum({fcol.ColName}) from {grandTableName} where  {associate}),0.0)";
                         }
                         return $"update {fcol.TableName} set {colName} = {fcol.ColName} +" + sqlSum;
                     }

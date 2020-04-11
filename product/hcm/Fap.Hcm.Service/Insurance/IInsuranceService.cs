@@ -12,5 +12,9 @@ namespace Fap.Hcm.Service.Insurance
         void AddInsItems(string caseUid, string[] insItems);
         long CreateInsCase(string caseUid);
         void InitEmployeeToInsCase(InsCase insCase, string empWhere);
+        void InitInsuranceData(InitDataViewModel initData);
+        void InsuranceOff(string caseUid);
+        void InsuranceOffCancel(string caseUid);
+        GapEmployee InsGapAnalysis(string recordUid);
     }
 }

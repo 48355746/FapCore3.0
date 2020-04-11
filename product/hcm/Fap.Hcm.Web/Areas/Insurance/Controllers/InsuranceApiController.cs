@@ -13,6 +13,8 @@ using Fap.Core.Extensions;
 using Dapper;
 using Fap.Core.DataAccess;
 using Fap.AspNetCore.Model;
+using Fap.Core.Infrastructure.Model;
+using Fap.Hcm.Service.Payroll;
 
 namespace Fap.Hcm.Web.Areas.Insurance.Controllers
 {
@@ -107,6 +109,42 @@ namespace Fap.Hcm.Web.Areas.Insurance.Controllers
             string filterWhere = jfs.BuilderFilter("Employee", insCase.EmpCondition);
             _insuranceService.InitEmployeeToInsCase(insCase, filterWhere);
             return Json(ResponseViewModelUtils.Sueecss());
+        }
+        [HttpGet("FormulaCase")]
+        public JsonResult FormulaCase(string caseUid)
+        {
+            var insCase = _dbContext.Get<InsCase>(caseUid);
+            if (insCase.InsFlag == 1)
+            {
+                return Json(ResponseViewModelUtils.Failure("保险已完成不需要再计算"));
+            }
+            string tableName = insCase.TableName;
+            var data = _dbContext.QueryWhere<FapFormulaCase>("TableName=@TableName", new Dapper.DynamicParameters(new { TableName = tableName }));
+            return Json(ResponseViewModelUtils.Sueecss(data));
+        }
+        [HttpPost("InitInsData")]
+        public JsonResult InitInsuranceData(InitDataViewModel model)
+        {
+            _insuranceService.InitInsuranceData(model);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+        [HttpPost("InsOff")]
+        public JsonResult InsOff(string caseUid)
+        {
+            _insuranceService.InsuranceOff(caseUid);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+        [HttpPost("InsOffCancel")]
+        public JsonResult InsOffCancel(string caseUid)
+        {
+            _insuranceService.InsuranceOffCancel(caseUid);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+        [HttpGet("InsGapAnalysis/{recordUid}")]
+        public JsonResult InsGapAnalysis(string recordUid)
+        {
+            var emps = _insuranceService.InsGapAnalysis(recordUid);
+            return Json(ResponseViewModelUtils.Sueecss(emps));
         }
     }
 }

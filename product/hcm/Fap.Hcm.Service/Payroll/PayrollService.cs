@@ -163,10 +163,10 @@ namespace Fap.Hcm.Service.Payroll
             _dbContext.Update(payCase);
         }
         [Transactional]
-        public void InitPayrollData(PayrollInitDataViewModel payrollInitData)
+        public void InitPayrollData(InitDataViewModel payrollInitData)
         {
             PayCase payCase = _dbContext.Get<PayCase>(payrollInitData.CaseUid);
-            PayRecord pRecord = _dbContext.Get<PayRecord>(payrollInitData.PayRecordUid);
+            PayRecord pRecord = _dbContext.Get<PayRecord>(payrollInitData.RecordUid);
 
             string where = " PayYM='" + pRecord.PayYM + "' and PayCaseUid='" + pRecord.CaseUid + "' and PaymentTimes=" + pRecord.PayCount;
             var colList = _dbContext.Columns(payCase.TableName);
@@ -177,11 +177,11 @@ namespace Fap.Hcm.Service.Payroll
             {
                 pCols += "," + payrollInitData.ReservedItems;
             }
-            pCols = pCols.ReplaceIgnoreCase("PayYM", "'" + payrollInitData.PayYm + "' as PayYM");
+            pCols = pCols.ReplaceIgnoreCase("PayYM", "'" + payrollInitData.InitYm + "' as PayYM");
 
             //检查当月是否有发送记录
             DynamicParameters param = new DynamicParameters();
-            param.Add("PayYM", payrollInitData.PayYm);
+            param.Add("PayYM", payrollInitData.InitYm);
             param.Add("CaseUid", payrollInitData.CaseUid);
             var records = _dbContext.QueryWhere<PayRecord>(" PayYM=@PayYM and CaseUid=@CaseUid", param);
             int pcount = 1;
@@ -195,7 +195,7 @@ namespace Fap.Hcm.Service.Payroll
                     PayRecord newRecord = new PayRecord();
                     newRecord.CaseUid = payCase.Fid;
                     newRecord.PayCount = pcount;
-                    newRecord.PayYM = payrollInitData.PayYm;
+                    newRecord.PayYM = payrollInitData.InitYm;
                     newRecord.PayFlag = 0;
                     _dbContext.Insert(newRecord);
                 }
@@ -210,7 +210,7 @@ namespace Fap.Hcm.Service.Payroll
                 PayRecord newRecord = new PayRecord();
                 newRecord.CaseUid = payCase.Fid;
                 newRecord.PayCount = pcount;
-                newRecord.PayYM = payrollInitData.PayYm;
+                newRecord.PayYM = payrollInitData.InitYm;
                 newRecord.PayFlag = 0;
                 _dbContext.Insert(newRecord);
             }
@@ -233,11 +233,10 @@ namespace Fap.Hcm.Service.Payroll
             _dbContext.InsertDynamicDataBatchSql(listCase);
 
             //更新工资套
-            payCase.PayYM = payrollInitData.PayYm;
+            payCase.PayYM = payrollInitData.InitYm;
             payCase.PayCount = pcount;
             payCase.PayFlag = 0;
             _dbContext.Update(payCase);
-
         }
         /// <summary>
         /// 应用待处理
@@ -308,44 +307,7 @@ namespace Fap.Hcm.Service.Payroll
                 _dbContext.InsertDynamicData(caseEmp);
             }
 
-        }
-
-        public IList<string> PayrollCalculate(string formulaCaseUid)
-        {
-            var formulas = _dbContext.QueryWhere<FapFormula>("FcUid=@FcUid and FmuDesc!='' and Enabled=1", new DynamicParameters(new { FcUid = formulaCaseUid }));
-            //先计算引用
-            var associateList = formulas.Where(f => f.FmuDesc.StartsWith("[引用]", StringComparison.OrdinalIgnoreCase) && f.FmuContent.IsPresent()).OrderBy(f => f.OrderBy);
-            //非引用非累计
-            var formulaList = formulas.Where(f => !f.FmuDesc.StartsWith("[引用]", StringComparison.OrdinalIgnoreCase)
-            && !f.FmuDesc.StartsWith("[累计]", StringComparison.OrdinalIgnoreCase) && f.FmuContent.IsPresent()).OrderBy(f => f.OrderBy);
-            //累计
-            var grandTotalList = formulas.Where(f => f.FmuDesc.StartsWith("[累计]", StringComparison.OrdinalIgnoreCase) && f.FmuContent.IsPresent()).OrderBy(f => f.OrderBy);
-            string tableName = formulas.FirstOrDefault()?.TableName;
-
-            List<string> exceptionList = new List<string>();
-            ExecFormula(associateList);
-            ExecFormula(formulaList);
-            ExecFormula(grandTotalList);
-            if (tableName.IsPresent())
-            {
-                _dbContext.ExecuteOriginal($"update {tableName} set JoinCalculate=1");
-            }
-            return exceptionList;
-            void ExecFormula(IEnumerable<FapFormula> fapFormulas)
-            {
-                foreach (var ff in fapFormulas)
-                {
-                    try
-                    {
-                        _dbContext.ExecuteOriginal(ff.FmuContent);
-                    }
-                    catch (Exception ex)
-                    {
-                        exceptionList.Add($"{ff.ColComment}:{ex.Message}");
-                    }
-                }
-            }
-        }
+        }       
 
         [Transactional]
         public void PayrollOff(string caseUid)
@@ -410,6 +372,7 @@ namespace Fap.Hcm.Service.Payroll
             {
                 pr.PayFlag = 0;
                 pr.PayDate = "";
+                pr.PayEmpUid = "";
                 _dbContext.Update(pr);
             }
             string deleteSql = "delete from PayCenter where PayCaseUid=@CaseUid and PaymentTimes=@PayTimes and PayYM=@PayYM";
@@ -417,7 +380,7 @@ namespace Fap.Hcm.Service.Payroll
             _dbContext.Execute(deleteSql, new DynamicParameters(new { CaseUid = pc.Fid, PayTimes = pc.PayCount, PayYM = pc.PayYM }));
             _dbContext.Execute(updateSql);
         }
-        public PayGapEmployee PayGapAnalysis(string recordUid)
+        public GapEmployee PayGapAnalysis(string recordUid)
         {
             PayRecord payRecord= _dbContext.Get<PayRecord>(recordUid);
             PayCase payCase = _dbContext.Get<PayCase>(payRecord.CaseUid);
@@ -427,7 +390,7 @@ namespace Fap.Hcm.Service.Payroll
             string sql2 = string.Format($"select EmpUid from {PAYROLLCENTER} where  PayYM='{payRecord.PayYM}' and PayCaseUid='{payRecord.CaseUid}' and PaymentTimes={payRecord.PayCount} and EmpUid NOT IN(select EmpUid from {payCase.TableName} where PaymentTimes={payCase.PayCount})");
             var list1 = _dbContext.QueryOriSql(sql1);
             var list2 = _dbContext.QueryOriSql(sql2);
-            PayGapEmployee emps = new PayGapEmployee();
+            GapEmployee emps = new GapEmployee();
             if (list1.Any())
             {
                 emps.AddedList = _dbContext.QueryWhere<Employee>("Fid in @Fids",new DynamicParameters(new { Fids=list1.Select(l=>l.EmpUid) }));

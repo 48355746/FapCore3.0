@@ -328,6 +328,10 @@ namespace Fap.Hcm.Web.Controllers
                 var entityMappingList = _dbContext.QueryWhere<CfgEntityMapping>($"{nameof(CfgEntityMapping.OriEntity)}=@OriEntity", new DynamicParameters(new { OriEntity = mappingEntity }), true);
                 sql = SqlUtils.ParsingFormulaMappingSql(entityMappingList, entity, verfiyField, verfiyContent, _dbContext);
             }
+            else if (verfiyContent.StartsWith("[累计]", StringComparison.OrdinalIgnoreCase))
+            {
+                sql = SqlUtils.ParsingFormulaGrandTotalSql(cols, verfiyField, mappingEntity, verfiyContent, _dbContext.DatabaseDialect);
+            }
             else
             {
                 sql = SqlUtils.ParsingFormulaVariableSql(cols, verfiyField, verfiyContent, _dbContext.DatabaseDialect);
@@ -337,7 +341,7 @@ namespace Fap.Hcm.Web.Controllers
                 return Json(ResponseViewModelUtils.Failure("格式化sql错误"));
             }
             _dbContext.ExecuteOriginal(SqlUtils.ParsingFormulaCheckSql(entity, sql, _dbContext.DatabaseDialect));
-            return Json(ResponseViewModelUtils.Sueecss(data:sql));
+            return Json(ResponseViewModelUtils.Sueecss(data: sql));
         }
         #endregion
 
@@ -379,6 +383,13 @@ namespace Fap.Hcm.Web.Controllers
             _gridFormService.SaveFormulaItem(formula);
             return Json(ResponseViewModelUtils.Sueecss());
         }
+        [HttpPost("FormulaCalculate")]
+        public JsonResult FormulaCalculate(string formulaCaseUid)
+        {
+            var errorList = _gridFormService.FormulaCalculate(formulaCaseUid);
+            return Json(ResponseViewModelUtils.Sueecss(errorList));
+        }
+
         #endregion
     }
 }

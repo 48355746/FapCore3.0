@@ -26,5 +26,6 @@ namespace Fap.AspNetCore.Serivce
         ChartResult EChart(ChartViewModel chartViewModel, JqGridPostData jqGridPostData);
         void DeleteFormulaCase(string caseUid);
         void SaveFormulaItem(FapFormulaItems formula);
+        IList<string> FormulaCalculate(string formulaCaseUid);
     }
 }

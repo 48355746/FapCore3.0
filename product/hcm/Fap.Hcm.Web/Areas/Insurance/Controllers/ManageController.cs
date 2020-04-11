@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Dapper;
 using Fap.AspNetCore.Infrastructure;
 using Fap.AspNetCore.ViewModel;
+using Fap.Core.Infrastructure.Metadata;
+using Fap.Core.Infrastructure.Query;
 using Fap.Hcm.Service.Insurance;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,7 +30,7 @@ namespace Fap.Hcm.Web.Areas.Insurance.Controllers
                 qs.GlobalWhere = "CaseUid in(select fid from InsCase where CreateBy=@Employee or fid in(select CaseUid from InsCaseEmployee where EmpUid=@Employee))";
                 qs.AddParameter("Employee", _applicationContext.EmpUid);
                 qs.InitWhere = "OperFlag=0";
-            });         
+            });
             return View(jqModel);
         }
         public IActionResult InsSet()
@@ -83,12 +85,57 @@ namespace Fap.Hcm.Web.Areas.Insurance.Controllers
         }
         public IActionResult InsCalculate()
         {
-            return View();
+            DynamicParameters param = new DynamicParameters();
+            param.Add("EmpUid", _applicationContext.EmpUid);
+            IEnumerable<InsCase> insCases = _dbContext.QueryWhere<InsCase>("TableName!='' and CreateBy=@EmpUid or  Fid in(select CaseUid from InsCaseEmployee where EmpUid=@EmpUid)", param);
+            return View(insCases);
+        }
+        public PartialViewResult InsInfo(string fid)
+        {
+            var ic = _dbContext.Get<InsCase>(fid);
+            var statistics = _dbContext.Columns(ic.TableName).Where(c => c.CtrlType == FapColumn.CTRL_TYPE_MONEY);
+            var model = GetJqGridModel(ic.TableName, qs =>
+            {
+                qs.AddDefaultValue("InsCaseUid", ic.Fid);
+                qs.AddDefaultValue("InsCaseUidMC", ic.CaseName);
+                qs.AddStatSet(StatSymbolEnum.Description, "'合计:' as InsYM");
+                foreach (var statistic in statistics)
+                {
+                    qs.AddStatSet(StatSymbolEnum.SUM, statistic.ColName);
+                }
+            });
+            return PartialView(model);
+        }
+        public IActionResult InsDataInit(string fid)
+        {
+            InsCase ic = _dbContext.Get<InsCase>(fid);
+            IEnumerable<FapColumn> cList = _dbContext.Columns(ic.TableName);
+            ViewBag.GridId = $"grid-{ic.TableName}";
+            DynamicParameters param = new DynamicParameters();
+            param.Add("CaseUid", ic.Fid);
+            IEnumerable<InsRecord> records = _dbContext.QueryWhere<InsRecord>("CaseUid=@CaseUid and InsFlag=1", param).OrderByDescending(c => c.InsYM).OrderByDescending(c => c.InsFlag);
+            if (!records.Any())
+            {
+                return Content("无保险记录，不用初始化");
+            }
+            ViewBag.Records = records;
+            return PartialView(cList);
         }
         public IActionResult BaseAndRate()
         {
             JqGridViewModel model = this.GetJqGridModel("InsBaseRate");
             return View(model);
+        }
+
+        public IActionResult InsGapAnalysis(string fid)
+        {
+            var insRecords = _dbContext.QueryWhere<InsRecord>($"{nameof(InsRecord.CaseUid)}=@CaseUid and {nameof(InsRecord.InsFlag)}=1",
+                new DynamicParameters(new { CaseUid = fid }));
+            if (insRecords.Any())
+            {
+                return PartialView(insRecords);
+            }
+            return Content("还没保险记录，不能比对");
         }
     }
 }

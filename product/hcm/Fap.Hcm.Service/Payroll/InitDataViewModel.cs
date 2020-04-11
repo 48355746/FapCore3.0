@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Fap.Hcm.Service.Payroll
 {
-    public class PayrollInitDataViewModel
+    public class InitDataViewModel
     {
         /// <summary>
         /// 薪资套
@@ -16,15 +16,15 @@ namespace Fap.Hcm.Service.Payroll
         /// 薪资年月
         /// </summary>
         [Required]
-        public string PayYm { get; set; }
+        public string InitYm { get; set; }
         /// <summary>
         /// 保留薪资项
         /// </summary>
         public string ReservedItems { get; set; }
         /// <summary>
-        /// 发放记录
+        /// 记录
         /// </summary>
         [Required]
-        public string PayRecordUid { get; set; }
+        public string RecordUid { get; set; }
     }
 }

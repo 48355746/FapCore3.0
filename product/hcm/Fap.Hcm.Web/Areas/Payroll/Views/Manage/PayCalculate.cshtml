@@ -113,7 +113,7 @@
                         inputOptions: ca,
                         callback: function (result) {
                             if (result) {
-                                $.post("@Url.Content("~/Payroll/Api/PayrollCalculate")", { formulaCaseUid: result }, function (rv) {
+                                $.post("@Url.Content("~/Core/Api/FormulaCalculate")", { formulaCaseUid: result }, function (rv) {
                                     if (rv.success) {
                                         if (rv.data.length > 1) {
                                             bootbox.alert(rv.data.join());

@@ -139,7 +139,7 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
             return Json(ResponseViewModelUtils.Sueecss());
         }
         [HttpPost("InitPayrollData")]
-        public JsonResult InitPayrollData(PayrollInitDataViewModel model)
+        public JsonResult InitPayrollData(InitDataViewModel model)
         {
             _payrollService.InitPayrollData(model);
             return Json(ResponseViewModelUtils.Sueecss());
@@ -156,12 +156,7 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
             var data= _dbContext.QueryWhere<FapFormulaCase>("TableName=@TableName", new Dapper.DynamicParameters(new { TableName = tableName }));
             return Json(ResponseViewModelUtils.Sueecss(data));
         }
-        [HttpPost("PayrollCalculate")]
-        public JsonResult PayrollCalculate(string formulaCaseUid)
-        {
-            var errorList = _payrollService.PayrollCalculate(formulaCaseUid);
-            return Json(ResponseViewModelUtils.Sueecss(errorList));
-        }
+      
         [HttpPost("PayOff")]
         public JsonResult PayOff(string caseUid)
         {
