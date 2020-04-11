@@ -1,0 +1,86 @@
+﻿
+@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+    Layout = null;
+}
+<title><fap-multilang lang-key="role_manage" default-content="角色管理"></fap-multilang></title>
+<div class="row">
+    <div class="col-xs-12 col-sm-3">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title"><fap-multilang lang-key="role_group" default-content="角色组"></fap-multilang></h4>
+                <fap-tree-button id="rolegroup" description="角色组" tree-id="tree-rolegroup"></fap-tree-button>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main">
+                    <fap-tree id="rolegroup" is-async="true" get-url="/System/Api/Manage/RoleGroup" edit-url="/System/Api/Manage/RoleGroup"></fap-tree>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-9">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title"><fap-multilang lang-key="role" default-content="角色"></fap-multilang></h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    <fap-grid id="role" grid-model="Model" view-records="true" auto-width="true" multi-box-only="true" multi-select="true" on-form-init-add="afterInitFormCallback" oper-cud="true"></fap-grid>
+             
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    var afterInitFormCallback = function () {
+        var tree = $('#tree-rolegroup').jstree(true);
+        var sel = tree.get_selected();
+        if (sel.length) {
+            $("#RoleGroupUid").val(sel[0]).next().val(tree.get_node(sel[0]).text);
+        }
+    }
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+                $('#tree-rolegroup').jstree("destroy");
+            })
+           
+            $('#tree-rolegroup').on("changed.jstree", function (e, data) {
+                if (data && data.selected && data.selected.length) {
+                    var roleGroupId = data.selected[0];
+                    //显示所有角色组的角色
+                    if (roleGroupId == "0") {
+                        $("#grid-role").jqGrid('setGridParam', {
+                            datatype: 'json',
+                            postData: { filters: {}}, //发送数据
+                            page: 1
+                        }).trigger("reloadGrid"); //重新载入
+                        return;
+                    }
+                    var roleGroupName = data.node.text;
+                   
+                    var filter = '{"groupOp":"AND","rules":[{"field":"RoleGroupUid","op":"eq","data":"' + roleGroupId + '"}]}'
+                    $("#grid-role").jqGrid('setGridParam', {
+                        datatype: 'json',
+                        postData: { 'filters': filter}, //发送数据
+                        page: 1
+                    }).trigger("reloadGrid"); //重新载入
+                }
+                //console.log(data.selected);
+            });
+        })
+    })
+</script>
+

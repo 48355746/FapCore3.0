@@ -1,0 +1,200 @@
+﻿@model IEnumerable<Fap.Hcm.Service.Payroll.PayCase>
+
+<title><fap-multilang lang-key="pay_calculate" default-content="计算发放"></fap-multilang></title>
+
+<div class="row">
+    <div class="col-xs-12">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">
+                    <fap-multilang lang-key="pay_calculate" default-content="计算发放"></fap-multilang>
+                </h4>
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar">
+                    <select class="chosen-select form-control" style="width:200px" id="selPayCase" multi-placeholder="薪资套...">
+                        <option value="">  </option>
+                        @foreach (var payCase in Model)
+                        {
+                            <option value="@payCase.Fid" data-tn="@payCase.TableName">@payCase.CaseName</option>
+                        }
+                    </select>
+                </div>
+                <div class="widget-toolbar">
+                    <fap-button id="btnPayOff" btn-tag="link" content="发放" icon-before="fa fa-check-circle blue" class-name="info"></fap-button>
+                    <fap-button id="btnPayOffCancel" btn-tag="link" content="取消发放" icon-before="fa fa-times-circle blue" class-name="info"></fap-button>
+                    <fap-button id="btnPayNotice" btn-tag="link" content="发薪通知" icon-before="fa fa-paper-plane-o blue" class-name="info"></fap-button>
+                </div>
+                <div class="widget-toolbar">
+                    <fap-button id="btnInitData" btn-tag="link" content="初始化" icon-before="fa fa-refresh blue" class-name="info"></fap-button>
+                    <fap-button id="btnCalculate" btn-tag="link" content="计算" icon-before="fa fa-calculator blue" class-name="info"></fap-button>
+                    <fap-button id="btnGapAnalysis" btn-tag="link" content="差异比对" icon-before="fa fa-magic blue" class-name="info"></fap-button>
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main" id="payCaseContent">
+                    <h3 class="infobox-blue2 center">选择要计算的薪资套进行相应操作</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var scripts = [null,"/Content/js/jquery.tmpl.min.js", null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+            })
+            $('.chosen-select').chosen({ allow_single_deselect: true }).on("change", function () {
+                var c = $(this).val();
+                if (c === "") {
+                    return;
+                }
+                $("#payCaseContent").empty();
+                var index = layer.load();
+                $.get(basePath + "/Payroll/Manage/PayInfo/" + c, { menuUrl: "~/Payroll/Manage/PayCalculate" }, function (content) {
+                    $("#payCaseContent").html(content);
+                    //完毕重新设置jqgrid宽度
+                    $(window).triggerHandler('resize.jqGrid');
+                    layer.close(index);
+                })
+            });
+            $("#btnInitData").on(ace.click_event, function () {
+                var caseUid = $("#selPayCase").val();
+                if (caseUid === "") {
+                    return;
+                }
+                var dialog = bootbox.dialog({
+                    title: $.lang("init_payroll_data", "初始化薪资数据"),
+                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                    footer: false,
+                    buttons: {
+                        init: {
+                            label: $.lang("init", "初始化"),
+                            className: "btn-primary btn-link",
+                            callback: function () {
+                                initPayrollData(caseUid);
+                            }
+                        }
+                    }
+                });
+                dialog.init(function () {
+                    $.get(basePath + "/Payroll/Manage/PayDataInit/" + caseUid, function (ev) {
+                        dialog.find('.bootbox-body').html(ev);
+                    });
+                });
+            })
+            $("#btnCalculate").on(ace.click_event, function () {
+                var caseUid = $("#selPayCase").val();
+                if (caseUid === "") {
+                    return;
+                }
+                $.get("@Url.Content("~/Payroll/Api/FormulaCase")", { caseUid: caseUid }, function (rv) {
+                    if (!rv.success) {
+                        bootbox.alert(rv.msg);
+                        return;
+                    }
+                    let data = rv.data;
+                    if (data.length < 1) {
+                        bootbox.alert("请设置公式套再计算");
+                        return;
+                    }
+                    var ca = [];
+                    $.each(data, function (i, d) {
+                        ca.push({ text: d.fcName, value: d.fid });
+                    })
+                    bootbox.prompt({
+                        title: "选择公式套计算",
+                        inputType: 'select',
+                        inputOptions: ca,
+                        callback: function (result) {
+                            if (result) {
+                                $.post("@Url.Content("~/Core/Api/FormulaCalculate")", { formulaCaseUid: result }, function (rv) {
+                                    if (rv.success) {
+                                        if (rv.data.length > 1) {
+                                            bootbox.alert(rv.data.join());
+                                        } else {
+                                            $.msg(rv.msg);
+                                        }
+                                        refreshPaycase();
+                                    } else {
+                                        bootbox.alert(rv.msg);
+                                    }
+                                })
+                            } else {
+                                $.msg("你没有选择计算公式套");
+                            }
+                        }
+                    });
+                })
+            });
+            $("#btnPayOff").on(ace.click_event, function () {
+                var caseUid = $("#selPayCase").val();
+                if (caseUid === "") {
+                    return;
+                }
+                bootbox.confirm("确认发放薪资吗", function (result) {
+                    if (result) {
+                        $.post(basePath + "/Payroll/Api/PayOff", { caseUid: caseUid }, function (rv) {
+                            if (rv.success) {
+                                $.msg(rv.msg);
+                                refreshPaycase();
+                            } else {
+                                bootbox.alert(rv.msg);
+                            }
+                        })
+                    }
+                })                
+            })
+            $("#btnPayOffCancel").on(ace.click_event, function () {
+                var caseUid = $("#selPayCase").val();
+                if (caseUid === "") {
+                    return;
+                }
+                bootbox.confirm("确认取消发放吗", function (result) {
+                    if (result) {
+                        $.post(basePath + "/Payroll/Api/PayOffCancel", { caseUid: caseUid }, function (rv) {
+                            if (rv.success) {
+                                $.msg(rv.msg);
+                                refreshPaycase();
+                            } else {
+                                bootbox.alert(rv.msg);
+                            }
+                        })
+                    }
+                })                
+            })
+            $("#btnGapAnalysis").on(ace.click_event, function () {
+                var caseUid = $("#selPayCase").val();
+                if (caseUid === "") {
+                    return;
+                }
+                bootboxWindow($.lang("gap_analysis", "差异比对"), basePath + "/Payroll/Manage/PayGapAnalysis/" + caseUid);
+            })
+            $("#btnPayNotice").on(ace.click_event, function () {
+                var caseUid = $("#selPayCase").val();
+                if (caseUid === "") {
+                    return;
+                }
+                var index = layer.load();
+                $.post(basePath + "/Payroll/Api/PayOffNotice", { caseUid: caseUid }, function (rv) {
+                    if (rv.success) {
+                        $.msg(rv.msg);
+                    } else {
+                        bootbox.alert(rv.msg);
+                    }
+                    layer.close(index);
+                })
+            })
+            
+            function refreshPaycase() {
+                var grdId = "grid-" + $("#selPayCase").find("option:selected").data("tn");
+                refreshGrid(grdId);
+            }
+        });
+    });
+</script>

@@ -1,0 +1,95 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+   
+}
+<title><fap-multilang lang-key="payroll_todo" default-content="薪资待处理"></fap-multilang></title>
+
+
+<div class="row">
+    <div class="col-xs-12">
+        <div id="widget-box-orgdept" class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title"><fap-multilang lang-key="payroll_todo" default-content="薪资待处理"></fap-multilang></h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>           
+         
+                <div class="widget-toolbar no-border">
+                    <fap-button id="btnApply" btn-tag="link" content="应用" icon-before="fa fa-check blue" class-name="info"></fap-button>
+                    <fap-button id="btnShelve" btn-tag="link" content="搁置" icon-before="fa fa-lock blue" class-name="info"></fap-button>
+                </div>
+
+
+            </div>
+
+            <div class="widget-body">            
+                <div class="widget-main">
+                    <fap-grid id="paytodo" grid-model="Model"  auto-width="true" multi-box-only="true" multi-select="true" view-records="true" register-authority="false"  oper-delete="true" oper-search="true" ></fap-grid>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {  
+            //应用变动
+            $("#btnApply").on(ace.click_event, function () {
+                var rowDatas = getSelectedRows("grid-paytodo");
+                if (rowDatas) {
+                    var validDatas = $.grep(rowDatas, function (value) {
+                        return value.OperFlag == 0|| value.OperFlag == 2;
+                    })
+                    if (validDatas && validDatas.length > 0) {
+                        var payToDos = $.map(validDatas, function (d) {
+                            return d.Fid;
+                        });
+                        $.post(basePath + "/Payroll/Api/UsePayTodo", { payToDoFids: payToDos }, function (rv) {
+                            if (rv.success) {
+                                $.msg(rv.msg);
+                            } else {
+                                bootbox.alert(rv.msg);
+                            }
+                            refreshGrid("grid-paytodo");
+                        })
+                    } else {
+                        $.msg("没有有效的数据要处理！");
+                    }
+                }
+            })
+            //搁置变动
+            $("#btnShelve").on(ace.click_event, function () {
+                var rowDatas = getSelectedRows("grid-paytodo");
+                if (rowDatas) {
+                    var validDatas = $.grep(rowDatas, function (value) {
+                        return value.OperFlag == 0 ;
+                    })
+                    if (validDatas && validDatas.length > 0) {
+                        bootbox.confirm($.lang("confirm_shelve", "确认搁置么？"), function (result) {
+                            if (result) {
+                                var payToDos = $.map(validDatas, function (d) {
+                                    return d.Fid;
+                                });
+                                $.post(basePath + "/Payroll/Api/ShelvePayTodo", { payToDoFids: payToDos }, function (rv) {
+                                    if (rv.success) {
+                                        $.msg(rv.msg);
+                                        refreshGrid("grid-paytodo");
+                                    } else {
+                                        bootbox.alert(rv.msg);
+                                    }
+                                })
+                            }
+                        })                     
+                    } else {
+                        $.msg("没有有效的数据要处理！");
+                    }
+                }
+            })
+            
+        })
+    })
+</script>

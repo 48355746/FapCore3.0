@@ -1,0 +1,141 @@
+﻿@model IEnumerable<Fap.Core.Infrastructure.Model.RptChart>
+<div class="row">
+    <div class="col-xs-12">
+        <!-- PAGE CONTENT BEGINS -->
+        <div class="row">
+            @foreach (var chart in Model)
+            {
+                <div class="col-xs-12 col-sm-6 widget-container-col">
+                    <!-- #section:custom/widget-box -->
+                    <div class="widget-box">
+                        <div class="widget-header">
+                            <h5 class="widget-title">@chart.Subject</h5>
+                            <!-- #section:custom/widget-box.toolbar -->
+                            <div class="widget-toolbar">
+
+                                <a href="#" data-action="fullscreen" class="orange2">
+                                    <i class="ace-icon fa fa-expand"></i>
+                                </a>
+
+                                <a href="#" data-action="collapse">
+                                    <i class="ace-icon fa fa-chevron-up"></i>
+                                </a>
+
+                                <a href="#" data-action="close">
+                                    <i class="ace-icon fa fa-times"></i>
+                                </a>
+                            </div>
+
+                            <!-- /section:custom/widget-box.toolbar -->
+                        </div>
+
+                        <div class="widget-body">
+                            <div class="widget-main">
+                                <div name="fapChart" data-fid="@chart.Fid" style="width:auto;height:400px"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- /section:custom/widget-box -->
+                </div>
+            }
+        </div>
+    </div>
+</div>
+<script>
+
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+
+            })
+            $('.widget-container-col').sortable({
+                connectWith: '.widget-container-col',
+                items: '> .widget-box',
+                handle: ace.vars['touch'] ? '.widget-header' : false,
+                cancel: '.fullscreen',
+                opacity: 0.8,
+                revert: true,
+                forceHelperSize: true,
+                placeholder: 'widget-placeholder',
+                forcePlaceholderSize: true,
+                tolerance: 'pointer',
+                start: function (event, ui) {
+                    //when an element is moved, it's parent becomes empty with almost zero height.
+                    //we set a min-height for it to be large enough so that later we can easily drop elements back onto it
+                    ui.item.parent().css({ 'min-height': ui.item.height() })
+                    //ui.sender.css({'min-height':ui.item.height() , 'background-color' : '#F5F5F5'})
+                },
+                update: function (event, ui) {
+                    ui.item.parent({ 'min-height': '' })
+                    //p.style.removeProperty('background-color');
+                }
+            });
+
+
+            function DrawChart(chartModel, jqPostData, fapChart) {
+                $.post(basePath + '/Core/Api/EChart', { chartViewModel: chartModel, jqGridPostData: jqPostData }, function (rv) {
+                    fapChart.clear();
+                    var option = initChartOption();
+                    option.dataset = {
+                        dimensions: Object.keys(rv.data.dataSet[0]),
+                        source: rv.data.dataSet
+                    };
+                    var series = [];
+                    $.each(rv.data.aggregates, function (i, d) {
+                        if (chartModel.chartType === "pie") {
+                            option.xAxis = null;
+                            option.yAxis = null;
+                            series.push({ type: chartModel.chartType, radius: '50%' });
+                        } else {
+                            if (d.chartType === "default") {
+                                series.push({ type: chartModel.chartType });
+                            } else {
+                                series.push({ type: d.chartType });
+                            }
+                        }
+                    })
+                    option.series = series;
+                    fapChart.setOption(option);          
+
+                });
+            }
+            function initChartOption() {
+                var option = {
+                    legend: {},
+                    toolbox: {
+                        feature: {
+                            //dataView: { show: true, readOnly: false },
+                            saveAsImage: { show: true }
+                        }
+                    },
+                    xAxis: { type: 'category' },
+                    yAxis: {},
+                    tooltip: {}
+                };
+                return option;
+            }
+            $("div[name=fapChart]").each(function (i) {
+                let fid = $(this).data("fid");
+                let fchart = $(this).get(0);
+                let $widget= $(this).closest(".widget-box");
+                $.get(basePath + "/Core/Api/Echart/" + fid, function (rv) {
+                    if (rv.success) {
+                        var chart = echarts.init(fchart);
+                        reSize($widget, chart);
+                        DrawChart(JSON.parse(rv.data.chartModel), JSON.parse(rv.data.entityModel), chart);
+                    } else {
+                        boobox.alert(rv.msg);
+                    }
+                });
+            });
+            function reSize($widgetbox,fapChart) {
+                $widgetbox.on('fullscreen.ace.widget', function (e) {                
+                    fapChart.resize();
+                });
+            }
+         
+        })
+    })
+</script>

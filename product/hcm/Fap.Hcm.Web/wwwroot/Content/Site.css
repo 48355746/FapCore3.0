@@ -1,0 +1,8 @@
+﻿
+.modal-backdrop {
+    z-index:949 !important;
+}
+.form-inline .radio label,
+.form-inline .checkbox label {
+    padding-left: 10px !important
+}

@@ -1,0 +1,175 @@
+﻿@{
+    var table = _platformDomain.TableSet.Where(t => (t.TableFeature ?? "").IndexOf("BillFeature") > -1).Select(t => "{key:'" + t.TableName + "',name:'" + t.TableComment + "'}");
+    string xml = ViewBag.XML;
+}
+
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=5,IE=9" ><![endif]-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>流程设计</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="~/Content/mxGraph/styles/grapheditor.css">
+    <style>
+        body {
+            font-family: 'Microsoft YaHei' !important;
+        }
+    </style>
+
+    <!--[if !IE]> -->
+    <script type="text/javascript">
+        window.jQuery || document.write("<script src='/Content/js/jquery.js'>" + "<" + "/script>");
+        //全局根路径
+        var basePath = window.location.protocol+"//" + window.location.host;
+           //单据表
+        var billTables = [@Html.Raw(string.Join(",",table))];
+        //列信息
+        var columns = [];
+        //模板信息
+        var billTemplates = [];
+    </script>
+
+    <script type="text/javascript">
+
+        // Parses URL parameters. Supported parameters are:
+        // - lang=xy: Specifies the language of the user interface.
+        // - touch=1: Enables a touch-style user interface.
+        // - storage=local: Enables HTML5 local storage.
+        // - chrome=0: Chromeless mode.
+
+        var urlParams = (function (url) {
+            var result = new Object();
+            var idx = url.lastIndexOf('?');
+
+            if (idx > 0) {
+                var params = url.substring(idx + 1).split('&');
+
+                for (var i = 0; i < params.length; i++) {
+                    idx = params[i].indexOf('=');
+
+                    if (idx > 0) {
+                        result[params[i].substring(0, idx)] = params[i].substring(idx + 1);
+                    }
+                }
+            }
+
+            return result;
+        })(window.location.href);
+
+        // Default resources are included in grapheditor resources
+        mxLoadResources = false;
+    </script>
+    <environment include="Development">
+        <script src="~/Content/layer/layer.js"></script>
+        <script src="~/Content/js/lodash.min.js"></script>
+
+        @*以下为workflowjs*@
+        <script type="text/javascript" src="~/Scripts/Fap/common.js" asp-append-version="true"></script>
+        <script type="text/javascript" src="~/Scripts/Workflow/Designer/Init.js" asp-append-version="true"></script>
+        @*压缩算法*@
+        <script type="text/javascript" src="~/Content/deflate/pako.min.js"></script>
+        <script type="text/javascript" src="~/Content/deflate/base64.js"></script>
+        <script type="text/javascript" src="~/Content/jscolor/jscolor.js"></script>
+        @*过滤html危险字符*@
+        <script type="text/javascript" src="~/Content/sanitizer/sanitizer.min.js"></script>
+        @*主要js*@
+        <script type="text/javascript" src="~/Content/mxGraph/mxClient.js" asp-append-version="true"></script>
+        @*工具*@
+        <script type="text/javascript" src="~/Scripts/Workflow/Designer/EditorUi.js" asp-append-version="true"></script>
+        <script type="text/javascript" src="~/Scripts/Workflow/Designer/Editor.js" asp-append-version="true"></script>
+        <script type="text/javascript" src="~/Scripts/Workflow/Designer/Sidebar.js" asp-append-version="true"></script>
+        <script type="text/javascript" src="~/Scripts/Workflow/Designer/Graph.js" asp-append-version="true"></script>
+        <script type="text/javascript" src="~/Scripts/Workflow/Designer/Format.js" asp-append-version="true"></script>
+        <script type="text/javascript" src="~/Scripts/Workflow/Designer/Shapes.js" asp-append-version="true"></script>
+        <script type="text/javascript" src="~/Scripts/Workflow/Designer/Actions.js" asp-append-version="true"></script>
+        <script type="text/javascript" src="~/Scripts/Workflow/Designer/Menus.js" asp-append-version="true"></script>
+        <script type="text/javascript" src="~/Scripts/Workflow/Designer/Toolbar.js" asp-append-version="true"></script>
+        <script type="text/javascript" src="~/Scripts/Workflow/Designer/Dialogs.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/Content/layer/layer.js"></script>
+        <script src="~/Content/js/lodash.min.js"></script>
+        <script src="~/js/fapworkflow.min.js" asp-append-version="true"></script>
+    </environment>
+</head>
+<body class="geEditor">
+    <script type="text/javascript">
+         //xml信息
+        var diagram_xml = HtmlUtil.htmlDecode('@xml');
+        // Extends EditorUi to update I/O action states based on availability of backend
+        (function () {
+            var editorUiInit = EditorUi.prototype.init;
+
+            EditorUi.prototype.init = function () {
+                editorUiInit.apply(this, arguments);
+                //this.actions.get('export').setEnabled(false);
+                // 禁止改变元素大小
+                //this.editor.graph.setCellsResizable(false);
+                // Disables drag-and-drop into non-swimlanes.
+                this.editor.graph.isValidDropTarget = function (cell, cells, evt) {
+                    return this.isSwimlane(cell);
+                };
+
+                // Disables drilling into non-swimlanes.
+                this.editor.graph.isValidRoot = function (cell) {
+                    return this.isValidDropTarget(cell);
+                }
+
+                // Does not allow selection of locked cells
+                this.editor.graph.isCellSelectable = function (cell) {
+                    return !this.isCellLocked(cell);
+                };
+                //不可编辑
+                this.editor.graph.isCellEditable = function (cell) {
+                    return !this.getModel().isEdge(cell);// && !this.getModel().isVertex(cell);
+                };
+                //validate
+                this.editor.graph.multiplicities.push(new mxMultiplicity(
+                    false, 'activity', 'nodeType', '0', 0, 0, null,
+                    '不能有到开始节点的连线',
+                    null));
+                //双击
+                this.editor.graph.dblClick = function (evt, cell) {
+                    // Disables any default behaviour for the double click
+                    if (!this.getModel().isVertex(cell)) {
+                        mxEvent.consume(evt);
+                    }
+                };
+                //开始设置
+                this.editor.graph.model.beginUpdate();
+                try {
+                    this.editor.setGraphXml(mxUtils.parseXml(diagram_xml).documentElement);
+                }
+                catch (e) {
+                    error = e;
+                }
+                finally {
+                    this.editor.graph.model.endUpdate();
+                }
+            };
+
+            // Adds required resources (disables loading of fallback properties, this can only
+            // be used if we know that all keys are defined in the language specific file)
+            mxResources.loadDefaultBundle = false;
+            var bundle = mxResources.getDefaultBundle(RESOURCE_BASE, mxLanguage) ||
+                mxResources.getSpecialBundle(RESOURCE_BASE, mxLanguage);
+
+            // Fixes possible asynchronous requests
+            mxUtils.getAll([bundle, STYLE_PATH + '/default.xml'], function (xhr) {
+                // Adds bundle text to resources
+                mxResources.parse(xhr[0].getText());
+
+                // Configures the default graph theme
+                var themes = new Object();
+                themes[Graph.prototype.defaultThemeName] = xhr[1].getDocumentElement();
+
+                // Main
+                new EditorUi(new Editor(urlParams['chrome'] == '0', themes));
+            }, function () {
+                    document.body.innerHTML = '<center style="margin-top:10%;">Error loading resource files. Please check browser console.</center>';
+                });
+        })();
+    </script>
+</body>
+</html>

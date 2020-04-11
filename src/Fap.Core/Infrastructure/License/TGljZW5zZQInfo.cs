@@ -88,7 +88,7 @@ namespace Fap.Core.Infrastructure.License
                 {
                     code = EncryptionDes.Decrypt(licenseCode);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     errMsg = "注册码不正确";
                     return null;

@@ -1,0 +1,84 @@
+﻿
+<title><fap-multilang lang-key="report" default-content="报表"></fap-multilang></title>
+
+<div class="row">
+    <div class="col-xs-12 col-sm-3">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title"><fap-multilang lang-key="report" default-content="报表"></fap-multilang></h4>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main treescrollable">
+                    <fap-tree id="report" is-async="true" get-url="/System/Api/Manage/SimpleReport"></fap-tree>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-9">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title"><fap-multilang lang-key="report_render" default-content="报表结果"></fap-multilang></h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+
+            </div>
+            <div class="widget-body">
+
+                <div class="widget-main" id="htmlReport">
+                    <div class="dropzone dz-clickable">
+                        <div class="dz-default dz-message">
+                            <span>
+                                <span class="bigger-120 bolder">
+                                    <i class="ace-icon fa fa-caret-right red"></i>
+                                   点击左侧报表等待 下载
+                                </span> 
+                               <br/>
+                               
+                                    <i class="upload-icon ace-icon fa fa-cloud-download blue fa-3x"></i>
+                               
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+                $('#tree-report').jstree("destroy");
+            })
+            $('#tree-report').on("changed.jstree", function (e, data) {
+                if (data && data.selected && data.selected.length) {
+                    var rptUid = data.selected[0];
+
+                    if (data.node.data.isDir === "1") {
+                        $.msg($.lang("请选择报表查看"));
+                    } else {
+                        layer.load();
+                        $.get(basePath + "/System/Api/Tools/ReportRenderHtml/" + rptUid, function (rv) {
+                            if (rv.success) {
+                                location.href = basePath + "/" + rv.data;
+                            } else {
+                                bootbox.alert(rv.msg);
+                            }
+                           layer.closeAll('loading');
+                        })
+                    }
+
+                }
+            });
+        })
+    })
+</script>

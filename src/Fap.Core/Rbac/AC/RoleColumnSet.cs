@@ -36,9 +36,9 @@ namespace Fap.Core.Rbac.AC
             {
                 if (_initialized) return;
                 #region 获取所有FapRoleColumn
-             
-                    _allRoleColumn = _dbSession.Query<FapRoleColumn>("select * from FapRoleColumn");
-               
+
+                _allRoleColumn = _dbSession.Query<FapRoleColumn>("select * from FapRoleColumn");
+
                 #endregion
                 _initialized = true;
             }
@@ -65,14 +65,8 @@ namespace Fap.Core.Rbac.AC
             {
                 Init();
             }
-            var result = _allRoleColumn.Where<FapRoleColumn>(f => f.RoleUid == roleUid);
-            if (result != null&&result.Any())
-            {
-                roleColumns = result;
-                return true;
-            }
-            roleColumns = null;
-            return false;
+            roleColumns = _allRoleColumn.Where<FapRoleColumn>(f => f.RoleUid == roleUid);
+            return roleColumns.Any();
         }
 
         public IEnumerator<FapRoleColumn> GetEnumerator()

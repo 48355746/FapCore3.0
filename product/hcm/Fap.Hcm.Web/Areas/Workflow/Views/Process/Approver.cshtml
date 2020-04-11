@@ -1,0 +1,172 @@
+﻿@model Fap.AspNetCore.ViewModel.MultiJqGridViewModel
+@inject Fap.Core.Infrastructure.Domain.IFapPlatformDomain _platformDomain
+@using Fap.AspNetCore.Controls.JqGrid
+@{
+    ViewBag.Title = "选择审批人";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string billTable = ViewBag.BillTable;
+    Fap.AspNetCore.ViewModel.JqGridViewModel empModel = Model.JqGridViewModels["employee"];
+    Fap.AspNetCore.ViewModel.JqGridViewModel roleModel = Model.JqGridViewModels["role"];
+    Fap.AspNetCore.ViewModel.JqGridViewModel dynRoleModel = Model.JqGridViewModels["dynrole"];
+    var cols =_platformDomain.ColumnSet.Where(c =>c.TableName=="billTable"&& c.IsDefaultCol == 0).Select(c => "{text: '" + c.ColComment + "', value: '" + c.ColName + "', }");
+    Column column = new Column("oper");
+    column.SetLabel("操作");
+    column.SetWidth(80);
+    column.SetSortable(false);
+}
+@section specificcss{
+    @{await Html.RenderPartialAsync("_ControlCssPartial");}
+}
+@section specificscript{
+    @{await Html.RenderPartialAsync("_ControlJsPartial");}
+    <style>
+        .tags {
+            width: 120px !important;
+        }
+    </style>
+    <script>
+        jQuery(function ($) {
+
+        })
+        function getApprover()
+        {
+            var approver = [];
+            $(".tags .tag").each(function () {
+                var $this = $(this);
+                approver.push({
+                    id: $this.data('value'), name: $this.text().slice(0,-1), type: $this.data('type'),colname:$this.data('colname')
+                });
+
+            })
+            return approver;
+        }
+        function addApprover(type,id,name,colname)
+        {
+            if (colname === undefined)
+            {
+                colname = '';
+            }
+            var tag = $('<span class="tag" data-type="' + type + '" data-value="' + id + '" data-colname="' + colname + '">' + name + '<button type="button" class="close">×</button></span>');
+            $('.tags').append(tag);
+            tag.find('button').on(ace.click_event, function () {
+                $(this).parent().remove();
+            })
+
+        }
+        function addApprovers(approvers)
+        {
+            setTimeout(() => {
+                approvers.forEach(function (approver) {
+
+                    addApprover(approver.type, approver.id, approver.name, approver.colname);
+
+                })
+            }, 1);
+
+        }
+        function onEmployeeComplete()
+        {
+            var ids = jQuery("#grid-employee").jqGrid('getDataIDs');
+            for (var i = 0; i < ids.length; i++) {
+                var de = '';
+                var cl = ids[i];
+                var ret = jQuery('#grid-employee').jqGrid('getRowData', cl);
+                var id = ret.Fid;
+                var name = ret.EmpName;
+                de += "<a href='javascript:void(0)' onclick='addApprover(\"1\",\"" +id+ "\",\"" + name + "\")'>选择 </a> ";
+
+                jQuery('#grid-employee').jqGrid('setRowData', ids[i], { oper: de });
+            }
+
+        }
+        function onRoleComplete()
+        {
+            var ids = jQuery("#grid-role").jqGrid('getDataIDs');
+            for (var i = 0; i < ids.length; i++) {
+                var de = '';
+                var cl = ids[i];
+                var ret = jQuery('#grid-role').jqGrid('getRowData', cl);
+                var id = ret.Fid;
+                var name = ret.BizRoleName;
+                de += "<a href='javascript:void(0)' onclick='addApprover(\"2\",\"" + id + "\",\"" + name + "\")'>选择 </a> ";
+
+                jQuery('#grid-role').jqGrid('setRowData', ids[i], { oper: de });
+            }
+        }
+        function onDynRoleComplete() {
+            var ids = jQuery("#grid-dynrole").jqGrid('getDataIDs');
+            for (var i = 0; i < ids.length; i++) {
+                var de = '';
+                var cl = ids[i];
+                var ret = jQuery('#grid-dynrole').jqGrid('getRowData', cl);
+                var id = ret.Fid;
+                var name = ret.RoleName;
+                var bindType = ret.BindType;
+                de += "<a href='javascript:void(0)' onclick='addDynApprover(\"3\",\"" + id + "\",\"" + name + "\",\"" + bindType + "\")'>选择 </a> ";
+
+                jQuery('#grid-dynrole').jqGrid('setRowData', ids[i], { oper: de });
+            }
+        }
+        function addDynApprover(type, id, name, bindtype)
+        {
+            if (bindtype == 'Manual')
+            {
+                //需要手动指定字段;
+                bootbox.prompt({
+                    title: "手工绑定需要选择条件字段!",
+                    inputType: 'select',
+                    inputOptions: [@Html.Raw(string.Join(",",cols))],
+                    callback: function (result) {
+                        //console.log(result);
+                        addApprover(type, id, name, result);
+                    }
+                });
+
+            } else {
+                addApprover(type, id, name)
+            }
+
+        }
+    </script>
+}
+
+<div class="row">
+    <div class="col-xs-10">
+        <div class="tabbable" id="tabApprover">
+            <ul class="nav nav-tabs padding-12 tab-color-blue background-blue" id="myTab4">
+                <li class="active">
+                    <a data-toggle="tab" href="#employee">人员</a>
+                </li>
+
+                <li>
+                    <a data-toggle="tab" href="#role">指派角色</a>
+                </li>
+
+                <li>
+                    <a data-toggle="tab" href="#dynrole">动态角色</a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div id="employee" class="tab-pane in active">
+                    <fap-grid id="employee" attach-column="@column" search-toolbar="true" wrapper="tabApprover,employee" grid-model="empModel" on-grid-complete="onEmployeeComplete"></fap-grid>
+                </div>
+
+                <div id="role" class="tab-pane">
+                    <fap-grid id="role" attach-column="@column" search-toolbar="true" wrapper="tabApprover,role" grid-model="roleModel" on-grid-complete="onRoleComplete"></fap-grid>
+                </div>
+
+                <div id="dynrole" class="tab-pane">
+                    <fap-grid id="dynrole" attach-column="@column" search-toolbar="true" wrapper="tabApprover,dynrole" grid-model="dynRoleModel" on-grid-complete="onDynRoleComplete"></fap-grid>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-2">
+        <div class="inline">
+            <div class="tags">
+                @*<span class="tag" data-type="" data-value="">Tag Input Control<button type="button" class="close">×</button></span>*@
+            </div>
+        </div>
+    </div>
+</div>

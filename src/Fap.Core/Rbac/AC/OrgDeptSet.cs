@@ -69,5 +69,15 @@ namespace Fap.Core.Rbac.AC
             fapOrg = null;
             return false;
         }
+
+        public bool TryGetValueByPid(string pid, out IEnumerable<OrgDept> childDepts)
+        {
+            if (!_initialized)
+            {
+                Init();
+            }
+            childDepts= _allOrgs.Where(d => d.Pid == pid);
+            return childDepts.Any();
+        }
     }
 }

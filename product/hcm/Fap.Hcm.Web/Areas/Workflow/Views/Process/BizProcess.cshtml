@@ -1,0 +1,80 @@
+﻿
+@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+    Layout = null;
+}
+<title><fap-multilang default-content="业务" lang-key="business"></fap-multilang> </title>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="row">
+            <div class="col-xs-12 col-sm-3">
+                <div class="widget-box">
+                    <div class="widget-header widget-header-flat">
+                        <h4 class="widget-title"><fap-multilang default-content="业务分类" lang-key="business_category"></fap-multilang></h4>
+                        <fap-tree-button id="biztype" description="业务分类" tree-id="tree-biztype"></fap-tree-button>
+
+                    </div>
+
+                    <div class="widget-body">
+                        <div class="widget-main">
+                            <fap-tree id="biztype" is-async="true" get-url="@Url.Content("~/Workflow/Api/BusinessType/")" edit-url="@Url.Content("~/Workflow/Api/OperBusinessType")"></fap-tree>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-9">
+                <div class="widget-box">
+                    <div class="widget-header widget-header-flat">
+                        <h4 class="widget-title"><fap-multilang lang-key="business" default-content="业务"></fap-multilang></h4>
+
+                        <div class="widget-toolbar">
+                            <a href="#" data-action="fullscreen" class="orange2">
+                                <i class="ace-icon fa fa-expand"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="widget-body">
+
+                        <div class="widget-main">
+                            <fap-grid id="wfbusiness" grid-model="Model" auto-width="true" source-type="Local" on-form-init-add="initForm" wrapper="widget-main" multi-select="false"></fap-grid>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+<script>
+    function initForm() {
+        if (bizTypeUid) {
+            $("#frm-grid-wfbusiness #BizTypeUid").val(bizTypeUid).next().val(bizTypeName);
+        }
+    }
+    var bizTypeUid, bizTypeName;
+    var scripts = [null, null];
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+                $('#tree-biztype').jstree('destory');
+            })
+            $('#tree-biztype').on("changed.jstree", function (e, data) {
+                if (data && data.selected && data.selected.length) {
+                    bizTypeUid = data.selected[0];
+                    bizTypeName = data.node.text;
+
+                    var filter = '{"groupOp":"AND","rules":[{"field":"BizTypeUid","op":"eq","data":"' + bizTypeUid + '"}]}';
+                    $("#grid-wfbusiness").jqGrid('setGridParam', {
+                        datatype: 'json',
+                        postData: { filters: filter }, //发送数据
+                        page: 1
+                    }).trigger("reloadGrid"); //重新载入
+                }
+            });
+
+        })
+    })
+</script>

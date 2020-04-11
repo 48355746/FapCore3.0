@@ -1,5 +1,5 @@
 ﻿using Dapper.Contrib.Extensions;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 using System;
 
 namespace Fap.Core.Rbac.Model
@@ -8,7 +8,6 @@ namespace Fap.Core.Rbac.Model
     /// <summary>
     /// 动态角色
     /// </summary>
-    [Serializable]
     public class FapBizDynRole : BaseModel
     {
         /// <summary>

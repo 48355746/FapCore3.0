@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Fap.Core.Infrastructure.Metadata;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -13,32 +14,32 @@ namespace Fap.Core.DataAccess.Interceptor
         /// <summary>
         /// 新增前
         /// </summary>
-        void BeforeDynamicObjectInsert(dynamic dynamicData);
+        void BeforeDynamicObjectInsert(FapDynamicObject dynamicData);
 
         /// <summary>
         /// 新增后
         /// </summary>
-        void AfterDynamicObjectInsert(dynamic dynamicData);
+        void AfterDynamicObjectInsert(FapDynamicObject dynamicData);
 
         /// <summary>
         /// 更新前
         /// </summary>
-        void BeforeDynamicObjectUpdate(dynamic dynamicData);
+        void BeforeDynamicObjectUpdate(FapDynamicObject dynamicData);
 
         /// <summary>
         /// 更新后
         /// </summary>
-        void AfterDynamicObjectUpdate(dynamic dynamicData);
+        void AfterDynamicObjectUpdate(FapDynamicObject dynamicData);
 
         /// <summary>
         /// 删除前
         /// </summary>
-        void BeforeDynamicObjectDelete(dynamic dynamicData);
+        void BeforeDynamicObjectDelete(FapDynamicObject dynamicData);
 
         /// <summary>
         /// 删除后
         /// </summary>
-        void AfterDynamicObjectDelete(dynamic dynamicData);
+        void AfterDynamicObjectDelete(FapDynamicObject dynamicData);
 
         #endregion
 

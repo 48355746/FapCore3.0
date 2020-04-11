@@ -1,0 +1,77 @@
+﻿@model IEnumerable<Fap.Workflow.Model.WfBusiness>
+
+<title><fap-multilang lang-key="my_apply" default-content="我的申请"></fap-multilang></title>
+<link href="~/Content/css/bootstrap-timeline.css" rel="stylesheet" />
+<link href="~/Content/bootstrap-layer.css" rel="stylesheet" />
+<style>
+    .billskin .layui-layer-btn0 {
+        background-color: #d15b47 !important;
+        border-color: #428bca;
+    }
+</style>
+<div class="row">
+    <div class="col-xs-12">
+        @foreach (var bizGrp in Model.GroupBy(b => b.BizTypeUidMC))
+        {
+            <h4 class="smaller lighter green">@bizGrp.Key</h4>
+
+            <ul class="list-inline bizprocess nav nav-pills">
+                @foreach (var biz in bizGrp.AsEnumerable())
+                {
+                    <li>
+                        <fap-button id="@biz.BizCode" btn-tag="link" content="@biz.BizName" data-business="@biz.Fid" icon-before="fa fa-suitcase green"></fap-button>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</div>
+<hr />
+<div class="row">
+    <div class="col-xs-12" id="myApplyContent">
+        @*动态加载我的申请列表*@
+        <div class="col-xs-1"></div>
+        <div class="col-xs-11">
+            <h3>操作说明</h3>
+            <p>
+                1.点击上面的业务，你可以看到申请列表。
+            </p>
+            <p>
+                2.点击按钮申请，填写你的申请单。
+            </p>
+            <p>
+                3.你可直接提交，也可以暂存。
+            </p>
+            <p>
+                4.已经提交的单据，你可以查看，撤回（当还没有审批人审批时），查看流程进度。
+            </p>
+            <p>
+                5.暂存的单据或者被退回的单据，你可以作废处理,也可以再次提交。
+            </p>
+        </div>
+    </div>
+</div>
+<script>
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+                //$(document).off(ace.click_event, '.dropdown-menu>li');
+            })
+        
+            $(".bizprocess li>a").on(ace.click_event, function () {
+                var $this = $(this);
+                var business = $this.data("business");
+                $("#myApplyContent").empty();
+                layer.load();
+                $.get(basePath + "/Workflow/Business/Apply/" + business, function (content) {
+                    $("#myApplyContent").html(content);
+                    //完毕重新设置jqgrid宽度
+                    $(window).triggerHandler('resize.jqGrid');
+                    layer.closeAll('loading');
+                })
+
+            })
+        })
+    });
+</script>

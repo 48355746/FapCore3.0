@@ -1,0 +1,298 @@
+﻿@{
+    Layout = null;
+    string xmlContent = ViewBag.Xml;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>流程监控</title>
+    <!-- Sets the basepath for the library if not in same directory -->
+    <script type="text/javascript">
+        mxBasePath = '../../../Content/mxGraph/src';
+    </script>
+
+    <!-- Loads and initializes the library -->
+    <script type="text/javascript" src="~/Content/mxGraph/mxClient.js" asp-append-version="true"></script>
+
+    <!-- Example code -->
+    <script type="text/javascript">
+        // Program starts here. Creates a sample graph in the
+        // DOM node with the specified ID. This function is invoked
+        // from the onLoad event handler of the document (see below).
+        function main(container) {
+            // Checks if the browser is supported
+            if (!mxClient.isBrowserSupported()) {
+                // Displays an error message if the browser is not supported.
+                mxUtils.error('Browser is not supported!', 200, false);
+            }
+            else {
+                mxConstants.SHADOWCOLOR = '#e0e0e0';
+
+                // Creates the graph inside the given container
+                var graph = createGraph(container);
+
+                // Creates a process display using the activity names as IDs to refer to the elements
+                var xml = '@Html.Raw(xmlContent)';
+                var doc = mxUtils.parseXml(xml);
+                var codec = new mxCodec(doc);
+                codec.decode(doc.documentElement, graph.getModel());
+            }
+                // XML is normally fetched from URL at server using mxUtils.get - this is a client-side
+                // string with randomized states to demonstrate the idea of the workflow monitor
+                var xml = '@Html.Raw(ViewBag.UpdateXml)';
+                update(graph, xml);
+        };
+
+        /**
+         * Updates the display of the given graph using the XML data
+         */
+        function update(graph, xml) {
+            if (xml != null && xml.length > 0) {
+                var doc = mxUtils.parseXml(xml);
+
+                if (doc != null && doc.documentElement != null) {
+                    var model = graph.getModel();
+                    var nodes = doc.documentElement.getElementsByTagName('update');
+
+                    if (nodes != null && nodes.length > 0) {
+                        model.beginUpdate();
+
+                        try {
+                            for (var i = 0; i < nodes.length; i++) {
+                                // Processes the activity nodes inside the process node
+                                var id = nodes[i].getAttribute('id');
+                                var state = nodes[i].getAttribute('state');
+                                var tooltips = nodes[i].getAttribute('tooltips');
+                                // Gets the cell for the given activity name from the model
+                                var cell = model.getCell(id);
+
+                                // Updates the cell color and adds some tooltip information
+                                if (cell != null) {
+                                    // Resets the fillcolor and the overlay
+                                    graph.setCellStyles(mxConstants.STYLE_FILLCOLOR, 'white', [cell]);
+                                    graph.removeCellOverlays(cell);
+
+                                    // Changes the cell color for the known states
+                                    if (state == 'Running') {
+                                        //审批中
+                                        graph.setCellStyles(mxConstants.STYLE_FILLCOLOR, '#99CCFF', [cell]);
+                                    }
+                                    else if (state == 'Ready') {
+                                        //准备中
+                                        graph.setCellStyles(mxConstants.STYLE_FILLCOLOR, '#fff2cc', [cell]);
+                                    }
+                                    else if (state == 'Completed') {
+                                        //完成
+                                        graph.setCellStyles(mxConstants.STYLE_FILLCOLOR, '#00CC00', [cell]);
+                                    } else if (state === 'Revoked') {
+                                        //驳回
+                                        graph.setCellStyles(mxConstants.STYLE_FILLCOLOR, '#f8cecc', [cell]);
+                                    }
+
+                                    // Adds tooltip information using an overlay icon
+                                    if (state != 'Init') {
+                                        // Sets the overlay for the cell in the graph
+                                        graph.addCellOverlay(cell, createOverlay(graph.warningImage, '审批信息: ' + tooltips));
+                                    }
+                                }
+                            } // for
+                        }
+                        finally {
+                            model.endUpdate();
+                        }
+                    }
+                }
+            }
+        };
+
+        /**
+         * Creates an overlay object using the given tooltip and text for the alert window
+         * which is being displayed on click.
+         */
+        function createOverlay(image, tooltip) {
+            var overlay = new mxCellOverlay(image, tooltip);
+
+            // Installs a handler for clicks on the overlay
+            overlay.addListener(mxEvent.CLICK, function (sender, evt) {
+                mxUtils.alert(tooltip);
+            });
+
+            return overlay;
+        };
+
+        /**
+         * Creates and returns an empty graph inside the given container.
+         */
+        function createGraph(container) {
+            var graph = new mxGraph(container);
+            graph.setTooltips(true);
+            graph.setEnabled(false);
+
+            // Disables folding
+            graph.isCellFoldable = function (cell, collapse) {
+                return false;
+            };
+            // Overrides method to provide a cell label in the display
+            graph.convertValueToString = function (cell) {
+                if (mxUtils.isNode(cell.value)) {
+                    if (cell.value.nodeName.toLowerCase() == 'transition') {
+                        var label = cell.getAttribute('label', '');
+
+                        return label;
+                    }
+                    else if (cell.value.nodeName.toLowerCase() == 'activity') {
+                        return cell.getAttribute('nodeName');
+                    }
+
+                }
+
+                return '';
+            };
+
+            graph.getView().updateStyle = true;
+
+            // Overrides mxGraphModel.getStyle to return a specific style
+            // for edges that reflects their target terminal (in this case
+            // the strokeColor will be equal to the target's fillColor).
+            var previous = graph.model.getStyle;
+
+            graph.model.getStyle = function (cell) {
+                if (cell != null) {
+                    var style = previous.apply(this, arguments);
+
+                    if (this.isEdge(cell)) {                    
+                    }
+                    else if (this.isVertex(cell)) {
+                        
+                        var geometry = this.getGeometry(cell);
+                        if (geometry.width == 14) {
+                            //嵌套的小方块不显示
+                            style += "opacity=0";
+                        } else if (geometry.width == 40 || geometry.width == 60) {
+                            //开始结束路由不显示文字
+                            style += ';fontSize=0';
+                        }
+                       
+                    }
+
+                    return style;
+                }
+
+                return null;
+            };
+
+            //// Creates the stylesheet for the process display
+            var style = graph.getStylesheet().getDefaultVertexStyle();
+            //whiteSpace=wrap;rounded=1;strokeColor=#808080;gradientColor=#d4e1f5;gradientDirection=west;shadow=1
+            style[mxConstants.STYLE_FONTSIZE] = 12;
+            style[mxConstants.STYLE_FONTCOLOR] = 'black';
+            style[mxConstants.STYLE_STROKECOLOR] = '#808080';
+            style[mxConstants.STYLE_FILLCOLOR] = 'white';
+            style[mxConstants.STYLE_GRADIENTCOLOR] = '#d4e1f5';
+            style[mxConstants.STYLE_GRADIENT_DIRECTION] = mxConstants.DIRECTION_WEST;
+            style[mxConstants.STYLE_ROUNDED] = true;
+            style[mxConstants.STYLE_SHADOW] = true;
+            style[mxConstants.STYLE_FONTSTYLE] = 1;
+
+            style = graph.getStylesheet().getDefaultEdgeStyle();
+            //edgeStyle = elbowEdgeStyle; rounded = 1; html = 1; entryX = 0; entryY = 0.5; shadow = 1; 
+            //endArrow = classicThin; endFill = 1; jettySize = auto; orthogonalLoop = 1; strokeColor =#808080;
+         
+            style[mxConstants.STYLE_EDGE] = mxEdgeStyle.ElbowConnector;
+            style[mxConstants.STYLE_STROKECOLOR] = '#808080';
+            style[mxConstants.STYLE_ROUNDED] = true;
+            style[mxConstants.STYLE_SHADOW] = true;
+            style["orthogonalLoop"] = true;
+            style["endArrow"] = 'classicThin';
+            style["endFill"] = true;
+            style["jettySize"] = "auto";
+           
+
+            style = [];
+            style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_SWIMLANE;
+            style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RectanglePerimeter;
+            style[mxConstants.STYLE_STROKECOLOR] = '#a0a0a0';
+            style[mxConstants.STYLE_FONTCOLOR] = '#606060';
+            style[mxConstants.STYLE_FILLCOLOR] = '#E0E0DF';
+            style[mxConstants.STYLE_GRADIENTCOLOR] = 'white';
+            style[mxConstants.STYLE_STARTSIZE] = 30;
+            style[mxConstants.STYLE_ROUNDED] = false;
+            style[mxConstants.STYLE_FONTSIZE] = 12;
+            style[mxConstants.STYLE_FONTSTYLE] = 0;
+            style[mxConstants.STYLE_HORIZONTAL] = false;
+            // To improve text quality for vertical labels in some old IE versions...
+            style[mxConstants.STYLE_LABEL_BACKGROUNDCOLOR] = '#efefef';
+
+            graph.getStylesheet().putCellStyle('swimlane', style);
+
+            //style = [];
+            //style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_RHOMBUS;
+            //style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RhombusPerimeter;
+            //style[mxConstants.STYLE_STROKECOLOR] = '#91BCC0';
+            //style[mxConstants.STYLE_FONTCOLOR] = 'gray';
+            //style[mxConstants.STYLE_FILLCOLOR] = '#91BCC0';
+            //style[mxConstants.STYLE_GRADIENTCOLOR] = 'white';
+            //style[mxConstants.STYLE_ALIGN] = mxConstants.ALIGN_CENTER;
+            //style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_MIDDLE;
+            //style[mxConstants.STYLE_FONTSIZE] = 16;
+            //graph.getStylesheet().putCellStyle('step', style);
+
+            style = [];
+            style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_IMAGE;
+            style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RectanglePerimeter;
+            //style[mxConstants.STYLE_STROKECOLOR] = '#91BCC0';
+            //style[mxConstants.STYLE_FONTCOLOR] = 'gray';
+            //style[mxConstants.STYLE_FILLCOLOR] = '#91BCC0';
+            //style[mxConstants.STYLE_GRADIENTCOLOR] = 'white';
+            style[mxConstants.STYLE_ALIGN] = mxConstants.ALIGN_CENTER;
+            style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_MIDDLE;
+            style[mxConstants.STYLE_FONTSIZE] = 12;
+            graph.getStylesheet().putCellStyle('image', style);
+            
+
+            style = [];
+            style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_ELLIPSE;
+            style[mxConstants.STYLE_PERIMETER] = mxPerimeter.EllipsePerimeter;
+            style[mxConstants.STYLE_FONTSIZE] = 12;
+            graph.getStylesheet().putCellStyle('ellipse', style);
+            
+
+            //style = mxUtils.clone(style);
+            //style[mxConstants.STYLE_FILLCOLOR] = '#DACCBC';
+            //style[mxConstants.STYLE_STROKECOLOR] = '#AF7F73';
+            //graph.getStylesheet().putCellStyle('end', style);
+
+            return graph;
+        };
+
+        /**
+         * Returns a random state.
+         */
+        function getState() {
+            var state = 'Init';
+            var rnd = Math.random() * 4;
+
+            if (rnd > 3) {
+                state = 'Completed';
+            }
+            else if (rnd > 2) {
+                state = 'Running';
+            }
+            else if (rnd > 1) {
+                state = 'Waiting';
+            }
+
+            return state;
+        };
+    </script>
+</head>
+
+<!-- Page passes the container and control to the main function -->
+<body onload="main(document.getElementById('graphContainer'));">
+
+    <!-- Acts as a container for the graph -->
+    <div id="graphContainer" style="overflow:auto;position:relative;cursor:default;">
+    </div>
+    <br>
+</body>
+</html>

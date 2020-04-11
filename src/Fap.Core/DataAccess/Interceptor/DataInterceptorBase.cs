@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
+using Fap.Core.Infrastructure.Metadata;
+
 namespace Fap.Core.DataAccess.Interceptor
 {
     public class DataInterceptorBase : IDataInterceptor
@@ -27,40 +29,40 @@ namespace Fap.Core.DataAccess.Interceptor
         /// <summary>
         /// 新增前
         /// </summary>
-        public virtual void BeforeDynamicObjectInsert(dynamic fapDynamicData)
+        public virtual void BeforeDynamicObjectInsert(FapDynamicObject fapDynamicData)
         {
         }
 
         /// <summary>
         /// 新增后
         /// </summary>
-        public virtual void AfterDynamicObjectInsert(dynamic fapDynamicData)
+        public virtual void AfterDynamicObjectInsert(FapDynamicObject fapDynamicData)
         {
         }
         /// <summary>
         /// 更新前
         /// </summary>
-        public virtual void BeforeDynamicObjectUpdate(dynamic fapDynamicData)
+        public virtual void BeforeDynamicObjectUpdate(FapDynamicObject fapDynamicData)
         {
         }
         /// <summary>
         /// 更新后
         /// </summary>
-        public virtual void AfterDynamicObjectUpdate(dynamic fapDynamicData)
+        public virtual void AfterDynamicObjectUpdate(FapDynamicObject fapDynamicData)
         {
         }
 
         /// <summary>
         /// 删除前
         /// </summary>
-        public virtual void BeforeDynamicObjectDelete(dynamic fapDynamicData)
+        public virtual void BeforeDynamicObjectDelete(FapDynamicObject fapDynamicData)
         {
         }
 
         /// <summary>
         /// 删除后
         /// </summary>
-        public virtual void AfterDynamicObjectDelete(dynamic fapDynamicData)
+        public virtual void AfterDynamicObjectDelete(FapDynamicObject fapDynamicData)
         {
         }
 

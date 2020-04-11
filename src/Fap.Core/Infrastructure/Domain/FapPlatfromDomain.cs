@@ -15,14 +15,11 @@ namespace Fap.Core.Infrastructure.Domain
         public string Product { get; set; } = "HCM";
         private IDbSession _dbSession;
         private readonly ILogger<FapPlatfromDomain> _logger;
-        public FapPlatfromDomain(ILoggerFactory loggerFactory, IDbSession dbSession)
+        public FapPlatfromDomain(ILogger<FapPlatfromDomain> logger, IDbSession dbSession)
         {
-            _logger = loggerFactory.CreateLogger<FapPlatfromDomain>();
+            _logger = logger;
             _dbSession = dbSession;
-            //加载注册码信息
-            string name = System.Net.Dns.GetHostName();
-            LoadRegisterInfo();
-            InitFap();
+            InitPlatformDomain();
         }
         /// <summary>
         /// 产品注册码信息
@@ -32,11 +29,19 @@ namespace Fap.Core.Infrastructure.Domain
             get;
             internal set;
         }
-        //public  IButtonSet ButtonSet
-        //{
-        //    get;
-        //    protected set;
-        //}
+        /// <summary>
+        /// 菜单按钮
+        /// </summary>
+        public IMenuButtonSet MenuButtonSet
+        {
+            get;
+            protected set;
+        }
+        public IMenuColumnSet MenuColumnSet
+        {
+            get;
+            protected set;
+        }
         /// <summary>
         /// 所有表元数据
         /// </summary>
@@ -56,7 +61,7 @@ namespace Fap.Core.Infrastructure.Domain
         /// <summary>
         /// 多语集
         /// </summary>
-        public  IMultiLang MultiLangSet
+        public  IMultiLanguage MultiLangSet
         {
             get;
             protected set;
@@ -82,7 +87,7 @@ namespace Fap.Core.Infrastructure.Domain
         /// <summary>
         /// 所有系统参数
         /// </summary>
-        public  ISysParamSet SysParamSet
+        public  IParamSet ParamSet
         {
             get;
             protected set;
@@ -91,7 +96,7 @@ namespace Fap.Core.Infrastructure.Domain
         /// <summary>
         /// 所有系统用户
         /// </summary>
-        public  ISysUserSet SysUserSet
+        public  IUserSet UserSet
         {
             get;
             protected set;
@@ -133,9 +138,17 @@ namespace Fap.Core.Infrastructure.Domain
         /// </summary>
         public  IRoleDataSet RoleDataSet { get; protected set; }
         /// <summary>
+        /// 角色按钮
+        /// </summary>
+        public IRoleButtonSet RoleButtonSet { get; protected set; }
+        /// <summary>
         /// 角色角色
         /// </summary>
         public  IRoleRoleSet RoleRoleSet { get; protected set; }
+        /// <summary>
+        /// 角色用户
+        /// </summary>
+        public IRoleUserSet RoleUserSet { get; protected set; }
         /// <summary>
         /// 单据编码配置规则集
         /// </summary>
@@ -211,52 +224,60 @@ namespace Fap.Core.Infrastructure.Domain
                 }
             }
         }
-        private void InitFap()
+        public void InitPlatformDomain()
         {
+            LoadRegisterInfo();
             //this.ButtonSet = new ButtonSet(this);
             _logger.LogInformation("初始化元数据");
             this.TableSet = new TableSet( _dbSession);
             this.ColumnSet = new ColumnSet( _dbSession);
-            _logger.LogInformation("初始化元数据结束");
-
+            _logger.LogInformation("初始化元数据完成");
+            this.MenuButtonSet = new MenuButtonSet(_dbSession);
+            _logger.LogInformation("初始化菜单按钮完成");
             this.MultiLangSet = new MultiLangSet( _dbSession);
-            _logger.LogInformation("初始化多语结束");
+            _logger.LogInformation("初始化多语完成");
             this.DictSet = new DictSet( _dbSession);
-            _logger.LogInformation("初始化字典结束");
+            _logger.LogInformation("初始化字典完成");
             this.ModuleSet = new ModuleSet( _dbSession,this);
-            _logger.LogInformation("初始化模块结束");
+            _logger.LogInformation("初始化模块完成");
             this.MenuSet = new MenuSet( _dbSession);
-            _logger.LogInformation("初始化菜单结束");
+            _logger.LogInformation("初始化菜单完成");
             this.OrgDeptSet = new OrgDeptSet(_dbSession);
-            _logger.LogInformation("初始化组织部门结束");
+            _logger.LogInformation("初始化组织部门完成");
             this.RoleSet = new RoleSet( _dbSession);
-            _logger.LogInformation("初始化角色结束");
-            this.SysParamSet = new SysParamSet( _dbSession);
-            _logger.LogInformation("初始化系统设置结束");
-            this.SysUserSet = new SysUserSet( _dbSession);
-            _logger.LogInformation("初始化用户结束");
+            _logger.LogInformation("初始化角色完成");
+            this.ParamSet = new ParamSet( _dbSession);
+            _logger.LogInformation("初始化系统设置完成");
+            this.UserSet = new UserSet( _dbSession);
+            _logger.LogInformation("初始化用户完成");
             this.RoleColumnSet = new RoleColumnSet(_dbSession);
-            _logger.LogInformation("初始化角色列结束");
+            _logger.LogInformation("初始化角色列完成");
             this.RoleDeptSet = new RoleDeptSet( _dbSession,this);
-            _logger.LogInformation("初始化角色部门结束");
+            _logger.LogInformation("初始化角色部门完成");
             this.RoleMenuSet = new RoleMenuSet( _dbSession);
-            _logger.LogInformation("初始化角色菜单结束");
+            _logger.LogInformation("初始化角色菜单完成");
             this.RoleReportSet = new RoleReportSet( _dbSession);
-            _logger.LogInformation("初始化角色报表结束");
+            _logger.LogInformation("初始化角色报表完成");
             this.RoleDataSet = new RoleDataSet( _dbSession);
-            _logger.LogInformation("初始化角色数据结束");
+            _logger.LogInformation("初始化角色数据完成");
+            this.RoleButtonSet = new RoleButtonSet(_dbSession);
+            _logger.LogInformation("初始化角色按钮完成");
             this.RoleRoleSet = new RoleRoleSet( _dbSession);
-            _logger.LogInformation("初始化角色角色结束");
-
+            _logger.LogInformation("初始化角色角色完成");
+            this.RoleUserSet = new RoleUserSet(_dbSession);
+            _logger.LogInformation("初始化角色用户完成");
+            this.MenuColumnSet = new MenuColumnSet(_dbSession);
+            _logger.LogInformation("初始化菜单列完毕");
             this.CfgBillCodeRuleSet = new CfgBillCodeRuleSet(_dbSession);
-            _logger.LogInformation("初始化单据编码规则集结束");
+            _logger.LogInformation("初始化单据编码规则集完成");
         }
         /// <summary>
         /// 清空所有权限相关缓存
         /// </summary>
         public  void Refresh()
         {
-            //this.ButtonSet.Refresh();
+            this.MenuButtonSet.Refresh();
+            this.MenuColumnSet.Refresh();
             this.ColumnSet.Refresh();
             this.MultiLangSet.Refresh();
             this.DictSet.Refresh();
@@ -265,14 +286,16 @@ namespace Fap.Core.Infrastructure.Domain
             this.ModuleSet.Refresh();
             this.OrgDeptSet.Refresh();
             this.RoleSet.Refresh();
-            this.SysUserSet.Refresh();
+            this.UserSet.Refresh();
+            this.RoleButtonSet.Refresh();
             this.RoleColumnSet.Refresh();
             this.RoleDeptSet.Refresh();
             this.RoleMenuSet.Refresh();
             this.RoleReportSet.Refresh();
             this.RoleDataSet.Refresh();
             this.RoleRoleSet.Refresh();
-            this.SysParamSet.Refresh();
+            this.RoleUserSet.Refresh();
+            this.ParamSet.Refresh();
             this.CfgBillCodeRuleSet.Refresh();
         }
         public  void Configure()

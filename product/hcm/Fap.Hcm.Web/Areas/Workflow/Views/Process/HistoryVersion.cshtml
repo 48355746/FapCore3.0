@@ -1,0 +1,28 @@
+﻿@using Fap.AspNetCore.Controls.JqGrid
+@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+    Column colOper = new Column("oper");
+    colOper.SetLabel("操作");
+    colOper.SetWidth(80);
+    colOper.SetSortable(false);
+}
+
+ <fap-grid id="historytemplate_@(ViewBag.Id)" attach-column="@colOper" grid-model="Model" wrapper="subgrid-data" is-subgrid="true" register-authority="false"  on-grid-complete="initHistoryOperateColumn" multi-select="false"></fap-grid>
+
+
+<script>
+    function initHistoryOperateColumn() {
+        var gid = "grid-historytemplate_@(ViewBag.Id)";
+        var ids = jQuery('#'+gid).jqGrid('getDataIDs');
+        debugger
+        for (var i = 0; i < ids.length; i++) {
+            var de = '';
+            var cl = ids[i];
+            var ret = jQuery('#' + gid).jqGrid('getRowData', cl);
+            var fid = ret.Fid;
+            var name = ret.CName;
+            de += "<a  href='javascript:void(0)' onclick='workflowDesigner(\"" + fid + "\")'>流程设计 </a>";
+            jQuery('#' + gid).jqGrid('setRowData', ids[i], { oper: de });
+        }
+    }
+</script>

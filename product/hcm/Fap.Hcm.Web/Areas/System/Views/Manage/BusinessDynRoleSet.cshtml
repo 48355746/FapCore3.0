@@ -1,0 +1,194 @@
+﻿
+@model Fap.Core.Rbac.Model.FapBizDynRole
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "动态角色设置";
+    Fap.Core.Rbac.Model.FapBizDynRole dynRole = Model;
+    var bindTypes = _platformDomain.DictSet.Where(c => c.Category == "PlaceHolderBindType");
+
+    string oper = "edit";
+    if (dynRole == null)
+    {
+        dynRole = new Fap.Core.Rbac.Model.FapBizDynRole();
+
+        oper = "add";
+    }
+}
+@section specificcss{
+    <link href="~/Content/Select2/css/select2.min.css" rel="stylesheet" />
+    <link href="~/Content/css/codemirror/codemirror.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/Content/css/codemirror/theme/xq-light.css">
+    <style>
+        .CodeMirror {
+            height: 200px;
+        }
+    </style>
+
+}
+@section specificscript{
+    <script src="~/Content/Select2/js/select2.min.js"></script>
+    <script src="~/Content/js/codemirror/codemirror.js"></script>
+    <script src="~/Content/js/codemirror/mode/sql/sql.js"></script>
+    <script>
+        $(function () {
+            var sqlEditor = CodeMirror.fromTextArea(document.getElementById("txtCustomSql"), {
+                mode: 'text/x-mssql',
+                theme: 'xq-light',
+                indentWithTabs: true,
+                smartIndent: true,
+                lineNumbers: true,
+                matchBrackets: true,
+                autofocus: true,
+
+            });
+            //公式内容变化的时候 及时赋值data对象
+            sqlEditor.on("change", function (instance) {
+                $("#txtCustomSqlValue").val(instance.getValue());
+            });
+            $("#selBindType").change(function () {
+                debugger
+                var cv = $(this).val();
+                if (cv == "Manual") {
+                    $("[data-ctrl=variable]").attr('disabled', false);
+                } else if (cv == "None") {
+                    $("[data-ctrl=variable]").attr('disabled', true);
+                } else {
+                    //自动
+                    $("[data-ctrl=variable]").attr('disabled', false);
+                    $("#btnBillField").attr('disabled', true);
+
+                }
+            });
+            $("#selBindType").trigger("change");
+            $("[data-ctrl=variable]").on(ace.click_event, function () {
+                sqlEditor.replaceSelection($(this).text());
+            });
+        })
+        var SaveSet = function () {
+            var roleName = $("#roleName").val();
+            var txtCustomSql = $("#txtCustomSqlValue").val();
+            if (roleName == '') {
+                alert('请输入动态角色名称');
+                return false;
+            }
+            if (txtCustomSql == '') {
+                alert('请输入获取动态角色的SQL脚本');
+                return false;
+            }
+            var setData = {};
+            setData.Id = '@dynRole.Id';
+            setData.Fid = '@dynRole.Fid';
+            setData.RoleName = roleName;
+            setData.State = $('#state').is(':checked') ? 1 : 0;
+            setData.CustomSql = txtCustomSql;
+            setData.BindType = $('#selBindType').val();
+
+            var result = false;
+            $.ajax({
+                url: "@Url.Content("~/System/Api/Manage/Setting/BusinessDynRole")",    //请求的url地址
+                dataType: "json",   //返回格式为json
+                async: false, //请求是否异步，默认为异步，这也是ajax重要特性
+                data: setData,    //参数值
+                type: "POST",   //请求方式
+                beforeSend: function () {
+                    //请求前的处理
+                },
+                success: function (req) {
+                    //请求成功时处理
+                    if (req) {
+                        result = true;
+                    }
+                },
+                complete: function () {
+                    //请求完成的处理
+                },
+                error: function () {
+                    //请求出错处理
+                }
+            });
+            return result;
+        }
+    </script>
+}
+
+<div class="row">
+    <div class="col-xs-12">
+        <!-- PAGE CONTENT BEGINS -->
+        <form class="form-horizontal" role="form">
+            <!-- #section:elements.form -->
+            <div class="form-group">
+                <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> 动态角色名称 </label>
+
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="roleName" placeholder="动态角色名称" value="@dynRole.RoleName"/>
+                </div>
+            </div>
+
+            <div class="space-4"></div>
+
+            <div class="form-group">
+                <label class="col-sm-3 control-label no-padding-right" for="form-field-1"> 状态 </label>
+
+                <div class="col-sm-9">
+                    <span class="help-inline col-xs-12 col-sm-7">
+                        <label class="middle">
+                            <input type="checkbox" id="state" fap-checked="dynRole.State == 1" class="ace"/>
+                            <span class="lbl"> 启用 </span>
+                        </label>
+                    </span>
+                </div>
+            </div>
+
+            <div class="space-4"></div>
+
+            <div class="form-group">
+                <label class="col-sm-3 control-label no-padding-right" for="form-field-1-1"> 占位符绑定方式 </label>
+
+                <div class="col-sm-9">
+                    <select id="selBindType">
+                        @foreach (var item in bindTypes)
+                        {
+                            @if (dynRole.BindType == item.Code)
+                            {
+                                <option value="@item.Code" selected>@item.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@item.Code">@item.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="space-4"></div>
+
+            <div class="form-group">
+                <label class="col-sm-3 control-label no-padding-right" for="txtCustomSql">自定义脚本SQL</label>
+
+                <div class="col-sm-9">
+                    <textarea class="form-control" id="txtCustomSql" rows="10" placeholder="自定义脚本SQL">@Html.Raw(dynRole.CustomSql)</textarea>
+                    <input type="hidden" id="txtCustomSqlValue" value="@Html.Raw(dynRole.CustomSql)" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label no-padding-right">变量</label>
+
+                <div class="col-sm-9">
+                    <div class="btn-group">
+                        <button type="button" data-rel="tooltip" data-ctrl="variable" title="单据申请人" class="btn btn-sm btn-success">{申请人}</button>
+                        <button type="button" data-rel="tooltip" data-ctrl="variable" title="单据处理人" class="btn btn-sm  btn-danger">{处理人}</button>
+                        <button type="button" data-rel="tooltip" id="btnBillField" data-ctrl="variable" title="单据中的字段" class="btn btn-sm  btn-purple">{指定字段}</button>
+
+                    </div>
+                    <div class="space-4"></div>
+                    <div class="alert alert-warning">
+                        （1）SQL结果必须返回人员Fid值；
+                        （2）自动绑定只支持占位符：{申请人}表示申请人； {处理人}表示处理人
+                        （3）手动绑定可支持占位符：{申请人}表示申请人； {处理人}表示处理人； {指定字段}表示从表单中指定关联字段
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

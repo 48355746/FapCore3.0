@@ -1,0 +1,237 @@
+﻿
+@model Fap.AspNetCore.ViewModel.JqGridViewModel
+
+<title>
+    <fap-multilang default-content="日结果" lang-key="day_result"></fap-multilang>
+</title>
+<link href="~/Content/css/daterangepicker.css" rel="stylesheet" />
+<div class="row">
+    <div class="col-xs-12 col-sm-12">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">
+                    <fap-multilang default-content="日结果" lang-key="day_result"></fap-multilang>
+                </h4>
+                <div class="widget-toolbar">
+
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar">
+                    <fap-button id="btnDayResult" btn-tag="link" content="计算日结果" icon-before="fa fa-calculator blue" class-name="info"></fap-button>
+                </div>
+                <div class="widget-toolbar">
+                    <label>
+                        <input type="checkbox" id="exkq" class="ace" />
+                        <span class="lbl"><fap-multilang lang-key="only_show_time_exception" default-content="仅显示异常考勤"></fap-multilang></span>
+                    </label>
+                    <fap-button id="btnExceptionNotice" btn-tag="link" content="异常通知" icon-before="fa fa-envelope blue" class-name="info"></fap-button>
+                </div>
+
+                <div class="widget-toolbar">
+                    <!-- #section:basics/content.searchbox -->
+                    <div class="nav-search" style="top:6px">
+                        <span class="input-icon">
+                            <input type="text" placeholder="员工编码/姓名" class="nav-search-input" id="nav-search-input" autocomplete="off" />
+                            <i class="ace-icon fa fa-search nav-search-icon"></i>
+                        </span>
+
+                    </div><!-- /.nav-search -->
+                    <!-- /section:basics/content.searchbox -->
+                </div>
+                <div class="widget-toolbar">
+                    <!-- #section:basics/content.searchbox -->
+                    <div class="nav-search" style="top:6px">
+                        <span class="input-icon">
+                            <input type="text" placeholder="日期范围" class="nav-search-input" id="nav-calendar-input" style="width:256px" autocomplete="off" />
+                            <i class="ace-icon fa fa-calendar nav-search-icon"></i>
+                        </span>
+
+                    </div><!-- /.nav-search -->
+                </div>
+            </div>
+            <div class="widget-body">
+
+                <div class="widget-main">
+                    <fap-grid id="tmdayresult" grid-model="Model" auto-width="true"
+                              view-records="true" multi-box-only="true" multi-select="true" shrink-fit="false"></fap-grid>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="right-menu" class="modal aside" data-body-scroll="false" data-offset="true" data-placement="right" data-fixed="true" data-backdrop="invisible" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header no-padding">
+                    <div class="table-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                            <span class="white">&times;</span>
+                        </button>
+                        <fap-multilang lang-key="department" default-content="部门"></fap-multilang>
+                    </div>
+                </div>
+
+                <div class="modal-body">
+                    <div id="treeDeptDiv" class="widget-main ">
+                        <div class="scrollable">
+                            <fap-tree id="orgdept" is-async="false" is-orgdept="true"></fap-tree>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /.modal-content -->
+
+            <button class="aside-trigger btn btn-purple btn-app btn-xs ace-settings-btn" data-target="#right-menu" data-toggle="modal" type="button">
+                <i data-icon1="fa-sitemap" data-icon2="fa-minus" class="ace-icon fa fa-sitemap bigger-110 icon-only"></i>
+            </button>
+        </div><!-- /.modal-dialog -->
+    </div>
+</div>
+
+<script>
+    var scripts = [null,  "/Scripts/FapControl/dateFilter.js?v=1", "/Content/js/date-time/daterangepicker.js", null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $('.modal.aside').ace_aside();
+            $(document).one('ajaxloadstart.page', function (e) {
+                $("#tree-orgdept").jstree("destroy");
+                window.dateDayResultRange = null;
+                $('.modal.aside').remove();
+                $(window).off('.aside');
+            })
+            //moment.locale('zh-cn');
+            $('#nav-calendar-input').daterangepicker({
+                'applyClass': 'btn-sm btn-success btn-round',
+                'cancelClass': 'btn-sm btn-default  btn-round',
+                locale: {
+                    applyLabel: '确定',
+                    customRangeLabel: "自定义",
+                    //format: "YYYY-MM-DD",
+                    separator: " 至 ",
+                    cancelLabel: '取消'
+                }, ranges: {
+                    '今天': [moment(), moment()],
+                    '昨天': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    '过去7天': [moment().subtract(6, 'days'), moment()],
+                    '过去30天': [moment().subtract(29, 'days'), moment()],
+                    '当月': [moment().startOf('month'), moment().endOf('month')],
+                    '上月': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                }
+            }).on('apply.daterangepicker', function (ev, picker) {
+                window.dateDayResultRange = {
+                    "start": picker.startDate.format('YYYY-MM-DD') + " 00:00:00",
+                    "end": picker.endDate.format('YYYY-MM-DD') + " 23:59:59"
+                };
+                refreshGrid();
+            }).next().on(ace.click_event, function () {
+                $(this).prev().focus();
+            });
+            //时间变化事件
+            $('#nav-calendar-input');
+            $('#tree-orgdept').on("changed.jstree", function (e, data) {
+                if (data && data.selected && data.selected.length) {                    
+                    refreshGrid();
+                }
+            });
+            $("#nav-search-input").change(function () {
+                var v = $(this).val();
+                var rules = [];
+                rules.push({ "field": "EmpUid", "op": "in", "data": "(select fid from Employee where (EmpName like '" + v + "%' or EmpCode like '" + v + "%'))" });
+                if (window.dateDayResultRange) {
+                    rules.push({ field: "CurrDate", op: "ge", data: window.dateDayResultRange.start });
+                    rules.push({ field: "CurrDate", op: "le", data: window.dateDayResultRange.end });
+                }
+                var eblist = [];
+                if ($("#exkq:checked").length > 0) {
+                    var eb = [];
+                    eb.push({ field: "CalResult", op: "cn", data: '缺勤' });
+                    eb.push({ field: "CalResult", op: "cn", data: '迟到' });
+                    eb.push({ field: "CalResult", op: "cn", data: '早退' });
+                    var ebfilter = { groupOp: "OR", rules: eb };
+                    eblist.push(ebfilter);
+                }
+                var filter = { groupOp: "AND", rules: rules, groups: eblist };
+                 reloadGrid("grid-tmdayresult", { filters: JSON.stringify(filter) });
+            })
+
+            $("#btnDayResult").click(function () {
+                bootbox.confirm("计算日结果将非常耗时，确认计算吗？", function (result) {
+                    if (result) {
+                        var index = layer.load();
+                        $.get('@Url.Content("~/Time/Api/DayResult/Calulate")', function (rv) {
+                            if (rv.success) {
+                                $.msg(rv.msg);
+                            } else {
+                                bootbox.alert(rv.msg);
+                            }
+                            layer.close(index);
+                        })
+                    }
+                })
+            });
+            $("#btnExceptionNotice").click(ace.click_event, function () {
+                bootbox.prompt({
+                    title: "选择接收人!",
+                    value: ['emp', 'mgr'],
+                    inputType: 'checkbox',
+                    inputOptions: [{
+                        text: '员工',
+                        value: 'emp',
+                    },
+                    {
+                        text: '部门负责人',
+                        value: 'mgr',
+                    }],
+                    callback: function (result) {
+                        if (result != null && result.length>0) {
+                            $.post(basePath + "/Time/Api/Exception/Notice", { options: result }, function () {
+
+
+                            })
+                        }
+                    }
+                });
+            })
+        })
+    });
+    function refreshGrid() {
+        var treeDept = $('#tree-orgdept').jstree(true);
+        var selData = treeDept.get_selected();
+        var r = [];        
+        if (window.dateDayResultRange) {
+            var start = window.dateDayResultRange.start;
+            var end = window.dateDayResultRange.end;
+            r.push({ field: "CurrDate", op: "ge", data: start });
+            r.push({ field: "CurrDate", op: "le", data: end });
+        }
+        if (selData.length > 0) {
+            var childs = treeDept.get_node(selData[0]).children_d;
+            var selids = childs.concat(selData[0]);
+            var deptUids = [];
+            //筛选有权限的节点
+            var sels = $.grep(selids, function (d, i) {
+                return treeDept.get_node(d).data.ext1 == false;
+            });
+            $.each(sels, function (i, d) {
+                deptUids.push(d);
+            })
+            var dept = { field: "DeptUid", "op": "in", "data": deptUids.join(",") };
+            r.push(dept);
+        }
+        var eblist = [];
+        if ($("#exkq:checked").length > 0) {
+            var eb = [];
+            eb.push({ field: "CalResult", op: "cn", data: '缺勤' });
+            eb.push({ field: "CalResult", op: "cn", data: '迟到' });
+            eb.push({ field: "CalResult", op: "cn", data: '早退' });
+            var ebfilter = { groupOp: "OR", rules: eb };
+            eblist.push(ebfilter);
+        }
+        var filter = { groupOp: "AND", rules: r, groups: eblist };
+        reloadGrid("grid-tmdayresult", { filters: JSON.stringify(filter) });
+
+    }
+
+</script>

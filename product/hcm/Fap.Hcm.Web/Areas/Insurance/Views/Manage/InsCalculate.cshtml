@@ -1,0 +1,184 @@
+﻿@model IEnumerable<Fap.Hcm.Service.Insurance.InsCase>
+
+<title><fap-multilang lang-key="insurance_calculate" default-content="保险计算"></fap-multilang></title>
+
+<div class="row">
+    <div class="col-xs-12">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">
+                    <fap-multilang lang-key="insurance_calculate" default-content="保险计算"></fap-multilang>
+                </h4>
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar">
+                    <select class="chosen-select form-control" style="width:200px" id="selInsCase" multi-placeholder="保险组...">
+                        <option value="">  </option>
+                        @foreach (var insCase in Model)
+                        {
+                            <option value="@insCase.Fid" data-tn="@insCase.TableName">@insCase.CaseName</option>
+                        }
+                    </select>
+                </div>
+                <div class="widget-toolbar">
+                    <fap-button id="btnInsOff" btn-tag="link" content="完成" icon-before="fa fa-check-circle blue" class-name="info"></fap-button>
+                    <fap-button id="btnInsOffCancel" btn-tag="link" content="取消完成" icon-before="fa fa-times-circle blue" class-name="info"></fap-button>
+                </div>
+                <div class="widget-toolbar">
+                    <fap-button id="btnInitData" btn-tag="link" content="初始化" icon-before="fa fa-refresh blue" class-name="info"></fap-button>
+                    <fap-button id="btnCalculate" btn-tag="link" content="计算" icon-before="fa fa-calculator blue" class-name="info"></fap-button>
+                    <fap-button id="btnGapAnalysis" btn-tag="link" content="差异比对" icon-before="fa fa-magic blue" class-name="info"></fap-button>
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main" id="insCaseContent">
+                    <h3 class="infobox-blue2 center">选择要计算的保险组进行相应操作</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var scripts = [null,"/Content/js/jquery.tmpl.min.js", null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+            })
+            $('.chosen-select').chosen({ allow_single_deselect: true }).on("change", function () {
+                var c = $(this).val();
+                if (c === "") {
+                    return;
+                }
+                $("#insCaseContent").empty();
+                var index = layer.load();
+                $.get(basePath + "/Insurance/Manage/InsInfo/" + c, { menuUrl: "~/Insurance/Manage/InsCalculate" }, function (content) {
+                    $("#insCaseContent").html(content);
+                    //完毕重新设置jqgrid宽度
+                    $(window).triggerHandler('resize.jqGrid');
+                    layer.close(index);
+                })
+            });
+            $("#btnInitData").on(ace.click_event, function () {
+                var caseUid = $("#selInsCase").val();
+                if (caseUid === "") {
+                    return;
+                }
+                var dialog = bootbox.dialog({
+                    title: $.lang("init_insurance_data", "初始化保险数据"),
+                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                    footer: false,
+                    buttons: {
+                        init: {
+                            label: $.lang("init", "初始化"),
+                            className: "btn-primary btn-link",
+                            callback: function () {
+                                initInsuranceData(caseUid);
+                            }
+                        }
+                    }
+                });
+                dialog.init(function () {
+                    $.get(basePath + "/Insurance/Manage/InsDataInit/" + caseUid, function (ev) {
+                        dialog.find('.bootbox-body').html(ev);
+                    });
+                });
+            })
+            $("#btnCalculate").on(ace.click_event, function () {
+                var caseUid = $("#selInsCase").val();
+                if (caseUid === "") {
+                    return;
+                }
+                $.get("@Url.Content("~/Insurance/Api/FormulaCase")", { caseUid: caseUid }, function (rv) {
+                    if (!rv.success) {
+                        bootbox.alert(rv.msg);
+                        return;
+                    }
+                    let data = rv.data;
+                    if (data.length < 1) {
+                        bootbox.alert("请设置公式套再计算");
+                        return;
+                    }
+                    var ca = [];
+                    $.each(data, function (i, d) {
+                        ca.push({ text: d.fcName, value: d.fid });
+                    })
+                    bootbox.prompt({
+                        title: "选择公式套计算",
+                        inputType: 'select',
+                        inputOptions: ca,
+                        callback: function (result) {
+                            if (result) {
+                                $.post("@Url.Content("~/Core/Api/FormulaCalculate")", { formulaCaseUid: result }, function (rv) {
+                                    if (rv.success) {
+                                        if (rv.data.length > 1) {
+                                            bootbox.alert(rv.data.join());
+                                        } else {
+                                            $.msg(rv.msg);
+                                        }
+                                        refreshInscase();
+                                    } else {
+                                        bootbox.alert(rv.msg);
+                                    }
+                                })
+                            } else {
+                                $.msg("你没有选择计算公式套");
+                            }
+                        }
+                    });
+                })
+            });
+            $("#btnInsOff").on(ace.click_event, function () {
+                var caseUid = $("#selInsCase").val();
+                if (caseUid === "") {
+                    return;
+                }
+                bootbox.confirm("确认完成保险吗", function (result) {
+                    if (result) {
+                        $.post(basePath + "/Insurance/Api/InsOff", { caseUid: caseUid }, function (rv) {
+                            if (rv.success) {
+                                $.msg(rv.msg);
+                                refreshInscase();
+                            } else {
+                                bootbox.alert(rv.msg);
+                            }
+                        })
+                    }
+                })
+            })
+            $("#btnInsOffCancel").on(ace.click_event, function () {
+                var caseUid = $("#selInsCase").val();
+                if (caseUid === "") {
+                    return;
+                }
+                bootbox.confirm("确认取消完成吗", function (result) {
+                    if (result) {
+                        $.post(basePath + "/Insurance/Api/InsOffCancel", { caseUid: caseUid }, function (rv) {
+                            if (rv.success) {
+                                $.msg(rv.msg);
+                                refreshInscase();
+                            } else {
+                                bootbox.alert(rv.msg);
+                            }
+                        })
+                    }
+                })
+            })
+            $("#btnGapAnalysis").on(ace.click_event, function () {
+                var caseUid = $("#selInsCase").val();
+                if (caseUid === "") {
+                    return;
+                }
+                bootboxWindow($.lang("gap_analysis", "差异比对"), basePath + "/Insurance/Manage/InsGapAnalysis/" + caseUid);
+            })
+   
+            function refreshInscase() {
+                var grdId = "grid-" + $("#selInsCase").find("option:selected").data("tn");
+                refreshGrid(grdId);
+            }
+        });
+    });
+</script>

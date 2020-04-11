@@ -1,0 +1,19 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+    Layout = null;
+}
+<title><fap-multilang default-content="班次设置" lang-key="shifit_set"></fap-multilang></title>
+
+<div class="row">
+    <div class="col-xs-12">
+        <fap-grid id="tmshiftset" grid-model="Model" auto-width="true"  shrink-fit="false" view-records="true"
+                  inline-grid-enabled="true"></fap-grid>
+    </div>
+</div>
+<script>
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+        })
+    })
+</script>

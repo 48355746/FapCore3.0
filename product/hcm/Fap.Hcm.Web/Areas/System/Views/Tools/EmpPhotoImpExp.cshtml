@@ -1,0 +1,47 @@
+﻿@{
+    Layout = null;
+}
+<title>员工照片导入</title>
+<link href="~/Content/css/fileinput.css" rel="stylesheet" />
+
+<div class="row">
+    <div class="col-xs-12">
+
+
+        <div class="alert alert-block alert-warning">
+            <button type="button" class="close" data-dismiss="alert">
+                <i class="ace-icon fa fa-times"></i>
+            </button>
+
+            <i class="ace-icon fa fa-exclamation-triangle orange"></i>
+
+            注：
+            @*<strong class="green">
+
+                    <small>(v1.3.2)</small>
+                </strong>,*@
+            上传文件夹下所有的文件。文件名称：员工编码_员工姓名（001_张三）
+        </div>
+
+
+        <input id="input-folder-2" name="input-folder-2[]" class="file-loading" type="file" multiple webkitdirectory accept="image/*"/>
+        <div id="errorBlock" class="help-block"></div>
+    </div>
+</div>
+<script>
+    var scripts = [null, "/Content/js/fileinput/plugins/canvas-to-blob.min.js", "/Content/fileinput/fileinput.min.js", "/Content/fileinput/locales/zh.js", null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $("#input-folder-2").fileinput({
+                language: 'zh',
+                browseLabel: '选择文件夹...',
+                previewFileIcon: '<i class="fa fa-file"></i>',
+                uploadUrl: "@Url.Content("~/System/Api/Tools/EmpPhotoImport/")",
+                allowedFileExtensions: ["jpg", "png", "gif"],
+                //allowedPreviewTypes: ["jpg", "png", "gif"], // set to empty, null or false to disable preview for all types
+                maxImageWidth: 200,
+                resizeImage: true
+            });
+        });
+    })
+</script>

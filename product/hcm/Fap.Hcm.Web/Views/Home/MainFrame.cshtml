@@ -1,0 +1,475 @@
+﻿@{
+    var currLanguage = _multiLangService.CurrentLanguage; //当前语种
+    //string systemName = _configService.GetSysParamValue("sys.web.name");//系统名称
+}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    @*<meta charset="utf-8" />*@
+    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    @*bootstrap css*@
+    <environment include="Development">
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+        <link rel="stylesheet" href="~/Content/css/font-awesome.css" />
+        <link rel="stylesheet" href="~/Content/css/ace-fonts.css" />
+    </environment>
+    <environment exclude="Development">
+        <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css"
+              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
+              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
+        <link rel="stylesheet" href="~/css/acefont.min.css" asp-append-version="true" />
+    </environment>
+    @*fap control css*@
+<environment include="Development">
+    <link rel="stylesheet" href="~/Content/css/jquery-ui.css" />
+    <link rel="stylesheet" href="~/Content/JqGrid/css/ui.jqgrid.css"  asp-append-version="true"/>
+    <link rel="stylesheet" href="~/Content/css/jquery-ui.custom.css" />
+    <link rel="stylesheet" href="~/Content/Handsontable/css/handsontable.full.min.css" />
+    <link rel="stylesheet" href="~/Content/css/jquery.gritter.css" />
+    <link rel="stylesheet" href="~/Content/css/bootstrap-editable.css" />
+    <link rel="stylesheet" href="~/Content/css/jquery.bootstrap-touchspin.css" />
+    <link rel="stylesheet" href="~/Content/css/bootstrap-datetimepicker.css" />
+    <link rel="stylesheet" href="~/Content/date-time-h5/css/mobiscroll.core-2.6.2.css" />
+    <link rel="stylesheet" href="~/Content/date-time-h5/css/mobiscroll.animation-2.6.2.css" />
+    <link rel="stylesheet" href="~/Content/date-time-h5/css/mobiscroll.android-ics-2.6.2.css" />
+    <link rel="stylesheet" href="~/Content/css/chosen.css" />
+    <link rel="stylesheet" href="~/Content/css/bootstrap-duallistbox.css" />   
+    <link href="~/Content/fileinput/css/fileinput.css" rel="stylesheet" asp-append-version="true"/>
+    <link rel="stylesheet" href="~/Content/Select2/css/select2.css" />
+    <link rel="stylesheet" href="~/Content/js/JsTree/themes/default/style.css" />
+    <link rel="stylesheet" href="~/Content/css/colorpicker.css" />
+    <link rel="stylesheet" href="~/Content/citypicker/city-picker.css" />
+    <link rel="stylesheet" href="~/Content/css/colorbox.css" />
+    <link rel="stylesheet" href="~/Content/js/jRange/jquery.range.css" asp-append-version="true" />
+</environment>
+    <environment exclude="Development">
+        <link rel="stylesheet" href="~/css/control.min.css" asp-append-version="true" />
+    </environment>
+
+    @*ace main css*@
+    <environment include="Development">
+        <link rel="stylesheet" href="~/Content/nprogress/nprogress.css" />
+        <link rel="stylesheet" href="~/Content/css/ace.css" class="ace-main-stylesheet" id="main-ace-style" asp-append-version="true" />
+        <link rel="stylesheet" href="~/Content/Site.css" class="ace-main-stylesheet" id="main-ace-style" asp-append-version="true" />
+    </environment>
+    <environment exclude="Development">
+        <link rel="stylesheet" href="~/css/ace.min.css" asp-append-version="true" />
+    </environment>
+
+    <!--[if lte IE 9]>
+        <link rel="stylesheet" href="/Content/css/ace-part2.css" class="ace-main-stylesheet" />
+    <![endif]-->
+    <!--[if lte IE 9]>
+      <link rel="stylesheet" href="/Content/css/ace-ie.css" />
+    <![endif]-->
+    <!-- page specific plugin styles -->
+    <!--实时IM的样式-->
+    @*<link href="/Content/chat/Css/ChatCore.css" rel="stylesheet" />*@
+    <!-- inline styles related to this page -->
+    <!-- basic scripts -->
+    <!--[if !IE]> -->
+    <script type="text/javascript">
+        window.jQuery || document.write("<script src='/Content/js/jquery.js'>" + "<" + "/script>");
+
+    </script>
+    <script src="~/Content/nprogress/nprogress.js"></script>
+    <!-- <![endif]-->
+    <!--[if IE]>
+    <script type="text/javascript">
+     window.jQuery || document.write("<script src='/Content/js/jquery1x.js'>"+"<"+"/script>");
+    </script>
+    <![endif]-->
+    <!-- ace settings handler -->
+    <script src="/Content/js/ace-extra.js"></script>
+
+    <!-- HTML5shiv and Respond.js for IE8 to support HTML5 elements and media queries -->
+    <!--[if lte IE 8]>
+    <script src="/Content/js/html5shiv.js"></script>
+    <script src="/Content/js/respond.js"></script>
+    <![endif]-->
+    <!--[if lte IE 8]>
+          <script src="/Content/js/excanvas.js"></script>
+      <![endif]-->
+    <!-- page specific plugin scripts -->
+    <!--多语资源-->
+    <script src="/Scripts/MultiLanguage.js" asp-append-version="true"></script>
+    <script>
+        //全局根路径
+        var basePath = window.location.protocol+ "//" + window.location.host;
+        var language = '@currLanguage'; //当前语种
+        MultiLangHelper.initLang(language);
+        NProgress.configure({ parent:".page-content"})
+    </script>
+</head>
+
+<body class="no-skin">
+    <!-- #section:basics/navbar.layout -->
+    <div id="navbar" class="navbar navbar-default">
+        <script type="text/javascript">
+            try { ace.settings.check('navbar', 'fixed') } catch (e) { }
+        </script>
+
+        <div class="navbar-container" id="navbar-container">
+            <!-- #section:basics/sidebar.mobile.toggle -->
+            <button type="button" class="navbar-toggle menu-toggler pull-left" id="menu-toggler" data-target="#sidebar">
+                <span class="sr-only">Toggle sidebar</span>
+
+                <span class="icon-bar"></span>
+
+                <span class="icon-bar"></span>
+
+                <span class="icon-bar"></span>
+            </button>
+
+            <!-- /section:basics/sidebar.mobile.toggle -->
+            <div class="navbar-header pull-left">
+                <!-- #section:basics/navbar.layout.brand -->
+                <a href="#" class="navbar-brand">
+                    <small>
+                        @*<img class="pull-left" style="height:23px" src="~/Content/images/logo32.png" />*@
+                        <i class="fa fa-globe"></i>
+                        <fap-multilang lang-key="system_name" default-content=""></fap-multilang>
+                    </small>
+                </a>
+
+                <!-- /section:basics/navbar.layout.brand -->
+                <!-- #section:basics/navbar.toggle -->
+                <!-- /section:basics/navbar.toggle -->
+            </div>
+
+            <!-- #section:basics/navbar.dropdown -->
+            <div class="navbar-buttons navbar-header pull-right" role="navigation">
+                <ul class="nav ace-nav">
+                    @await Component.InvokeAsync("Message")
+
+                    <!-- #section:basics/navbar.user_menu -->
+                    @await Component.InvokeAsync("LoginInfo")
+                    <!-- /section:basics/navbar.user_menu -->
+                </ul>
+            </div>
+
+            <!-- /section:basics/navbar.dropdown -->
+        </div><!-- /.navbar-container -->
+    </div>
+
+    <!-- /section:basics/navbar.layout -->
+    <div class="main-container" id="main-container">
+        <script type="text/javascript">
+            try { ace.settings.check('main-container', 'fixed') } catch (e) { }
+        </script>
+
+        <!-- #section:basics/sidebar -->
+        <div id="sidebar" class="sidebar                  responsive">
+            <script type="text/javascript">
+                try { ace.settings.check('sidebar', 'fixed') } catch (e) { }
+            </script>
+
+            <div class="sidebar-shortcuts" id="sidebar-shortcuts">
+                <div class="sidebar-shortcuts-large" id="sidebar-shortcuts-large" style="text-align:left">
+
+                    <button class="btn btn-success">
+                        <i class="ace-icon fa fa-signal"></i>
+                    </button>
+
+                    <button class="btn btn-info">
+                        <i class="ace-icon fa fa-pencil"></i>
+                    </button>
+
+                    <!-- #section:basics/sidebar.layout.shortcuts -->
+                    <button class="btn btn-warning">
+                        <i class="ace-icon fa fa-users"></i>
+                    </button>
+
+                    <button class="btn btn-danger">
+                        <i class="ace-icon fa fa-cogs"></i>
+                    </button>
+
+                    <!-- /section:basics/sidebar.layout.shortcuts -->
+                </div>
+
+                <div class="sidebar-shortcuts-mini" id="sidebar-shortcuts-mini">
+                    <span class="btn btn-success"></span>
+
+                    <span class="btn btn-info"></span>
+
+                    <span class="btn btn-warning"></span>
+
+                    <span class="btn btn-danger"></span>
+                </div>
+            </div><!-- /.sidebar-shortcuts -->
+            <!-- /.nav-list -->
+            @await Component.InvokeAsync("Menus")
+            <!-- /.nav-list -->
+            <!-- #section:basics/sidebar.layout.minimize -->
+            <div class="sidebar-toggle sidebar-collapse" id="sidebar-collapse">
+                <i class="ace-icon fa fa-angle-double-left" data-icon1="ace-icon fa fa-angle-double-left" data-icon2="ace-icon fa fa-angle-double-right"></i>
+            </div>
+
+            <!-- /section:basics/sidebar.layout.minimize -->
+            <script type="text/javascript">
+                try { ace.settings.check('sidebar', 'collapsed') } catch (e) { }
+            </script>
+        </div>
+
+        <!-- /section:basics/sidebar -->
+        <div class="main-content">
+            <div class="main-content-inner">
+                <!-- #section:basics/content.breadcrumbs -->
+                <div class="breadcrumbs" id="breadcrumbs">
+                    <!-- #section:settings.box -->
+                    <div class="ace-settings-container" id="ace-settings-container">
+                        <div class="btn btn-app btn-xs btn-warning ace-settings-btn" id="ace-settings-btn">
+                            <i class="ace-icon fa fa-cog bigger-130"></i>
+                        </div>
+
+                        <div class="ace-settings-box clearfix" id="ace-settings-box">
+                            <div class="pull-left width-50">
+                                <!-- #section:settings.skins -->
+                                <div class="ace-settings-item">
+                                    <div class="pull-left">
+                                        <select id="skin-colorpicker" class="hide">
+                                            <option data-skin="no-skin" value="#438EB9">#438EB9</option>
+                                            <option data-skin="skin-1" value="#222A2D">#222A2D</option>
+                                            <option data-skin="skin-2" value="#C6487E">#C6487E</option>
+                                            <option data-skin="skin-3" value="#D0D0D0">#D0D0D0</option>
+                                        </select>
+                                    </div>
+                                    <span>&nbsp; 选择皮肤</span>
+                                </div>
+
+                                <!-- /section:settings.skins -->
+                                <!-- #section:settings.navbar -->
+                                <div class="ace-settings-item">
+                                    <input type="checkbox" class="ace ace-checkbox-2" id="ace-settings-navbar" />
+                                    <label class="lbl" for="ace-settings-navbar"> 固定导航栏</label>
+                                </div>
+
+                                <!-- /section:settings.navbar -->
+                                <!-- #section:settings.sidebar -->
+                                <div class="ace-settings-item">
+                                    <input type="checkbox" class="ace ace-checkbox-2" id="ace-settings-sidebar" />
+                                    <label class="lbl" for="ace-settings-sidebar">固定侧边栏</label>
+                                </div>
+
+                                <!-- /section:settings.sidebar -->
+                                <!-- #section:settings.breadcrumbs -->
+                                <div class="ace-settings-item">
+                                    <input type="checkbox" class="ace ace-checkbox-2" id="ace-settings-breadcrumbs" />
+                                    <label class="lbl" for="ace-settings-breadcrumbs"> 固定路径导航</label>
+                                </div>
+
+                                <!-- /section:settings.breadcrumbs -->
+                                <!-- #section:settings.rtl -->
+                                <div class="ace-settings-item">
+                                    <input type="checkbox" class="ace ace-checkbox-2" id="ace-settings-rtl" />
+                                    <label class="lbl" for="ace-settings-rtl"> 从右到左（RTL）</label>
+                                </div>
+
+                                <!-- /section:settings.rtl -->
+                                <!-- #section:settings.container -->
+                                <div class="ace-settings-item">
+                                    <input type="checkbox" class="ace ace-checkbox-2" id="ace-settings-add-container" />
+                                    <label class="lbl" for="ace-settings-add-container">
+                                        居中布局
+                                    </label>
+                                </div>
+
+                                <!-- /section:settings.container -->
+                            </div><!-- /.pull-left -->
+
+                            <div class="pull-left width-50">
+                                <!-- #section:basics/sidebar.options -->
+                                <div class="ace-settings-item">
+                                    <input type="checkbox" class="ace ace-checkbox-2" id="ace-settings-hover" />
+                                    <label class="lbl" for="ace-settings-hover"> 悬停出子菜单</label>
+                                </div>
+
+                                <div class="ace-settings-item">
+                                    <input type="checkbox" class="ace ace-checkbox-2" id="ace-settings-compact" />
+                                    <label class="lbl" for="ace-settings-compact"> 紧凑的侧边栏</label>
+                                </div>
+
+                                <div class="ace-settings-item">
+                                    <input type="checkbox" class="ace ace-checkbox-2" id="ace-settings-highlight" />
+                                    <label class="lbl" for="ace-settings-highlight"> 标注活动菜单</label>
+                                </div>
+
+                                <!-- /section:basics/sidebar.options -->
+                            </div><!-- /.pull-left -->
+                        </div><!-- /.ace-settings-box -->
+                    </div><!-- /.ace-settings-container -->
+                    <!-- /section:settings.box -->
+                    <script type="text/javascript">
+                        try { ace.settings.check('breadcrumbs', 'fixed') } catch (e) { }
+                    </script>
+                    <ul class="breadcrumb">
+                        <li>
+                            <i class="ace-icon fa fa-home home-icon"></i>
+                            @*<a href="#">Home</a>*@
+                        </li>
+                    </ul><!-- /.breadcrumb -->
+                    <!-- /.breadcrumb -->
+                    <!-- #section:basics/content.searchbox -->
+                    @*<div class="nav-search" id="nav-search">
+                            <form class="form-search">
+                                <span class="input-icon">
+                                    <input type="text" placeholder="搜索 ..." class="nav-search-input" id="nav-search-input" autocomplete="off" />
+                                    <i class="ace-icon fa fa-search nav-search-icon"></i>
+                                </span>
+                            </form>
+                        </div>*@<!-- /.nav-search -->
+                    <!-- /section:basics/content.searchbox -->
+
+                </div>
+
+                <!-- /section:basics/content.breadcrumbs -->
+                <div class="page-content">
+
+                    <div class="page-content-area" data-ajax-content="true">
+                        <!-- ajax content goes here -->
+                    </div><!-- /.page-content-area -->
+                </div><!-- /.page-content -->
+            </div>
+        </div><!-- /.main-content -->
+
+        <div class="footer">
+            <div class="footer-inner">
+                <!-- #section:basics/footer -->
+                <div class="footer-content">
+                    <span class="bigger-120">
+                        <span class="blue bolder">HCM</span>
+                        wangyf &copy; 2014-2015
+                    </span>
+                </div>
+
+                <!-- /section:basics/footer -->
+            </div>
+        </div>
+
+        <a href="#" id="btn-scroll-up" class="btn-scroll-up btn btn-sm btn-inverse">
+            <i class="ace-icon fa fa-angle-double-up icon-only bigger-110"></i>
+        </a>
+    </div><!-- /.main-container -->
+
+    <mini-profiler />
+
+    <script type="text/javascript">
+        if ('ontouchstart' in document.documentElement) document.write("<script src='/Content/js/jquery.mobile.custom.js'>" + "<" + "/script>");
+    </script>
+
+    <environment include="Development">
+        <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+        <!-- ace scripts -->
+        <script src="~/Content/js/ace/elements.scroller.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/elements.colorpicker.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/elements.fileinput.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/elements.typeahead.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/elements.wysiwyg.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/elements.spinner.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/elements.treeview.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/elements.wizard.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/elements.aside.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/ace.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/ace.ajax-content.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/ace.touch-drag.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/ace.sidebar.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/ace.sidebar-scroll-1.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/ace.submenu-hover.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/ace.widget-box.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/ace.settings.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/ace.settings-rtl.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/ace.settings-skin.js" asp-append-version="true"></script>
+        <script src="~/Content/js/ace/ace.widget-on-reload.js" asp-append-version="true"></script>
+        <!-- common scripts -->
+        <script src="~/Content/js/date-time/moment.js" asp-append-version="true"></script>
+        <script src="~/Content/js/bootbox.js" asp-append-version="true"></script>
+        <script src="~/Content/js/jquery.gritter.js" asp-append-version="true"></script>
+        <script src="~/Content/js/jquery-ui.js" asp-append-version="true"></script>
+        <script src="~/Content/js/jquery-ui.custom.js" asp-append-version="true"></script>
+        <script src="~/Content/js/jquery.ui.touch-punch.js" asp-append-version="true"></script>
+        <script src="~/Content/js/jquery.nestable.js" asp-append-version="true"></script>
+        <script src="~/Scripts/Fap/common.js" asp-append-version="true"></script>
+        <script src="~/Scripts/Fap/utils.js" asp-append-version="true"></script>
+        <script src="~/Content/js/date-time/bootstrap-datetimepicker.js" asp-append-version="true"></script>
+        <script src="~/Content/js/jquery.DatePicker.js" asp-append-version="true"></script>
+        <script src="~/Content/js/date-time/locales/bootstrap-datetimepicker.zh-CN.js" asp-append-version="true"></script>
+        <script src="~/Content/js/date-time/bootstrap-datepicker.js" asp-append-version="true"></script>
+        <script src="~/Content/js/jquery.validate.js" asp-append-version="true"></script>
+        <script src="~/Content/js/jquery.bootstrap-duallistbox.js" asp-append-version="true"></script>
+        <script src="~/Content/date-time-h5/js/mobiscroll.core-2.6.2.js" asp-append-version="true"></script>
+        <script src="~/Content/date-time-h5/js/mobiscroll.android-ics-2.6.2.js" asp-append-version="true"></script>
+        <script src="~/Content/date-time-h5/js/mobiscroll.datetime-2.6.2.js" asp-append-version="true"></script>
+        <script src="~/Content/date-time-h5/js/mobiscroll.core-2.6.2-zh.js" asp-append-version="true"></script>
+        <script src="~/Content/fileinput/fileinput.js" asp-append-version="true"></script>
+        <script src="~/lib/echarts/echarts.common.min.js"></script>
+        <script src="~/Content/js/chosen.jquery.js" asp-append-version="true"></script>
+        <script src="~/Content/js/jquery.bootstrap-touchspin.js" asp-append-version="true"></script>
+        <script src="~/Content/js/jquery.inputlimiter.1.3.1.js" asp-append-version="true"></script>
+        <script src="~/Content/js/bootstrap-wysiwyg.js" asp-append-version="true"></script>
+        <script src="~/Content/js/jquery.hotkeys.js" asp-append-version="true"></script>
+        <script src="~/Content/citypicker/city-picker.data.js" asp-append-version="true"></script>
+        <script src="~/Content/citypicker/city-picker.js" asp-append-version="true"></script>
+        <script src="~/Content/citypicker/jquery.citypicker.js" asp-append-version="true"></script>
+        <script src="~/Content/js/jquery.colorbox.js" asp-append-version="true"></script>
+        <script src="~/Content/js/jquery.raty.js" asp-append-version="true"></script>
+        <script src="~/Content/js/fuelux/fuelux.wizard.js" asp-append-version="true"></script>
+        <script src="~/Scripts/Fap/mainframe.js" asp-append-version="true"></script>
+        <!-- control scripts -->
+        <script src="~/Content/JqGrid/jquery.jqGrid.src.js" asp-append-version="true"></script>
+
+
+        <script src="~/Content/js/x-editable/bootstrap-editable.js" asp-append-version="true"></script>
+        <script src="~/Content/js/x-editable/ace-editable.js" asp-append-version="true"></script>
+        <script src="~/Content/js/x-editable/fap-editable.js" asp-append-version="true"></script>
+        <script src="~/Scripts/FapControl/dataGrid.js" asp-append-version="true"></script>
+        <script src="~/Scripts/FapControl/dataForm.js" asp-append-version="true"></script>
+        <script src="~/Content/js/JsTree/jstree.js" asp-append-version="true"></script>
+        <script src="~/Content/Select2/js/select2.full.js" asp-append-version="true"></script>
+        <script src="~/Content/js/jRange/jquery.range.js" asp-append-version="true"></script>
+
+    </environment>
+    @if (currLanguage == Fap.Core.MultiLanguage.MultiLanguageEnum.En)
+    {
+        //多语
+        <script src="~/Content/JqGrid/i18n/grid.locale-en.js" asp-append-version="true"></script>
+        <script src="~/Content/fileinput/locales/LANG.js" asp-append-version="true"></script>
+    }
+    else if (currLanguage == Fap.Core.MultiLanguage.MultiLanguageEnum.ZhCn)
+    {
+        <script src="~/Content/JqGrid/i18n/grid.locale-cn.js" asp-append-version="true"></script>
+        <script src="~/Content/fileinput/locales/zh.js" asp-append-version="true"></script>
+    }
+    else if (currLanguage == Fap.Core.MultiLanguage.MultiLanguageEnum.ZhTW)
+    {
+        <script src="~/Content/JqGrid/i18n/grid.locale-tw.js" asp-append-version="true"></script>
+        <script src="~/Content/fileinput/locales/zh-TW.js" asp-append-version="true"></script>
+    }
+    else if (currLanguage == Fap.Core.MultiLanguage.MultiLanguageEnum.Ja)
+    {
+        <script src="~/Content/JqGrid/i18n/grid.locale-ja.js" asp-append-version="true"></script>
+        <script src="~/Content/fileinput/locales/ja.js" asp-append-version="true"></script>
+    }
+    <environment exclude="Development">
+        <script src="~/lib/bootstrap/dist/js/bootstrap.min.js" asp-append-version="true"></script>
+        <script src="~/js/ace.min.js" asp-append-version="true"></script>
+        <script src="~/js/fapcommon.min.js" asp-append-version="true"></script>
+        <script src="~/js/fapcontrol.min.js" asp-append-version="true"></script>
+        <script src="~/Content/js/lodash.min.js" asp-append-version="true"></script>
+    </environment>
+    <script src="~/Content/layer/layer.js"></script>
+    <script>
+        if (language === "ZhTW") {
+            moment.locale("zh-tw");
+        } else if (language === "En") {
+            moment.locale("en");
+        } else if (language === "Ja") {
+            moment.locale("ja");
+        } else {
+            moment.locale('zh-cn');
+        }
+    </script>
+</body>
+</html>

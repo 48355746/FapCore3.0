@@ -1,0 +1,248 @@
+﻿
+@{
+    Layout = null;
+}
+<title>系统设置</title>
+<div class="row">
+    <div class="col-xs-12 col-sm-3">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">配置组</h4>
+
+               <fap-tree-button id="configgroup" description="配置组" tree-id="tree-configgroup"></fap-tree-button>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main">
+                    <fap-tree id="configgroup" is-async="true" get-url="/System/Api/Manage/ConfigGroup/" edit-url="/System/Api/Manage/ConfigGroup"></fap-tree>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-9">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">配置项</h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar no-border">
+                    <fap-button id="btnClearCache" content="刷新系统数据缓存"  icon-before="fa fa-refresh blue"></fap-button>
+                    <fap-button id="btnClearConfigCache" content="刷新系统配置缓存" icon-before="fa fa-refresh blue"></fap-button>
+                    <fap-button id="btnAddConfigItem" content="添加" icon-before="fa fa-plus green"></fap-button>
+                    <fap-button id="btnSaveConfig" content="保存" icon-before="fa fa-floppy-o blue"></fap-button>
+                   
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    <form class="form-horizontal" id="frmConfigTemplate" role="form"></form>
+                </div>
+            </div>
+           
+        </div>
+    </div>
+</div>
+
+
+<script id="configTemplate" type="text/x-jquery-tmpl">
+    <h3 class="header smaller lighter orange">${grp}</h3>
+    {{each configs}}
+    {{if $value.ctrlType=='TEXT'}}
+    <!-- #section:elements.form -->
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="${$value.fid}">  ${$value.paramName} </label>
+
+        <div class="col-sm-6">
+            <input type="text" id="${$value.fid}" data-pk="${$value.id}" data-ts="${$value.ts}" data-name="${$value.paramKey}" value="${$value.paramValue}" class="form-control" />
+        </div>
+    </div>
+    {{else $value.ctrlType=='MEMO'}}
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="${$value.fid}">  ${$value.paramName} </label>
+
+        <div class="col-sm-6">
+            <textarea id="${$value.fid}" data-pk="${$value.id}" data-ts="${$value.ts}" data-name="${$value.paramKey}" rows="6" class="form-control" maxlength="3000">${$value.paramValue}</textarea>
+        </div>
+    </div>
+    {{else  $value.ctrlType=='CHECKBOX'}}
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="${$value.fid}">  ${$value.paramName} </label>
+
+        <div class="col-sm-6">
+            <div class="checkbox">
+                <label>
+                    {{if $value.paramValue=='true'}}
+                    <input id="${$value.fid}" data-pk="${$value.id}" data-ts="${$value.ts}" data-name="${$value.paramKey}" type="checkbox" checked="checked" value="true" class="ace form-control" />
+                    {{else}}
+                    <input id="${$value.fid}" data-pk="${$value.id}" data-ts="${$value.ts}" data-name="${$value.paramKey}" type="checkbox" value="true" class="ace form-control" />
+                    {{/if}}
+                    <span class="lbl"> </span>
+                </label>
+            </div>
+
+        </div>
+    </div>
+    {{else $value.ctrlType=='COMBOBOX'}}
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="${$value.fid}">  ${$value.paramName} </label>
+
+        <div class="col-sm-6">
+            <select class="form-control" id="${$value.fid}" data-pk="${$value.id}" data-ts="${$value.ts}" data-name="${$value.paramKey}">
+                {{each $value.dictSource}}
+                <option value="${$value.code}" {{if $value.selected}} selected="selected" {{else}} {{/if}}> ${$value.name}</option>
+                {{/each}}
+            </select>
+        </div>
+    </div>
+    {{else $value.ctrlType=='PASSWORD'}}
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="${$value.fid}">  ${$value.paramName} </label>
+
+        <div class="col-sm-6">
+            <input type="password" class="form-control" id="${$value.fid}" data-ts="${$value.ts}" data-pk="${$value.id}" data-name="${$value.paramKey}" value="${$value.paramValue}" />
+
+        </div>
+    </div>
+    {{else $value.ctrlType=='DOUBLE'||$value.ctrlType=='MONEY'||$value.ctrlType=='INT'}}
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="${$value.fid}">  ${$value.paramName} </label>
+
+        <div class="col-sm-6">
+            <input type="number" class="form-control" id="${$value.fid}"  data-pk="${$value.id}" data-ts="${$value.ts}" data-name="${$value.paramKey}" value="${$value.paramValue}" />
+
+        </div>
+    </div>
+    {{/if}}
+
+    {{/each}}
+</script>
+<script>
+    var scripts = [null, "/Content/js/jquery.tmpl.js", null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+                $('#tree-configgroup').jstree('destroy');
+            })
+           
+            $('#tree-configgroup').on("changed.jstree", function (e, data) {
+                debugger
+                if (data && data.selected && data.selected.length) {
+                    var configGroupId = data.selected[0];
+                    //显示所有角色组的角色
+                    if (configGroupId == "0") {
+                        return;
+                    }
+                    $.get("@Url.Content("~/System/Api/Manage/Config/")", { cfgrpUid: configGroupId }, function (data) {
+                        if (data) {
+                            //alert(JSON.stringify(data));
+                            $("#frmConfigTemplate").empty();
+                            $("#configTemplate").tmpl(data).appendTo("#frmConfigTemplate");
+                        }
+                    })
+                }
+                //console.log(data.selected);
+            });
+            $("#btnClearCache").click(function () {
+                $.ajax({
+                    type: 'POST',
+                    url: "/System/Api/Manage/Setting/ClearCache",
+                    data: {},
+                    async: false,
+                    success: function (data) {
+                        if (data.success == 'success') {
+                            $.msg("刷新系统数据缓存成功");
+                        } else {
+                            bootbox.alert("刷新系统数据缓存失败，请重新刷新");
+                        }
+                    },
+                    dataType: "JSON"
+                });
+            });
+
+            $("#btnClearConfigCache").click(function () {
+                $.ajax({
+                    type: 'POST',
+                    url: "/System/Api/Manage/Setting/ClearConfigCache",
+                    data: {},
+                    async: false,
+                    success: function (data) {
+                        if (data.success == 'success') {
+                            $.msg("刷新系统配置缓存成功");
+                        } else {
+                            bootbox.alert("刷新系统配置缓存失败，请重新刷新");
+                        }
+                    },
+                    dataType: "JSON"
+                });
+            });
+
+            //增加配置项
+            $("#btnAddConfigItem").on(ace.click_event, function () {
+                var url = $.randomUrl(basePath + '/Component/DataFormNoAuthority/0?tn=FapConfig&frm=frmfapconfig');
+                $.get(url, function (rv) {
+                    bootbox.dialog({
+                        title: "添加配置项",
+                        message: rv,
+                        buttons: {
+                            success: {
+                                label: "保存",
+                                className: "btn-primary",
+                                callback: function () {
+                                    var formid = "frmfapconfig";
+                                    //持久化
+                                    var res = Persistence("frm-frmfapconfig", 'FapConfig');
+                                    if (res == false) {
+                                        return false;
+                                    }
+                                    if (res.success == true) {
+                                        var ref = $('#tree-configgroup').jstree(true);
+
+                                    } else {
+                                        return false;
+                                    }
+                                }
+                            },
+                            cancel: {
+                                label: "取消", className: "btn-default"
+                            }
+                        }
+                    })
+                })
+            })
+            $("#btnSaveConfig").on(ace.click_event, function () {
+                var configData = [];
+                $("#frmConfigTemplate .form-control").each(function () {
+                    var configItem = {};
+                    configItem.Fid = $(this).attr("id");
+                    configItem.Id = $(this).data("pk");
+                    configItem.Ts = $(this).data("ts");
+                    configItem.ParamKey = $(this).data("name");
+                    if ($(this).attr("type") == "checkbox") {
+                        if ($(this).is(':checked')) {
+                            configItem.ParamValue = $(this).val();
+                        } else {
+                            configItem.ParamValue = false;
+                        }
+                    } else {
+                        configItem.ParamValue = $(this).val();
+                    }
+                    configData.push(configItem);
+                })
+                $.post("@Url.Content("~/System/Api/Manage/ConfigSet")", {configs: configData }, function (data) {
+                    if(data.success==true)
+                    {
+                        $.msg("设置成功");
+                    }
+                    else {
+                        bootbox.alert(data.msg);
+                    }
+                })
+                //alert(JSON.stringify(configData));
+            })
+        })
+    })
+</script>

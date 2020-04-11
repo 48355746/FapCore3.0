@@ -1,0 +1,65 @@
+﻿@model IEnumerable<Fap.Hcm.Service.Payroll.PayRecord>
+
+<title><fap-multilang lang-key="pay_center" default-content="薪资中心"></fap-multilang></title>
+
+<div class="row">
+    <div class="col-xs-12">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">
+                    <fap-multilang lang-key="pay_center" default-content="薪资中心"></fap-multilang>
+                </h4>
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar">
+                    <select class="chosen-select form-control" style="width:200px" id="selPayRecord" multi-placeholder="薪资发放记录...">
+                        <option value="">  </option>
+                        @foreach (var record in Model.GroupBy(r => r.CaseUidMC))
+                        {
+                            <optgroup label="@record.Key" class="group-1">
+                                @foreach (var r in record)
+                                {
+                                    string txt = r.PayYM + "第" + r.PayCount + "次发放";
+                                    <option value="@r.Fid">@txt</option>
+                                }
+
+                            </optgroup>
+                        }
+                    </select>
+                </div>
+
+            </div>
+            <div class="widget-body">
+                <div class="widget-main" id="payCenterContent">
+                    <h3 class="infobox-blue2 center">选择薪资发放记录查看</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+            })
+            $('#selPayRecord').chosen({ allow_single_deselect: true }).on("change", function () {
+                var c = $(this).val();
+                if (c === "") {
+                    return;
+                }
+                $("#payCenterContent").empty();
+                var index = layer.load();
+                $.get(basePath + "/Payroll/Manage/PayCenterInfo/" + c,  function (content) {
+                    $("#payCenterContent").html(content);
+                    //完毕重新设置jqgrid宽度
+                    $(window).triggerHandler('resize.jqGrid');
+                    layer.close(index);
+                })
+            });
+        })
+    })
+</script>

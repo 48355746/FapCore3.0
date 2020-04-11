@@ -1,0 +1,46 @@
+﻿
+@model Fap.AspNetCore.ViewModel.FormViewModel
+
+<div id="modal-wizard-container">
+    <div>
+        <ul class="steps">
+            <li data-step="1" class="active"> <span class="step">1</span> <span class="title">选择需要合并的部门</span> </li>
+            <li data-step="2"> <span class="step">2</span> <span class="title">确认要合并的部门</span> </li>
+            <li data-step="3"> <span class="step">3</span> <span class="title">完成合并部门</span> </li>
+        </ul>
+    </div>
+    <hr />
+    <div class="step-content">
+        <div class="step-pane active" data-step="1">
+            <fap-tree id="orgdeptmerge" is-async="false" is-orgdept="true" plugin-checkbox="true"></fap-tree>
+        </div>
+        <div class="step-pane" data-step="2">
+            <div class="control-group form-horizontal" id="confirmDepts">                
+                <!-- #section:custom/checkbox -->
+                <!--<div class="checkbox">-->
+            
+                <!-- /section:custom/checkbox -->
+            </div>
+        </div>
+        <div class="step-pane" data-step="3">
+            <fap-form id="orgdeptmerge" form-model="Model"></fap-form>
+        </div>
+    </div>
+</div>
+<div class="wizard-actions">
+    <!-- #section:plugins/fuelux.wizard.buttons -->
+    <a class="btn btn-prev">
+        <i class="ace-icon fa fa-arrow-left"></i>
+        上一步
+    </a>
+
+    <a class="btn btn-success btn-next" data-last="完成">
+        下一步
+        <i class="ace-icon fa fa-arrow-right icon-on-right"></i>
+    </a>
+    <button class="btn btn-danger btn-sm pull-left">
+        <i class="ace-icon fa fa-times"></i>
+        取消
+    </button>
+    <!-- /section:plugins/fuelux.wizard.buttons -->
+</div>

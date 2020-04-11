@@ -1,0 +1,478 @@
+﻿@model IEnumerable<Fap.Core.Infrastructure.Metadata.FapColumn>
+@using Fap.Core.Infrastructure.Metadata
+<div class="row">
+    <div class="col-xs-12 col-sm-2">
+        <div class="widget-box light-border" style="opacity: 1;">
+            <div class="widget-header  widget-header-flat">
+                <h5 class="widget-title smaller">待选项</h5>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main padding-6 scrollable" data-size="500">
+                    <div class="dd" id="nestable">
+                        <ol class="dd-list">
+                            @foreach (var column in Model)
+                            {
+                                <li class="dd-item" data-id="@column.ColName" data-title="@column.ColComment">
+                                    <div class="dd-handle">
+                                        @column.ColComment
+                                        <div class="pull-right dd-nodrag" style="margin-left:10px">
+                                            <a href="#" data-action="settings" data-toggle="dropdown" title="自定义图表类型">
+                                                <i class="icon-only ace-icon fa fa-area-chart"></i>
+                                            </a>
+                                            <ul class="dropdown-menu dropdown-menu-right dropdown-light-blue dropdown-caret dropdown-closer">
+                                                <li>
+                                                    <a data-toggle="chart" data-setting="bar" href="javascript:void(0)">
+                                                        <i class="icon-only ace-icon fa fa-bar-chart"></i>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a data-toggle="chart" data-setting="line" href="javascript:void(0)">
+                                                        <i class="icon-only ace-icon fa fa-line-chart"></i>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        @if (column.CtrlType == FapColumn.COL_TYPE_DATETIME || column.CtrlType == FapColumn.CTRL_TYPE_DATE)
+                                        {
+                                            <div class="pull-right dd-nodrag">
+                                                <a href="#" data-action="settings" data-toggle="dropdown" title="格式">
+                                                    F
+                                                </a>
+                                                <ul class="dropdown-menu dropdown-menu-right dropdown-light-blue dropdown-caret dropdown-closer">
+                                                    <li>
+                                                        <a data-toggle="format" data-setting="yyyy" href="javascript:void(0)">年</a>
+                                                    </li>
+                                                    <li>
+                                                        <a data-toggle="format" data-setting="yyyymm" href="javascript:void(0)">年月</a>
+                                                    </li>
+                                                    <li>
+                                                        <a data-toggle="format" data-setting="yyyymmdd" href="javascript:void(0)">年月日</a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        }
+                                        else if (column.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX)
+                                        {
+                                            <div class="pull-right dd-nodrag">
+                                                <a href="#" data-action="settings" data-toggle="dropdown" title="统计类型">
+                                                    ∑
+                                                </a>
+
+                                                <ul class="dropdown-menu dropdown-menu-right dropdown-light-blue dropdown-caret dropdown-closer">
+                                                    <li>
+                                                        <a data-toggle="aggregate" data-setting="count" href="javascript:void(0)">计数</a>
+                                                    </li>
+
+                                                    <li>
+                                                        <a data-toggle="aggregate" data-setting="ccount" href="javascript:void(0)">分类计数</a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        }
+                                        else if (column.ColType == FapColumn.COL_TYPE_INT || column.ColType == FapColumn.COL_TYPE_LONG
+                                           || column.ColType == FapColumn.CTRL_TYPE_MONEY || column.ColType == FapColumn.COL_TYPE_DOUBLE)
+                                        {
+                                            <div class="pull-right dd-nodrag">
+                                                <a href="#" data-action="settings" data-toggle="dropdown" title="统计类型">
+                                                    ∑
+                                                </a>
+
+                                                <ul class="dropdown-menu dropdown-menu-right dropdown-light-blue dropdown-caret dropdown-closer">
+                                                    <li>
+                                                        <a data-toggle="aggregate" data-setting="count" href="javascript:void(0)">计数</a>
+                                                    </li>
+
+                                                    <li>
+                                                        <a data-toggle="aggregate" data-setting="sum" href="javascript:void(0)">求和</a>
+                                                    </li>
+                                                    <li>
+                                                        <a data-toggle="aggregate" data-setting="avg" href="javascript:void(0)">平均值</a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        }
+
+
+                                    </div>
+                                </li>
+                            }
+                        </ol>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-12 col-sm-2" style="min-height: 106px;">
+        <div class="widget-box  light-border" style="opacity: 1;">
+            <div class="widget-header  widget-header-flat">
+                <h5 class="widget-title smaller">选择区</h5>
+                <div class="widget-toolbar">
+                    <a href="javascript:void(0)" id="btnPreView" title="预览">
+                        <i class="ace-icon fa fa-binoculars"></i>
+                    </a>
+
+                    <a href="javascript:void(0)" id="btnSave" title="保存">
+                        <i class="ace-icon fa fa-save"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main padding-6">
+                    <div>
+                        <span>类型: &nbsp;</span>
+
+                        <div data-toggle="buttons" class="btn-group charttype">
+                            <label class="btn btn-white btn-info active">
+                                <input type="radio" value="bar" checked />
+                                <i class="icon-only ace-icon fa fa-bar-chart"></i>
+                            </label>
+
+                            <label class="btn btn-white btn-info">
+                                <input type="radio" value="pie" />
+                                <i class="icon-only ace-icon fa fa-pie-chart"></i>
+                            </label>
+
+                            <label class="btn btn-white btn-info">
+                                <input type="radio" value="line" />
+                                <i class="icon-only ace-icon fa fa-line-chart"></i>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="space-10"></div>
+
+
+                    <h4 class="header">Y轴(统计项)</h4>
+
+                    <div class="dd dd-draghandle item-aggregate">
+
+                        <div class="dd-empty" data-title="拖拽至此"></div>
+
+                    </div>
+                    <h4 class="header">X轴(分组项)</h4>
+
+                    <div class="dd dd-draghandle item-group">
+
+                        <div class="dd-empty" data-title="拖拽至此"></div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-12 col-sm-8">
+        <div class="widget-box">
+            <div class="widget-header  widget-header-flat">
+                <h6 class="widget-title smaller">图表</h6>
+                <div class="widget-toolbar  no-border">
+                    <a href="javascript:void(0)" id="btnDelete" title="删除">
+                        <i class="ace-icon fa fa-trash-o red"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar">
+                    <select class="chosen-select form-control" style="width:300px" id="selcharts" multi-placeholder="查看已有图表...">
+                        <option value="">  </option>
+                        @foreach (var chart in ViewBag.Charts)
+                        {
+                            <option value="@chart.Fid">@chart.Subject</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main">
+                    <div id="fapChart" style="width:auto;height:500px"></div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    setTimeout(function () {
+        $('.dd').nestable({ maxDepth: 1 });
+        $('.scrollable').each(function () {
+            var $this = $(this);
+            $(this).ace_scroll({
+                size: $this.attr('data-size') || 500,
+                styleClass: 'scroll-left scroll-margin scroll-thin  no-track '
+            });
+        });
+        $("a[data-toggle=format]").on(ace.click_event, function () {
+            $(this).closest(".dd-nodrag").find("a[data-action=settings]").text("F(" + $(this).text() + ")");
+            $(this).closest(".dd-item").data("setting", $(this).data("setting"));
+        });
+        $("a[data-toggle=aggregate]").on(ace.click_event, function () {
+            $(this).closest(".dd-nodrag").find("a[data-action=settings]").text("∑(" + $(this).text() + ")");
+            $(this).closest(".dd-item").data("setting", $(this).data("setting"));
+        });
+        $("a[data-toggle=chart]").on(ace.click_event, function () {
+            let t = $(this).data("setting");
+            if (t === "bar") {
+                $(this).closest(".dd-nodrag").find("a[data-action=settings]").html(" <i class='icon-only ace-icon fa fa-bar-chart'></i>");
+            } else {
+                $(this).closest(".dd-nodrag").find("a[data-action=settings]").html(" <i class='icon-only ace-icon fa fa-line-chart'></i>");
+            }
+            $(this).closest(".dd-item").data("charttype", t);
+        });
+    }, 0);
+    var fapChart = echarts.init(document.getElementById('fapChart'));
+    function initChartModel() {
+        var chartType = $(".charttype .active").find("input[type=radio]:checked").val();
+        if (chartType === "") {
+            chartType = "bar";
+        }
+        var chartModel = { Aggregates: [], Groups: [], chartType: chartType };
+        //分组
+        var grps = $(".item-group .dd-item");
+        $.each(grps, function (i, d) {
+            let field = $(d).data("id");
+            let name = $(d).data("title");
+            let fmt = $(d).data("setting");
+            if (fmt === undefined) {
+                fmt = "";
+            }
+            chartModel.Groups.push({ Field: field, Alias: name, Format: fmt });
+        })
+        //统计
+        var aggregates = $(".item-aggregate .dd-item");
+        $.each(aggregates, function (i, d) {
+            let field = $(d).data("id");
+            let name = $(d).data("title");
+            let tp = $(d).data("setting");
+            if (tp === undefined) {
+                tp = "count";
+            }
+            let specifyType = $(d).data("charttype");
+            if (specifyType === undefined) {
+                specifyType = "default";
+            }
+            chartModel.Aggregates.push({ Field: field, Alias: name, AggType: tp, chartType: specifyType });
+        })
+        if (chartModel.Aggregates.length == 0) {
+            chartModel.Aggregates.push({ Field: "1", Alias: "计数", AggType: "count", chartType: "default" })
+        }
+        return chartModel;
+
+    }
+    function initChartOption() {
+        var option = {
+            legend: {},
+            toolbox: {
+                feature: {
+                    //dataView: { show: true, readOnly: false },
+                    saveAsImage: { show: true }
+                }
+            },
+            xAxis: { type: 'category' },
+            yAxis: {},
+            tooltip: {}
+        };
+        var colTitle = $(".item-group li:first").data("title");
+        option.title = {
+            text: colTitle,
+        };
+        return option;
+    }
+    var gridId='@ViewBag.GridId';
+
+    $("#btnPreView").on(ace.click_event, function () {
+        var chartModel = initChartModel();
+        var jqPostData = $('#' + gridId).jqGrid("getGridParam", "postData");
+        if (chartModel.Groups.length < 1) {
+            $.msg("请设置分组项");
+            return;
+        }
+        DrawChart(chartModel, jqPostData);
+    })
+    function DrawChart(chartModel,jqPostData) {
+        $.post(basePath + '/Core/Api/EChart', { chartViewModel: chartModel, jqGridPostData: jqPostData }, function (rv) {
+            fapChart.clear();
+            var option = initChartOption();
+            option.dataset = {
+                dimensions: Object.keys(rv.data.dataSet[0]),
+                source: rv.data.dataSet
+            };
+            var series = [];
+            $.each(rv.data.aggregates, function (i, d) {
+                if (chartModel.chartType === "pie") {
+                    series.push({ type: chartModel.chartType, radius: '50%' });
+                } else {
+                    if (d.chartType === "default") {
+                        series.push({ type: chartModel.chartType });
+                    } else {
+                        series.push({ type: d.chartType });
+                    }
+                }
+            })
+            option.series = series;
+            fapChart.setOption(option);
+            fapChart.resize();
+        });
+    }
+    $("#btnSave").on(ace.click_event, function () {
+        var chartModel = initChartModel();
+        if (chartModel.Groups.length < 1) {
+            $.msg("请设置分组项");
+            return;
+        }
+        var $content = $(`                    <div>
+                        <label for="subject" class="control-label bolder">标题:</label>
+                        <input type="text" class="form-control" id="subject" />
+                    </div>
+                    <div class="space-10"></div>
+                    <div>
+                        <label class="control-label bolder">条件:</label>
+                        <div class="control-group form-inline" >
+                            <div class="radio">
+                                <label>
+                                    <input name="form-condition-radio" type="radio" value="1" checked class="ace" />
+                                    <span class="lbl"> 当前条件</span>
+                                </label>
+                            </div>
+                            <div class="radio">
+                                <label>
+                                    <input name="form-condition-radio" type="radio" value="2" class="ace" />
+                                    <span class="lbl">无条件</span>
+                                </label>
+                            </div>
+                            <div class="radio">
+                                <label>
+                                    <input name="form-condition-radio" type="radio" value="3" class="ace" />
+                                    <span class="lbl">自定义条件:</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="subject">自定义条件</label>
+
+                        <textarea type="text" class="form-control" id="specifyCondition"></textarea>
+                    </div>
+                    <div class="space-10"></div>
+                    <div>
+                        <label class="control-label bolder ">授权:</label>
+                        <div class="control-group form-inline">
+                            <div class="checkbox">
+                                <label>
+                                    <input name="form-authorize-checkbox" type="checkbox" value="1" checked class="ace" />
+                                    <span class="lbl"> 个人</span>
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input name="form-authorize-checkbox" type="checkbox" value="2" class="ace" />
+                                    <span class="lbl">公开</span>
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input name="form-authorize-checkbox" class="ace ace-checkbox-2" value="3" type="checkbox" />
+                                    <span class="lbl"> CEO</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>`);
+
+        var dialog = bootbox.dialog({
+            title: '保存图表',
+            message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+            buttons: {
+                success: {
+                    label: $.lang("ok", "确定"),
+                    className: "btn-primary",
+                    callback: function () {
+                        debugger;
+                        var jqPostData = $('#' + gridId).jqGrid("getGridParam", "postData");
+                        let subject = $content.find("#subject").val();
+                        let condition = "";
+                        var rdCondition = $content.find("input[name=form-condition-radio]:checked").val();
+                        if (rdCondition === "2") {
+                            jqPostData.filters = "";
+                            jqPostData.pageCondition = "";
+                            jqPostData.QuerySet.GlobalWhere = "";
+                        } else if (rdCondition === "3") {
+                            condition = $content.find("#specifyCondition").val();
+                            jqPostData.filters = "";
+                            jqPostData.pageCondition = "";
+                            jqPostData.QuerySet.GlobalWhere = condition;
+                        }
+                        var personal = 0;
+                        var ceo = 0;
+                        var publicity = 0;
+                        $content.find("input[name=form-authorize-checkbox]:checked").each(function (i, d) {
+                            if ($(d).val() === "1") {
+                                personal = 1;
+                            } else if ($(d).val() === "2") {
+                                publicity = 1;
+                            } else {
+                                ceo = 1;
+                            }
+                        });
+
+                        var rptChart = { Subject: subject, ChartModel: JSON.stringify(chartModel), EntityModel: JSON.stringify(jqPostData), EntityName: jqPostData.QuerySet.TableName, EntityCondition: condition, Personal: personal, Publicity: publicity, CEO: ceo };
+                        $.post(basePath + "/Core/Api/Add/EChart", { rptChart: rptChart }, function (rv) {
+                            if (rv.success) {
+                                debugger;
+                                $("#selcharts").append(`<option value="` + rv.data.fid + `">` + rv.data.subject + `</option>`);
+                                 $("#selcharts").trigger("chosen:updated");
+                                $.msg(rv.msg);
+                            } else {
+                                bootbox.alert(rv.msg);
+                            }
+                        })
+                    }
+                },
+                cancel: {
+                    label: $.lang("cancel", "取消"), className: "btn-default"
+                }
+            }
+        });
+        dialog.init(function () {
+            dialog.find('.bootbox-body').html("");
+            $content.remove();
+            dialog.find('.bootbox-body').append($content);
+            let subject = $(".item-group li:first").data("title");
+            $content.find("#subject").val(subject);
+        });
+    });
+    $('.chosen-select').chosen({ allow_single_deselect: true,width:"300px" }).on("change", function () {
+        var c = $(this).val();
+        if (c === "") {
+            return;
+        }
+        $.get(basePath + "/Core/Api/Echart/" + c, function (rv) {
+            if (rv.success) {
+                DrawChart(JSON.parse(rv.data.chartModel), JSON.parse(rv.data.entityModel));
+            } else {
+                boobox.alert(rv.msg);
+            }
+        })
+    });
+    $("#btnDelete").on(ace.click_event, function () {
+        bootbox.confirm($.lang("confirm_delete", "确认删除吗"), function (result) {
+            if (result) {
+                var fid = $("#selcharts").val();
+                if (fid !== "") {
+                    $.get(basePath + "/Core/Api/Delete/EChart/" + fid, function (rv) {
+                        if (rv.success) {
+                            $("#selcharts option[value='" + fid + "']").remove();
+                            $("#selcharts").trigger("chosen:updated");
+                            $.msg(rv.msg);
+                        } else {
+                            bootbox.alert(rv.msg);
+                        }
+                    })
+                } else {
+                    $.msg($.lang("no_selected","未选中数据"));
+                }
+            }
+        })
+    })
+</script>

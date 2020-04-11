@@ -1,0 +1,11 @@
+﻿
+@model Fap.AspNetCore.ViewModel.JqGridViewModel
+
+<title>考勤周期</title>
+<div class="row">
+    <fap-grid id="TmPeriod" grid-model="Model" view-records="true" multi-box-only="true" multi-select="true" oper-cud="true"></fap-grid>
+</div>
+<script>
+    var scripts = [null, null];
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () { });
+</script>

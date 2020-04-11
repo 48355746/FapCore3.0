@@ -1,5 +1,5 @@
 ﻿using Dapper.Contrib.Extensions;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -87,19 +87,6 @@ namespace Fap.Core.Rbac.Model
         public string Mailbox { get; set; }
 
         /// <summary>
-        /// 职务
-        /// </summary>
-        public string EmpJob { get; set; }
-        /// <summary>
-        /// 职务 的显性字段MC
-        /// </summary>
-        [Computed]
-        public string EmpJobMC { get; set; }
-        /// <summary>
-        /// 职务级别
-        /// </summary>
-        public string JobGrade { get; set; }
-        /// <summary>
         /// 员工状态
         /// </summary>
         public string EmpStatus { get; set; }
@@ -115,16 +102,7 @@ namespace Fap.Core.Rbac.Model
         /// <summary>
         /// 照片
         /// </summary>
-        public string EmpPhoto { get; set; }
-        /// <summary>
-        /// 职位
-        /// </summary>
-        public string EmpPosition { get; set; }
-        /// <summary>
-        /// 职位 的显性字段MC
-        /// </summary>
-        [Computed]
-        public string EmpPositionMC { get; set; }
+        public string EmpPhoto { get; set; }       
 
         /// <summary>
         /// 主职
@@ -146,5 +124,19 @@ namespace Fap.Core.Rbac.Model
         /// </summary>
         public int SortBy { get; set; }
 
+    }
+    /// <summary>
+    /// 员工状态
+    /// </summary>
+    public class EmployeeStatus
+    {
+        /// <summary>
+        /// 离岗
+        /// </summary>
+        public const string Former= "Former";
+        /// <summary>
+        /// 在岗
+        /// </summary>
+        public const string Current = "Current";
     }
 }

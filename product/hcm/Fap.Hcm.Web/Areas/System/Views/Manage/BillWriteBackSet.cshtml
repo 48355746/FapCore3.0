@@ -1,0 +1,121 @@
+﻿
+@*<link href="~/Content/css/codemirror/codemirror.css" rel="stylesheet" />
+<link rel="stylesheet" href="~/Content/css/codemirror/theme/xq-light.css">
+
+<script src="~/Content/js/codemirror/codemirror.js"></script>
+<script src="~/Content/js/codemirror/mode/sql/sql.js"></script>*@
+<script>
+    function initBillWriteback(billTable, bizTable, sqlContent) {
+        var urlBill = basePath + '/Core/Api/FieldList/' + billTable;
+        var urlBiz = basePath + '/Core/Api/FieldList/' + bizTable;
+        $.get(urlBill, function (ev) {
+            var selBill = $("#selBillField2");
+            var selBiz = $("#selBizField2");
+            $.each(ev, function (i, d) {
+                selBill.append("<li><a href=\"javascript:void(0)\" data-provider=\"fap-formula\" data-handler=\"'${" + d.tableName + "_" + d.colName + "}' \">" + d.colComment + "</a></li>");
+            });
+            $.get(urlBiz, function (ev) {
+                $.each(ev, function (i, d) {
+                    selBiz.append("<li><a href=\"javascript:void(0)\" data-provider=\"fap-formula\" data-handler=\"'${" + d.tableName + "_" + d.colName + "}' \">" + d.colComment + "</a></li>");
+                });
+            });
+        });
+        $("#txtCustomSql").val(sqlContent);        
+    }
+    function initSql() {
+        var sqlEditor = CodeMirror.fromTextArea(document.getElementById("txtCustomSql"), {
+            mode: 'text/x-mssql',
+            theme: 'xq-light',
+            indentWithTabs: true,
+            smartIndent: true,
+            lineNumbers: true,
+            matchBrackets: true,
+            autofocus: true
+        });
+        sqlEditor.setSize('auto', '230px');
+        //公式内容变化的时候 及时赋值data对象
+        sqlEditor.on("change", function (instance) {
+            $("#txtCustomSql").val(instance.getValue());
+
+        });
+        $("body").off(ace.click_event, "a[data-provider='fap-formula']").on(ace.click_event, "a[data-provider='fap-formula']", function () {
+            sqlEditor.replaceSelection($(this).data("handler").toString());
+        });
+    }
+</script>
+
+<div class="row">
+    <div class="col-xs-12">
+        <div class="widget-box widget-color-blue3">
+            <div class="widget-header widget-header-small">
+                <h6 class="widget-title">sql脚本设置</h6>
+                <div class="widget-toolbar">
+                    <a href="#" id="btnHelperEData" class="popover-warning" data-rel="popover" data-placement="left" title="帮助" data-content="自定义SQL以分号分隔，支持多SQL语句。例如：update TmLeaveStat set LeaveDays=LeaveDays-${TmLeaveApply_IntervalDay} where Fid='${TmLeaveStat_Fid}';">
+                        <i class=" ace-icon fa fa-question bigger-120 white">
+                        </i>
+                    </a>
+                </div>
+                <div class="widget-toolbar no-border">
+                    <button class="btn btn-xs bigger btn-info  dropdown-toggle" data-toggle="dropdown">
+                        常用函数
+                        <i class="ace-icon fa fa-chevron-down icon-on-right"></i>
+                    </button>
+
+                    <ul style="height:220px;overflow:auto" class="dropdown-menu dropdown-warning dropdown-menu-right dropdown-caret dropdown-close">
+                        <li>
+                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" DATEPART(datepart,字段) ">日期格式</a>
+                        </li>
+                        <li>
+                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" DATEADD (day,天数,字段) ">日期加减</a>
+                        </li>
+
+                        <li>
+                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" DATEDIFF(day , 开始时间 , 结束时间) ">日期间隔</a>
+                        </li>
+
+                        <li>
+                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" GETDATE() ">当前日期</a>
+                        </li>
+                        <li>
+                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" YEAR(字段) ">年</a>
+                        </li>
+                        <li>
+                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" MONTH(字段) ">月</a>
+                        </li>
+                        <li>
+                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" DAY(字段) ">日</a>
+                        </li>
+                        <li class="divider"></li>
+
+                        <li>
+                            <a href="javascript:void(0)" data-provider="fap-formula" data-handler=" ABS(字段) ">绝对值</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="widget-toolbar no-border">
+                    <button class="btn btn-xs bigger btn-info  dropdown-toggle" data-toggle="dropdown">
+                        单据属性
+                        <i class="ace-icon fa fa-chevron-down icon-on-right"></i>
+                    </button>
+                    <ul id="selBillField2" style="height:220px;overflow:auto" class="dropdown-menu dropdown-warning dropdown-menu-right dropdown-caret dropdown-close">
+                    </ul>
+                </div>
+                <div class="widget-toolbar no-border">
+                    <button class="btn btn-xs bigger btn-info  dropdown-toggle" data-toggle="dropdown">
+                        业务属性
+                        <i class="ace-icon fa fa-chevron-down icon-on-right"></i>
+                    </button>
+                    <ul id="selBizField2" style="height:220px;overflow:auto" class="dropdown-menu dropdown-warning dropdown-menu-right dropdown-caret dropdown-close">
+                    </ul>
+                </div>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main no-padding">
+                    <textarea class="form-control" id="txtCustomSql" rows="4" placeholder="自定义脚本Sql"></textarea>
+                </div>
+            </div>
+           
+        </div>
+    </div>
+</div>

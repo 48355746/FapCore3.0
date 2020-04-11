@@ -1,10 +1,9 @@
-﻿using Ardalis.GuardClauses;
-using Dapper;
+﻿using Dapper;
 using Dapper.Contrib.Extensions;
 using Fap.Core.DI;
 using Fap.Core.Exceptions;
 using Fap.Core.Extensions;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -39,7 +38,7 @@ namespace Fap.Core.DataAccess
             set { threadLocalTransaction.Value = value; }
             get { return threadLocalTransaction.Value; }
         }
-
+        public DatabaseDialectEnum DatabaseDialect { get; private set; }
         /// <summary>
         /// 构造方法
         /// </summary>
@@ -48,21 +47,21 @@ namespace Fap.Core.DataAccess
         {
             _logger = loggerFactory.CreateLogger<DbSession>();
             ConnectionFactory = connectionFactory;
+            DatabaseDialect = connectionFactory.DatabaseDialect;
             // CommandTimeout = commandTimeOut;
         }
         #region private
         Stopwatch timer = new Stopwatch();
         private TResult DbExecProxy<TResult>(Func<DynamicParameters, TResult> func, string sql, DynamicParameters parameters = null)
         {
-            Guard.Against.NullOrWhiteSpace(sql, nameof(sql));
-            string message = "";
+            string message;
             parameters = parameters ?? new DynamicParameters();
             try
             {
                 timer.Restart();//开始计算时间
                 var result = func(parameters);
                 timer.Stop();//结束点
-                message = $"SQL语句为：{sql},{Environment.NewLine}参数:{(parameters != null ?string.Join("," ,parameters.ParameterNames.Select((key)=>$"{key}={parameters.Get<object>(key)}")) : "")}{Environment.NewLine}执行时间：{ timer.ElapsedMilliseconds}毫秒";
+                message = $"SQL语句为：{sql},{Environment.NewLine}参数:{(parameters != null ? string.Join(",", parameters.ParameterNames.Select((key) => $"{key}={parameters.Get<object>(key)}")) : "")}{Environment.NewLine}执行时间：{ timer.ElapsedMilliseconds}毫秒";
                 _logger.LogTrace(message);
                 return result;
             }
@@ -70,14 +69,12 @@ namespace Fap.Core.DataAccess
             {
                 message = $"查询SQL异常：{ ex.Message },{Environment.NewLine}SQL语句为：{sql}{Environment.NewLine}参数:{(parameters != null ? string.Join(",", parameters.ParameterNames.Select((key) => $"{key}={parameters.Get<object>(key)}")) : "")}";
                 _logger.LogError(message);
-                Guard.Against.FapRuntime(message, ex);
+                throw new FapException(message, ex);
             }
-            return default(TResult);
         }
         private async Task<TResult> DbExecProxyAsync<TResult>(Func<DynamicParameters, Task<TResult>> func, string sql, DynamicParameters parameters = null)
         {
-            Guard.Against.NullOrWhiteSpace(sql, nameof(sql));
-            string message = "";
+            string message ;
             parameters = parameters ?? new DynamicParameters();
             try
             {
@@ -93,9 +90,8 @@ namespace Fap.Core.DataAccess
             {
                 message = $"查询SQL异常：{ ex.Message },{Environment.NewLine}SQL语句为：{sql}{Environment.NewLine}参数:{(parameters != null ? parameters.ToString() : "")}";
                 _logger.LogError(message);
-                Guard.Against.FapRuntime(message, ex);
+                throw new FapException(message,ex);
             }
-            return default(TResult);
         }
         private IDbConnection GetDbConnection(DataSourceEnum dataSource)
         {
@@ -121,9 +117,10 @@ namespace Fap.Core.DataAccess
             else
             {
                 using var connection = GetDbConnection(DataSourceEnum.MASTER);
-                return DbExecProxy<int>((param) => connection.Execute(sql, param, null, null, commandType), sql, parameters);
+                return DbExecProxy<int>((param) => connection.Execute(sql, param, CurrentTransaction, null, commandType), sql, parameters);
             }
         }
+
         public Task<int> ExecuteAsync(string sql, DynamicParameters parameters = null, CommandType? commandType = null)
         {
             if (CurrentTransaction != null)
@@ -553,27 +550,14 @@ namespace Fap.Core.DataAccess
             return Task.FromResult(connection.Insert(tableName, sbColumnList, sbParameterList, entityToInsert, CurrentTransaction, CommandTimeout));
         }
 
-        public bool Update(FapDynamicObject keyValues)
+        public bool Update(FapDynamicObject dynamicObject)
         {
-            if (keyValues.TableName.IsMissing())
-            {
-                Guard.Against.NullOrEmpty("Update（FapDynamicObject keyValues）异常，tableName不能为null", nameof(FapDynamicObject));
-            }
-            dynamic d = keyValues as dynamic;
-            if (d.Get("Id") == null)
-            {
-                Guard.Against.NullOrEmpty("Update（FapDynamicObject keyValues）异常，Id不能为null", nameof(FapDynamicObject));
-            }
-            if (d.Get("Ts") == null)
-            {
-                Guard.Against.NullOrEmpty("Update（FapDynamicObject keyValues）异常，Ts不能为null", nameof(FapDynamicObject));
-            }
             if (CurrentTransaction != null)
             {
-                return CurrentConnection.Update(keyValues.TableName, keyValues, CurrentTransaction, CommandTimeout);
+                return CurrentConnection.Update( dynamicObject, CurrentTransaction, CommandTimeout);
             }
             using var connection = GetDbConnection(DataSourceEnum.MASTER);
-            return connection.Update(keyValues.TableName, keyValues, CurrentTransaction, CommandTimeout);
+            return connection.Update(dynamicObject, CurrentTransaction, CommandTimeout);
         }
         /// <summary>
         /// 加了乐观锁的更新，Id和Ts为条件
@@ -581,16 +565,8 @@ namespace Fap.Core.DataAccess
         /// <typeparam name="T"></typeparam>
         /// <param name="entityUpdate"></param>
         /// <returns></returns>
-        public bool UpdateWithTimestamp<T>(T entityUpdate)where T : BaseModel
+        public bool UpdateWithTimestamp<T>(T entityUpdate) where T : BaseModel
         {
-            if ((entityUpdate.Id ?? 0) < 1)
-            {
-                Guard.Against.Null("Id不能为null", nameof(UpdateWithTimestamp));
-            }
-            if ((entityUpdate.Ts ?? 0) < 1)
-            {
-                Guard.Against.Null("Ts不能为null", nameof(UpdateWithTimestamp));
-            }
             if (CurrentConnection != null)
             {
                 return CurrentConnection.Update(entityUpdate, CurrentTransaction, CommandTimeout);
@@ -677,6 +653,10 @@ namespace Fap.Core.DataAccess
         public void TransactionProxy(Action<IDbConnection, IDbTransaction> execAction)
         {
             using var connection = GetDbConnection(DataSourceEnum.MASTER);
+            if (connection.State == ConnectionState.Closed)
+            {
+                connection.Open();
+            }
             using var transaction = connection.BeginTransaction();
             try
             {
@@ -696,7 +676,7 @@ namespace Fap.Core.DataAccess
         public void BeginTransaction()
         {
             CurrentConnection = GetDbConnection(DataSourceEnum.MASTER);
-            if(CurrentConnection.State== ConnectionState.Closed)
+            if (CurrentConnection.State == ConnectionState.Closed)
             {
                 CurrentConnection.Open();
             }
@@ -724,14 +704,57 @@ namespace Fap.Core.DataAccess
         }
         public void Dispose()
         {
-            CurrentTransaction?.Dispose();
-            if (CurrentConnection?.State != ConnectionState.Closed)
-            {
-                CurrentConnection?.Close();
-            }
-            CurrentConnection?.Dispose();
             CurrentConnection = null;
             CurrentTransaction = null;
+        }
+
+        public string EntityToInsertSql<T>(T entity) where T : class
+        {
+            if (CurrentConnection != null)
+            {
+                return CurrentConnection.EntityToInsertSql(entity);
+            }
+            else
+            {
+                using var connection = GetDbConnection(DataSourceEnum.MASTER);
+                return connection.EntityToInsertSql(entity);
+            }
+        }
+        public string FapDynamicToInsertSql(FapDynamicObject fdo,string tableName,IEnumerable<FapColumn> columns)
+        {
+            if (CurrentConnection != null)
+            {
+                return CurrentConnection.FapDynamicDataToInsertSql(tableName,columns,fdo);
+            }
+            else
+            {
+                using var connection = GetDbConnection(DataSourceEnum.MASTER);
+                return connection.FapDynamicDataToInsertSql(tableName, columns, fdo);
+            }
+        }
+        public string FapDynamicToUpdateSql(FapDynamicObject fdo,string tableName,IEnumerable<FapColumn> columns)
+        {
+            if (CurrentConnection != null)
+            {
+                return CurrentConnection.FapDynamicDataToUpdateSql(tableName, columns, fdo);
+            }
+            else
+            {
+                using var connection = GetDbConnection(DataSourceEnum.MASTER);
+                return connection.FapDynamicDataToUpdateSql(tableName, columns, fdo);
+            }
+        }
+        public string EntityToUpdateSql<T>(T entity) where T : class
+        {
+            if (CurrentConnection != null)
+            {
+                return CurrentConnection.EntityToUpdateSql(entity);
+            }
+            else
+            {
+                using var connection = GetDbConnection(DataSourceEnum.MASTER);
+                return connection.EntityToUpdateSql(entity);
+            }
         }
 
         #endregion

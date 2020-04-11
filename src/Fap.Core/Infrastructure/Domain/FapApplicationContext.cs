@@ -1,14 +1,11 @@
 ﻿
-using Fap.Core.DataAccess;
-using Fap.Core.Infrastructure.Cache;
-using Fap.Core.Infrastructure.Enums;
-using Fap.Core.Rbac.Model;
+using Fap.Core.Extensions;
+using Fap.Core.MultiLanguage;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Text;
 
 namespace Fap.Core.Infrastructure.Domain
 {
@@ -27,6 +24,10 @@ namespace Fap.Core.Infrastructure.Domain
         /// 员工姓名
         /// </summary>
         public string EmpName => _httpContextAccessor?.HttpContext == null ? "~" : _httpContextAccessor?.HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Surname)?.Value;
+        /// <summary>
+        /// 员工照片
+        /// </summary>
+        public string EmpPhoto => _httpContextAccessor?.HttpContext == null ? "~" : _httpContextAccessor?.HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Actor)?.Value;
         /// <summary>
         /// 用户Fid
         /// </summary>
@@ -61,52 +62,59 @@ namespace Fap.Core.Infrastructure.Domain
         /// </summary>
         public string GroupUid => _httpContextAccessor?.HttpContext == null ? "~" : _httpContextAccessor?.HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.DenyOnlyPrimaryGroupSid)?.Value;
         /// <summary>
+        /// 租户
+        /// </summary>
+        public string TenantID => _httpContextAccessor?.HttpContext == null ? "0" : _httpContextAccessor?.HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.AuthenticationInstant)?.Value;
+        /// <summary>
         /// 当前语言
         /// </summary>
-        public MultiLanguageEnum Language => _httpContextAccessor?.HttpContext == null ? MultiLanguageEnum.ZhCn : (MultiLanguageEnum)Enum.Parse(typeof(MultiLanguageEnum), _httpContextAccessor?.HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Sid)?.Value ?? "ZhCn");
-        /// <summary>
-        /// 在线用户
-        /// </summary>
-        public string OnlineUserUid => _httpContextAccessor?.HttpContext == null ? "~" : _httpContextAccessor?.HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Actor)?.Value ?? "temp";
+        public MultiLanguageEnum Language
+        {
+            get
+            {
+                if (_httpContextAccessor?.HttpContext?.Items["language"] != null)
+                {
+                    return (MultiLanguageEnum)Enum.Parse(typeof(MultiLanguageEnum), _httpContextAccessor?.HttpContext.Items["language"].ToString());
+                }
+                return _httpContextAccessor?.HttpContext == null ? MultiLanguageEnum.ZhCn : (MultiLanguageEnum)Enum.Parse(typeof(MultiLanguageEnum), _httpContextAccessor?.HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Sid)?.Value ?? "ZhCn");
+            }
+        }
         /// <summary>
         /// 所有角色UID
         /// </summary>
         public IEnumerable<string> Roles => _httpContextAccessor?.HttpContext == null ? Array.Empty<string>() : _httpContextAccessor?.HttpContext.User.FindAll(c => c.Type == ClaimTypes.Role)?.Select(r => r.Value);
-
-        //public FapRole Role { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
-        //public FapUser Account
-        //{
-        //    get
-        //    {
-        //        string key = $"user_{UserUid}";
-        //        var user = _cacheService.Get<FapUser>(key);
-        //        if (user == null)
-        //        {
-        //            user = _dbContext.Get<FapUser>(UserUid, true);
-        //            _cacheService.Add(key, user);
-        //        }
-        //        return user;
-        //    }
-        //}
-
-        //public FapOnlineUser OnlineUser => throw new NotImplementedException();
-
-        //public Employee Employee
-        //{
-        //    get
-        //    {
-        //        string key = $"employee_{EmpUid}";
-        //        var employee = _cacheService.Get<Employee>(key);
-        //        if (employee == null)
-        //        {
-        //            employee = _dbContext.Get<Employee>(EmpUid, true);
-        //            _cacheService.Add(key, employee);
-        //        }
-        //        return employee;
-        //    }
-        //}
-
-        public string CurrentRoleUid { get; set; } = PlatformConstants.CommonUserRoleFid;
+        /// <summary>
+        /// 当前角色
+        /// </summary>
+        public string CurrentRoleUid
+        {
+            get
+            {
+                string roleUid= Session.GetString(FapPlatformConstants.CurrentSessionRoleKey);
+                if (roleUid.IsPresent())
+                {
+                    return roleUid;
+                }
+                return  HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;                
+            }
+            set
+            {
+                Session.SetString(FapPlatformConstants.CurrentSessionRoleKey, value);
+            }
+        }
+        /// <summary>
+        /// HttpRequest
+        /// </summary>
+        public HttpRequest Request => _httpContextAccessor?.HttpContext?.Request;
+        public HttpResponse Response => _httpContextAccessor?.HttpContext.Response;
+        public ISession Session => _httpContextAccessor?.HttpContext.Session;
+        public HttpContext HttpContext => _httpContextAccessor?.HttpContext;
+        public string ClientIpAddress => Request.Headers["X-Forwarded-For"].FirstOrDefault().IsMissing() ? HttpContext.Connection.RemoteIpAddress.ToString() : Request.Headers["X-Forwarded-For"].FirstOrDefault();
+        public string Broswer => Request.Headers["User-Agent"].ToString();
+        public string BaseUrl => $"{Request.Scheme}://{Request.Host.Host}:{Request.Host.Port}";
+        /// <summary>
+        /// 是否为管理员
+        /// </summary>
+        public bool IsAdministrator => UserName == FapPlatformConstants.Administrator;
     }
 }

@@ -23,7 +23,7 @@ namespace Fap.Core.Infrastructure.Domain
         /// 产品
         /// </summary>
         string Product { get; set; }
-
+        void InitPlatformDomain();
         /// <summary>
         /// 平台注册码信息
         /// </summary>
@@ -31,18 +31,22 @@ namespace Fap.Core.Infrastructure.Domain
         IColumnSet ColumnSet { get; }
         IDictSet DictSet { get; }
         IMenuSet MenuSet { get; }
+        IMenuButtonSet MenuButtonSet { get; }
+        IMenuColumnSet MenuColumnSet { get; }
         IModuleSet ModuleSet { get; }
-        IMultiLang MultiLangSet { get; }
+        IMultiLanguage MultiLangSet { get; }
         IOrgDeptSet OrgDeptSet { get; }
         IRoleColumnSet RoleColumnSet { get; }
         IRoleDataSet RoleDataSet { get; }
         IRoleDeptSet RoleDeptSet { get; }
         IRoleMenuSet RoleMenuSet { get; }
         IRoleReportSet RoleReportSet { get; }
+        IRoleButtonSet RoleButtonSet { get; }
         IRoleRoleSet RoleRoleSet { get; }
+        IRoleUserSet RoleUserSet { get; }
         IRoleSet RoleSet { get; }
-        ISysParamSet SysParamSet { get; }
-        ISysUserSet SysUserSet { get; }
+        IParamSet ParamSet { get; }
+        IUserSet UserSet { get; }
         ITableSet TableSet { get; }
         ICfgBillCodeRuleSet CfgBillCodeRuleSet { get; }
         void Refresh();

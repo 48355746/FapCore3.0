@@ -43,6 +43,7 @@ namespace Fap.Core.DataAccess.Interceptor
                     _logger.LogError($"{invocation.Method.Name}事务拦截后异常:{ex.Message}");
                     _dbContext.Rollback();
                 }
+                throw ex;
             }
         }
         protected override void PostProceed(IInvocation invocation)

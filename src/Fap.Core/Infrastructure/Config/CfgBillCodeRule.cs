@@ -1,5 +1,5 @@
 ﻿using Dapper.Contrib.Extensions;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,7 +9,6 @@ namespace Fap.Core.Infrastructure.Config
     /// <summary>
     /// 单据编码规则
     /// </summary>
-    [Serializable]
     [Table("CfgBillCodeRule")]
     public class CfgBillCodeRule : BaseModel
     {

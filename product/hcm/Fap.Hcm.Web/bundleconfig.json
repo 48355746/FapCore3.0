@@ -1,0 +1,181 @@
+﻿// Configure bundling and minification for the project.
+// More info at https://go.microsoft.com/fwlink/?LinkId=808241
+[
+  {
+    "outputFileName": "wwwroot/css/acefont.min.css",
+    // An array of relative input file paths. Globbing patterns supported
+    "inputFiles": [
+      "wwwroot/Content/css/font-awesome.css",
+      "wwwroot/Content/css/ace-fonts.css"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/css/ace.min.css",
+    // An array of relative input file paths. Globbing patterns supported
+    "inputFiles": [
+      "wwwroot/Content/css/ace.css",
+      "wwwroot/Content/nprogress/nprogress.css",
+      "wwwroot/Content/Site.css"
+    ]
+  }, 
+  {
+    "outputFileName": "wwwroot/css/control.min.css",
+    // An array of relative input file paths. Globbing patterns supported
+    "inputFiles": [
+      "wwwroot/Content/css/jquery-ui.css",
+      "wwwroot/Content/css/jquery-ui.custom.css",
+      "wwwroot/Content/JqGrid/css/ui.jqgrid.css",
+      "wwwroot/Content/Handsontable/css/handsontable.full.min.css",
+      "wwwroot/Content/css/jquery.gritter.css",
+      "wwwroot/Content/css/bootstrap-editable.css",
+      "wwwroot/Content/css/jquery.bootstrap-touchspin.css",
+      "wwwroot/Content/css/bootstrap-datetimepicker.css",
+      "wwwroot/Content/date-time-h5/css/mobiscroll.core-2.6.2.css",
+      "wwwroot/Content/date-time-h5/css/mobiscroll.animation-2.6.2.css",
+      "wwwroot/Content/date-time-h5/css/mobiscroll.android-ics-2.6.2.css",
+      "wwwroot/Content/css/chosen.css",
+      "wwwroot/Content/css/bootstrap-duallistbox.css",
+      "wwwroot/Content/fileinput/css/fileinput.css",
+      "wwwroot/Content/Select2/css/select2.css",
+      "wwwroot/Content/js/JsTree/themes/default/style.css",
+      "wwwroot/Content/css/colorpicker.css",
+      "wwwroot/Content/citypicker/city-picker.css", //籍贯
+      "wwwroot/Content/css/colorbox.css",
+      "wwwroot/Content/js/jRange/jquery.range.css"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    }
+  },
+  {
+    "outputFileName": "wwwroot/js/ace.min.js",
+    "inputFiles": [
+      "wwwroot/Content/js/ace/elements.scroller.js",
+      "wwwroot/Content/js/ace/elements.colorpicker.js",
+      "wwwroot/Content/js/ace/elements.fileinput.js",
+      "wwwroot/Content/js/ace/elements.typeahead.js",
+      "wwwroot/Content/js/ace/elements.wysiwyg.js",
+      "wwwroot/Content/js/ace/elements.spinner.js",
+      "wwwroot/Content/js/ace/elements.treeview.js",
+      "wwwroot/Content/js/ace/elements.wizard.js",
+      "wwwroot/Content/js/ace/elements.aside.js",
+      "wwwroot/Content/js/ace/ace.js",
+      "wwwroot/Content/js/ace/ace.ajax-content.js",
+      "wwwroot/Content/js/ace/ace.touch-drag.js",
+      "wwwroot/Content/js/ace/ace.sidebar.js",
+      "wwwroot/Content/js/ace/ace.sidebar-scroll-1.js",
+      "wwwroot/Content/js/ace/ace.submenu-hover.js",
+      "wwwroot/Content/js/ace/ace.widget-box.js",
+      "wwwroot/Content/js/ace/ace.settings.js",
+      "wwwroot/Content/js/ace/ace.settings-rtl.js",
+      "wwwroot/Content/js/ace/ace.settings-skin.js",
+      "wwwroot/Content/js/ace/ace.widget-on-reload.js"
+    ],
+    // Optionally specify minification options
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
+    // Optionally generate .map file
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/js/fapcommon.min.js",
+    "inputFiles": [
+      "wwwroot/Content/js/date-time/moment.js",
+      "wwwroot/Content/js/bootbox.js", //弹出框提示
+      "wwwroot/Content/js/jquery.gritter.js", //浮动层提示
+      "wwwroot/Content/js/jquery-ui.js",
+      "wwwroot/Content/js/jquery-ui.custom.js",
+      "wwwroot/Content/js/jquery.ui.touch-punch.js",
+      "wwwroot/Content/js/jquery.nestable.js",
+      "wwwroot/Scripts/Fap/common.js", //fap常用js
+      "wwwroot/Scripts/Fap/utils.js", //fap常用js
+      "wwwroot/Content/js/date-time/bootstrap-datetimepicker.js",
+      "wwwroot/Content/js/jquery.DatePicker.js",
+      "wwwroot/Content/js/date-time/locales/bootstrap-datetimepicker.zh-CN.js",
+      "wwwroot/Content/js/date-time/bootstrap-datepicker.js",
+      "wwwroot/Content/js/jquery.validate.js", //表单校验js
+      "wwwroot/Content/js/jquery.bootstrap-duallistbox.js", //左右筛选控件
+      "wwwroot/Content/date-time-h5/js/mobiscroll.core-2.6.2.js", //滚动选择日期控件
+      "wwwroot/Content/date-time-h5/js/mobiscroll.android-ics-2.6.2.js",
+      "wwwroot/Content/date-time-h5/js/mobiscroll.datetime-2.6.2.js",
+      "wwwroot/Content/date-time-h5/js/mobiscroll.core-2.6.2-zh.js",
+      "wwwroot/Content/fileinput/fileinput.js", //文件上传
+      "wwwroot/lib/echarts/echarts.common.min.js",
+      "wwwroot/Content/js/chosen.jquery.js", //下拉框美化
+      "wwwroot/Content/js/jquery.bootstrap-touchspin.js", //数值控件
+      "wwwroot/Content/js/jquery.inputlimiter.1.3.1.js", //字符限制
+      "wwwroot/Content/js/bootstrap-wysiwyg.js", //富文本编辑器
+      "wwwroot/Content/js/jquery.hotkeys.js",
+      "wwwroot/Content/citypicker/city-picker.data.js", //籍贯
+      "wwwroot/Content/citypicker/city-picker.js", //籍贯
+      "wwwroot/Content/citypicker/jquery.citypicker.js", //城市
+      "wwwroot/Content/js/jRange/jquery.range.js",
+      "wwwroot/Content/js/jquery.colorbox.js",
+      "wwwroot/Content/js/jquery.raty.js",
+      "wwwroot/Content/js/fuelux/fuelux.wizard.js",
+      "wwwroot/Scripts/Fap/mainframe.js"
+    ],
+    // Optionally specify minification options
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
+    // Optionally generate .map file
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/js/fapcontrol.min.js",
+    "inputFiles": [
+      "wwwroot/Content/JqGrid/jquery.jqGrid.src.js",
+      //"wwwroot/Content/JqGrid/i18n/grid.locale-cn.js",
+      "wwwroot/Content/js/x-editable/bootstrap-editable.js", //x-editable
+      "wwwroot/Content/js/x-editable/ace-editable.js",
+      "wwwroot/Content/js/x-editable/fap-editable.js",
+      "wwwroot/Scripts/FapControl/dataGrid.js", //新增编辑弹出表单
+      "wwwroot/Scripts/FapControl/dataForm.js", //表单持久化
+      "wwwroot/Content/js/JsTree/jstree.js", //树控件
+      "wwwroot/Content/Select2/js/select2.full.js" //select2
+    ],
+    // Optionally specify minification options
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
+    // Optionally generate .map file
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/js/fapworkflow.min.js",
+    "inputFiles": [
+      "wwwroot/Content/deflate/pako.min.js",
+      "wwwroot/Content/deflate/base64.js",
+      "wwwroot/Content/jscolor/jscolor.js",
+      "wwwroot/Content/sanitizer/sanitizer.min.js",
+      "wwwroot/Content/mxGraph/mxClient.js",
+
+      "wwwroot/Scripts/Fap/common.js",
+      "wwwroot/Scripts/Workflow/Designer/Init.js",
+      "wwwroot/Scripts/Workflow/Designer/EditorUi.js",
+
+      "wwwroot/Scripts/Workflow/Designer/Editor.js",
+      "wwwroot/Scripts/Workflow/Designer/Sidebar.js",
+      "wwwroot/Scripts/Workflow/Designer/Graph.js",
+      "wwwroot/Scripts/Workflow/Designer/Format.js",
+      "wwwroot/Scripts/Workflow/Designer/Shapes.js",
+      "wwwroot/Scripts/Workflow/Designer/Actions.js",
+      "wwwroot/Scripts/Workflow/Designer/Menus.js",
+      "wwwroot/Scripts/Workflow/Designer/Toolbar.js",
+      "wwwroot/Scripts/Workflow/Designer/Dialogs.js"
+    ],
+    // Optionally specify minification options
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
+    // Optionally generate .map file
+    "sourceMap": false
+  }
+]

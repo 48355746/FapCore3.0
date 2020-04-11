@@ -1,0 +1,245 @@
+﻿@using Fap.AspNetCore.Controls.JqGrid
+@using Fap.Core.Utility
+@model Fap.AspNetCore.ViewModel.MultiJqGridViewModel
+@{
+    Layout = null;
+    //单据编码
+    Fap.AspNetCore.ViewModel.JqGridViewModel coderule = Model.JqGridViewModels["CfgBillCodeRule"];
+    //回写规则
+    Fap.AspNetCore.ViewModel.JqGridViewModel wbrule = Model.JqGridViewModels["CfgBillWriteBackRule"];
+    //自由表单
+    Fap.AspNetCore.ViewModel.JqGridViewModel freeform = Model.JqGridViewModels["WfFreeForm"];
+    //邮件模板
+    Fap.AspNetCore.ViewModel.JqGridViewModel mailTmpl = Model.JqGridViewModels["CfgEmailTemplate"];
+    //增加操作列
+    Column column = new Column("oper");
+    column.SetLabel("操作");
+    column.SetWidth(110);
+}
+<title>单据编码设置</title>
+<link href="~/Content/css/codemirror/codemirror.css" rel="stylesheet" />
+<link rel="stylesheet" href="~/Content/css/codemirror/theme/xq-light.css"/>
+
+<link href="~/Content/bootstrap-layer.css" rel="stylesheet" />
+<div class="row">
+    <div class="col-xs-12">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h5 class="widget-title smaller"><fap-multilang lang-key="bill_set" default-content="单据设置"></fap-multilang></h5>
+                <!-- #section:custom/widget-box.tabbed -->
+                <div class="widget-toolbar no-border">
+                    <ul class="nav nav-tabs" id="billTab">
+                        <li class="active">
+                            <a data-toggle="tab" href="#billcode">
+                                <fap-multilang lang-key="bill_code" default-content="单据编码"></fap-multilang>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a data-toggle="tab" href="#billcallback">
+                                <fap-multilang lang-key="bill_callback" default-content="单据回写"></fap-multilang>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a data-toggle="tab" href="#billfreeform">
+                                <fap-multilang lang-key="bill_freeform" default-content="自由表单"></fap-multilang>
+                            </a>
+                        </li>
+                        <li>
+                            <a data-toggle="tab" href="#billmail">
+                                <fap-multilang lang-key="bill_mail" default-content="单据邮件"></fap-multilang>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- /section:custom/widget-box.tabbed -->
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main">
+                    <div class="tab-content">
+                        <div id="billcode" class="tab-pane in active">
+                            <fap-grid id="cfgbillcoderule" grid-model="coderule" wrapper="billTab,billcode"
+                                      auto-width="true" shrink-fit="false" view-records="true"></fap-grid>
+                        </div>
+
+                        <div id="billcallback" class="tab-pane">
+                            <fap-grid id="wfbusinessmapping" grid-model="wbrule" auto-width="true" view-records="true"
+                                      wrapper="billTab,billcallback"></fap-grid>
+                        </div>
+
+                        <div id="billfreeform" class="tab-pane">
+                            <fap-grid id="wffreeform" attach-column="@column" grid-model="freeform" auto-width="true"
+                                      wrapper="billTab,billfreeform" oper-cud="true" on-grid-complete="initMenu"></fap-grid>
+
+                        </div>
+                        <div id="billmail" class="tab-pane">
+                            <fap-grid id="cfgemailtemplate" grid-model="mailTmpl" auto-width="true" oper-delete="true"
+                                      wrapper="billTab,billmail" view-records="true"></fap-grid>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+@*@(Html.Window("win-billmailtemplate").SetTitle("邮件模板设置", "fa fa-cogs").SetContent(@<text><div class="row"><div id="divmailtemplate" class="col-xs-12"></div></div></text>).SetConfirmButtons().SetMaximizing(true))*@
+<script>
+    var scripts = [null, "/Content/layer/layer.js","/Content/js/codemirror/codemirror.js","/Content/js/codemirror/mode/sql/sql.js", null];
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+            })
+             //添加邮件模板
+            $("#btnAddMailTmpl").on(ace.click_event, function () {
+
+                layer.open({
+                    btn: ['保存', '关闭'],
+                    type: 2,
+                    title: '邮件模板设置',
+                    shadeClose: true,
+                    shade: false,
+                    maxmin: true, //开启最大化最小化按钮
+                    area: ['900px', '600px'],
+                    content: basePath + '/System/Manage/BillMailTemplate/0',
+                    yes: function (index, layero) {
+                        var iframeWin = layero.find('iframe')[0];
+                        var rv = iframeWin.contentWindow.saveMailTmpl();
+                        if (rv == true) {
+                            layer.close(index); //如果设定了yes回调，需进行手工关闭
+                            refreshGrid("grid-cfgemailtemplate");
+
+                        } else {
+                            layer.alert('保存失败！');
+                        }
+
+
+                    },
+                    cancel: function () {
+                        //console.log('cancel');
+                    }
+                });
+            })
+            function refreshGrid (gridid) {
+                $("#"+gridid).jqGrid('setGridParam', {
+                    page: 1
+                }).trigger("reloadGrid"); //重新载入
+
+            }
+            //编辑邮件模板
+            $("#btnEditMailTmpl").on(ace.click_event, function () {
+                var gr = $("#grid-cfgemailtemplate").jqGrid('getGridParam', 'selrow');
+                if (gr === null) {
+                    bootbox.alert("请选中一条模板修改");
+                    return;
+                }
+                var rowData = $("#grid-cfgemailtemplate").getRowData(gr);
+                @*var option = $("#win-billmailtemplate").data("winoption");
+                option.open = function () {
+                    $("#divmailtemplate").html("<h3 class=' smaller lighter grey'><i class='ace-icon fa fa-spinner fa-spin orange bigger-125'></i>正在加载，请稍后...</h3>");
+                    $("#divmailtemplate").load("@Url.Action("BillMailTemplate","SystemManage",new{area="System"})?id=" + rowData.Fid)
+                };
+                option.buttons[0].click = function () {
+
+                    var rv = saveMailTmpl();
+                    if (rv == true) {
+                        $("#grid-cfgemailtemplate").jqGrid('setGridParam', {
+                            page: 1
+                        }).trigger("reloadGrid"); //重新载入
+                        $(this).dialog("close");
+                    } else {
+
+                    }
+                }
+                //根据option弹出window
+                $("#win-billmailtemplate").removeClass("hide").dialog(option);*@
+                layer.open({
+                    btn: ['保存', '关闭'],
+                    type: 2,
+                    title: '邮件模板设置',
+                    shadeClose: true,
+                    shade: false,
+                    maxmin: true, //开启最大化最小化按钮
+                    area: ['900px', '600px'],
+                    content: basePath + '/System/Manage/BillMailTemplate/' + rowData.Fid,
+                    yes: function (index, layero) {
+                        var iframeWin = layero.find('iframe')[0];
+                        var rv = iframeWin.contentWindow.saveMailTmpl();
+                        if (rv == true) {
+                            layer.close(index); //如果设定了yes回调，需进行手工关闭
+                            refreshGrid("grid-cfgemailtemplate");
+
+                        } else {
+                            layer.alert('保存失败！');
+                        }
+
+
+                    },
+                    cancel: function () {
+                        //console.log('cancel');
+                    }
+                });
+            })
+        })
+    })
+    var initMenu = function () {
+        var ids = jQuery("#grid-wffreeform").jqGrid('getDataIDs');
+        for (var i = 0; i < ids.length; i++) {
+            var de = '';
+            var cl = ids[i];
+            var ret = jQuery('#grid-wffreeform').jqGrid('getRowData', cl);
+            var fid = ret.Fid;
+            var id = ret.Id;
+            de += "<a href='javascript:void(0)' onclick='setFreeForm(\"" + fid + "\",\"" + id + "\")'>设置 </a> ";
+
+            jQuery('#grid-wffreeform').jqGrid('setRowData', ids[i], { oper: de });
+        }
+    }
+
+    var setFreeForm = function (fid, id) {
+        debugger
+        var index = layer.open({
+            btn: ['保存', '关闭'],
+            type: 2,
+            title: '自由表单设置',
+            shadeClose: true,
+            shade: false,
+            skin: 'billskin',
+            maxmin: true, //开启最大化最小化按钮
+            zIndex:1000,
+            //area: ['900px', '600px'],
+            content: basePath + '/System/Manage/FreeFormSet/' + fid,
+            yes: function (index, layero) {
+                //var iframeWin = window[layero.find('iframe')[0]['name']]; //得到iframe页的窗口对象，执行iframe页的方法：
+                var iframeWin = layero.find('iframe')[0];
+                var jsonStr = iframeWin.contentWindow.getContent();
+                //校验重复字段
+                var arr = jsonStr.match(/\$\{\S+?\}/g);
+                var arrStr = JSON.stringify(arr), str;
+                for (var i = 0; i < arr.length; i++) {
+                    if (arrStr.indexOf(arr[i]) != arrStr.lastIndexOf(arr[i])) {
+                        layer.alert('重复设置了字段，请删除重复字段！---' + arr[i])
+                        return;
+                    }
+                };
+
+                $.post("@Url.Content("~/System/Api/Manage/Setting/FreeForm")", { Id: id,  FFContent: jsonStr}, function (rv) {
+                    if (rv.success) {
+                        $.msg(rv.msg);
+                    } else {
+                        bootbox.alert(rv.msg);
+                    }
+                })
+            },
+            cancel: function () {
+                //console.log('cancel');
+            }
+        });
+        layer.full(index);
+    }
+</script>

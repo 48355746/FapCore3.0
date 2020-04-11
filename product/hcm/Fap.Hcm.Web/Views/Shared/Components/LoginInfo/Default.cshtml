@@ -1,0 +1,66 @@
+﻿@inject Fap.Core.Rbac.ILoginService _loginService
+@using Fap.Core.Rbac.Model
+@{
+    IEnumerable<FapRole> roles = _loginService.GetUserRoles(_applicationContext.UserUid) ;
+    FapRole cr =roles.FirstOrDefault(r=>r.Fid==_applicationContext.CurrentRoleUid);
+}
+<li class="light-blue">
+    <a data-toggle="dropdown" href="#" class="dropdown-toggle">
+        <img class="nav-user-photo" src="@Url.Content($"~/Component/Photo/{_applicationContext.EmpPhoto}")" alt="" />
+        <span class="user-info">
+            <small><fap-multilang lang-key="welcome" default-content="欢迎"></fap-multilang>,</small>
+           
+            <text>@_applicationContext.EmpName</text>
+           
+        </span>
+
+        <i class="ace-icon fa fa-caret-down"></i>
+    </a>
+
+    <ul class="user-menu dropdown-menu-right dropdown-menu dropdown-yellow dropdown-caret dropdown-close">
+        @foreach (var role in roles)
+        {
+            <li>
+                <a href="@Url.Content("~/Home/ChangeRole/?fid=")@role.Fid">
+                    @if (role.Fid == cr.Fid)
+                    {
+                        <i class="ace-icon green fa fa-check"></i>
+                    }
+                    else
+                    {
+                        <i class="ace-icon green fa fa-circle"></i>
+                    }
+                    @role.RoleName
+                </a>
+
+            </li>
+        }
+
+        <li class="divider"></li>
+        <li>
+            <a href="#SelfService/Ess/UserProfile/">
+                <i class="ace-icon fa fa-user"></i>                
+                <fap-multilang lang-key="personal_information" default-content="个人信息"></fap-multilang>
+            </a>
+        </li>
+        <li>
+            <a href="#Home/ResetPassword/">
+                <i class="ace-icon fa fa-lock"></i>                
+                <fap-multilang lang-key="page_modifypassword_title" default-content="修改密码"></fap-multilang>
+            </a>
+        </li>
+        <li class="divider"></li>
+        <li>
+            <a href="#modal-productinfo" data-toggle="modal">
+                <i class="ace-icon fa fa-info-circle"></i>
+                <fap-multilang lang-key="about" default-content="关于"></fap-multilang>
+            </a>
+        </li>
+        <li>
+            <a href="@Url.Content("~/Home/SignOut")">
+                <i class="ace-icon fa fa-power-off"></i>
+                <fap-multilang lang-key="logout" default-content="登出"></fap-multilang> 
+            </a>
+        </li>
+    </ul>
+</li>

@@ -1,0 +1,402 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+    IEnumerable<Fap.Core.Infrastructure.Metadata.FapDict> empCategory = ViewBag.EmpCategory;
+    //IEnumerable<dynamic> process = ViewBag.WfProcess;
+    //在岗状态
+    IEnumerable<Fap.Core.Infrastructure.Metadata.FapDict> empStatus = ViewBag.EmpStatus;
+}
+<title><fap-multilang lang-key="empinfo_index_title" default-content="员工档案"></fap-multilang>    </title>
+
+<link href="~/Content/css/bootstrap-timeline.css" rel="stylesheet" />
+<link href="~/Content/css/bootstrap-multiselect.css" rel="stylesheet" />
+<link href="~/Content/bootstrap-layer.css" rel="stylesheet" />
+
+<style>
+    .billskin .layui-layer-btn0 {
+        background-color: #d15b47 !important;
+        border-color: #428bca;
+    }
+</style>
+<div class="row">
+    <div class="col-xs-12">
+        <div id="widget-box-orgdept" class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">
+                    <fap-multilang lang-key="empinfo_index_title" default-content="员工档案"></fap-multilang>
+                </h4>
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar">
+                    <label>
+                        <input name="chkshowpartjob" id="chkshowpartjob" type="checkbox" class="ace" />
+                        <span class="lbl"> 兼职</span>
+                    </label>
+                    <label>
+                        <input type="checkbox" id="chkphoto" class="ace" />
+                        <span class="lbl">
+                            <fap-multilang lang-key="mss_employees_page_photo" default-content="照片"></fap-multilang>
+                        </span>
+                    </label>
+                </div>
+                <div class="widget-toolbar">
+                    <!-- #section:basics/content.searchbox -->
+                    <div class="nav-search" style="top:6px">
+
+                        <span class="input-icon">
+                            <input type="text" placeholder="员工编码/姓名" class="nav-search-input" id="nav-search-input" autocomplete="off" />
+                            <i class="ace-icon fa fa-search nav-search-icon"></i>
+                        </span>
+
+                    </div><!-- /.nav-search -->
+                    <!-- /section:basics/content.searchbox -->
+
+                </div>
+                <div class="widget-toolbar no-border">
+                    <fap-button id="btnSchedule" btn-tag="link" content="排班" icon-before="fa fa-calendar-check-o blue" class-name="info"></fap-button>
+                    <fap-button id="btnSubInfo" btn-tag="link" content="附属信息" icon-before="fa fa-paperclip blue" class-name="info"></fap-button>
+                    <fap-button id="btnEmployeeHistory" btn-tag="link" content="历史" icon-before="fa fa-history blue" class-name="info"></fap-button>
+                    <fap-button id="btnPartJob" btn-tag="link" content="兼职" icon-before="fa fa-fire blue" class-name="info"></fap-button>
+                </div>
+            </div>
+            <div class="widget-body">
+                <!-- #section:custom/widget-box.toolbox -->
+                <div class="widget-main">
+                    <fap-grid id="employee" grid-model="Model"  oper-import="true"
+                              auto-width="true" on-select-row="ShowPhoto(rowid)" multi-box-only="true" multi-select="true" oper-export="true" oper-delete="true" oper-batch-update="true" source-type="Local" shrink-fit="false"></fap-grid>
+                </div>
+            </div>
+        </div>
+        <!-- /section:elements.tab -->
+        <div id="right-menu" class="modal aside" data-body-scroll="false" data-offset="true" data-placement="right" data-fixed="true" data-backdrop="invisible" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header no-padding">
+                        <div class="table-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                <span class="white">&times;</span>
+                            </button>
+                            <fap-multilang lang-key="department" default-content="部门"></fap-multilang>
+                        </div>
+                    </div>
+
+                    <div class="modal-body">
+                        <div id="treeDeptDiv" class="widget-main ">
+                            <div>
+                                <span><fap-multilang lang-key="employee_category" default-content="人员类别"></fap-multilang> : &nbsp;</span>
+                                <div>
+                                    @foreach (var item in empCategory)
+                                    {
+                                        <label>
+                                            <input data-ctrl="empcategory" name="form-field-checkbox-empcategory" value="@item.Code" type="checkbox" checked="checked" class="ace" />
+                                            <span class="lbl"> @item.Name</span>
+                                        </label>
+                                    }
+                                </div>
+                            </div>
+                            <div>
+                                <span><fap-multilang lang-key="employee_status" default-content="在岗状态"></fap-multilang>: &nbsp;</span>
+                                <div>
+
+                                    @foreach (var item in empStatus)
+                                    {
+                                        bool chk = item.Code == "Current";
+                                        <label>
+                                            <input data-ctrl="empstatus" name="form-field-checkbox-empstatus" value="@item.Code" type="checkbox" fap-checked="chk" class="ace" />
+                                            <span class="lbl"> @item.Name</span>
+                                        </label>
+                                    }
+                                </div>
+                            </div>
+                            <div class="scrollable">
+                                <fap-tree id="orgdept" is-async="false" is-orgdept="true"></fap-tree>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /.modal-content -->
+
+                <button class="aside-trigger btn btn-purple btn-app btn-xs ace-settings-btn" data-target="#right-menu" data-toggle="modal" type="button">
+                    <i data-icon1="fa-sitemap" data-icon2="fa-minus" class="ace-icon fa fa-sitemap bigger-110 icon-only"></i>
+                </button>
+            </div><!-- /.modal-dialog -->
+        </div>
+
+    </div>
+</div>
+
+<script>
+
+
+    //导出数据需要的js
+    //, "/Content/JqGrid/pdfmake.min.js", "/Content/JqGrid/vfs_fonts.js", "/Content/JqGrid/jszip.min.js"
+    var scripts = [null, "/Content/js/fuelux/fuelux.wizard.js", "/Content/js/jquery-migrate-1.1.0.js", "/Content/js/jquery.jqprint-0.3.js", "/Content/js/bootstrap-multiselect.js", "/Scripts/Employee/EmpIndex.js?v=1", "/Scripts/Workflow/business.js?v=2", null];
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $('.modal.aside').ace_aside();
+            $(document).one('ajaxloadstart.page', function (e) {
+                $('#tree-orgdept').jstree("destroy");
+                $('.modal.aside').remove();
+                $(window).off('.aside');
+            })
+
+            //快速查找
+            $("#nav-search-input").change(function () {
+                //在岗状态
+                var selEmpStatus = [];
+                $("input[data-ctrl=empstatus]").each(function () {
+                    if ($(this).is(':checked')) {
+                        selEmpStatus.push($(this).val());
+                    }
+                })
+                var rules = [];
+                if (selEmpStatus != '') {
+                    rules.push({ "field": "EmpStatus", "op": "in", "data": selEmpStatus.join(',') });
+                }
+                var groups = [];
+                var r = [];
+                var v = $(this).val();
+                r.push({ "field": "EmpCode", "op": "cn", "data": v });
+                r.push({ "field": "EmpName", "op": "cn", "data": v })
+                var childfilter = { groupOp: "OR", rules: r };
+                groups.push(childfilter);
+
+                var filter = { groupOp: "AND", rules: rules, groups: groups };
+                reloadGrid("grid-employee",{ filters: JSON.stringify(filter) })
+
+            })
+            //直接执行
+            ; (function () {
+                var sels = localStorage.getItem("empcategory");
+                if (sels != null && sels.length > 0) {
+                    //$('.multiselect').multiselect('select', sels.split(','));
+                    var sel = sels.split(',');
+                    $("input[data-ctrl=empcategory]").each(function () {
+                        var $v = $(this).val();
+                        if ($.inArray($v, sel) > -1) {
+                            $(this).attr("checked", "checked");
+                        } else {
+                            $(this).removeAttr("checked");
+                        }
+                    })
+                }
+                var filter = { "groupOp": "AND" };
+                var rules = [];
+                //人员类别
+                var selected = [];
+
+                $("input[data-ctrl=empcategory]").each(function () {
+                    if ($(this).is(':checked')) {
+                        selected.push($(this).val());
+                    }
+                })
+                if (selected != '') {
+                    rules.push({ "field": "EmpCategory", "op": "in", "data": selected.join(',') });
+                }
+                //兼职
+                if ($('#chkshowpartjob').get(0).checked) {
+                    //兼职打勾的话，去掉职位类型条件
+                } else {
+                    //默认显示主职
+                    rules.push({ "field": "IsMainJob", "op": "eq", "data": 1 });
+                }
+                //在岗状态
+                rules.push({ "field": "EmpStatus", "op": "eq", "data":"Current" });
+                filter.rules = rules;
+                reloadGrid("grid-employee", { filters: JSON.stringify(filter) });
+
+            })();
+            //排班
+            $("#btnSchedule").on(ace.click_event, function () {
+                var ret = getSelectedRow("grid-employee");
+                if (ret == null) {
+                    return;
+                }
+                bootboxWindow($.lang("time_schedule","排班"),basePath+"/Time/Manage/ScheduleInfo/"+ret.Fid)
+            });
+            //兼职信息
+            $("#btnPartJob").on(ace.click_event, function () {
+                var ret = getSelectedRow("grid-employee");
+                if (ret == null) {
+                    return;
+                }
+                if (ret.IsMainJob === "0") {
+                    bootbox.alert($.lang("please_select_mainjob","请选择主职位查看,当前职位为兼职"));
+                    return;
+                }
+                bootboxWindow($.lang("part_time", "兼职信息")
+                    , basePath + "/Employee/Manage/EmpPartJob", null,
+                    { empUid: ret.Fid, empName: ret.EmpName, empCode: ret.EmpCode, menuUrl: "~/Employee/Manage/EmpIndex" },
+                    function () { $(window).triggerHandler('resize.jqGrid'); });
+
+            });            
+
+            $("#btnSubInfo").on(ace.click_event, function () {
+                var rowData = getSelectedRow("grid-employee");
+                if (rowData === null) {
+                    return;
+                }
+                var dialog = bootbox.dialog({
+                    title: "附属信息",
+                    size: 'large',
+                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                    buttons: {
+                        cancel: {
+                            label: "关闭", className: "btn-default"
+                        }
+                    }
+                });
+                var data = { "gridViews": @Html.Raw(ViewBag.SubInfo)};
+                $.each(data.gridViews, function (i, v) {
+                    v.defaultValues.push({ "Field": "EmpUid", "Value": rowData.Fid });
+                    v.defaultValues.push({ "Field": "EmpUidMC", "Value": rowData.EmpName });
+                    v.defaultValues.push({ "Field": "EmpCode", "Value": rowData.EmpCode });
+                });
+                dialog.init(function () {
+                    var url = "@Html.Raw(Url.Action("MultiDataGrid", "Component", new { area = "" }))" + "?menuUrl=~/Employee/Manage/EmpIndex";
+                    $.post(url, data, function (ev) {
+                        dialog.find('.bootbox-body').html(ev);
+                    })
+                });
+            });
+            //历史修改信息
+            $("#btnEmployeeHistory").on(ace.click_event, function () {
+                var rowData = getSelectedRow("grid-employee");
+                if (rowData === null) {
+                    return;
+                }
+                if (rowData.IsMainJob == 0) {
+                    $.msg("此条信息为兼职信息，请选择主职信息查看！");
+                    return;
+                }
+                var dialog = bootbox.dialog({
+                    title: "历史追溯",
+                    size:'large',
+                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                    buttons: {
+                        cancel: {
+                            label: "关闭", className: "btn-default"
+                        }
+                    }
+                });
+                dialog.init(function () {
+                    var url = "@Html.Raw(Url.Action("DataHistory", "Component",new { area=""}))";
+                     $.get(url, {bn:'Employee',fid:rowData.Fid}, function (ev) {
+                        dialog.find('.bootbox-body').html(ev);
+                    })
+                });
+
+            });
+            //人事业务
+            $("a[data-action=empbizaction]").on(ace.click_event, function () {
+                var $this = $(this);
+                //必须选中人员操作
+                var isSelEmp = $this.data("required");
+                var processUid = $this.data("processuid");
+                var biztypeuid = $this.data("biztypeid");
+                var empcat = $this.data("empcat");
+                var title = $this.text();
+                var formtype = $this.data("formtype");
+                if (isSelEmp) {                  
+                    var rowData = getSelectedRow("grid-employee");
+                    if (rowData == null) {
+                        return;
+                    }
+                    if (empcat != "") {
+                        var cats = $.GetChkListValue(empcat);
+                        if (cats) {
+                            if ($.inArray(rowData.EmpCategory, cats) == -1) {
+                                bootbox.alert("此员工不能发起此项业务！");
+                                return;
+                            }
+                        }
+                    }
+                    var ref = $this.data("ref");
+                    var initData = {};
+                    initData.AppEmpUid = rowData.Fid;
+                    initData.AppEmpUidMC = rowData.EmpName;
+                    //[{ "RefCol": "EmpCode", "FrmCol": "EmpCode" }]
+                    if (ref != "") {
+                        $.each(ref, function (i, d) {
+                            initData[d.FrmCol] = rowData[d.RefCol];
+                            if (d.RefCol + "MC" in rowData) {
+                                initData[d.FrmCol + "MC"] = rowData[d.RefCol + "MC"];
+                            }
+                        })
+                    }
+                    ///Scripts/Workflow / business.js
+                    applyBusiness(title, processUid, formtype, biztypeuid, initData);
+
+                } else {
+                    applyBusiness(title, processUid, formtype, biztypeuid);
+                }
+
+            });
+
+            //部门变化事件，加载人员信息
+            $('#tree-orgdept').on("changed.jstree", function (e, data) {
+                if (data && data.selected && data.selected.length) {
+                    var deptid = data.selected[0];
+                    var deptMC = data.node.text;
+                    //获取所有子Fid
+                    var childs = data.node.children_d;
+                    var selids = childs.concat(deptid);
+                    //筛选有权限的节点
+                    var treeDept = $('#tree-orgdept').jstree(true);
+                    var sels = $.grep(selids, function (d, i) {
+
+                        return treeDept.get_node(d).data.ext1 == false;
+
+                    });
+                    //var jsonc = [];
+                    //if (treeDept.get_node(deptid).data.ext1 == false) {
+                    //    jsonc.push({ "FieldName": 'DeptUid', "FieldValue": deptid });
+                    //    jsonc.push({ "FieldName": 'DeptUidMC', "FieldValue": deptMC });
+                    //}
+                    var filter = { "groupOp": "AND" };
+                    var rules = [];
+                    rules.push({ "field": "DeptUid", "op": "in", "data": sels.join(',') });
+                    //var s = '{"groupOp":"AND","rules":[{"field":"DeptUid","op":"in","data":"' + childs + '"}]}';
+                    //人员类别
+                    var selected = [];
+                    $("input[data-ctrl=empcategory]").each(function () {
+                        if ($(this).is(':checked')) {
+                            selected.push($(this).val());
+                        }
+                    })
+                    //存储到storage
+                    localStorage.setItem("empcategory", selected.join());
+                    if (selected != '') {
+                        rules.push({ "field": "EmpCategory", "op": "in", "data": selected.join(',') });
+                    }
+                    //在岗状态
+                    var selEmpStatus = [];
+                    $("input[data-ctrl=empstatus]").each(function () {
+                        if ($(this).is(':checked')) {
+                            selEmpStatus.push($(this).val());
+                        }
+                    })
+                    if (selEmpStatus != '')
+                    {
+                        rules.push({ "field": "EmpStatus", "op": "in", "data": selEmpStatus.join(',') });
+                    }
+                    //兼职
+                    if ($('#chkshowpartjob').get(0).checked) {
+                        //兼职打勾的话，去掉职位类型条件
+                    } else {
+                        //默认显示主职
+                        rules.push({ "field": "IsMainJob", "op": "eq", "data": 1 });
+                    }
+                    filter.rules = rules;
+                    reloadGrid("grid-employee", { filters: JSON.stringify(filter) });
+
+                }
+                //console.log(data.selected);
+            });
+
+        })
+    });
+
+
+</script>

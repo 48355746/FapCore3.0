@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup Label="Globals">
+    <SccProjectName></SccProjectName>
+    <SccProvider></SccProvider>
+    <SccAuxPath></SccAuxPath>
+    <SccLocalPath></SccLocalPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Authors>wangyanfei</Authors>
+    <Company>-</Company>
+    <Product>Fap.OA</Product>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>1.0.1</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Engine\Utility\DynamicExpression.cs" />
+    <Compile Remove="Engine\WriteBack\AddonFormInternalWriteBack.cs" />
+    <Compile Remove="Engine\WriteBack\WriteBackFactory.cs" />
+    <Compile Remove="Engine\WriteBack\WriteBackRuleBase.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Fap.Core\Fap.Core.csproj" />
+  </ItemGroup>
+
+</Project>

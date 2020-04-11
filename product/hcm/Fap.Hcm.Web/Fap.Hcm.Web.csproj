@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -8,11 +8,108 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.9.5" />
+    <Compile Remove="Areas\Department\**" />
+    <Compile Remove="Temporary\679175051240538112\**" />
+    <Content Remove="Areas\Department\**" />
+    <Content Remove="Temporary\679175051240538112\**" />
+    <EmbeddedResource Remove="Areas\Department\**" />
+    <EmbeddedResource Remove="Temporary\679175051240538112\**" />
+    <None Remove="Areas\Department\**" />
+    <None Remove="Temporary\679175051240538112\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Fap.Core\Fap.Core.csproj" />
+    <None Remove="fap_hcm_web_log.txt" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Areas\Workflow\Views\Business\AgentTask.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\Apply.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\ApplyBill.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\ApplyViewBill.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\Approval.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\ApprovalBill.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\Approvaled.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\ApprovalViewBill.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\BizManage.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\DoneTask.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\FlowChart.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\Manage.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\MyAgent.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\MyApply.cshtml" />
+    <None Include="Areas\Workflow\Views\Business\TodoTask.cshtml" />
+    <None Include="Views\Shared\Components\ConditionEditor\Default.cshtml" />
+    <None Include="Views\Shared\Components\DataHistory\Default.cshtml" />
+    <None Include="Views\Shared\Components\LoginInfo\Default.cshtml" />
+    <None Include="Views\Shared\Components\Menus\Default.cshtml" />
+    <None Include="Views\Shared\Components\Message\Default.cshtml" />
+    <None Include="Views\Shared\Components\QueryProgram\Default.cshtml" />
+    <None Include="wwwroot\Content\js\codemirror\mode\clike\clike.js" />
+    <None Include="wwwroot\Content\js\codemirror\mode\clike\test.js" />
+    <None Include="wwwroot\js\site.js" />
+    <None Include="wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map" />
+    <None Include="wwwroot\lib\bootstrap\dist\css\bootstrap-grid.min.css.map" />
+    <None Include="wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.css.map" />
+    <None Include="wwwroot\lib\bootstrap\dist\css\bootstrap-reboot.min.css.map" />
+    <None Include="wwwroot\lib\bootstrap\dist\css\bootstrap.css.map" />
+    <None Include="wwwroot\lib\bootstrap\dist\css\bootstrap.min.css.map" />
+    <None Include="wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.js" />
+    <None Include="wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.js.map" />
+    <None Include="wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.min.js" />
+    <None Include="wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.min.js.map" />
+    <None Include="wwwroot\lib\bootstrap\dist\js\bootstrap.js" />
+    <None Include="wwwroot\lib\bootstrap\dist\js\bootstrap.js.map" />
+    <None Include="wwwroot\lib\bootstrap\dist\js\bootstrap.min.js" />
+    <None Include="wwwroot\lib\bootstrap\dist\js\bootstrap.min.js.map" />
+    <None Include="wwwroot\lib\bootstrap\LICENSE" />
+    <None Include="wwwroot\lib\jquery-validation-unobtrusive\jquery.validate.unobtrusive.js" />
+    <None Include="wwwroot\lib\jquery-validation-unobtrusive\jquery.validate.unobtrusive.min.js" />
+    <None Include="wwwroot\lib\jquery-validation\dist\additional-methods.js" />
+    <None Include="wwwroot\lib\jquery-validation\dist\additional-methods.min.js" />
+    <None Include="wwwroot\lib\jquery-validation\dist\jquery.validate.js" />
+    <None Include="wwwroot\lib\jquery-validation\dist\jquery.validate.min.js" />
+    <None Include="wwwroot\lib\jquery-validation\LICENSE.md" />
+    <None Include="wwwroot\lib\jquery\dist\jquery.js" />
+    <None Include="wwwroot\lib\jquery\dist\jquery.min.js" />
+    <None Include="wwwroot\lib\jquery\dist\jquery.min.map" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="3.0.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.6">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.0.0" />
+    <PackageReference Include="MiniProfiler.AspNetCore.Mvc" Version="4.1.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="3.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Fap.AspNetCore\Fap.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\..\src\Fap.Core\Fap.Core.csproj" />
+    <ProjectReference Include="..\..\..\src\Fap.ExcelReport\Fap.ExcelReport.csproj" />
+    <ProjectReference Include="..\..\..\src\Fap.Workflow\Fap.Workflow.csproj" />
+    <ProjectReference Include="..\..\..\thirdparty\UEditorNetCore\UEditorNetCore.csproj" />
+    <ProjectReference Include="..\Fap.Hcm.Service\Fap.Hcm.Service.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Areas\Employee\Data\" />
+    <Folder Include="Areas\Employee\Models\" />
+    <Folder Include="Areas\Insurance\Data\" />
+    <Folder Include="Areas\Insurance\Models\" />
+    <Folder Include="Areas\Organization\Data\" />
+    <Folder Include="Areas\Organization\Models\" />
+    <Folder Include="Areas\Payroll\Data\" />
+    <Folder Include="Areas\Payroll\Models\" />
+    <Folder Include="Areas\System\Data\" />
+    <Folder Include="Areas\Time\Data\" />
+    <Folder Include="Areas\Workflow\Data\" />
+    <Folder Include="Areas\Workflow\Models\" />
+  </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 
 </Project>

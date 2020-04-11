@@ -10,5 +10,6 @@ namespace Fap.Core.Rbac.AC
     {
         void Refresh();
         bool TryGetValue(string fid, out OrgDept fapOrg);
+        bool TryGetValueByPid(string pid, out IEnumerable<OrgDept> childDepts);
     }
 }

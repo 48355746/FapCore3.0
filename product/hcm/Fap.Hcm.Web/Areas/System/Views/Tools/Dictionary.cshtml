@@ -1,0 +1,139 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+    IEnumerable<Fap.Core.Infrastructure.Metadata.FapDict> dictCategorys = _dbContext.Dictionarys("FapDict");
+}
+<title>字典管理</title>
+<div class="row"> 
+    <div class="col-xs-12">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">字典</h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar">
+                    <select class="chosen-select form-control" style="width:300px" id="selDictCategory" multi-placeholder="字典分类...">
+                        <option value="">  </option>
+                        @foreach (var category in dictCategorys)
+                        {
+                            <option value="@category.Code">@category.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="widget-toolbar no-border">
+                    <fap-button id="btnAddCategory" btn-tag="link" content="添加字典分类" icon-before="fa fa-plus-circle blue" class-name="info"></fap-button>
+                    <fap-button id="btnDeleteCategory" btn-tag="link" content="删除字典分类" icon-before="fa fa-trash-o blue" class-name="info"></fap-button>
+                   
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    <fap-grid id="fapdict" auto-width="true" grid-model="Model" source-type="Local" on-form-init-add="afterInitFormCallback();setDefaultValues();" on-form-init-edit="afterInitFormCallback" oper-cud="true"></fap-grid>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var selCategory = {};
+    var afterInitFormCallback = function () {
+        $("#Category").attr("disabled", "disabled");
+        $("#CategoryName").attr("disabled", "disabled");
+    }
+    var setDefaultValues = function () {
+        let code = $("#selDictCategory").val();
+        let name = $("#selDictCategory option:selected").text();
+       
+        if (code) {
+
+            $("#Category").val(code);
+            $("#CategoryName").val(name);
+        }
+    }
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+
+            $(document).one('ajaxloadstart.page', function (e) {
+
+            })
+            var chosen= $('.chosen-select').chosen({ allow_single_deselect: true }).on("change", function () {
+                var c = $(this).val();
+                if (c === "") {
+                    return;
+                }
+                var filter = '{"groupOp":"AND","rules":[{"field":"Category","op":"eq","data":"' + c + '"}]}'
+
+                reloadGrid("grid-fapdict", { filters: filter })
+            });
+            $("#btnAddCategory").on(ace.click_event, function () {
+                var dialog = bootbox.dialog({
+                    title: '字典分类',
+                    message: ['<form class="form-horizontal" role="form">',
+                        '    <div class="form-group">',
+                        '        <label class="col-sm-3 control-label no-padding-right" for="form-field-CatCode"> '+$.lang("code","编码")+' </label>',
+                        '        <div class="col-sm-9">',
+                        '            <input type="text" id="form-field-CatCode" placeholder="" class="form-control" />',
+                        '        </div>',
+                        '    </div>',
+                        '    <div class="form-group">',
+                        '        <label class="col-sm-3 control-label no-padding-right" for="form-field-CatName"> '+$.lang("name","名称")+' </label>',
+                        '        <div class="col-sm-9">',
+                        '            <input type="text" id="form-field-CatName" placeholder="" class="form-control" />',
+                        '        </div>',
+                        '    </div>',
+                        '</form>'].join(""),
+                    buttons: {
+                        success: {
+                            label: $.lang("ok", "确定"),
+                            className: "btn-primary",
+                            callback: function () {
+                                var code = $("#form-field-CatCode").val();
+                                var name = $("#form-field-CatName").val();
+                                if (code == '' || name == '') {
+                                    $.msg($.lang("code_name_required", "编码和名称不能为空！"));
+                                    return false;
+                                }
+                                debugger
+                                //chosen.add_option("<option  value='" + code + "' selected>'" + name + "'</option >");
+                                $("#selDictCategory").append("<option  value='" + code + "' selected>" + name + "</option >");
+                                //$("#selDictCategory").val(code);
+                                 $("#selDictCategory").trigger("chosen:updated");
+                            }
+                        },
+                        cancel: {
+                            label: $.lang("cancel", "取消"), className: "btn-default"
+                        }
+                    }
+
+                });
+            })
+
+
+            $("#btnDeleteCategory").on(ace.click_event, function () {
+                if ($("#selDictCategory").val() === "") {
+                    $.msg($.lang("select_row", "请选中字典分类删除"));
+                    return;
+                }
+                bootbox.confirm($.lang("confirm_delete", "确认删除字典分类吗?"), function (result) {
+                    if (result) {
+                        $.get(basePath + "/System/Api/Tools/DeleteDict/" +$("#selDictCategory").val(), function (rv) {
+                            if (rv.success) {
+                                $.msg(rv.msg);
+                                $('#selDictCategory option:selected').remove();
+                                 $("#selDictCategory").trigger("chosen:updated");
+                            } else {
+                                $.msg(rv.msg);
+                            }
+                        })
+                    }
+                })
+            })
+        })
+    })
+</script>
+

@@ -1,0 +1,86 @@
+﻿@model IEnumerable<Fap.Core.Infrastructure.Metadata.FapColumn>
+@{
+    IEnumerable<Fap.Hcm.Service.Insurance.InsRecord> records = ViewBag.Records;
+    string cd = DateTime.Now.ToString("yyyy-MM");
+}
+<div class="form-horizontal">
+    <div class="form-group">
+        <label class="col-xs-3 col-sm-3 control-label no-padding-right">
+            <fap-multilang lang-key="insurance_yearmonth" default-content="选择保险年月"></fap-multilang>
+        </label>
+        <div class="col-sm-9">
+            <!-- #section:plugins/bootstrap.typeahead-js -->
+            <div class="pos-rel">
+                <input type="text" id="txtICYM" placeholder="" value="@cd" style="width:200px" />
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-xs-3 col-sm-3 control-label no-padding-right">引用历史记录</label>
+        <div class="col-xs-9 col-sm-9">
+            <!-- #section:plugins/bootstrap.typeahead-js -->
+            <div class="pos-rel">
+                <select id="selInsRecord" style="width:200px">
+                    @if (records != null)
+                    {
+                        foreach (var r in records)
+                        {
+                            <option value="@r.Fid">@r.InsYM 第 @r.InsCount 次</option>
+                        }
+                    }
+                </select>
+            </div>
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-9 col-sm-12">
+            <!-- #section:plugins/input.duallist -->
+            <select multiple="multiple" size="10" name="duallistbox_insitems" id="duallistbox_insitems">
+                @foreach (var col in Model)
+                {
+                    if (col.IsDefaultCol == 1 || col.ColProperty == "3")
+                    {
+                        continue;
+                    }
+                    <option value="@col.ColName">@col.ColComment</option>
+                }
+            </select>
+        </div>
+    </div>
+</div>
+<script>
+    $("#txtICYM").datePicker({ followOffset: [0, 24], altFormat: 'yyyy-mm', showMode: 1 });
+    $("#selInsRecord").select2();
+    var payItems = $('#duallistbox_insitems').bootstrapDualListbox({
+        nonSelectedListLabel: '<span class="text-primary h5">' + $.lang("all_insurance_item", "所有保险项") + '</span> ',
+        selectedListLabel: '<span class="text-primary h5">' + $.lang("reserved_insurance_item", "保留保险项") + '</span> ',
+        preserveSelectionOnMove: 'moved',
+        moveOnSelect: true,
+
+    });
+
+    function initInsuranceData(caseUid) {
+        var insYm = $("#txtICYM").val();
+        var cls = $('#duallistbox_insitems').val();
+        if (cls != null) {
+            cls = cls.join();
+        }
+        var ir = $("#selInsRecord").val();
+        if (insYm === null || ir === null) {
+            $.msg("保险年月和记录必填");
+            return false;;
+        }
+        var index= layer.load();
+        $.post("@Url.Content("~/Insurance/Api/InitInsData")", { caseUid: caseUid, initYm: insYm, reservedItems: cls, recordUid: ir }, function (data) {
+            if (data.success) {
+                refreshGrid("@ViewBag.GridId");
+                $.msg(data.msg);
+            } else {
+                bootbox.alert(data.msg);
+            }
+            layer.close(index);
+        });
+    }
+</script>
+

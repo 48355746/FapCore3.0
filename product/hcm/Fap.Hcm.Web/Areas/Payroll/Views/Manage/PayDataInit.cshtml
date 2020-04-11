@@ -1,0 +1,86 @@
+﻿@model IEnumerable<Fap.Core.Infrastructure.Metadata.FapColumn>
+@{
+    IEnumerable<Fap.Hcm.Service.Payroll.PayRecord> records = ViewBag.Records;
+    string cd = DateTime.Now.ToString("yyyy-MM");
+}
+<div class="form-horizontal">
+    <div class="form-group">
+        <label class="col-xs-3 col-sm-3 control-label no-padding-right">
+            <fap-multilang lang-key="payroll_yearmonth" default-content="选择薪资年月"></fap-multilang>
+        </label>
+        <div class="col-sm-9">
+            <!-- #section:plugins/bootstrap.typeahead-js -->
+            <div class="pos-rel">
+                <input type="text" id="txtPCYM" placeholder="" value="@cd" style="width:200px" />
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-xs-3 col-sm-3 control-label no-padding-right">引用历史发放记录</label>
+        <div class="col-xs-9 col-sm-9">
+            <!-- #section:plugins/bootstrap.typeahead-js -->
+            <div class="pos-rel">
+                <select id="selPayRecord" style="width:200px">
+                    @if (records != null)
+                    {
+                        foreach (var r in records)
+                        {
+                            <option value="@r.Fid">@r.PayYM 第 @r.PayCount 次发放</option>
+                        }
+                    }
+                </select>
+            </div>
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-9 col-sm-12">
+            <!-- #section:plugins/input.duallist -->
+            <select multiple="multiple" size="10" name="duallistbox_payitems" id="duallistbox_payitems">
+                @foreach (var col in Model)
+                {
+                    if (col.IsDefaultCol == 1 || col.ColProperty == "3")
+                    {
+                        continue;
+                    }
+                    <option value="@col.ColName">@col.ColComment</option>
+                }
+            </select>
+        </div>
+    </div>
+</div>
+<script>
+    $("#txtPCYM").datePicker({ followOffset: [0, 24], altFormat: 'yyyy-mm', showMode: 1 });
+    $("#selPayRecord").select2();
+    var payItems = $('#duallistbox_payitems').bootstrapDualListbox({
+        nonSelectedListLabel: '<span class="text-primary h5">' + $.lang("all_pay_item", "所有薪资项") + '</span> ',
+        selectedListLabel: '<span class="text-primary h5">' + $.lang("reserved_pay_item", "保留薪资项") + '</span> ',
+        preserveSelectionOnMove: 'moved',
+        moveOnSelect: true,
+
+    });
+
+    function initPayrollData(caseUid) {
+        var payYm = $("#txtPCYM").val();
+        var cls = $('#duallistbox_payitems').val();
+        if (cls != null) {
+            cls = cls.join();
+        }
+        var pr = $("#selPayRecord").val();
+        if (payYm === null || pr === null) {
+            $.msg("薪资年月和发放记录必填");
+            return false;;
+        }
+        var index= layer.load();
+        $.post("@Url.Content("~/Payroll/Api/InitPayrollData")", { caseUid: caseUid, initYm: payYm, reservedItems: cls, recordUid: pr }, function (data) {
+            if (data.success) {
+                refreshGrid("@ViewBag.GridId");
+                $.msg(data.msg);
+            } else {
+                bootbox.alert(data.msg);
+            }
+            layer.close(index);
+        });
+    }
+</script>
+

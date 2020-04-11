@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
 using Dapper;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 
 namespace Fap.Core.DataAccess
 {
     public interface IDbSession
     {
         IConnectionFactory ConnectionFactory { get; }
-
+        DatabaseDialectEnum DatabaseDialect { get; }
         bool Delete<T>(T entityToDelete) where T : class;
         bool DeleteAll<T>() where T : class;
         Task<bool> DeleteAllAsync<T>() where T : class;
@@ -56,7 +56,10 @@ namespace Fap.Core.DataAccess
         bool Update<T>(T entityToUpdate) where T : class;
         bool UpdateWithTimestamp<T>(T entityToUpdate) where T : BaseModel;
         Task<bool> UpdateAsync<T>(T entityToUpdate) where T : class;
-
+        string EntityToInsertSql<T>(T entity) where T : class;
+        string EntityToUpdateSql<T>(T entity) where T : class;
+        string FapDynamicToInsertSql(FapDynamicObject fdo, string tableName, IEnumerable<FapColumn> columns);
+        string FapDynamicToUpdateSql(FapDynamicObject fdo, string tableName, IEnumerable<FapColumn> columns);
         public void BeginTransaction();
 
         public void Commit();

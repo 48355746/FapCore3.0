@@ -1,0 +1,133 @@
+﻿@*查询方案
+    使用方法：
+    在查询界面编写js方法queryProgramCallBack;
+    参数：qpfid，查询方案Fid
+    demo:
+    var queryProgramCallBack=function(qpfid)
+    {
+        //获取查询方案的条件
+    }
+
+*@
+@using Fap.Core.Infrastructure.Model
+@model IEnumerable<CfgQueryProgram>
+@{
+    string gid = ViewBag.GrdId;
+    string tn = ViewBag.Tn;
+}
+<script>
+    $(function () {
+        $(document).off('click', ".queryprogram ul li label a").on('click', ".queryprogram ul li label a", function () {
+            qpFid = $(this).data("qpcode");
+            try {
+                if (queryProgramCallBack && typeof (eval(queryProgramCallBack)) == "function") {
+                    //回调查询方案
+                    queryProgramCallBack(qpFid);
+                }
+            } catch (e) {
+                alert(e.description);
+            }
+        })
+        $(".pgrmDel").click(function () {
+            qpFid = $(this).data("qpcode");
+            var qprm = $(this).parent().parent();
+            bootbox.confirm("确认要删除本方案吗？", function (rv) {
+                if (rv) {
+                    $.get('@Url.Content("~/api/commctrlsapi/deletequeryprogram/")' + qpFid, function (result) {
+                        if (result) {
+                            qprm.remove();
+                        } else {
+                            bootbox.alert('删除失败！');
+                        }
+                    })
+
+                }
+            })
+        })
+        $("#btnSaveQueryProgram").on(ace.click_event, function () {
+            var jqPostData = $('#@gid').jqGrid("getGridParam", "postData");
+            if (jqPostData.filters == undefined)
+            {
+                bootbox.alert("你没有自定义查询，不用保存！");
+                return;
+            }
+            //var sqlRv = JSON.stringify(jqPostData.filters );
+            bootbox.prompt("当前查询将保存为查询方案请输入方案名称：", function (result) {
+                if (result === null) {
+                    //alert(1);
+                } else {
+                    if (result != "") {
+                        var qryprm = result;
+                        $.post(basePath + "/api/commctrlsapi/queryprogramadd", { ProgramName: result, TableName: '@tn', QueryCondition: jqPostData.filters }, function (result) {
+                            if (result.rv) {
+                                var newQry= ['<li class="item-orange clearfix" style="padding:4px">',
+                                '                <label class="inline">',
+                                '                    <a href="javascript:void(0)" data-qpcode="'+result.fid+'">',
+                                '                        <i class="ace-icon fa fa-caret-right bigger-110">&nbsp;</i>',
+                                qryprm,
+                                '                    </a>',
+                                '                </label>',
+                                '                <div class="pull-right action-buttons">',
+                                '                    <a href="javascript:void(0)" class="red pgrmDel" data-qpcode="' + result.fid + '">',
+                                '                        <i class="ace-icon fa fa-times bigger-110"></i>',
+                                '                    </a>',
+                                '                </div>',
+                                '                <!-- /section:custom/extra.action-buttons -->',
+                                '            </li>'].join("");
+                                $(".dropdown-menu.dropdown-default.item-list").append(newQry);
+                                bootbox.alert("保存查询方案成功！");
+                            } else {
+                                bootbox.alert("保存查询方案失败！");
+                            }
+                        });
+                    } else {
+                        bootbox.alert("查询方案名称不能为空！");
+                    }
+
+                }
+            });
+        })
+    })
+</script>
+
+<div class="btn-group queryprogram">
+    <button class="btn  btn-sm  btn-warning " title="保存当前查询为方案" id="btnSaveQueryProgram">
+        <i class="ace-icon fa fa-floppy-o"></i>
+        查询方案
+    </button>
+
+    <button data-toggle="dropdown" title="选择查询方案" class="btn dropdown-toggle btn-sm  btn-warning">
+        <span class="ace-icon fa fa-search icon-only"></span>
+    </button>
+    <ul class="dropdown-menu dropdown-default item-list" style="width:200px">
+        <li class="item-default  clearfix" style="padding:4px">
+            <label class="inline">
+                <a href="javascript:void(0)" data-qpcode="11">
+                    <i class="ace-icon fa fa-caret-right bigger-110">&nbsp;</i>
+                    默认
+                </a>
+            </label>
+        </li>
+        @foreach (var item in Model)
+        {
+            <li class="item-orange clearfix" style="padding:4px">
+                <label class="inline">
+                    <a href="javascript:void(0)" data-qpcode="@item.Fid">
+                        <i class="ace-icon fa fa-caret-right bigger-110">&nbsp;</i>
+                        @item.ProgramName
+                    </a>
+                </label>
+
+                <!-- #section:custom/extra.action-buttons -->
+                <div class="pull-right action-buttons">
+
+                    <a href="javascript:void(0)" class="red pgrmDel" data-qpcode="@item.Fid">
+                        <i class="ace-icon fa fa-times bigger-110"></i>
+                    </a>
+                </div>
+
+                <!-- /section:custom/extra.action-buttons -->
+            </li>
+        }
+    </ul>
+</div><!-- /.btn-group -->

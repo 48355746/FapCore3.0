@@ -1,0 +1,277 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+    Layout = null;
+}
+<title>
+    <fap-multilang default-content="打卡记录" lang-key="time_cardrecord"></fap-multilang>
+</title>
+<link href="~/Content/css/daterangepicker.css" rel="stylesheet" />
+
+<div class="row">
+    <div class="col-xs-12 col-sm-12">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">
+                    <fap-multilang default-content="打卡记录" lang-key="time_cardrecord"></fap-multilang>
+                </h4>
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar ">
+                    <fap-button id="btnBatchReCard" btn-tag="link" content="批量补签" icon-before="fa fa-plus-circle blue"></fap-button>
+                </div>
+                <div class="widget-toolbar">
+                    <!-- #section:basics/content.searchbox -->
+                    <div class="nav-search" style="top:6px">
+                        <span class="input-icon">
+                            <input type="text" placeholder="员工姓名" class="nav-search-input" id="nav-search-input" autocomplete="off" />
+                            <i class="ace-icon fa fa-search nav-search-icon"></i>
+                        </span>
+
+                    </div><!-- /.nav-search -->
+                    <!-- /section:basics/content.searchbox -->
+                </div>
+                <div class="widget-toolbar">
+                    <!-- #section:basics/content.searchbox -->
+                    <div class="nav-search" style="top:6px">
+                        <span class="input-icon">
+                            <input type="text" placeholder="日期范围" class="nav-search-input" id="nav-calendar-input" style="width:256px" autocomplete="off" />
+                            <i class="ace-icon fa fa-calendar nav-search-icon"></i>
+                        </span>
+                    </div><!-- /.nav-search -->
+                </div>
+
+            </div>
+            <div class="widget-body">
+                <div class="widget-main jobpostionclass">
+                    <fap-grid id="tmcardrecord" grid-model="Model" auto-width="true"
+                              view-records="true" multi-box-only="true" multi-select="true"></fap-grid>
+
+                </div>
+            </div>
+        </div>
+
+        <div id="right-menu" class="modal aside" data-body-scroll="false" data-offset="true" data-placement="right" data-fixed="true" data-backdrop="invisible" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header no-padding">
+                        <div class="table-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                <span class="white">&times;</span>
+                            </button>
+                            <fap-multilang lang-key="department" default-content="部门"></fap-multilang>
+                        </div>
+                    </div>
+
+                    <div class="modal-body">
+                        <div id="treeDeptDiv" class="widget-main ">
+                            <div class="scrollable">
+                                <fap-tree id="orgdept" is-async="false" is-orgdept="true"></fap-tree>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /.modal-content -->
+
+                <button class="aside-trigger btn btn-purple btn-app btn-xs ace-settings-btn" data-target="#right-menu" data-toggle="modal" type="button">
+                    <i data-icon1="fa-sitemap" data-icon2="fa-minus" class="ace-icon fa fa-sitemap bigger-110 icon-only"></i>
+                </button>
+            </div><!-- /.modal-dialog -->
+        </div>
+
+    </div>
+</div>
+<script>
+    var scripts = [null, "/Scripts/FapControl/dateFilter.js?v=1", "/Content/js/date-time/daterangepicker.js", null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $('.modal.aside').ace_aside();
+            $(document).one('ajaxloadstart.page', function (e) {
+                $("#tree-orgdept").jstree("destroy");
+                window.dateCardRecordRange = null;
+                $('.daterangepicker').remove();
+                $('.modal.aside').remove();
+                $(window).off('.aside');
+            })
+            $('#nav-calendar-input').daterangepicker({
+                'applyClass': 'btn-sm btn-success btn-round',
+                'cancelClass': 'btn-sm btn-default  btn-round',
+                locale: {
+                    applyLabel: $.lang("ok", '确定'),
+                    customRangeLabel: $.lang("custom", "自定义"),
+                    //format: "YYYY-MM-DD",
+                    separator: $.lang("to", " 至 "),
+                    cancelLabel: $.lang("cancel", '取消')
+                }, ranges: {
+                    '今天': [moment(), moment()],
+                    '昨天': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    '过去7天': [moment().subtract(6, 'days'), moment()],
+                    '过去30天': [moment().subtract(29, 'days'), moment()],
+                    '当月': [moment().startOf('month'), moment().endOf('month')],
+                    '上月': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                }
+            }).on('apply.daterangepicker', function (ev, picker) {
+                window.dateCardRecordRange = {
+                    "start": picker.startDate.format('YYYY-MM-DD') + " 00:00:00",
+                    "end": picker.endDate.format('YYYY-MM-DD') + " 23:59:59"
+                };
+                var treeDept = $('#tree-orgdept').jstree(true);
+                var selData = treeDept.get_selected();
+                var start = window.dateCardRecordRange.start;
+                var end = window.dateCardRecordRange.end;
+                if (!selData.length) {
+                    //未选择部门，只考虑开始日期结束日期
+                    var r = [];
+                    if (start != '') {
+                        r.push({ field: "CardTime", op: "ge", data: start });
+                    }
+                    if (end != '') {
+                        r.push({ field: "CardTime", op: "le", data: end });
+                    }
+                    var filter = { groupOp: "AND", rules: r };
+                    reloadGrid("grid-tmcardrecord", { filters: JSON.stringify(filter) });
+                } else {
+                    var childs = treeDept.get_node(selData[0]).children_d;
+                    var selids = childs.concat(selData[0]);
+                    //var treeDept = $('#tree-orgdept').jstree(true);
+                    var sels = $.grep(selids, function (d, i) {
+                        return treeDept.get_node(d).data.ext1 == false;
+                    });
+                
+                    var r = [];
+                    if (start != '') {
+                        r.push({ field: "CardTime", op: "ge", data: start });
+                    }
+                    if (end != '') {
+                        r.push({ field: "CardTime", op: "le", data: end });
+                    }
+                    var dept = { field: "DeptUid", "op": "in", "data":  sels.join(",")  };
+                    r.push(dept);
+
+                    var filter = { groupOp: "AND", rules: r };
+                    reloadGrid("grid-tmcardrecord", { filters: JSON.stringify(filter) });
+                }
+            }).next().on(ace.click_event, function () {
+                $(this).prev().focus();
+            });
+            $("#nav-search-input").change(function () {
+                var v = $(this).val();
+                var filter = { "groupOp": "AND" };
+                var rules = [];
+                rules.push({ "field": "EmpUid", "op": "in", "data": "(select fid from Employee where EmpName like '" + v + "%')" });
+                if (window.dateCardRecordRange) {
+                    rules.push({ field: "CardTime", op: "ge", data: window.dateCardRecordRange.start });
+                    rules.push({ field: "CardTime", op: "le", data: window.dateCardRecordRange.end });
+                }
+                filter.rules = rules;
+                reloadGrid("grid-tmcardrecord", { filters: JSON.stringify(filter) });
+
+            })
+            $('#tree-orgdept').on("changed.jstree", function (e, data) {
+                if (data && data.selected && data.selected.length) {
+                    var deptid = data.selected[0];
+                    var deptMC = data.node.text;
+                    //获取所有子Fid
+                    var childs = data.node.children_d;
+                    var selids = childs.concat(deptid);
+                    var treeDept = $('#tree-orgdept').jstree(true);
+                    var sels = $.grep(selids, function (d, i) {
+                        return treeDept.get_node(d).data.ext1 == false;
+                    });
+                 
+                    var r = [];
+                    if (window.dateCardRecordRange) {
+                        r.push({ field: "CardTime", op: "ge", data: window.dateCardRecordRange.start });
+                        r.push({ field: "CardTime", op: "le", data: window.dateCardRecordRange.end });
+                    }
+                    var dept = { field: "DeptUid", "op": "in", "data":  sels.join(",")  };
+                    r.push(dept);
+
+                    var filter = { groupOp: "AND", rules: r };
+                    reloadGrid("grid-tmcardrecord", { filters: JSON.stringify(filter) });
+                }
+                //console.log(data.selected);
+            });
+            $("#btnBatchReCard").on(ace.click_event, function () {
+                var tree = $('#tree-orgdept').jstree(true);
+                var sel = tree.get_selected();
+                if (!sel.length) {
+                    bootbox.alert("请选择批量补卡的部门。");
+                    return;
+                }
+
+                var childs = tree.get_node(sel[0]).children_d;
+                var selids = childs.concat(sel[0]);
+                var dialog = bootbox.dialog({
+                    title: '选择日期',
+                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                    buttons: {
+                        success: {
+                            label: MultiLangHelper.getResName("global_oper_enter", "确定"),
+                            className: "btn-primary",
+                            callback: function () {
+                                var rangDate = $("#id-date-range-picker-1").val();
+                                if (!rangDate) {
+                                    bootbox.alert("请选择日期");
+                                    return false;
+                                }
+                                var index= layer.load();
+                                var rang = rangDate.split('~');
+                                $.post(basePath + "/Time/Api/BatchCard", { "DeptUidList": selids, "StartDate": rang[0], "EndDate": rang[1] }, function (rv) {
+                                    layer.close(index);
+                                    if (rv.success) {
+                                        $.msg(rv.msg);
+                                    } else {
+                                        bootbox.alert(rv.msg);
+                                    }
+                                })
+                            }
+                        },
+                        cancel: {
+                            label: MultiLangHelper.getResName("global_oper_cancel", "取消"), className: "btn-default"
+                        }
+                    }
+                });
+                dialog.init(function () {
+                    dialog.find('.bootbox-body').html([
+                        '														<label for="id-date-range-picker-1">日期范围</label>',
+                        '														<div class="row">',
+                        '															<div class="col-xs-8 col-sm-11">',
+                        '																<!-- #section:plugins/date-time.daterangepicker -->',
+                        '																<div class="input-group">',
+                        '																	<span class="input-group-addon">',
+                        '																		<i class="fa fa-calendar bigger-110"></i>',
+                        '																	</span>',
+                        '																	<input class="form-control" type="text" name="date-range-picker" id="id-date-range-picker-1" />',
+                        '																</div>',
+                        '																<!-- /section:plugins/date-time.daterangepicker -->',
+                        '															</div>',
+                        '														</div>',
+                    ].join("")
+                    );
+                    //moment.locale('zh-cn');
+                    $('input[name=date-range-picker]').daterangepicker({
+                        'applyClass': 'btn-sm btn-success',
+                        'cancelClass': 'btn-sm btn-default',
+                        format: "YYYY-MM-DD",
+                        locale: {
+                            applyLabel: '确定',
+                            cancelLabel: '取消',
+                            fromLabel: '从',
+                            separator: '~',
+                            toLabel: '到'
+                        }
+                    })
+                        .prev().on(ace.click_event, function () {
+                            $(this).next().focus();
+                        });
+
+                });
+            })
+
+        })
+
+    });
+
+</script>

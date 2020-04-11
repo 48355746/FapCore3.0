@@ -1,13 +1,12 @@
 ﻿using System;
 using Dapper.Contrib.Extensions;
-using Fap.Core.Metadata;
+using Fap.Core.Infrastructure.Metadata;
 
 namespace Fap.Core.Rbac.Model
 {
     /// <summary>
     /// 角色用户
     /// </summary>
-    [Serializable]
     public class FapRoleUser : BaseModel
     {
         /// <summary>
@@ -21,7 +20,7 @@ namespace Fap.Core.Rbac.Model
         /// <summary>
         /// 用户ID 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string UserUidMC { get; set; }
 
     }

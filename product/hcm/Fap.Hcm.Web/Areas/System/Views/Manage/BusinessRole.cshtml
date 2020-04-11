@@ -1,0 +1,335 @@
+﻿
+@model Fap.AspNetCore.ViewModel.MultiJqGridViewModel
+@{
+    Layout = null;
+    //指派角色
+    Fap.AspNetCore.ViewModel.JqGridViewModel bizRole = Model.JqGridViewModels["FapBizRole"];
+    //动态角色
+    Fap.AspNetCore.ViewModel.JqGridViewModel dynRole = Model.JqGridViewModels["FapBizDynRole"];
+}
+<title>业务角色</title>
+
+<div class="row">
+    <div class="col-xs-12">
+        <div class="tabbable">
+            <ul class="nav nav-tabs" id="myTab">
+                <li class="active">
+                    <a data-toggle="tab" href="#bizRole">
+                        <i class=" blue ace-icon fa  fa-users bigger-120"></i>
+                        指派角色
+                    </a>
+                </li>
+
+                <li>
+                    <a data-toggle="tab" href="#dynRole">
+                        <i class="green ace-icon fa fa-user bigger-120"></i>
+                        动态角色
+                    </a>
+                </li>
+
+
+            </ul>
+
+            <div class="tab-content">
+                <div id="bizRole" class="tab-pane fade in active">
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-3">
+                            <div class="widget-box">
+                                <div class="widget-header widget-header-flat">
+                                    <h4 class="widget-title">角色</h4>
+
+                                    <div class="widget-toolbar">
+                                        <a href="#" data-rel="widgetAction" data-action="add" class="orange2">
+                                            <i class="ace-icon fa fa-plus-circle purple"></i>
+                                        </a>
+
+                                        <a href="#" data-rel="widgetAction" data-action="edit">
+                                            <i class="ace-icon fa fa-pencil blue"></i>
+                                        </a>
+
+                                        <a href="#" data-rel="widgetAction" data-action="delete">
+                                            <i class="ace-icon fa fa-trash-o red"></i>
+                                        </a>
+                                        <a href="#" data-rel="widgetAction" data-action="refresh">
+                                            <i class="ace-icon fa fa-refresh"></i>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="widget-body">
+                                    <div class="widget-main">
+                                        <fap-tree id="bizrole" is-async="true" get-url="/System/Api/Manage/BusinessRole/" edit-url="/System/Api/Manage/BusinessRole" plugin-dnd="true"></fap-tree>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-9">
+                            <div class="widget-box">
+                                <div class="widget-header widget-header-flat">
+                                    <h4 class="widget-title">员工</h4>
+
+                                    <div class="widget-toolbar">
+                                        <a href="#" data-action="fullscreen" class="orange2">
+                                            <i class="ace-icon fa fa-expand"></i>
+                                        </a>
+                                    </div>
+                                    <div class="widget-toolbar no-border">
+                                        <button id="btnAddEmployee" class="btn btn-xs btn-success bigger">
+                                            <i class="ace-icon fa fa-user-plus"></i>
+                                            添加
+                                        </button>
+                                        <button id="btnDelEmployee" class="btn btn-xs btn-danger bigger">
+                                            <i class="ace-icon fa fa-user-times"></i>
+                                            移除
+                                        </button>
+
+                                    </div>
+                                </div>
+                                <div class="widget-body">
+                                    <div class="widget-main">
+                                        <fap-grid id="bizRole" grid-model="bizRole" auto-width="true" multi-box-only="true" multi-select="true" on-grid-complete="GridComplete"
+                                                   shrink-fit="false" view-records="true"></fap-grid>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="dynRole" class="tab-pane fade">
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="btn-group ">
+                                <button id="btnAddDynRole" class="btn btn-sm btn-primary btn-round">
+                                    <i class="ace-icon fa fa-plus-circle"></i>
+                                    新增
+                                </button>
+                                <button id="btnEditDynRole" class="btn btn-sm btn-purple  btn-round">
+                                    <i class="ace-icon fa fa-pencil"></i>
+                                    编辑
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-6"></div>
+                    <fap-grid id="dynRole" grid-model="dynRole" auto-width="true" wrapper="myTab,dynRole"  oper-delete="true"
+                              view-records="true"></fap-grid>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+                $('#tree-bizrole').jstree("destroy");
+            })
+            $(document).off(ace.click_event, '[data-rel=widgetAction]').on(ace.click_event, '[data-rel=widgetAction]', function (ev) {
+                ev.preventDefault();
+                var $this = $(this);
+                var $action = $this.data('action');
+                var ref = $('#tree-bizrole').jstree(true),
+                                sel = ref.get_selected();
+                if ($action == 'refresh') {
+                    ref.refresh();
+                    return;
+                }
+                if (!sel.length) { return false; }
+                sel = sel[0];
+                if ($action == 'add') {
+                    sel = ref.create_node(sel);
+
+                } else if ($action == 'edit') {
+                    ref.edit(sel);
+                } else if ($action == 'delete') {
+                    bootbox.confirm("确定删除？", function (result) {
+                        if (result) {
+                            ref.delete_node(sel)
+                        }
+                    })
+                }
+
+            })
+            $('#tree-bizrole').on("changed.jstree", function (e, data) {
+                if (data && data.selected && data.selected.length) {
+                    var roleId = data.selected[0];
+                    //显示所有角色组的角色
+                    if (roleId == "0") {
+                        return;
+                    }
+                    var filter = { "groupOp": "AND" };
+                    filter.rules = [{ "field": "Fid", "op": "in", "data": "(select EmpUid from FapBizRoleEmployee where BizRoleUid ='" + roleId + "')" }];
+                    refreshGrid(JSON.stringify(filter));
+                }
+                //console.log(data.selected);
+            });
+            $("#btnAddEmployee").click(function () {
+                var treeRole = $('#tree-bizrole').jstree(true);
+                var selRole = treeRole.get_selected();
+                if (!selRole.length) {
+                    bootbox.alert("请选中角色进行添加");
+                    return false;
+                }
+                if (treeRole.get_node(selRole[0]).data.isRole == false) {
+                    bootbox.alert("请选中角色进行添加");
+                    return false;
+                }
+                var dialog = bootbox.dialog({
+                    title: '人员',
+                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                    buttons: {
+                        success: {
+                            label: $.lang("global_oper_enter", "确定"),
+                            className: "btn-primary",
+                            callback: function () {
+                                var emps = GetCompontentResults();
+                                if (emps.length < 1) {
+                                    bootbox.alert("您没有选中人员");
+                                    return;
+                                };
+                                $.post(basePath + "/System/Api/Manage/BusinessRoleEmployee/", { emps: emps, bizRole: selRole[0] }, function (data) {
+                                    if (data.success) {
+                                        var filter = { "groupOp": "AND" };
+                                        filter.rules = [{ "field": "Fid", "op": "in", "data": "(select EmpUid from FapBizRoleEmployee where BizRoleUid ='" + selRole[0] + "') " }];
+                                        refreshGrid(JSON.stringify(filter));
+                                    }
+                                });
+                            }
+                        },
+                        cancel: {
+                            label: $.lang("cancel", "取消"), className: "btn-default"
+                        }
+                    }
+
+                });
+                dialog.init(function () {
+                    var url = $.randomUrl(basePath + '/Component/TreeGridComponent?fid = c32211e5a19a182ebebe&multi=true');
+                    $.get(url, function (ev) {
+                        dialog.find('.bootbox-body').html(ev);
+                    })
+                });
+            });
+            $("#btnDelEmployee").on(ace.click_event, function () {
+                bootbox.confirm("确认要移除选中的员工吗？", function (result) {
+                    if (result) {
+                        var ids = getSelectedRows("grid-bizRole");// $("#grid-bizRole").jqGrid('getGridParam', 'selarrrow');
+                        if (ids === null) {
+                            //bootbox.alert("请选中员工移除");
+                            return;
+                        }
+                        var emps = [];
+                        $.each(ids, function (i, d) {
+                            //var rowData = $("#grid-bizRole").getRowData(d);
+                            emps.push(d.Fid);
+                        })
+                        var treeRole = $('#tree-bizrole').jstree(true);
+                        var selRole = treeRole.get_selected();
+                        if (!selRole.length) {
+                            bootbox.alert("请选中角色进行移除");
+                            return false;
+                        }
+                        if (treeRole.get_node(selRole[0]).data.isRole == false) {
+                            bootbox.alert("请选中角色进行移除");
+                            return false;
+                        }
+                        $.post("@Url.Content("~/System/Api/Manage/RemoveBizRoleEmployee")", { "emps": emps, bizRole: selRole[0] }, function (rv) {
+                            if (rv.success) {
+                                $.msg("移除成功");
+                                $("#grid-bizRole").jqGrid().trigger("reloadGrid");
+                            }
+                        })
+                    }
+                })
+            })
+            var refreshGrid = function (filter) {
+                $("#grid-bizRole").jqGrid('setGridParam', {
+                    datatype: 'json',
+                    postData: { 'filters': filter }, //发送数据
+                    page: 1
+                }).trigger("reloadGrid"); //重新载入
+            };
+
+
+            $("#btnAddDynRole").on(ace.click_event, function () {
+                layer.open({
+                    btn: ['确定', '取消'],
+                    type: 2,
+                    title: ' 动态角色设置',
+                    shadeClose: true,
+                    shade: false,
+                    maxmin: true, //开启最大化最小化按钮
+                    area: ['800px', '600px'],
+                    content: basePath + 'System/Manage/BusinessDynRoleSet/0',
+                    yes: function (index, layero) {
+                        //var iframeWin = window[layero.find('iframe')[0]['name']]; //得到iframe页的窗口对象，执行iframe页的方法：
+                        var iframeWin = layero.find('iframe')[0];
+                        var sels = iframeWin.contentWindow.SaveSet();
+                        if (sels == true) {
+                            $("#grid-dynRole").jqGrid('setGridParam', {
+                                page: 1
+                            }).trigger("reloadGrid"); //重新载入
+                            layer.close(index); //如果设定了yes回调，需进行手工关闭
+                        } else {
+
+                        }
+
+                       // layer.close(index); //如果设定了yes回调，需进行手工关闭
+                    },
+                    cancel: function () {
+                        //console.log('cancel');
+                    }
+                });
+            });
+
+
+            $("#btnEditDynRole").on(ace.click_event, function () {
+                var gr = $("#grid-dynRole").jqGrid('getGridParam', 'selrow');
+                if (gr === null) {
+                    bootbox.alert("请选中一个设置修改");
+                    return;
+                }
+                var rowData = $("#grid-dynRole").getRowData(gr);
+                layer.open({
+                    btn: ['确定', '取消'],
+                    type: 2,
+                    title: ' 动态角色设置',
+                    shadeClose: true,
+                    shade: false,
+                    maxmin: true, //开启最大化最小化按钮
+                    area: ['800px', '600px'],
+                    content: basePath + 'System/Manage/BusinessDynRoleSet/' + rowData.Fid,
+                    yes: function (index, layero) {
+                        //var iframeWin = window[layero.find('iframe')[0]['name']]; //得到iframe页的窗口对象，执行iframe页的方法：
+                        var iframeWin = layero.find('iframe')[0];
+                        var sels = iframeWin.contentWindow.SaveSet();
+                        if (sels == true) {
+                            $("#grid-dynRole").jqGrid('setGridParam', {
+                                page: 1
+                            }).trigger("reloadGrid"); //重新载入
+                            layer.close(index); //如果设定了yes回调，需进行手工关闭
+                        } else {
+
+                        }
+
+                        //layer.close(index); //如果设定了yes回调，需进行手工关闭
+                    },
+                    cancel: function () {
+                        //console.log('cancel');
+                    }
+                });
+            });
+        })
+    })
+    var GridComplete = function () {
+        var parent_width = $('#grid-bizRole').closest('.widget-main').width();
+        $('#grid-bizRole').jqGrid('setGridWidth', parent_width);
+    }
+</script>

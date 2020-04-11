@@ -1,0 +1,20 @@
+﻿@model IEnumerable<Fap.Core.Infrastructure.Model.FapAttachment>
+
+@foreach (var item in Model)
+{
+    <li>
+        <a href="#" class="formctrl attached-file" data-filefid="@item.Fid" data-rel="tooltip" title="@item.FileName">
+            <i class="ace-icon fa fa-paperclip bigger-110 "></i>
+            <span class="attached-name">@item.FileName</span>
+        </a>
+        <span class="action-buttons">
+            <a href="~/Component/DownloadFile/@item.Fid">
+                <i class="ace-icon fa fa-download bigger-125 blue"></i>
+            </a>
+            <a href="#" data-filefid="@item.Fid" class="formctrl deletefile">
+                <i class="ace-icon fa fa-trash-o bigger-125 red"></i>
+            </a>
+        </span>
+    </li>
+
+}

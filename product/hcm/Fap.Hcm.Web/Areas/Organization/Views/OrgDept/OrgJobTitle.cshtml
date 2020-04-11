@@ -1,0 +1,71 @@
+﻿
+@model Fap.AspNetCore.ViewModel.JqGridViewModel
+
+<title><fap-multilang lang-key="jobtitle" default-content="职衔"></fap-multilang></title>
+
+<div class="row">
+    <div class="col-xs-12 col-sm-3">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title"><fap-multilang lang-key="jobgroup" default-content="职族"></fap-multilang></h4>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main treescrollable">
+                    <fap-tree id="orgjobgroup" is-async="true" get-url="/Organization/Api/OrgDept/OrgJobGroup" ></fap-tree>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-9">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">
+                    <fap-multilang lang-key="jobtitle" default-content="职衔"></fap-multilang>
+                </h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+
+                </div>               
+            </div>
+            <div class="widget-body">
+
+                <div class="widget-main">
+                    <fap-grid id="jobtitle" grid-model="Model" source-type="Local"  row-numbers="false" ></fap-grid>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>   
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+                $('#tree-orgjobgroup').jstree("destroy");
+            })         
+
+            $('#tree-orgjobgroup').on("changed.jstree", function (e, data) {
+                if (data && data.selected && data.selected.length) {
+                    var jobgroupUid = data.selected[0];
+                  
+                    var group = data.node.data.group;
+                    if (group === "3") {
+                        reloadGrid("grid-jobtitle");
+                    } else if (group === "1") {
+                        var filter = '{"groupOp":"AND","rules":[{"field":"JobGroup","op":"eq","data":"' + jobgroupUid + '"}]}';
+                        reloadGrid("grid-jobtitle", { filters: filter });
+                    } else {
+                        //级别
+                        var filter = '{"groupOp":"AND","rules":[{"field":"JobGroupGrade","op":"eq","data":"' + jobgroupUid + '"}]}';
+                        reloadGrid("grid-jobtitle", { filters: filter });
+                    }
+                }
+                //console.log(data.selected);
+            });
+        })
+    })
+</script>

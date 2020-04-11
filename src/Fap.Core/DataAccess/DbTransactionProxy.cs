@@ -27,10 +27,6 @@ namespace Fap.Core.DataAccess
                 _dbContext.Rollback();
                 _logger.LogError(ex.Message);
             }
-            finally
-            {
-                _dbContext.Dispose();
-            }
 
 
         }

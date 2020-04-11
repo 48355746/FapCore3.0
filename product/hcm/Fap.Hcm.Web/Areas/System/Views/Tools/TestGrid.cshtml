@@ -1,0 +1,32 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+<div class="row">
+    <div class="col-xs-12">
+        <div id="widget-box-orgdept" class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">
+                    测试表格
+                </h4>
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+            </div>
+                <div class="widget-body">
+                    <div class="widget-main">
+                        <fap-grid id="bonustest" grid-model="Model" auto-width="true"></fap-grid>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <script>
+        var scripts = [null, null]
+        $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+            jQuery(function ($) {
+                $(document).one('ajaxloadstart.page', function (e) {
+                })
+            })
+        })
+    </script>

@@ -1,0 +1,132 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+<title>
+    <fap-multilang default-content="保险组" lang-key="Insset"></fap-multilang>
+</title>
+
+<link href="~/Content/css/codemirror/codemirror.css" rel="stylesheet" />
+<link href="~/Content/css/codemirror/theme/xq-light.css" rel="stylesheet" />
+
+<div class="row">
+    <div class="col-xs-12">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">
+                    <fap-multilang default-content="保险组" lang-key="insset"></fap-multilang>
+                </h4>
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar">
+                    <fap-button id="btnAuthority" btn-tag="link" content="权限" icon-before="fa fa-cog blue" class-name="info"></fap-button>
+                </div>
+                <div class="widget-toolbar">
+                    <fap-button id="btnInsItem" btn-tag="link" content="保险项" icon-before="fa fa-list-alt blue" class-name="info"></fap-button>
+                    <fap-button id="btnEmployee" btn-tag="link" content="员工" icon-before="fa fa-users blue" class-name="info"></fap-button>
+                    <fap-button id="btnFormula" btn-tag="link" content="公式" icon-before="fa fa-superscript blue" class-name="info"></fap-button>
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    <fap-grid id="inscase" grid-model="Model" auto-width="true"></fap-grid>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var scripts = [null, "/Content/js/jquery.bootstrap-duallistbox.js", "/Content/js/codemirror/codemirror.js", "/Content/js/codemirror/mode/sql/sql.js", null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+
+            })
+            //保险项
+            $("#btnInsItem").on(ace.click_event, function () {
+                var rw = getSelectedRow("grid-inscase");
+                if (rw == null) {
+                    return;
+                }
+                let caseUid = rw.Fid;
+                bootboxWindow($.lang("insitem", "保险项"), basePath + "/Insurance/Manage/InsItem?caseUid=" + caseUid, {
+                    add: {
+                        label: $.lang("add", "新增"),
+                        className: "btn-primary btn-link",
+                        callback: function () {
+                            AddInsItem(caseUid);
+                            return false;
+                        }
+                    },
+                    generate: {
+                        label: $.lang("generate", "生成"),
+                        className: "btn-primary btn-link",
+                        callback: function () {
+                            bootbox.confirm("提示：如果之前生成过保险项，本次生成将会删掉之前的数据，确定生成?", function (result) {
+                                if (result) {
+                                    generateInsItem(caseUid);
+                                }
+                            });
+                            return false;
+                        }
+                    }
+                })
+            })
+            //公式套包含员工条件
+            $("#btnEmployee").on(ace.click_event, function () {
+                var rw = getSelectedRow("grid-inscase");
+                if (rw == null) {
+                    return;
+                }
+                let caseUid = rw.Fid;
+                bootboxWindow($.lang("inscase_condition", "设置保险组员工条件"), basePath + "/Insurance/Manage/InsEmployee", {
+                    add: {
+                        label: $.lang("save_employee_condition", "保存员工条件"),
+                        className: "btn-primary btn-link",
+                        callback: function () {
+                            saveInscaseCondition(caseUid);
+                            return false;
+                        }
+                    },
+                    initinscase: {
+                        label: $.lang("init_Insset", "初始化保险组员工"),
+                        className: "btn-primary btn-link",
+                        callback: function () {
+                            initInscaseEmployee(caseUid);
+                            return false;
+                        }
+                    }
+                }, { caseUid: caseUid }, function () {
+                        loadInscaseEmployee(caseUid);                        
+                })
+            })
+            $("#btnFormula").on(ace.click_event, function () {
+                var rw = getSelectedRow("grid-inscase");
+                if (rw == null) {
+                    return;
+                }
+                let tn = rw.TableName;
+                bootboxWindow($.lang("inscase_authority", "保险组公式"), basePath + "/Component/FormulaEditor", {
+                    associate: {
+                        label: $.lang("associate_set", "引用关联设置"),
+                        className: "btn-primary btn-link",
+                        callback: function () {
+                            bootboxWindow($.lang("associate", "关联"), basePath + "/Component/EntityAssociate", null, { oriCode: "InsCenter", oriName: "保险组" });
+                            return false;
+                        }
+                    }
+                }, { tableName: tn, mappingTable: "InsCenter" });
+            })
+            //权限
+            $("#btnAuthority").on(ace.click_event, function () {
+                var rw = getSelectedRow("grid-inscase");
+                if (rw == null) {
+                    return;
+                }
+                let caseUid = rw.Fid;
+                let caseName = rw.CaseName;
+                bootboxWindow($.lang("inscase_authority", "保险组权限"), basePath + "/Insurance/Manage/InsAuthority?caseUid=" + caseUid + "&caseName=" + caseName + "&menuUrl=~/Insurance/Manage/InsSet");
+            })
+        })
+    })
+</script>

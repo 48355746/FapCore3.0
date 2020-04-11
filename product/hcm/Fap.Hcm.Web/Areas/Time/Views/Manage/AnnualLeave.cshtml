@@ -1,0 +1,218 @@
+﻿
+@model Fap.AspNetCore.ViewModel.JqGridViewModel
+<title>
+    <fap-multilang default-content="年假管理" lang-key="annualleave_management"></fap-multilang>
+</title>
+
+<div class="row">
+
+    <div class="col-xs-12 col-sm-12">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title"><fap-multilang default-content="年假信息" lang-key="annualleave_info"></fap-multilang></h4>
+
+                <div class="widget-toolbar">
+
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar">
+                    <fap-button id="btnAnnualCreate" btn-tag="link" content="生成" icon-before="fa  fa-bolt blue" class-name="info"></fap-button>
+                    <fap-button id="btnAnnualSurplus" btn-tag="link" content="结余" icon-before="fa  fa-bolt blue" class-name="info"></fap-button>
+                </div>
+               
+            </div>
+            <div class="widget-body">
+                <div class="widget-main jobpostionclass">
+                    <fap-grid id="tmannualleave" grid-model="Model" auto-width="true"
+                              wrapper="widget-main" view-records="true" multi-box-only="true" multi-select="true" oper-cud="true" oper-import="true" shrink-fit="false"></fap-grid>
+
+                </div>
+            </div>
+        </div>
+    </div>   
+</div>
+
+
+
+<script>
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+               
+            })     
+            //假期初始化
+            $("#btnAnnualCreate").on(ace.click_event, function () {
+                var $frm = $(`<label>年度</label>
+                                                        <div class="row">
+                                                            <div class="col-xs-10 col-sm-5">
+                                                                <!-- #section:plugins/date-time.datepicker -->
+                                                                <div class="input-group">
+                                                                    <input class="form-control date-picker" id="id-annual" type="text"  />
+                                                                    <span class="input-group-addon">
+                                                                        <i class="fa fa-calendar bigger-110"></i>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="space space-8"></div>
+                                                        <label>区间</label>
+
+                                                        <div class="row">
+                                                            <div class="col-xs-8 col-sm-11">
+                                                                <div class="input-daterange input-group">
+                                                                    <input type="text" class="input-sm form-control" name="start" />
+                                                                    <span class="input-group-addon">
+                                                                        <i class="fa fa-exchange"></i>
+                                                                    </span>
+
+                                                                    <input type="text" class="input-sm form-control" name="end" />
+                                                                </div>
+                                                            </div>
+                                                        </div>`);
+
+                var dialog = bootbox.dialog({
+                    title: $.lang('annual', '年假'),
+                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                    buttons: {
+                        success: {
+                            label: $.lang("ok", "确定"),
+                            className: "btn-primary",
+                            callback: function () {
+                                var annual = $frm.find("#id-annual").val();
+                                var startDate = $frm.find("input[name=start]").val();
+                                var endDate = $frm.find("input[name=end]").val();
+                                if (annual === '' || startDate === '' || endDate === '') {
+                                    $.msg($.lang("all_required", "所有项必填"));
+                                    return false;
+                                }
+                                var index = layer.load();
+                                $.post(basePath + "/Time/Api/AnnualLeave/Init",
+                                    { year: annual, startDate: startDate, endDate: endDate },
+                                    function (rv) {
+                                        if (rv.success) {
+                                            $.msg(rv.msg);
+                                            var r = [];
+                                            r.push({ field: "Annual", op: "eq", data: moment().format('YYYY') });
+                                            var filter = { groupOp: "AND", rules: r };
+                                            reloadGrid("grid-tmannualleave",{ "filter": JSON.stringify(filter) });
+                                        } else {
+                                            bootbox.alert(rv.msg);
+                                        }
+                                        layer.close(index);
+                                    });
+                            }
+                        },
+
+                        cancel: {
+                            label: $.lang("cancel", "取消"), className: "btn-default"
+                        }
+                    }
+                });
+                dialog.on("shown.bs.modal", function () {
+                    $frm.find("#id-annual").datepicker({
+                        format: 'yyyy',
+                        changeYear: true,
+                        autoclose: true,
+                        startView: 'years',
+                        maxViewMode: 'years',
+                        minViewMode: 'years'
+                    }).next().on(ace.click_event, function () {
+                        $(this).prev().focus();
+                    });
+
+                    //or change it into a date range picker
+                    $frm.find('.input-daterange').datepicker({ autoclose: true });
+                });
+                dialog.init(function () {
+                    dialog.find('.bootbox-body').html('');
+                    dialog.find('.bootbox-body').append($frm);
+                });
+            })
+            //上年结余
+            $("#btnAnnualSurplus").on(ace.click_event, function () {
+                var $frm = $(`<label>当前年度</label>
+                                                        <div class="row">
+                                                            <div class="col-xs-10 col-sm-5">
+                                                                <div class="input-group">
+                                                                    <input class="form-control date-picker" id="id-thisyear" type="text"  />
+                                                                    <span class="input-group-addon">
+                                                                        <i class="fa fa-calendar bigger-110"></i>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                  <label>结余年度</label>
+                                                        <div class="row">
+                                                            <div class="col-xs-10 col-sm-5">
+                                                                <div class="input-group">
+                                                                    <input class="form-control date-picker" id="id-lastyear" type="text"  />
+                                                                    <span class="input-group-addon">
+                                                                        <i class="fa fa-calendar bigger-110"></i>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>`);
+
+                var dialog = bootbox.dialog({
+                    title: $.lang('annual', '年假'),
+                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                    buttons: {
+                        success: {
+                            label: $.lang("ok", "确定"),
+                            className: "btn-primary",
+                            callback: function () {
+                                var year = $frm.find("#id-thisyear").val();
+                                var lastYear = $frm.find("#id-lastyear").val();
+                                if (year === '' || lastYear === '') {
+                                    $.msg($.lang("all_required", "所有项必填"));
+                                    return false;
+                                }
+                                var index = layer.load();
+                                $.post(basePath + "/Time/Api/AnnualLeave/Surplus",
+                                    { year: year, lastYear: lastYear},
+                                    function (rv) {
+                                        if (rv.success) {
+                                            $.msg(rv.msg);                                         
+                                            var r = [];
+                                            r.push({ field: "Annual", op: "eq", data: moment().format('YYYY') });
+                                            var filter = { groupOp: "AND", rules: r };
+                                            reloadGrid("grid-tmannualleave",{ "filter": JSON.stringify(filter) });
+                                        } else {
+                                            bootbox.alert(rv.msg);
+                                        }
+                                        layer.close(index);
+                                    });
+                            }
+                        },
+
+                        cancel: {
+                            label: $.lang("cancel", "取消"), className: "btn-default"
+                        }
+                    }
+                });
+                dialog.on("shown.bs.modal", function () {
+                    $frm.find(".date-picker").datepicker({
+                        format: 'yyyy',
+                        changeYear: true,
+                        autoclose: true,
+                        startView: 'years',
+                        maxViewMode: 'years',
+                        minViewMode: 'years'
+                    }).next().on(ace.click_event, function () {
+                        $(this).prev().focus();
+                    });
+                });
+                dialog.init(function () {
+                    dialog.find('.bootbox-body').html('');
+                    dialog.find('.bootbox-body').append($frm);
+                });               
+            })
+        })
+    });
+
+
+</script>

@@ -1,0 +1,677 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+    Layout = null;
+}
+<title><fap-multilang lang-key="authority_management" default-content="权限管理"></fap-multilang></title>
+
+<script id="roleusers" type="text/x-jquery-tmpl">
+    <!-- #section:pages/profile.feed -->
+
+    <div class="profile-activity clearfix">
+        <div>
+            @*<img class="pull-left" alt="Alex Doe's avatar" src="../assets/avatars/avatar5.png" />*@
+            <a class="user" href="#"> ${UserName}</a>
+            (${UserCode})
+
+            <div class="time">
+                <i class="ace-icon fa fa-user bigger-120 blue"></i>
+                ${UserIdentityMC}
+            </div>
+            <div class="time">
+                <i class="ace-icon fa fa-envelope bigger-120 pink"></i>
+                <a href="javascript:void(0)">${UserEmail}</a>
+            </div>
+        </div>
+
+        <div class="tools">
+            <a href="#" data-userfid="${Fid}" data-action="deluser" onclick="delUser('${Fid}')" class="red">
+                <i class="ace-icon fa fa-times bigger-125"></i>
+            </a>
+        </div>
+    </div>
+
+</script>
+
+<div class="row">
+    <div class="col-xs-12 col-sm-3 widget-container-col">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title"><fap-multilang lang-key="role" default-content="角色"></fap-multilang></h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main padding-8">
+                    <fap-tree id="roleandgroup" is-async="true" get-url="/System/Api/Manage/RoleAndGroup"></fap-tree>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6 widget-container-col">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title"><fap-multilang lang-key="authority" default-content="权限"></fap-multilang></h4>
+                <div class="widget-toolbar">
+                    <a href="#" id="clearcache" data-rel="tooltip" title="refresh" class="blue">
+                        <i class="ace-icon fa fa-refresh"></i>
+                    </a>
+
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+
+                <div class="widget-toolbar no-border">
+                    <ul class="nav nav-tabs" id="myTab">
+                        <li class="active">
+                            <a data-toggle="tab" href="#pmenu"><fap-multilang lang-key="menu" default-content="菜单"></fap-multilang></a>
+                        </li>
+
+                        <li>
+                            <a data-toggle="tab" href="#pdept"><fap-multilang lang-key="department" default-content="部门"></fap-multilang></a>
+                        </li>
+
+                        <li>
+                            <a data-toggle="tab" href="#pentity"><fap-multilang lang-key="property" default-content="属性"></fap-multilang></a>
+                        </li>
+
+                        <li>
+                            <a data-toggle="tab" href="#edata"><fap-multilang lang-key="data" default-content="数据"></fap-multilang></a>
+                        </li>
+                        <li>
+                            <a data-toggle="tab" href="#ebutton"><fap-multilang lang-key="button" default-content="按钮"></fap-multilang></a>
+                        </li>
+                        <li>
+                            <a data-toggle="tab" href="#preport"><fap-multilang lang-key="report" default-content="报表"></fap-multilang></a>
+                        </li>
+                        <li>
+                            <a data-toggle="tab" href="#prole"><fap-multilang lang-key="role" default-content="角色"></fap-multilang></a>
+                        </li>
+                        @*<li>
+                                <a href="#" data-action="clearcache" title="清理缓存" class="blue">
+                                    <i class="ace-icon fa fa-refresh"></i>
+                                    清理缓存
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" data-action="fullscreen" class="orange2">
+                                    <i class="ace-icon fa fa-expand"></i>
+                                </a>
+                            </li>*@
+                    </ul>
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    <div class="tab-content padding-0">
+                        <div id="pmenu" class="tab-pane in active">
+                            <div class="widget-box transparent">
+                                <div class="widget-header widget-header-small">
+                                    <div class="widget-toolbar">                                     
+                                        <fap-button id="btnSaveMenus"  class-name="tooltip-info" content="菜单授权" icon-before="fa fa-bolt blue"></fap-button>
+                                    </div>
+                                </div>
+
+                                <div class="widget-body">
+                                    <div class="widget-main padding-8">
+                                        <fap-tree id="moduleandmenu" is-async="true" get-url="/System/Api/Manage/ModuleAndMenu" plugin-checkbox="true"></fap-tree>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="pdept" class="tab-pane">
+                            <div class="widget-box transparent">
+                                <div class="widget-header widget-header-small">
+                                    <div class="widget-toolbar">
+                                        <fap-button id="btnSaveOrgDepts" class-name="tooltip-info" content="部门授权" icon-before="fa fa-bolt blue"></fap-button>
+                                    
+                                    </div>
+                                </div>
+
+                                <div class="widget-body">
+                                    <div class="widget-main padding-8">
+                                        <fap-tree id="orgdept" is-async="true" get-url="/System/Api/Manage/AllDepts" plugin-checkbox="true"></fap-tree>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="pentity" class="tab-pane">
+                            <div class="row">
+                                <div class="col-xs-6">
+                                    <div class="widget-box transparent">
+                                        <div class="widget-header widget-header-small">
+                                            <div class="widget-toolbar">
+                                                <fap-button id="btnSaveColumnsEditAble" class-name="grey" content="授权可编辑" icon-before="glyphicon glyphicon-pencil blue"></fap-button>
+                                            </div>
+                                        </div>
+
+                                        <div class="widget-body">
+                                            <div class="widget-main padding-8">
+                                                <fap-tree id="dataColEdit" is-async="true" get-url="/System/Api/Manage/FapTables" plugin-checkbox="true"></fap-tree>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xs-6">
+                                    <div class="widget-box transparent">
+                                        <div class="widget-header widget-header-small">
+                                            <div class="widget-toolbar">
+                                                <fap-button id="btnSaveColumnsViewAble" class-name="grey" content="授权可见" icon-before="fa fa-eye orange"></fap-button>
+                                            </div>
+                                        </div>
+
+                                        <div class="widget-body">
+                                            <div class="widget-main padding-8">
+                                                <fap-tree id="dataColView" is-async="true" get-url="/System/Api/Manage/FapTables" plugin-checkbox="true"></fap-tree>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                          
+                        </div>
+                        <div id="edata" class="tab-pane">
+                            <div class="widget-box transparent">
+                                <div class="widget-header widget-header-small">
+                                    <div class="widget-toolbar">
+
+                                        <a href="javascript:void(0)" id="btnHelperEData" class="popover-warning" data-rel="popover" title="帮助" data-content="条件中的常用变量表示：
+                                            <ul class='list-unstyled'>   <li>当前角色 <span class='purple'>${CurrentRoleUid}</span> </li>   <li>当前登录人 <span class='purple'>${EmpUid}</span> </li>    <li> 当前登录人部门UID <span class='purple'>${DeptUid}</span></li><li> 当前登录人部门编码 <span class='purple'>${DeptCode}</span></li></ul>例如:只能查看当前登录人所在部门的员工，选择实体：员工表，条件：    <span class='purple'>DeptUid='${DeptUid}'</span>">
+                                            <i class="ace-icon fa fa-question bigger-120 warning"></i>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="widget-body">
+                                    <div class="widget-main padding-0">
+                                        <fap-grid id="roledata"  wrapper="myTab,edata" grid-model="Model" col-menu="false" source-type="Local" view-records="true" oper-cud="true" on-form-init-add="initFormRoleDataAdd" on-form-init-edit="initFormRoleDataEdit"></fap-grid>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="ebutton" class="tab-pane">
+                            <div class="widget-box transparent">
+                                <div class="widget-header widget-header-small">
+                                    <div class="widget-toolbar">
+                                   
+                                        <fap-button id="btnSaveButtons"  content="授权菜单按钮" icon-before="fa fa-bolt blue"></fap-button>
+
+                                    </div>
+                                </div>
+
+                                <div class="widget-body">
+                                    <div class="widget-main padding-8">
+                                        <fap-tree id="menuebutton" is-async="true" get-url="/System/Api/Manage/FapButtons" plugin-checkbox="true"></fap-tree>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="preport" class="tab-pane">
+                            <div class="widget-box transparent">
+                                <div class="widget-header widget-header-small">
+                                    <div class="widget-toolbar">                                      
+                                        <fap-button id="btnSaveReport" content="授权报表" icon-before="fa fa-bolt blue"></fap-button>
+                                    </div>
+                                </div>
+
+                                <div class="widget-body">
+                                    <div class="widget-main padding-8">
+                                        <fap-tree id="reporttemplate" is-async="true" get-url="/System/Api/Manage/SimpleReport" plugin-checkbox="true"></fap-tree>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="prole" class="tab-pane">
+                            <div class="widget-box transparent">
+                                <div class="widget-header widget-header-small">
+                                    <div class="widget-toolbar">                                     
+                                        <fap-button id="btnSavePRole" content="授权角色" icon-before="fa fa-bolt blue"></fap-button>
+                                    </div>
+                                </div>
+
+                                <div class="widget-body">
+                                    <div class="widget-main padding-8">
+                                        <fap-tree id="powerroleandgroup" is-async="true" get-url="/System/Api/Manage/RoleAndGroup" plugin-checkbox="true"></fap-tree>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-3 widget-container-col">
+        <div id="widget-box-user" class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title"><fap-multilang lang-key="user" default-content="用户"></fap-multilang></h4>
+                <div class="widget-toolbar">                   
+                    <fap-button id="btnAddUser" content="添加用户" icon-before="fa fa-plus-circle purple"></fap-button>                   
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main padding-8">
+                    <div id="profile-feed-user" class="profile-feed">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function getRoleUid() {
+        var treeRole = $('#tree-roleandgroup').jstree(true);
+        var selRole = treeRole.get_selected();
+        if (!selRole.length) {
+            $.msg($.lang("selected_role","请选中角色进行设置"));
+            return 0;
+        }
+        var node = treeRole.get_node(selRole[0]);
+        if (node.data.isRole == false) {
+            $.msg($.lang("selected_role","请选中角色进行设置"));
+            return 0;
+        }
+        return selRole[0];
+    }
+            
+    var delUser = function (fid) {
+        bootbox.confirm($.lang("confirm_delete","确认删除？"), function (rv) {
+            if (!rv) {
+                return;
+            }
+            var roleUid = getRoleUid();
+            if (roleUid === 0) {
+                return;
+            }
+            //保存User
+            $.post("@Url.Content("~/System/Api/Manage/DelRoleUser")", { "RoleUid": roleUid, "UserUid": fid }, function (rv) {
+                //请求成功时处理
+                if (rv.success) {
+                    $.msg(rv.msg);
+                    $("[data-userfid='" + fid + "']").parent().parent().remove();
+                } else {
+                    bootbox.alert(rv.msg);
+                }
+            });
+
+        });
+    }
+    function initFormRoleDataAdd() {
+        var treeRole = $('#tree-roleandgroup').jstree(true);
+        var selRole = treeRole.get_selected();
+        if (!selRole.length) {
+            $.msg($.lang("selected_role","请选中角色进行设置"));
+            return false;
+        }
+        var node = treeRole.get_node(selRole[0]);
+        if (node.data.isRole == false) {
+             $.msg($.lang("selected_role","请选中角色进行设置"));
+            return;
+        }
+        //$("#frm-grid-roledata #RoleUidMC").val(node.text);
+        $("#frm-grid-roledata #RoleUid").val(selRole[0]).next().val(node.text).attr("disabled", "disabled");
+        //$("#frm-grid-roledata #RoleUidMC").attr("disabled", "disabled");
+    }
+    function initFormRoleDataEdit() {
+         $("#frm-grid-roledata #RoleUidMC").attr("disabled", "disabled");
+    }
+
+</script>
+
+<script>
+    var scripts = [null, "/Content/js/jquery.tmpl.js", null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+                $('#tree-roleandgroup').jstree('destroy');
+                $('#tree-reporttemplate').jstree('destroy');
+            });
+            setTimeout(function () {
+                $('.widget-main.padding-8').each(function () {
+                    var $this = $(this);
+                    $(this).ace_scroll({
+                        size: $(window).innerHeight() - 210 || 400,
+                        //styleClass: 'scroll-left scroll-margin scroll-thin scroll-dark scroll-light no-track scroll-visible'
+                    });
+                });
+            }, 0);
+
+            window.users = [];
+            var currRoleUid;
+            $('#tree-roleandgroup').on("changed.jstree", function (event, data) {
+                if (data && data.selected && data.selected.length) {
+                    //判断是否为角色
+                    var isRole = data.node.data.isRole;
+                    if (isRole == false) {
+                        return;
+                    }
+                    var roleUid = data.selected[0];
+                    var treeRole = $('#tree-roleandgroup').jstree(true);
+                    $.get("@Url.Content("~/System/Api/Manage/Authority/")" + roleUid, function (data) {
+                        //角色人员
+                        window.users = data.Users;
+                        $("#profile-feed-user").html("");
+                        $("#roleusers").tmpl(data.Users).appendTo("#profile-feed-user");
+                        //权限树
+                        var treeMenu = $("#tree-moduleandmenu").jstree(true);
+                        var treeDept = $("#tree-orgdept").jstree(true);
+                        var treeDataColEdit = $("#tree-dataColEdit").jstree(true);
+                        var treeDataColView=$("#tree-dataColView").jstree(true);
+                        var treeRpt = $("#tree-reporttemplate").jstree(true);
+                        var treePRole = $("#tree-powerroleandgroup").jstree(true);
+                        var treeButton = $('#tree-menuebutton').jstree(true);
+                        treeMenu.uncheck_all();
+                        treeDept.uncheck_all();
+                        treeDataColEdit.uncheck_all();
+                        treeDataColView.uncheck_all();
+                        treeRpt.uncheck_all();
+                        treePRole.uncheck_all();
+                        treeButton.uncheck_all();
+                        treeDataColView.element.find(".jstree-themeicon-custom.orange.fa.fa-eye").removeClass("jstree-themeicon-custom orange fa fa-eye").addClass("jstree-themeicon-custom green fa fa-tag");
+                        treeDataColEdit.element.find(".jstree-themeicon-custom.blue.fa.fa-pencil-square-o").removeClass("jstree-themeicon-custom blue fa fa-pencil-square-o").addClass("jstree-themeicon-custom green fa fa-tag");
+                        //jstree-icon jstree-themeicon green fa fa-tag jstree-themeicon-custom
+                        //jstree-icon jstree-themeicon green fa fa-tag jstree-themeicon-custom
+                        //菜单
+                        $.each(data.Menus, function (i, v) {
+                            treeMenu.check_node(v);
+                        });
+                        //部门
+                        $.each(data.Depts, function (i, v) {
+                            treeDept.check_node(v);
+                        });
+                        //按钮
+                        $.each(data.Buttons, function (i, v) {
+                            treeButton.check_node(v);
+                        });
+                        //数据
+                        var filter = { "groupOp": "AND" };
+                        var rules = [];
+                        rules.push({ "field": "RoleUid", "op": "eq", "data": roleUid });
+                        filter.rules = rules;
+                        $("#grid-roledata").jqGrid('setGridParam', {
+                            datatype: 'json',
+                            postData: { filters: JSON.stringify(filter), }, //发送数据
+                            page: 1
+                        }).trigger("reloadGrid"); //重新载入
+                        //报表
+                        $.each(data.Rpts, function (i, v) {
+                            treeRpt.check_node(v);
+                        });
+
+                        //角色
+                       // let ss = treePRole.get_node(roleUid);
+                        //不能分配自己角色的权限
+                        if (currRoleUid !== undefined) {
+                            treePRole.enable_node(currRoleUid);
+                        }
+                        treePRole.disable_node(roleUid);
+                        currRoleUid = roleUid;
+                        $.each(data.Roles, function (i, v) {
+                            treePRole.check_node(v);
+                        });
+                        //实体
+                        $.each(data.Columns, function (i, v) {
+                            let sid = v.MenuUid + '|' + v.GridId + '|' + v.ColumnUid;
+                            if (v.EditAble == "1") {
+                                //可编辑
+                                treeDataColEdit.check_node(sid);
+                                var dom = treeDataColEdit.get_node(treeDataColEdit.get_node(sid), true).children(".jstree-anchor").children(".jstree-themeicon");
+                                if (dom.length < 1) {
+                                    treeDataColEdit.get_node(sid).icon = 'blue fa fa-pencil-square-o';
+                                } else {
+                                    $(dom).attr("class", "jstree-icon jstree-themeicon blue fa fa-pencil-square-o jstree-themeicon-custom");
+                                }
+                            } else if (v.ViewAble == "1") {
+                                //可见
+                                treeDataColView.check_node(sid);
+                                var dom = treeDataColView.get_node(treeDataColView.get_node(sid), true).children(".jstree-anchor").children(".jstree-themeicon");
+                                if (dom.length < 1) {
+                                    treeDataColView.get_node(sid).icon = 'orange fa fa-eye';
+                                } else {
+
+                                    $(dom).attr("class", "jstree-icon jstree-themeicon orange fa fa-eye jstree-themeicon-custom");
+                                }
+                            }
+                               
+                        });
+
+                    });
+                }
+            });
+
+            var saveAuthority = function (data, callback, errorCallback) {
+                $.post("@Url.Content("~/System/Api/Manage/Authority")", data, function (rv) {
+                    if (rv.success) {
+                        $.msg($.lang("success","授权成功！"));
+                        callback && callback(rv);
+                    } else {
+                        errorCallback && errorCallback(rv);
+                        bootbox.alert($.lang("failure","授权失败！"));
+                    }
+                })
+            }
+
+            //保存菜单
+            $("#btnSaveMenus").on(ace.click_event, function (ev) {
+                ev.preventDefault();
+                var roleUid = getRoleUid();
+                if (roleUid === 0) {
+                    return;
+                }
+                var treeMenu = $('#tree-moduleandmenu').jstree(true),
+                    checks = treeMenu.get_checked();
+                //筛选是菜单的节点
+                var sels = $.grep(checks, function (d, i) {
+
+                    return treeMenu.get_node(d).data.isMenu == true;
+
+                });
+                saveAuthority({ "RoleUid": roleUid, "MenuUids": sels, "AType": 1 });
+            });
+
+            //保存部门
+            $("#btnSaveOrgDepts").on(ace.click_event, function (ev) {
+                ev.preventDefault();
+                var roleUid = getRoleUid();
+                if (roleUid === 0) {
+                    return;
+                }
+                var treeDept = $('#tree-orgdept').jstree(true),
+                    checks = treeDept.get_checked();
+                //筛选是菜单的节点
+                var sels = $.grep(checks, function (d, i) {
+                    return treeDept.get_node(d).data.ext1 == false;
+                });
+                saveAuthority({ "RoleUid": roleUid, "OrgDeptUids": sels, "AType": 2 });
+
+            });
+            //保存可编辑
+            $("#btnSaveColumnsEditAble").on(ace.click_event, function (ev) {
+                ev.preventDefault();
+                var roleUid = getRoleUid();
+                if (roleUid === 0) {
+                    return;
+                }
+                var treeColumn = $('#tree-dataColEdit').jstree(true),
+                    checks = treeColumn.get_checked();
+                //过滤列，其他的移除
+                var sels = $.grep(checks, function (d, i) {
+                    return treeColumn.get_node(d).data.isColumn == true;
+
+                })
+                //if (!sels.length) { return false; }
+                var cols = [];
+                $.each(sels, function (i, c) {
+                    let nodeData = treeColumn.get_node(c).data;
+                    cols.push({ "MenuUid": nodeData.menuUid, "GridId": nodeData.gridId, "ColUid":  nodeData.columnUid });
+                })
+                saveAuthority({ "RoleUid": roleUid, "ColumnUids": cols, "AType": 3 });
+
+            });
+            //保存可见
+            $("#btnSaveColumnsViewAble").on(ace.click_event, function (ev) {
+                ev.preventDefault();
+                var roleUid = getRoleUid();
+                if (roleUid === 0) {
+                    return;
+                }
+                var treeColumn = $('#tree-dataColView').jstree(true),
+                    checks = treeColumn.get_checked();
+                var sels = $.grep(checks, function (d, i) {
+                    return treeColumn.get_node(d).data.isColumn == true;
+                })
+              
+                var cols = [];
+                $.each(sels, function (i, c) {
+                    let nodeData = treeColumn.get_node(c).data;
+                    cols.push({ "MenuUid": nodeData.menuUid, "GridId": nodeData.gridId, "ColUid": nodeData.columnUid });
+                })
+                saveAuthority({ "RoleUid": roleUid, "ColumnUids": cols, "AType": 4 });
+
+            });
+
+            //保存按钮
+            $("#btnSaveButtons").on(ace.click_event, function (ev) {
+                ev.preventDefault();
+                var roleUid = getRoleUid();
+                if (roleUid === 0) {
+                    return;
+                }
+                var treeButton = $('#tree-menuebutton').jstree(true),
+                    checks = treeButton.get_checked();
+                //筛选是按钮的节点
+                var sels = $.grep(checks, function (d, i) {
+                    return treeButton.get_node(d).data.isBtn == true;
+                });
+                saveAuthority({ "RoleUid": roleUid, "BtnUids": sels, "AType": 8 });
+            });
+            //保存报表
+            $("#btnSaveReport").on(ace.click_event, function (ev) {
+                ev.preventDefault();
+                var roleUid = getRoleUid();
+                if (roleUid === 0) {
+                    return;
+                }
+                var treeRpt = $('#tree-reporttemplate').jstree(true),
+                    checks = treeRpt.get_checked();
+                //筛选是报表的节点
+                var sels = $.grep(checks, function (d, i) {
+                    return treeRpt.get_node(d).data.isRpt == true;
+                });
+                saveAuthority({ "RoleUid": roleUid, "RptUids": sels, "AType": 6 });
+
+            });
+            //保存角色角色
+            $("#btnSavePRole").on(ace.click_event, function (ev) {
+
+                ev.preventDefault();
+                var roleUid = getRoleUid();
+                if (roleUid === 0) {
+                    return;
+                }
+
+                var treeRR = $('#tree-powerroleandgroup').jstree(true),
+                    checks = treeRR.get_checked();
+                //筛选是报表的节点
+                var sels = $.grep(checks, function (d, i) {
+                    //角色自己不管理自己
+                    return d!=roleUid&&treeRR.get_node(d).data.isRole == true;
+
+                });
+                saveAuthority({ "RoleUid": roleUid, "PRoleUids": sels, "AType": 7 });
+            });
+            $("#clearcache").on(ace.click_event, function () {
+                $.get("@Url.Content("~/System/Api/Manage/Setting/ClearPermissionsCache")", function (rv) {
+                    if (rv.success) {
+                        $.msg(rv.msg);
+                    }
+                })
+            });
+
+            $('[data-rel=tooltip]').tooltip();
+            $('[data-rel=popover]').popover({ html: true });
+
+            $('#my-ui-list').sortable({ connectWith: '.otherlist' });
+
+            $("#btnAddUser").on(ace.click_event,function(){
+                //添加使用人
+                var dialog = bootbox.dialog({
+                    title: $.lang("add_user","添加用户"),
+                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+                    buttons: {
+                        success: {
+                            label: $.lang("ok","确定"), className: "btn-primary",
+                            callback: function () {
+                                var emp = getSelectedRows("grid-fapuser");
+                                if (emp == null) {
+                                    bootbox.alert($.lang("select_row","您没有选中人员"));
+                                    return;
+                                };
+                                var tempUser = [];
+                                if (window.users.length > 0) {
+                                    $.each(emp, function (n, v) {
+                                        var flag = false;
+                                        $.each(window.users, function (n, value) {
+                                            if (v.Fid == value.Fid) {
+                                                flag = true;
+                                            }
+                                        })
+                                        if (!flag) {
+                                            window.users.push(v);
+                                            tempUser.push(v.Fid);
+                                        }
+                                    })
+                                } else {
+                                    window.users = emp;
+                                    $.each(emp, function (n, v) {
+                                        tempUser.push(v.Fid);
+                                    })
+                                }
+                                if (tempUser.length > 0) {
+                                    var treeRole = $('#tree-roleandgroup').jstree(true);
+                                    var selRole = treeRole.get_selected();
+                                    if (treeRole.get_icon(selRole[0]) == "icon-folder purple ace-icon fa fa-users") {
+                                        bootbox.alert($.lang("selected_role","请选中角色进行设置"));
+                                        return;
+                                    }
+                                    if (!selRole.length) {
+                                        bootbox.alert($.lang("selected_role","请选中角色进行设置"));
+                                        return;
+                                    }
+                                    saveAuthority({ "RoleUid": selRole[0], "UserUids": tempUser, "AType": 5 }, function (rv) {
+                                        $("#profile-feed-user").html("");
+                                        $("#roleusers").tmpl(window.users).appendTo("#profile-feed-user");
+                                    });
+                                }
+                            }
+                        },
+                        cancel: {
+                            label:$.lang("close" ,"关闭"), className: "btn-default"
+                        }
+                    }
+
+                });
+                dialog.on("shown.bs.modal", function () {
+                    $(window).triggerHandler('resize.jqGrid');//触发窗口调整,使Grid得到正确的大小
+                });
+                dialog.init(function () {
+                    var url = basePath + '/System/Manage/UserSelector';
+                    $.get(url, function (ev) {
+                        dialog.find('.bootbox-body').html(ev);
+                    })
+                })
+            });
+
+        })
+    })
+</script>

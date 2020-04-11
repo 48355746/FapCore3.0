@@ -1,0 +1,61 @@
+﻿@model Fap.AspNetCore.ViewModel.MultiJqGridViewModel
+@{
+    Layout = null;
+    Fap.AspNetCore.ViewModel.JqGridViewModel lmodel = Model.JqGridViewModels["leave"];
+    Fap.AspNetCore.ViewModel.JqGridViewModel tmodel = Model.JqGridViewModels["travel"];
+    Fap.AspNetCore.ViewModel.JqGridViewModel omodel = Model.JqGridViewModels["overtime"];
+}
+<title><fap-multilang default-content="类型设置" lang-key="type_set"></fap-multilang> </title>
+
+<div class="row">
+    <div class="col-xs-12">
+        <!-- #section:elements.tab -->
+        <div class="tabbable" id="myTab">
+            <ul class="nav nav-tabs">
+                <li class="active">
+                    <a data-toggle="tab" href="#leave">
+                        <i class="green ace-icon fa fa-cog bigger-120"></i>
+                        <fap-multilang default-content="请假类型" lang-key="leave_type"></fap-multilang>
+                    </a>
+                </li>
+
+                <li>
+                    <a data-toggle="tab" href="#travel">
+                        <i class="green ace-icon fa fa-cog bigger-120"></i>
+                        <fap-multilang default-content="公差类型" lang-key="tolerance_type"></fap-multilang>
+                    </a>
+                </li>
+                <li>
+                    <a data-toggle="tab" href="#overtime">
+                        <i class="green ace-icon fa fa-cog bigger-120"></i>
+                        <fap-multilang default-content="加班类型" lang-key="overtime_type"></fap-multilang>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div id="leave" class="tab-pane fade in active">
+                    <fap-grid id="tmleavetypeset" grid-model="lmodel" auto-width="true" wrapper="myTab,leave" shrink-fit="false" view-records="true" oper-cud="true"></fap-grid>
+                </div>
+
+                <div id="travel" class="tab-pane fade">
+                    <fap-grid id="tmtraveltypeset" grid-model="tmodel" auto-width="true"  wrapper="myTab,travel" shrink-fit="false" view-records="true" oper-cud="true"></fap-grid>
+                </div>
+
+                <div id="overtime" class="tab-pane fade">
+                    <fap-grid id="tmovertimetypeset" grid-model="omodel" auto-width="true"  wrapper="myTab,overtime" shrink-fit="false" view-records="true" oper-cud="true"></fap-grid>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+        })
+    })
+</script>

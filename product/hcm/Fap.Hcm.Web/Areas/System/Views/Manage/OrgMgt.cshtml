@@ -1,0 +1,62 @@
+﻿
+@model Fap.AspNetCore.ViewModel.MultiJqGridViewModel
+@{
+    Layout = null;
+    var groupModel = Model.JqGridViewModels["FapGroup"];
+    var orgModel = Model.JqGridViewModels["FapOrg"];
+}
+<title><fap-multilang lang-key="group_orgnization" default-content="集团组织"></fap-multilang></title>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="tabbable">
+            <ul class="nav nav-tabs" id="myTab">
+                <li class="active">
+                    <a data-toggle="tab" href="#group">
+                        <i class="green ace-icon fa fa-home bigger-120"></i>
+                        <fap-multilang lang-key="page_group" default-content="集团"></fap-multilang>
+                    </a>
+                </li>
+
+                <li>
+                    <a data-toggle="tab" href="#org">
+                        <i class="orange ace-icon  fa fa-bars bigger-120"></i>
+                        <fap-multilang lang-key="page_orgnization" default-content="组织"></fap-multilang> 
+                    </a>
+                </li>
+
+                @*<li>
+                        <a data-toggle="tab" href="#dept">
+                            <i class="blue ace-icon  fa fa-sitemap bigger-120"></i>
+                            部门
+                        </a>
+                    </li>*@
+            </ul>
+
+            <div class="tab-content">
+                <div id="group" class="tab-pane fade in active">
+                    <fap-grid id="fapgroup" grid-model="groupModel"  auto-width="true" wrapper="myTab,group"></fap-grid>
+   
+                </div>
+
+                <div id="org" class="tab-pane fade">
+                    <fap-grid id="faporg" grid-model="orgModel" auto-width="true" wrapper="myTab,org" oper-cud="true"></fap-grid>
+
+                </div>
+
+                @*<div id="dept" class="tab-pane fade">
+                        <p>Etsy mixtape wayfarers, ethical wes anderson tofu before they sold out mcsweeney's organic lomo retro fanny pack lo-fi farm-to-table readymade.</p>
+                    </div>*@
+
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+            })
+        })
+    })
+</script>
