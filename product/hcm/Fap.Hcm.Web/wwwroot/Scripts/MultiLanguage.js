@@ -135,7 +135,8 @@ var MultiLangHelper = (function () {
       'init_insurance_data': { 'ZhCn': '初始化保险数据', 'ZhTW': '', 'En': '', 'Ja': '' },
       'gap_analysis': { 'ZhCn': '差异比对', 'ZhTW': '', 'En': '', 'Ja': '' },
       'all_insurance_item': { 'ZhCn': '所有保险项', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'reserved_insurance_item': { 'ZhCn': '保留保险项', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'reserved_insurance_item': { 'ZhCn': '保留保险项', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'paycase_formula': { 'ZhCn': '薪资套公式', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种
