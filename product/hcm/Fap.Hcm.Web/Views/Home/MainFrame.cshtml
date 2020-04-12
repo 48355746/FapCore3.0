@@ -23,28 +23,28 @@
         <link rel="stylesheet" href="~/css/acefont.min.css" asp-append-version="true" />
     </environment>
     @*fap control css*@
-<environment include="Development">
-    <link rel="stylesheet" href="~/Content/css/jquery-ui.css" />
-    <link rel="stylesheet" href="~/Content/JqGrid/css/ui.jqgrid.css"  asp-append-version="true"/>
-    <link rel="stylesheet" href="~/Content/css/jquery-ui.custom.css" />
-    <link rel="stylesheet" href="~/Content/Handsontable/css/handsontable.full.min.css" />
-    <link rel="stylesheet" href="~/Content/css/jquery.gritter.css" />
-    <link rel="stylesheet" href="~/Content/css/bootstrap-editable.css" />
-    <link rel="stylesheet" href="~/Content/css/jquery.bootstrap-touchspin.css" />
-    <link rel="stylesheet" href="~/Content/css/bootstrap-datetimepicker.css" />
-    <link rel="stylesheet" href="~/Content/date-time-h5/css/mobiscroll.core-2.6.2.css" />
-    <link rel="stylesheet" href="~/Content/date-time-h5/css/mobiscroll.animation-2.6.2.css" />
-    <link rel="stylesheet" href="~/Content/date-time-h5/css/mobiscroll.android-ics-2.6.2.css" />
-    <link rel="stylesheet" href="~/Content/css/chosen.css" />
-    <link rel="stylesheet" href="~/Content/css/bootstrap-duallistbox.css" />   
-    <link href="~/Content/fileinput/css/fileinput.css" rel="stylesheet" asp-append-version="true"/>
-    <link rel="stylesheet" href="~/Content/Select2/css/select2.css" />
-    <link rel="stylesheet" href="~/Content/js/JsTree/themes/default/style.css" />
-    <link rel="stylesheet" href="~/Content/css/colorpicker.css" />
-    <link rel="stylesheet" href="~/Content/citypicker/city-picker.css" />
-    <link rel="stylesheet" href="~/Content/css/colorbox.css" />
-    <link rel="stylesheet" href="~/Content/js/jRange/jquery.range.css" asp-append-version="true" />
-</environment>
+    <environment include="Development">
+        <link rel="stylesheet" href="~/Content/css/jquery-ui.css" />
+        <link rel="stylesheet" href="~/Content/JqGrid/css/ui.jqgrid.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/Content/css/jquery-ui.custom.css" />
+        <link rel="stylesheet" href="~/Content/Handsontable/css/handsontable.full.min.css" />
+        <link rel="stylesheet" href="~/Content/css/jquery.gritter.css" />
+        <link rel="stylesheet" href="~/Content/css/bootstrap-editable.css" />
+        <link rel="stylesheet" href="~/Content/css/jquery.bootstrap-touchspin.css" />
+        <link rel="stylesheet" href="~/Content/css/bootstrap-datetimepicker.css" />
+        <link rel="stylesheet" href="~/Content/date-time-h5/css/mobiscroll.core-2.6.2.css" />
+        <link rel="stylesheet" href="~/Content/date-time-h5/css/mobiscroll.animation-2.6.2.css" />
+        <link rel="stylesheet" href="~/Content/date-time-h5/css/mobiscroll.android-ics-2.6.2.css" />
+        <link rel="stylesheet" href="~/Content/css/chosen.css" />
+        <link rel="stylesheet" href="~/Content/css/bootstrap-duallistbox.css" />
+        <link href="~/Content/fileinput/css/fileinput.css" rel="stylesheet" asp-append-version="true" />
+        <link rel="stylesheet" href="~/Content/Select2/css/select2.css" />
+        <link rel="stylesheet" href="~/Content/js/JsTree/themes/default/style.css" />
+        <link rel="stylesheet" href="~/Content/css/colorpicker.css" />
+        <link rel="stylesheet" href="~/Content/citypicker/city-picker.css" />
+        <link rel="stylesheet" href="~/Content/css/colorbox.css" />
+        <link rel="stylesheet" href="~/Content/js/jRange/jquery.range.css" asp-append-version="true" />
+    </environment>
     <environment exclude="Development">
         <link rel="stylesheet" href="~/css/control.min.css" asp-append-version="true" />
     </environment>
@@ -355,11 +355,9 @@
     </div><!-- /.main-container -->
 
     <mini-profiler />
-
     <script type="text/javascript">
         if ('ontouchstart' in document.documentElement) document.write("<script src='/Content/js/jquery.mobile.custom.js'>" + "<" + "/script>");
     </script>
-
     <environment include="Development">
         <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
         <!-- ace scripts -->
@@ -414,27 +412,25 @@
         <script src="~/Content/citypicker/city-picker.js" asp-append-version="true"></script>
         <script src="~/Content/citypicker/jquery.citypicker.js" asp-append-version="true"></script>
         <script src="~/Content/js/jquery.colorbox.js" asp-append-version="true"></script>
+        <script src="~/Content/js/jRange/jquery.range.js" asp-append-version="true"></script>
         <script src="~/Content/js/jquery.raty.js" asp-append-version="true"></script>
         <script src="~/Content/js/fuelux/fuelux.wizard.js" asp-append-version="true"></script>
         <script src="~/Scripts/Fap/mainframe.js" asp-append-version="true"></script>
         <!-- control scripts -->
         <script src="~/Content/JqGrid/jquery.jqGrid.src.js" asp-append-version="true"></script>
-
-
         <script src="~/Content/js/x-editable/bootstrap-editable.js" asp-append-version="true"></script>
         <script src="~/Content/js/x-editable/ace-editable.js" asp-append-version="true"></script>
         <script src="~/Content/js/x-editable/fap-editable.js" asp-append-version="true"></script>
         <script src="~/Scripts/FapControl/dataGrid.js" asp-append-version="true"></script>
         <script src="~/Scripts/FapControl/dataForm.js" asp-append-version="true"></script>
-        <script src="~/Content/js/JsTree/jstree.js" asp-append-version="true"></script>
-        <script src="~/Content/Select2/js/select2.full.js" asp-append-version="true"></script>
-        <script src="~/Content/js/jRange/jquery.range.js" asp-append-version="true"></script>
-
+        <script src="~/Content/js/JsTree/jstree.min.js" asp-append-version="true"></script>
+        <script src="~/Content/Select2/js/select2.full.min.js" asp-append-version="true"></script>
     </environment>
-
     <environment exclude="Development">
         <script src="~/lib/bootstrap/dist/js/bootstrap.min.js" asp-append-version="true"></script>
         <script src="~/js/ace.min.js" asp-append-version="true"></script>
+        @*不能压缩，压缩会出问题*@
+        <script src="~/Content/js/ace/ace.ajax-content.js" asp-append-version="true"></script>
         <script src="~/js/fapcommon.min.js" asp-append-version="true"></script>
         <script src="~/js/fapcontrol.min.js" asp-append-version="true"></script>
         <script src="~/Content/js/lodash.min.js" asp-append-version="true"></script>
@@ -442,23 +438,23 @@
     @if (currLanguage == Fap.Core.MultiLanguage.MultiLanguageEnum.En)
     {
         //多语
-        <script src="~/Content/JqGrid/i18n/grid.locale-en.js" asp-append-version="true"></script>
-        <script src="~/Content/fileinput/locales/LANG.js" asp-append-version="true"></script>
+    <script src="~/Content/JqGrid/i18n/grid.locale-en.js" asp-append-version="true"></script>
+    <script src="~/Content/fileinput/locales/LANG.js" asp-append-version="true"></script>
     }
     else if (currLanguage == Fap.Core.MultiLanguage.MultiLanguageEnum.ZhCn)
     {
-        <script src="~/Content/JqGrid/i18n/grid.locale-cn.js" asp-append-version="true"></script>
-        <script src="~/Content/fileinput/locales/zh.js" asp-append-version="true"></script>
+    <script src="~/Content/JqGrid/i18n/grid.locale-cn.js" asp-append-version="true"></script>
+    <script src="~/Content/fileinput/locales/zh.js" asp-append-version="true"></script>
     }
     else if (currLanguage == Fap.Core.MultiLanguage.MultiLanguageEnum.ZhTW)
     {
-        <script src="~/Content/JqGrid/i18n/grid.locale-tw.js" asp-append-version="true"></script>
-        <script src="~/Content/fileinput/locales/zh-TW.js" asp-append-version="true"></script>
+    <script src="~/Content/JqGrid/i18n/grid.locale-tw.js" asp-append-version="true"></script>
+    <script src="~/Content/fileinput/locales/zh-TW.js" asp-append-version="true"></script>
     }
     else if (currLanguage == Fap.Core.MultiLanguage.MultiLanguageEnum.Ja)
     {
-        <script src="~/Content/JqGrid/i18n/grid.locale-ja.js" asp-append-version="true"></script>
-        <script src="~/Content/fileinput/locales/ja.js" asp-append-version="true"></script>
+    <script src="~/Content/JqGrid/i18n/grid.locale-ja.js" asp-append-version="true"></script>
+    <script src="~/Content/fileinput/locales/ja.js" asp-append-version="true"></script>
     }
     <script src="~/Content/layer/layer.js"></script>
     <script>

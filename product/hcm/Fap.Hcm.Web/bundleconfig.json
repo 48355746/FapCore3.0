@@ -61,7 +61,6 @@
       "wwwroot/Content/js/ace/elements.wizard.js",
       "wwwroot/Content/js/ace/elements.aside.js",
       "wwwroot/Content/js/ace/ace.js",
-      "wwwroot/Content/js/ace/ace.ajax-content.js",
       "wwwroot/Content/js/ace/ace.touch-drag.js",
       "wwwroot/Content/js/ace/ace.sidebar.js",
       "wwwroot/Content/js/ace/ace.sidebar-scroll-1.js",
@@ -130,14 +129,13 @@
     "outputFileName": "wwwroot/js/fapcontrol.min.js",
     "inputFiles": [
       "wwwroot/Content/JqGrid/jquery.jqGrid.src.js",
-      //"wwwroot/Content/JqGrid/i18n/grid.locale-cn.js",
       "wwwroot/Content/js/x-editable/bootstrap-editable.js", //x-editable
       "wwwroot/Content/js/x-editable/ace-editable.js",
       "wwwroot/Content/js/x-editable/fap-editable.js",
       "wwwroot/Scripts/FapControl/dataGrid.js", //新增编辑弹出表单
       "wwwroot/Scripts/FapControl/dataForm.js", //表单持久化
-      "wwwroot/Content/js/JsTree/jstree.js", //树控件
-      "wwwroot/Content/Select2/js/select2.full.js" //select2
+      "wwwroot/Content/js/JsTree/jstree.min.js", //树控件
+      "wwwroot/Content/Select2/js/select2.full.min.js" //select2
     ],
     // Optionally specify minification options
     "minify": {
