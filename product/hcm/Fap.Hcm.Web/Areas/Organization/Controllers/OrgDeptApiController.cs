@@ -189,7 +189,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
         public JsonResult GetOrgChart2(string fid)
         {
             //人员类别设置
-            string sql = "select count(0) as Num,DeptUid from employee where 1=1 ";
+            string sql = "select count(0) as Num,DeptUid from Employee where 1=1 ";
             DynamicParameters parameters = new DynamicParameters();
             string empCategorys = _configService.GetSysParamValue("system.stat.empcategory");
             if (empCategorys.IsPresent())
@@ -262,7 +262,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
         //    //List<OrgDept> deptList = _dbContext.QueryEntity<OrgDept>(true);
         //    //查找有权限部门
         //    IEnumerable<OrgDept> deptList = _rbacService.GetDeptInfoAuthority(_applicationContext.CurrentRoleUid);
-        //    string sql = $"select count(0) as  Num,DeptUid from employee  ";
+        //    string sql = $"select count(0) as  Num,DeptUid from Employee  ";
         //    DynamicParameters parameters = new DynamicParameters();
         //    string empCategorys = _configService.GetSysParamValue("system.stat.empcategory");
         //    if (empCategorys.IsPresent())
