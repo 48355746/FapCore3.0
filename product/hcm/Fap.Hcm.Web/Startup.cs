@@ -20,6 +20,7 @@ using Newtonsoft.Json;
 using Fap.Hcm.Web.Models;
 using Fap.AspNetCore.Infrastructure.Filter;
 using UEditorNetCore;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace Fap.Hcm.Web
 {
@@ -118,6 +119,11 @@ namespace Fap.Hcm.Web
                 RequestPath = new PathString($"/{FapPlatformConstants.Template}")
             });
             app.UseRouting();
+            //nginx反向代理header设置
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
             //认证
             app.UseAuthentication();
             //鉴权
