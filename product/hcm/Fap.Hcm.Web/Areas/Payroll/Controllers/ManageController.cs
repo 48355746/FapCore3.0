@@ -136,7 +136,8 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
         }
         public IActionResult PayCenter()
         {
-            var payRecords = _dbContext.Query<PayRecord>($"select top 30 * from {nameof(PayRecord)} where {nameof(PayRecord.PayFlag)}=1",null,true);
+            var payRecords = _dbContext.QueryWhere<PayRecord>($"{nameof(PayRecord.PayFlag)}=1",null,true)
+                .OrderByDescending(r=>r.PayYM).Take(30);
             return View(payRecords);
         }
         public IActionResult PayCenterInfo(string fid)
