@@ -12,7 +12,7 @@ using System.Linq;
 namespace Fap.Hcm.Service.Assess
 {
     [Service]
-    public class AssessService
+    public class AssessService : IAssessService
     {
         private readonly IDbContext _dbContext;
         public AssessService(IDbContext dbContext)
@@ -36,7 +36,7 @@ namespace Fap.Hcm.Service.Assess
             TreeViewHelper.MakeTree(treeRoot.Children, oriList, treeRoot.Id);
             return tree;
         }
-        public ResponseViewModel OperUserGroup(TreePostData postData)
+        public ResponseViewModel OperSchemeCategory(TreePostData postData)
         {
             ResponseViewModel vm = new ResponseViewModel();
             if (postData.Operation == TreeNodeOper.DELETE_NODE)
@@ -51,21 +51,21 @@ namespace Fap.Hcm.Service.Assess
                     Pid = postData.Id,
                     Name = postData.Text
                 };
-                _dbContext.Insert(ppc);           
+                _dbContext.Insert(ppc);
                 vm.success = true;
                 vm.data = ppc.Fid;
             }
             else if (postData.Operation == TreeNodeOper.RENAME_NODE)
             {
-                //var userGroup = _dbContext.Get<FapUserGroup>(postData.Id);
-                //userGroup.UserGroupName = postData.Text;
-                //vm.success = _rbacService.EditUserGroup(userGroup);
+                var prmCategory = _dbContext.Get<PerfProgramCategory>(postData.Id);
+                prmCategory.Name = postData.Text;
+                vm.success = _dbContext.Update(prmCategory);
             }
-            else if (postData.Operation == "move_node")
+            else if (postData.Operation == TreeNodeOper.MOVE_NODE)
             {
-                //var userGroup = _dbContext.Get<FapUserGroup>(postData.Id);
-                //userGroup.Pid = postData.Parent;
-                //vm.success = _rbacService.EditUserGroup(userGroup);
+                var prmCategory = _dbContext.Get<PerfProgramCategory>(postData.Id);
+                prmCategory.Pid = postData.Parent;
+                vm.success = _dbContext.Update(prmCategory);
             }
             else if (postData.Operation == TreeNodeOper.COPY_NODE)
             {
