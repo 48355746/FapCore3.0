@@ -1,4 +1,277 @@
-﻿
-@*
-    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+    Layout = null;
+}
+<title>
+    <fap-multilang lang-key="assess" default-content="绩效考核"></fap-multilang>
+</title>
+
+<div class="row">
+    <div class="col-xs-12 col-sm-3">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title"><fap-multilang lang-key="scheme_category" default-content="方案分类"></fap-multilang></h4>
+                <fap-tree-button id="schemecategory" description="方案分类" tree-id="tree-scheme"></fap-tree-button>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main treescrollable">
+                    <fap-tree id="scheme" is-async="true" get-url="/Assess/Api/SchemeCategory" edit-url="/Assess/Api/SchemeCategory" plugin-dnd="true"></fap-tree>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-9">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">考核方案</h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar no-border">
+                    <button id="btnPerfKpi" class="btn btn-xs btn-primary bigger">
+                        <i class="ace-icon fa fa-bars"></i>
+                        考核指标
+                    </button>
+                    <button id="btnPerfObject" class="btn btn-xs btn-pink bigger">
+                        <i class="ace-icon fa fa-users"></i>
+                        考核对象
+                    </button>
+                    <button id="btnPerfModel" class="btn btn-xs btn-success bigger">
+                        <i class="ace-icon fa fa-cogs"></i>
+                        考核方式
+                    </button>
+                    <button class="btn btn-xs bigger btn-primary dropdown-toggle" data-toggle="dropdown">
+                        <i class="ace-icon fa fa-caret-square-o-right"></i>
+                        实施
+                        <i class="ace-icon fa fa-chevron-down icon-on-right"></i>
+                    </button>
+                    @*<button id="btnScoreResult" class="btn btn-xs btn-purple bigger">
+                            <i class="ace-icon fa fa-lightbulb-o"></i>
+                            考核结果
+                        </button>*@
+
+                    <ul class="dropdown-menu dropdown-yellow dropdown-menu-right dropdown-caret dropdown-close">
+                        <li>
+                            <a href="#" data-action="setprmstatus" data-status="Starting">启动</a>
+                        </li>
+                        @*Init,Issued,Starting,Result,Filed,Closed,Ended*@
+
+                        <li>
+                            <a href="#" data-action="setprmstatus" data-status="Filed">归档</a>
+                        </li>
+
+                        <li class="divider"></li>
+
+                        <li>
+                            <a href="#" data-action="setprmstatus" data-status="Closed">关闭</a>
+                        </li>
+                    </ul>
+
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    <fap-grid id="perfprogram" query-option="Model.QueryOption" post-data="Model.PostData" auto-width="true" on-form-init-add="afterInitFormCallback" shrink-fit="true" multi-select="true" multi-box-only="true" oper-cud="true"></fap-grid>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<script>
+    var afterInitFormCallback = function () {
+        var tree = $('#tree-perfprmcat').jstree(true);
+        var sel = tree.get_selected();
+        if (sel.length) {
+            $("#PrmCategory").val(sel[0]).next().val(tree.get_node(sel[0]).text);
+        }
+    };
+    var scripts = [null, null];
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+                $('#tree-perfprmcat').jstree('destroy');
+            })
+            $(document).off(ace.click_event, '[data-ctrl=widgetAction]').on(ace.click_event, '[data-ctrl=widgetAction]', function (ev) {
+                debugger
+                ev.preventDefault();
+                var $this = $(this);
+                var $action = $this.data('action');
+                var ref = $('#tree-perfprmcat').jstree(true),
+                                sel = ref.get_selected();
+                if ($action == 'refresh') {
+                    ref.refresh();
+                    return;
+                }
+                if (!sel.length) { return false; }
+                sel = sel[0];
+                if ($action == 'add') {
+                    sel = ref.create_node(sel);
+
+                } else if ($action == 'edit') {
+                    ref.edit(sel);
+                } else if ($action == 'delete') {
+                    ref.delete_node(sel)
+                }
+
+            })
+            //catUid 主Uid,catName 主名称,childs 子Uid
+            var RefreshPrm = function (catUid, catName, childs) {
+                //根节点
+                if (catUid == "0") {
+                    $("#grid-perfprogram").jqGrid('setGridParam', {
+                        datatype: 'json',
+                        page: 1
+                    }).trigger("reloadGrid"); //重新载入
+                    return;
+                }
+
+                var filter = '{"groupOp":"AND","rules":[{"field":"PrmCategory","op":"eq","data":"' + catUid + '"}]}';
+                if (childs != undefined && childs != '') {
+                    var selids = childs.concat(catUid);
+                    filter = '{"groupOp":"AND","rules":[{"field":"PrmCategory","op":"in","data":"' + selids + '"}]}'
+                }
+                $("#grid-perfprogram").jqGrid('setGridParam', {
+                    datatype: 'json',
+                    postData: { filters: filter }, //发送数据
+                    page: 1
+                }).trigger("reloadGrid"); //重新载入
+            };
+            $('#tree-perfprmcat').on("changed.jstree", function (e, data) {
+                if (data && data.selected && data.selected.length) {
+                    var catUid = data.selected[0];
+                    var catName = data.node.text;
+                    var childs = data.node.children_d;
+                    RefreshPrm(catUid, catName, childs);
+                }
+                //console.log(data.selected);
+            });
+            //考核指标
+            $("#btnPerfKpi").on(ace.click_event, function () {
+                var gr = jQuery("#grid-perfprogram").jqGrid('getGridParam', 'selrow');
+                if (gr === null) {
+                    bootbox.alert(MultiLangHelper.getResName("perf_index_page_seloneprogshow", "请选中一个方案查看"));
+                    return;
+                }
+                var rowData = jQuery("#grid-perfprogram").getRowData(gr);
+                //window.open("@Url.Content("~/Performance/Perf/PerfKpi/")" + rowData.Fid + "?prm=" + rowData.PrmName, "_blank");
+                openNewWindow("@Url.Content("~/Performance/Perf/PerfKpi/")" + rowData.Fid + "?prm=" + rowData.PrmName);
+            })
+            //考核对象
+            $("#btnPerfObject").on(ace.click_event, function () {
+                var gr = jQuery("#grid-perfprogram").jqGrid('getGridParam', 'selrow');
+                if (gr === null) {
+                    bootbox.alert("请选中一个方案查看");
+                    return;
+                }
+                var rowData = jQuery("#grid-perfprogram").getRowData(gr);
+                //window.open("@Url.Content("~/Performance/Perf/PerfObject/")" + rowData.Fid + "?prm=" + rowData.PrmName, "_blank");
+                openNewWindow("@Url.Content("~/Performance/Perf/PerfObject/")" + rowData.Fid + "?prm=" + rowData.PrmName);
+            })
+            //考核方式
+            $("#btnPerfModel").on(ace.click_event, function () {
+                var gr = jQuery("#grid-perfprogram").jqGrid('getGridParam', 'selrow');
+                if (gr === null) {
+                    bootbox.alert("请选中一个方案查看");
+                    return;
+                }
+                var rowData = jQuery("#grid-perfprogram").getRowData(gr);
+                var prm = encodeURIComponent(rowData.PrmName);
+                //window.open("@Url.Content("~/Performance/Perf/PerfModel/")" + rowData.Fid + "?prm=" + prm, "_blank");
+                openNewWindow("@Url.Content("~/Performance/Perf/PerfModel/")" + rowData.Fid + "?prm=" + prm);
+            })
+            $("#btnScoreResult").on(ace.click_event, function () {
+                var gr = jQuery("#grid-perfprogram").jqGrid('getGridParam', 'selrow');
+                if (gr === null) {
+                    bootbox.alert("请选中一个方案查看");
+                    return;
+                }
+                var rowData = jQuery("#grid-perfprogram").getRowData(gr);
+                //Result	成绩公布            Filed	已归档            Closed	已关闭            Ended	已结束
+                //Init	初始化            Issued 	发布            Starting	考核中
+                if (rowData.PrmStatus == "Init" || rowData.PrmStatus == "Issued" || rowData.PrmStatus == "Starting") {
+                    bootbox.alert("考核结果还没有生成");
+                    return;
+                }
+                openNewWindow("@Url.Content("~/Performance/Perf/ScoreResult/")" + rowData.Fid);
+            })
+            //启动
+            $("[data-action=setprmstatus]").off(ace.click_event).on(ace.click_event, function (e) {
+                e.preventDefault();
+                var prmstatus = $(this).data("status");
+                var gr = jQuery("#grid-perfprogram").jqGrid('getGridParam', 'selrow');
+                if (gr === null) {
+                    bootbox.alert("请选中一个方案查看");
+                    return;
+                }
+                var grs = getSelectedRows("grid-perfprogram");// jQuery("#grid-perfprogram").jqGrid('getGridParam', 'selarrrow');
+                if (grs === null)
+                {
+                    return;
+                }
+                var fids = [];
+                $.each(grs, function (i, d) {
+                    //var rowData = $("#grid-perfprogram").getRowData(d);
+                    fids.push(d.Fid);
+                })
+                $.post("@Url.Content("~/api/Perf/SetPerfPrmStatus/")", { status: prmstatus, prms: fids }, function (rv) {
+                    if (rv.success == true) {
+                        var ref = $('#tree-perfprmcat').jstree(true);
+                        var sel = ref.get_selected();
+                        if (sel == "") {
+                            RefreshPrm("0", "");
+                        } else {
+                            var catUid = sel[0];
+                            var catName = ref.get_node(catUid).text;
+                            RefreshPrm(catUid, catName);
+                        }
+
+
+                    }
+                })
+            })
+
+            $('#grid-perfprogram').jqGrid('navButtonAdd', '#pager-perfprogram', {
+                caption: '',
+                title: '复制',
+                position: 'first',
+                buttonicon: 'ace-icon fa fa-clipboard purple',
+                onClickButton: function () {
+                    var gsr = jQuery('#grid-perfprogram').jqGrid('getGridParam', 'selrow');
+                    if (gsr) {
+                        bootbox.confirm("确定要复制一份选中的考核方案?", function (result) {
+                            if (result) {
+                                //
+                                var ret = jQuery('#grid-perfprogram').jqGrid('getRowData', gsr);
+                                //alert(ret.Fid);
+                                $.get("@Url.Content("~/api/Perf/CopyProgram/")" + ret.Fid, function (rv) {
+                                    if (rv.success) {
+                                        $("#grid-perfprogram").jqGrid('setGridParam', {
+                                            datatype: 'json',
+                                            page: 1
+                                        }).trigger("reloadGrid"); //重新载入
+                                    }
+                                })
+                            }
+                        });
+
+                    } else {
+                        $.msg('请选择一条数据')
+                    }
+
+                }
+            });
+        })
+
+    })
+</script>
+
+
+
