@@ -47,8 +47,17 @@
                     //bootbox.alert($.lang("orgdept_index_page_pleaseSelshowdept", "请选择一个部门查看"));
                     return;
                 }
-                openUrl("@Url.Content("~/Organization/OrgDept/OrgChart/")" + rowData.Fid+ "?type=directorName");
+                var url = "@Url.Content("~/Organization/OrgDept/OrgChart/")" + rowData.Fid + "?type=directorName";
 
+                //弹出即全屏
+                var index = layer.open({
+                    type: 2,
+                    title: "组织架构图",
+                    content: url,
+                    area: ['800px', '600px'],
+                    maxmin: true
+                });
+                layer.full(index);
             })
 
             $("#btnHistoryDept").on(ace.click_event, function () {
@@ -77,12 +86,12 @@
                 });
             })
             //合并
-            $("#btnMergeDept").on(ace.click_event, function () {               
+            $("#btnMergeDept").on(ace.click_event, function () {
                 var dialog = bootbox.dialog({
                     title: $.lang("orgdept_index_page_mergedepartment", "合并部门"),
                     message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
                     size: "large",
-                    buttons: {                       
+                    buttons: {
                         cancel: {
                             label: $.lang("cancel", "取消"), className: "btn-default"
                         }
@@ -106,7 +115,7 @@
                                     return false;
                                 }
                                 $("#confirmDepts").empty();
-                                $.each(selDepts, function (i, v) {                                    
+                                $.each(selDepts, function (i, v) {
                                     var $lbl = $(`     <label>
                                         <input name="form-field-checkbox" type="checkbox" checked value='`+v+`' class="ace" />
                                         <span class="lbl"> `+treeDept.get_node(v).text+`</span>

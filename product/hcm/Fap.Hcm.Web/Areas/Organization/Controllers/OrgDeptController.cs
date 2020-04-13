@@ -65,6 +65,11 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
             ViewBag.Type = type;
             return View();
         }
+        public IActionResult DeptEmployee(string fid)
+        {
+            var model = _dbContext.QueryWhere<Fap.Core.Rbac.Model.Employee>("DeptUid=@DeptUid ", new DynamicParameters(new { DeptUid = fid }),true);
+            return View(model);
+        }
         public ViewResult OrgChart2()
         {
             return View();
@@ -84,7 +89,7 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
         /// <returns></returns>
         public PartialViewResult OrgJobGroupGrade(int id)
         {
-            dynamic jobGroup= _dbContext.Get("OrgJobGroup", id);
+            dynamic jobGroup = _dbContext.Get("OrgJobGroup", id);
             var model = GetJqGridModel("OrgJobGroupGrade", qs =>
             {
                 qs.GlobalWhere = "JobGroup=@Fid";

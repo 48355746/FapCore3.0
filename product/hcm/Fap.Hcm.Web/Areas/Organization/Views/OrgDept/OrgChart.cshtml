@@ -1,7 +1,7 @@
 ﻿
 @{
     Layout = null;
-  //选中的部门
+    //选中的部门
     string fid = ViewBag.Fid;
     //显示类型：部门经理、部门负责人
     string type = ViewBag.Type ?? "managerName";
@@ -9,23 +9,15 @@
     string showName = "";
     if (type == "directorName")
     {
-        showName = _multiLangService.GetOrAndMultiLangValue(Fap.Core.MultiLanguage.MultiLanguageOriginEnum.Page,"orgdept_index_director", "负责人");
+        showName = _multiLangService.GetOrAndMultiLangValue(Fap.Core.MultiLanguage.MultiLanguageOriginEnum.Page, "director", "负责人");
     }
     else if (type == "managerName")
     {
-        showName = _multiLangService.GetOrAndMultiLangValue(Fap.Core.MultiLanguage.MultiLanguageOriginEnum.Page,"orgdept_index_manager", "经理");
+        showName = _multiLangService.GetOrAndMultiLangValue(Fap.Core.MultiLanguage.MultiLanguageOriginEnum.Page, "manager", "经理");
     }
 }
 
 <!DOCTYPE html>
-
-<!--
-  Copyright (c) 2006-2013, JGraph Ltd
-
-  Orgchart example for mxGraph. This example demonstrates using
-  automatic layouts, fit to page zoom and poster print (across
-  multiple pages).
--->
 <html>
 <head>
     <title>组织架构图</title> <!--[if !IE]> -->
@@ -39,6 +31,7 @@
      window.jQuery || document.write("<script src='@Url.Content("~/Content/js/jquery1x.js")'>"+"<"+"/script>");
     </script>
     <![endif]-->
+    <script src="~/Content/layer/layer.js"></script>
     <script src="~/Scripts/Fap/common.js?v=1"></script>
     <script src="~/Content/js/lodash.min.js"></script>
     <!-- Sets the basepath for the library if not in same directory -->
@@ -311,7 +304,7 @@
                 graph.cellRenderer.getLabelValue = function (state) {
                     var cell = state.cell;
                     var result=cell.value;
-                    
+
                     if (state.view.graph.getModel().isVertex(state.cell)) {
                         if (state.view.scale > 1 && cell.manager!=null) {
                             result += '\n经理：'+cell.manager;
@@ -473,7 +466,14 @@
             overlay.verticalAlign = mxConstants.ALIGN_TOP;
             overlay.addListener(mxEvent.CLICK, mxUtils.bind(this, function (sender, evt) {
                 if (nodekey === '') return;
-                openUrl("@Url.Content("~/Common/PublicPage/DeptEmployee/")" + nodekey);
+                let url = "@Url.Content("~/Organization/OrgDept/DeptEmployee/")" + nodekey;
+                parent.layer.open({
+                    type: 2,
+                    title:"员工信息",
+                    content: url,
+                    area: ['800px', '600px'],
+                    maxmin: true
+                });               
             }));
             graph.addCellOverlay(cell, overlay);
         };

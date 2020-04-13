@@ -37,7 +37,7 @@ namespace Fap.Core.Infrastructure.Interceptor
             if (pid.IsPresent())
             {
                 OrgDept parentDept = _dbContext.Get<OrgDept>(pid);
-                var childDepts = _dbContext.Query<OrgDept>("select * from Orgdept where Pid=@Pid", new DynamicParameters(new { Pid = pid }));
+                var childDepts = _dbContext.Query<OrgDept>("select * from OrgDept where Pid=@Pid", new DynamicParameters(new { Pid = pid }));
                 if (parentDept.IsFinal == 1)
                 {
                     //更新父部门是否末级标记
@@ -73,7 +73,7 @@ namespace Fap.Core.Infrastructure.Interceptor
             if (pid.IsPresent())
             {
                 OrgDept parentDept = _dbContext.Get<OrgDept>(pid);
-                var childDepts = _dbContext.Query<OrgDept>("select * from Orgdept where Pid=@Pid", new DynamicParameters(new { Pid = pid }));
+                var childDepts = _dbContext.Query<OrgDept>("select * from OrgDept where Pid=@Pid", new DynamicParameters(new { Pid = pid }));
                 if (parentDept.IsFinal == 1)
                 {
                     //更新父部门是否末级标记
@@ -125,7 +125,7 @@ namespace Fap.Core.Infrastructure.Interceptor
         {
             string fid = fapDynamicData.Get("Fid").ToString();
             //检查是否有子
-            var childs = _dbContext.Query<OrgDept>("select * from Orgdept where Pid=@Pid", new DynamicParameters(new { Pid = fid }));
+            var childs = _dbContext.Query<OrgDept>("select * from OrgDept where Pid=@Pid", new DynamicParameters(new { Pid = fid }));
             if (childs.Any())
             {
                 string deptCode = fapDynamicData.Get("DeptCode").ToString();
@@ -200,7 +200,7 @@ namespace Fap.Core.Infrastructure.Interceptor
         {
             if (pid.IsPresent())
             {
-                var pchilds = _dbContext.Query<OrgDept>("select * from Orgdept where Pid=@Pid", new DynamicParameters(new { Pid = pid }));
+                var pchilds = _dbContext.Query<OrgDept>("select * from OrgDept where Pid=@Pid", new DynamicParameters(new { Pid = pid }));
                 if (!pchilds.Any())
                 {
                     //如果父部门无子部门，修改父部门末级标记
@@ -209,7 +209,7 @@ namespace Fap.Core.Infrastructure.Interceptor
                     {
                         parentOrgDept.IsFinal = 1;
                         //简单修改末级标记简单处理    
-                        _dbContext.Execute("Update Orgdept set IsFinal=1 where Fid=@Fid", new DynamicParameters(new { Fid = parentOrgDept.Fid }));
+                        _dbContext.Execute("Update OrgDept set IsFinal=1 where Fid=@Fid", new DynamicParameters(new { Fid = parentOrgDept.Fid }));
                         DataSynchDynamicObject(parentOrgDept, DataChangeTypeEnum.UPDATE);
                     }
                 }
@@ -224,7 +224,7 @@ namespace Fap.Core.Infrastructure.Interceptor
                 _appDomain.RoleDeptSet.Refresh();
             }
             //删除子部门
-            IEnumerable<OrgDept> childs = _dbContext.Query<OrgDept>("select * from Orgdept where Pid=@Pid", new DynamicParameters(new { Pid = fid }));
+            IEnumerable<OrgDept> childs = _dbContext.Query<OrgDept>("select * from OrgDept where Pid=@Pid", new DynamicParameters(new { Pid = fid }));
             if (childs.Any())
             {
                 HandlerChildsDelete(childs);
@@ -261,7 +261,7 @@ namespace Fap.Core.Infrastructure.Interceptor
             OrgDept orgDept = entity as OrgDept;
             string fid = orgDept.Fid;
             //检查是否有子
-            var childs = _dbContext.Query<OrgDept>("select * from Orgdept where Pid=@Pid", new DynamicParameters(new { Pid = fid }));
+            var childs = _dbContext.Query<OrgDept>("select * from OrgDept where Pid=@Pid", new DynamicParameters(new { Pid = fid }));
             if (childs.Any())
             {
                 string deptCode = orgDept.DeptCode;

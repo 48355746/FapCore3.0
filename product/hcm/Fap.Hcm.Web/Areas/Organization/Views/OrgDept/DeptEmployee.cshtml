@@ -1,0 +1,147 @@
+﻿@using Fap.Core.Extensions
+@using Fap.Core.Utility
+@model List<Fap.Core.Rbac.Model.Employee>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "部门员工";
+    string historyDate = ViewBag.HistoryDate;
+}
+@section specificcss{
+    <style>
+        .popover-content {
+            width: 370px;
+        }
+    </style>
+}
+@section specificscript{
+    <script>
+        $(function () {
+            //right & left position
+            //show the user info on right or left depending on its position
+            $('.memberdiv').on('mouseenter touchstart', function () {
+                var $this = $(this);
+                var $parent = $this.closest('.profile-users');
+
+                var off1 = $parent.offset();
+                var w1 = $parent.width();
+
+                var off2 = $this.offset();
+                var w2 = $this.width();
+
+                var place = 'left';
+                if (parseInt(off2.left) < parseInt(off1.left) + parseInt(w1 / 2)) place = 'right';
+
+                $this.find('.popover').removeClass('right left').addClass(place);
+            })
+            //    .on('click', function (e) {
+            //   // $(this).find(".details").click();
+            //    e.preventDefault();
+            //});
+
+        })
+    </script>
+}
+
+
+@if (Model.Any())
+{
+    foreach (var empg in Model.GroupBy(e => e.DeptUidMC))
+    {
+        <div class="profile-users clearfix">
+            <h4 class="header smaller lighter orange">@empg.Key</h4>
+            @foreach (var emp in empg.ToList())
+            {
+
+                string gender = "fa fa-ban";
+                if (emp.Gender == "male")
+                {
+                    gender = "fa fa-male blue";
+                }
+                else if (emp.Gender == "female")
+                {
+                    gender = "fa fa-female orange";
+                }
+                string ed = emp.EntryDate.IsMissing()? "" :DateTimeUtils.ToDateTime(emp.EntryDate).ToString("yyyy-MM-dd");
+                string bd = emp.DateOfBirth.IsMissing() ? "" : DateTimeUtils.ToDateTime(emp.DateOfBirth).ToString("yyyy-MM-dd");
+                <div class="itemdiv memberdiv" data-empuid="@emp.Fid">
+                    <div class="inline pos-rel">
+                        <div class="user">
+                            <a href="#">
+                                <img src="@Url.Content("~/Component/Photo/")@emp.EmpPhoto" alt="@emp.EmpName" />
+                            </a>
+                        </div>
+
+                        <div class="body">
+                            <div class="name">
+                                <a href="#">
+                                    <i class="ace-icon @gender"></i>
+                                    @emp.EmpName
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="popover">
+                            <div class="arrow"></div>
+
+                            <div class="popover-content">
+                                <div class="bolder">[@emp.EmpName]@emp.DeptUidMC</div>
+
+                                @*<div class="time">
+                                    <i class="ace-icon fa fa-search-plus middle bigger-120 orange"></i>
+                                    <a class="orange" href="@Url.Content("~/Common/PublicPage/EmpProfile/")@emp.Fid?date=@historyDate" target="_blank">详细</a>
+                                </div>*@
+
+                                <div class="hr dotted hr-8"></div>
+
+                                <div class="tools action-buttons">
+                                    <a href="#">
+                                        手机：@emp.Mobile
+                                    </a>
+                                    <br />
+                                    <a href="#">
+                                        邮箱：@emp.Mailbox
+                                    </a>
+                                    <br />
+                                    <a href="#">
+                                        身份证号：@emp.IDCard
+                                    </a>
+                                    <br />
+                                    <a href="#">
+                                        员工状态：@emp.EmpCategoryMC
+                                    </a>
+                                    <br />
+                                    <a href="#">
+                                        入职日期：@ed
+                                    </a>
+                                    <br />
+                                    <a href="#">
+                                        出生日期：@bd
+                                    </a>
+                                    <br />                                   
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            }
+        </div>
+    }
+}
+else
+{
+    <div>
+        <div class="alert alert-block alert-warning">
+            <button type="button" class="close" data-dismiss="alert">
+                <i class="ace-icon fa fa-times"></i>
+            </button>
+
+            <i class="ace-icon fa fa-comment orange"></i>
+
+            @ViewBag.Msg
+
+        </div>
+
+    </div>
+}
+
