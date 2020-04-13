@@ -85,7 +85,6 @@ namespace Fap.Core.Infrastructure.Interceptor
                 if (orgDept.DeptOrder == 0)
                 {
                     orgDept.DeptOrder = childDepts.Any() ? childDepts.Count() : 1;
-
                 }
                 orgDept.FullName = parentDept.FullName + "/" + orgDept.DeptName;
                 orgDept.DeptCode = childDepts.Any() ? (childDepts.Max(d => d.DeptCode).ToInt() + 1).ToString() : $"{parentDept.DeptCode}01";
