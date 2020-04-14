@@ -92,7 +92,7 @@
         var tree = $('#tree-bizrole').jstree(true);
         var sel = tree.get_selected();
         if (sel.length) {
-            $("#EmpUid").val(sel[0]).next().val(tree.get_node(sel[0]).text);
+            $("#BizRoleUid").val(sel[0]).next().val(tree.get_node(sel[0]).text);
         }
     }
     var scripts = [null, null]
