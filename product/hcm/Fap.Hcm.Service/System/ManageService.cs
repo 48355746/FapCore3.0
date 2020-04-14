@@ -230,7 +230,7 @@ namespace Fap.Hcm.Service.System
         public IEnumerable<TreeDataView> GetBusinessRoleTree()
         {
             IEnumerable<FapBizRole> bizRoles = _rbacService.GetAllBizRole();
-            List<TreeDataView> oriList = bizRoles.Select(t => new TreeDataView { Id = t.Fid.ToString(), Pid = t.Pid.ToString(), Data = new { isRole = true }, Text = t.BizRoleName, Icon = "icon-folder orange ace-icon fa fa-users" }).ToList<TreeDataView>();
+            List<TreeDataView> oriList = bizRoles.Select(t => new TreeDataView { Id = t.Fid.ToString(), Pid = t.Pid?.ToString(), Data = new { isRole = true }, Text = t.BizRoleName, Icon = "icon-folder orange ace-icon fa fa-users" }).ToList<TreeDataView>();
 
             List<TreeDataView> tree = new List<TreeDataView>();
             TreeDataView treeRoot = new TreeDataView()

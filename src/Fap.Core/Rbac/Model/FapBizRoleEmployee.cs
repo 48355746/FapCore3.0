@@ -31,6 +31,15 @@ namespace Fap.Core.Rbac.Model
         /// </summary>
         [ComputedAttribute]
         public string BizRoleUidMC { get; set; }
+        /// <summary>
+        /// 部门
+        /// </summary>
+        public string DeptUid { get; set; }
+        /// <summary>
+        /// 部门 的显性字段MC
+        /// </summary>
+        [Computed]
+        public string DeptUidMC { get; set; }
 
     }
 

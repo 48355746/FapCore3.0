@@ -146,12 +146,7 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
         public IActionResult BizRole()
         {
             MultiJqGridViewModel model = new MultiJqGridViewModel();
-            JqGridViewModel bizRole = this.GetJqGridModel("Employee", (qs) =>
-            {
-                qs.InitWhere = "1=2";
-                qs.GlobalWhere = "IsMainJob=1";
-                qs.QueryCols = "Id,Fid,EmpCategory,EmpCode,EmpName,Gender,DeptUid,EmpPosition";
-            });
+            JqGridViewModel bizRole = this.GetJqGridModel("FapBizRoleEmployee");
 
             JqGridViewModel dynRole = this.GetJqGridModel("FapBizDynRole");
             model.JqGridViewModels.Add("FapBizRole", bizRole);

@@ -235,16 +235,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             ViewBag.Fid = fid;
             return View();
         }
-        /// <summary>
-        /// 动态角色设置
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public IActionResult BusinessDynRoleSet(string fid)
-        {
-            FapBizDynRole model = _dbContext.Get<FapBizDynRole>(fid);
-            return View(model);
-        }
+      
 
         /// <summary>
         /// 用户选择
