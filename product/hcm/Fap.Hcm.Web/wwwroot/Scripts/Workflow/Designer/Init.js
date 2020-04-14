@@ -19,7 +19,7 @@ window.FIELDLIST_URL = window.FIELDLIST_URL || '/Core/Api/FieldList';
 //子流程模板
 window.SUBPROCESS_URL = window.SUBPROCESS_URL || '/Workflow/Api/WfProcess';
 //申请人选择
-window.APPROVER_URL = window.APPROVER_URL || '/Workflow/Process/Approver';
+window.APPROVER_URL = window.window.APPROVER_URL || '/Workflow/Process/Approver';
 window.RESOURCES_PATH = window.RESOURCES_PATH || '../../../Content/mxGraph/resources';
 window.RESOURCE_BASE = window.RESOURCE_BASE || window.RESOURCES_PATH + '/grapheditor';
 window.STENCIL_PATH = window.STENCIL_PATH || '../../../Content/mxGraph/stencils';

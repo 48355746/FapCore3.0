@@ -34,3 +34,4 @@ bld/
 /product/hcm/Fap.Hcm.Web/wwwroot/upload/image
 *.xlsx
 *.docx
+/product/hcm/Fap.Hcm.Web/Properties/PublishProfiles/FolderProfile.pubxml

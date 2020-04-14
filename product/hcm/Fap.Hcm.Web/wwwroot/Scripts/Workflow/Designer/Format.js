@@ -2947,7 +2947,7 @@ BaseFormatPanel.prototype.addApplierOption = function (div) {
             return;
         }
         //事件
-        layer.open({
+        top.layer.open({
             type: 2,
             title: '审批人选择',
             shadeClose: true,
@@ -2956,14 +2956,14 @@ BaseFormatPanel.prototype.addApplierOption = function (div) {
             content: APPROVER_URL + "?billTable=" + encodeURIComponent(billTable), //iframe的url，
             btn: ['确定', '关闭'],
             success: function (layero, index) {
-                var iframeWin = window[layero.find('iframe')[0]['name']];
+                var iframeWin = parent.window[layero.find('iframe')[0]['name']];
                 var approvers = getParticipants();
                 if (approvers && approvers.length > 0) {
                     iframeWin.addApprovers(approvers);
                 }
             },
             yes: function (index, layero) {
-                var iframeWin = window[layero.find('iframe')[0]['name']];
+                var iframeWin = parent.window[layero.find('iframe')[0]['name']];
                 var approvers = iframeWin.getApprover();
                 while (tags.hasChildNodes()) {
                     tags.removeChild(tags.firstChild);
@@ -2973,7 +2973,7 @@ BaseFormatPanel.prototype.addApplierOption = function (div) {
                 });
                 participantsRefresh(participants, approvers);
 
-                layer.close(index);
+                top.layer.close(index);
             }
         });
     });
