@@ -29,7 +29,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         /// </summary>
         /// <returns></returns>
         // [OutputCache(CacheProfile = "DefaultCache")]
-        public IActionResult UserMgt()
+        public IActionResult User()
         {
             string strWhere = string.Empty;
             if (!_applicationContext.IsAdministrator)
@@ -49,7 +49,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         /// 角色管理 
         /// </summary>
         /// <returns></returns>
-        public IActionResult RoleMgt()
+        public IActionResult Role()
         {
             string initWhere = string.Empty;
             if (!_applicationContext.IsAdministrator)
@@ -76,16 +76,16 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             });
             return View(model);
         }
-        public IActionResult MenuMgt()
+        public IActionResult Menu()
         {
             JqGridViewModel model = this.GetJqGridModel("FapMenu");
             return View(model);
         }
         /// <summary>
-        /// 组织机构
+        /// 集团组织
         /// </summary>
         /// <returns></returns>
-        public IActionResult OrgMgt()
+        public IActionResult GroupOrganization()
         {
             MultiJqGridViewModel multiModel = new MultiJqGridViewModel();
             JqGridViewModel orgModel = this.GetJqGridModel("FapOrg");
@@ -130,7 +130,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         /// 在线用户
         /// </summary>
         /// <returns></returns>
-        public IActionResult OnlineUserMgt()
+        public IActionResult OnlineUser()
         {
             //30分钟之内状态为登陆
             JqGridViewModel model = this.GetJqGridModel("FapOnlineUser", (queryOption) =>
@@ -146,7 +146,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         /// 系统设置
         /// </summary>
         /// <returns></returns>
-        public IActionResult ConfigMgt()
+        public IActionResult Config()
         {
             return View();
         }
@@ -154,7 +154,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         /// 任务调度
         /// </summary>
         /// <returns></returns>
-        public IActionResult JobMgt()
+        public IActionResult Job()
         {
             JqGridViewModel model = this.GetJqGridModel("FapJob");
             return View(model);
