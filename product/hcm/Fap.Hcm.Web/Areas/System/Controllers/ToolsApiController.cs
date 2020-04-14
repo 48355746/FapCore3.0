@@ -130,13 +130,11 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
                     attachment.FileName = files[0].FileName;
                     attachment.FileType = files[0].ContentType;
                     string path = SysIO.Path.Combine(Environment.CurrentDirectory, "temp", Guid.NewGuid().ToString());
-                    SysIO.FileStream fs = SysIO.File.Create(path);
+                    using SysIO.FileStream fs = SysIO.File.Create(path);
 
                     files[0].CopyTo(fs);
                     string attFid = _fileService.UploadFile(fs, attachment);
                 }
-
-
             }
             catch (Exception ex)
             {
@@ -203,8 +201,8 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         {
             SysIO.File.WriteAllText(filePath, sql, Encoding.UTF8);
             ZipHelper zipHelper = new ZipHelper();
-            zipHelper.ZipMultiFiles(new[] { filePath }, filePath.Replace(".sql", ".zip"));
-            return Json(new ResponseViewModel { success = true, data = $"{FapPlatformConstants.TemporaryFolder}/{fileName.Replace(".sql", ".zip")}" });
+            zipHelper.ZipMultiFiles(new[] { filePath }, filePath.ReplaceIgnoreCase(".sql", ".zip"));
+            return Json(new ResponseViewModel { success = true, data = $"{FapPlatformConstants.TemporaryFolder}/{fileName.ReplaceIgnoreCase(".sql", ".zip")}" });
         }
 
         [HttpGet("ExportModelClass/{fid}")]

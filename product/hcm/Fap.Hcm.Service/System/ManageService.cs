@@ -86,7 +86,7 @@ namespace Fap.Hcm.Service.System
                 userGroup.UserGroupName = postData.Text;
                 vm.success = _rbacService.EditUserGroup(userGroup);
             }
-            else if (postData.Operation == "move_node")
+            else if (postData.Operation ==TreeNodeOper.MOVE_NODE)
             {
                 var userGroup = _dbContext.Get<FapUserGroup>(postData.Id);
                 userGroup.Pid = postData.Parent;
@@ -157,7 +157,7 @@ namespace Fap.Hcm.Service.System
                 }
                 else
                 {
-                    if (!item.Id.Equals(FapPlatformConstants.CommonUserRoleFid))
+                    if (!item.Id.EqualsWithIgnoreCase(FapPlatformConstants.CommonUserRoleFid))
                     {
                         emptyGroup.Add(item);
                     }
@@ -194,7 +194,7 @@ namespace Fap.Hcm.Service.System
                 roleGroup.RoleGroupName = postData.Text;
                 vm.success = _rbacService.EditRoleGroup(roleGroup);
             }
-            else if (postData.Operation == "move_node")
+            else if (postData.Operation ==TreeNodeOper.MOVE_NODE)
             {
                 var roleGroup = _dbContext.Get<FapRoleGroup>(postData.Id);
                 roleGroup.Pid = postData.Parent;
@@ -270,7 +270,7 @@ namespace Fap.Hcm.Service.System
                 bizRole.BizRoleName = postData.Text;
                 vm.success = _rbacService.EditBizRole(bizRole);
             }
-            else if (postData.Operation == "move_node")
+            else if (postData.Operation ==TreeNodeOper.MOVE_NODE)
             {
                 var bizRole = _dbContext.Get<FapBizRole>(postData.Id);
                 bizRole.Pid = postData.Parent;
@@ -702,7 +702,7 @@ namespace Fap.Hcm.Service.System
                         Text = menuColumn.Description,
                         Icon = "fa fa-table"
                     };
-                    if (!menuColumn.GridColumn.Trim().Equals("*"))
+                    if (!menuColumn.GridColumn.Trim().EqualsWithIgnoreCase("*"))
                     {
                         var colNames = menuColumn.GridColumn.SplitComma();
                         columns = columns.Where(c => colNames.Contains(c.ColName, new FapStringEqualityComparer()));

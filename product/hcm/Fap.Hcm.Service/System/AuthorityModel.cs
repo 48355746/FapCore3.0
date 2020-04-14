@@ -27,58 +27,51 @@ namespace Fap.Hcm.Service.System
         public IList<string> UserUids
         {
             get;
-            set;
-        }
+        } = new List<string>();
         /// <summary>
         /// 用户组Uid
         /// </summary>
         public IList<string> UserGroupUids
         {
             get;
-            set;
-        }
+        } = new List<string>();
         /// <summary>
         /// 菜单Uid
         /// </summary>
         public IList<string> MenuUids
         {
             get;
-            set;
 
-        }
+        } = new List<string>();
         /// <summary>
         /// 部门Uid
         /// </summary>
         public IList<string> OrgDeptUids
         {
             get;
-            set;
-
-        }
+        } = new List<string>();
         /// <summary>
         /// 实体列Uid
         /// </summary>
         public IList<GridCols> ColumnUids
         {
             get;
-            set;
-        }
+        } = new List<GridCols>();
         /// <summary>
         /// 报表
         /// </summary>
         public IList<string> RptUids
         {
             get;
-            set;
-        }
+        } = new List<string>();
         /// <summary>
         /// 按钮
         /// </summary>
-        public IList<string> BtnUids { get; set; }
+        public IList<string> BtnUids { get;} = new List<string>();
         /// <summary>
         /// 权限角色
         /// </summary>
-        public IList<string> PRoleUids { get; set; }
+        public IList<string> PRoleUids { get;} = new List<string>();
     }
     public class GridCols
     {

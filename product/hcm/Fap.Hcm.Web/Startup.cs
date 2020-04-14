@@ -73,6 +73,8 @@ namespace Fap.Hcm.Web
             services.AddControllersWithViews(options=> {
                 options.Filters.Add(typeof(FapExceptionFilter));
             }).AddNewtonsoftJson().AddRazorRuntimeCompilation();
+            //◊‘∂Ø…Í«ÎSSL
+            services.AddLetsEncrypt();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

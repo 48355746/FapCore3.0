@@ -177,7 +177,7 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
             //var updateTransitionStates = transitionIns.Select(a => $"<update id=\"{a.TransitionNodeId}\" state=\"Completed\" tooltips=\"\"/>");
 
             ViewBag.UpdateXml = $"<process>{string.Join("", updateActivityStates)}</process>";
-            ViewBag.Xml = diagramInstance.XmlContent.Replace("workflowProcess", "mxGraphModel");
+            ViewBag.Xml = diagramInstance.XmlContent.Replace("workflowProcess", "mxGraphModel",StringComparison.OrdinalIgnoreCase);
             return View();
         }
         /// <summary>

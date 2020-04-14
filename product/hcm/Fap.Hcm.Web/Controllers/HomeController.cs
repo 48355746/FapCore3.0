@@ -78,7 +78,7 @@ namespace Fap.Hcm.Web.Controllers
             //_applicationContext.CurrentRoleUid =FapPlatformConstants.CommonUserRoleFid;
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
-                claimsPrincipal, authenticationProperties);
+                claimsPrincipal, authenticationProperties).ConfigureAwait(false);
             return Redirect();
 
             LocalRedirectResult CheckUser()

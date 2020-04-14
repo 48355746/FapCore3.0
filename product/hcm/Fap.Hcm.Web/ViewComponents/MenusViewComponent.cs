@@ -146,7 +146,7 @@ namespace Fap.Hcm.Web.ViewComponents
                     }
                 }
                 //重新增加系统菜单
-                IEnumerator<FapMenu> ms = _appDomain.MenuSet.Where(m => m.MenuCode.StartsWith("099")).OrderBy(m => m.MenuOrder).GetEnumerator();
+                IEnumerator<FapMenu> ms = _appDomain.MenuSet.Where(m => m.MenuCode.StartsWith("099",System.StringComparison.OrdinalIgnoreCase)).OrderBy(m => m.MenuOrder).GetEnumerator();
                 while (ms.MoveNext())
                 {
                     FapMenu fm = ms.Current;
@@ -193,12 +193,12 @@ namespace Fap.Hcm.Web.ViewComponents
                 foreach (var menu in threeMenus)
                 {
                     //找到所在的模块
-                    var module = menus.Find(m => menu.MenuCode.StartsWith(m.Value));
+                    var module = menus.Find(m => menu.MenuCode.StartsWith(m.Value,System.StringComparison.OrdinalIgnoreCase));
                     if (module != null && module.ChildItems != null && module.ChildItems.Count > 0)
                     {
                         foreach (MenuItem item in module.ChildItems)
                         {
-                            if (menu.MenuCode.StartsWith(item.Value) && item.Value.Length == 5)
+                            if (menu.MenuCode.StartsWith(item.Value,System.StringComparison.OrdinalIgnoreCase) && item.Value.Length == 5)
                             {
                                 string mx= _multiLangService.GetMultiLangValue(MultiLanguageOriginEnum.Menu, menu.Fid);
                                 MenuItem fmm = new MenuItem { Text = mx, Value = menu.MenuCode, NavigateUrl = Url.Content(menu.MenuUrl), ToolTip = menu.BadgePlusClass };

@@ -502,7 +502,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             {
                 foreach (var log in ls)
                 {
-                    SynchResult result = await _dataHandler.PostEventData(log.RemoteUrl, log.SynData);
+                    SynchResult result = await _dataHandler.PostEventData(log.RemoteUrl, log.SynData).ConfigureAwait(false);
                     if (!result.Success)
                     {
                         log.SynState = 0;

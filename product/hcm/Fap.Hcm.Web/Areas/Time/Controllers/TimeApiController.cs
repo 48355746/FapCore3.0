@@ -21,11 +21,9 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
     public class TimeApiController : FapController
     {
         private readonly ITimeService _timeService;
-        private readonly IGridFormService _gridFormService;
         public TimeApiController(IServiceProvider serviceProvider) : base(serviceProvider)
         {
             _timeService = serviceProvider.GetService<ITimeService>();
-            _gridFormService = serviceProvider.GetService<IGridFormService>();
         }
         [HttpPost("Holiday")]
         public JsonResult PostHoliday(HolidayViewModel holiday)

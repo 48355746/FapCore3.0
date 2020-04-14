@@ -21,7 +21,7 @@ namespace Fap.Hcm.Web.ViewComponents
         public async Task<IViewComponentResult> InvokeAsync(string bn, string fid)
         {
             var history = _dataAccessor.QueryDataHistory(bn, fid);
-            return await Task.FromResult(View(history));
+            return await Task.FromResult(View(history)).ConfigureAwait(false);
         }
     }
     public class QueryProgramViewComponent:ViewComponent
@@ -42,7 +42,7 @@ namespace Fap.Hcm.Web.ViewComponents
             var qPlist = _dataAccessor.QueryWhere<CfgQueryProgram>(where, param);
             ViewBag.GrdId = gid;
             ViewBag.Tn = tn;
-            return await Task.FromResult(View(qPlist));
+            return await Task.FromResult(View(qPlist)).ConfigureAwait(false);
         }
     }
     public class ConditionEditorViewComponent : ViewComponent
@@ -50,7 +50,7 @@ namespace Fap.Hcm.Web.ViewComponents
         public async Task<IViewComponentResult> InvokeAsync(string tableName)
         {
             ViewBag.TableName = tableName;
-            return await Task.FromResult(View());
+            return await Task.FromResult(View()).ConfigureAwait(false);
         }
     }
 }

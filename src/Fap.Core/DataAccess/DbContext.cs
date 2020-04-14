@@ -62,8 +62,10 @@ namespace Fap.Core.DataAccess
             string ParseFapSql(string sqlOri, bool withMC = false, bool withId = false)
             {
                 _logger.LogTrace($"wrap前的sql:{sqlOri}");
-                FapSqlParser parse = new FapSqlParser(_fapPlatformDomain, sqlOri, withMC, withId);
-                parse.CurrentLang = _applicationContext.Language.ToString();
+                FapSqlParser parse = new FapSqlParser(_fapPlatformDomain, sqlOri, withMC, withId)
+                {
+                    CurrentLang = _applicationContext.Language.ToString()
+                };
                 var sql = parse.ParserSqlStatement();
                 _logger.LogTrace($"wrap后的sql:{sql}");
                 return sql;
@@ -2206,10 +2208,12 @@ namespace Fap.Core.DataAccess
             {
                 dynamicParameters.Add(item.Key, item.Value);
             }
-            PageInfo<T> page = new PageInfo<T>();
-            page.PageSize = pageable.PageSize;
-            page.TotalCount = ExecuteScalar<int>(sqls[1], dynamicParameters);
-            page.Items = Query<T>(sqls[0], dynamicParameters, true);
+            PageInfo<T> page = new PageInfo<T>
+            {
+                PageSize = pageable.PageSize,
+                TotalCount = ExecuteScalar<int>(sqls[1], dynamicParameters),
+                Items = Query<T>(sqls[0], dynamicParameters, true)
+            };
             page.MaxIdValue = page.Items.Max(a => a.Id);
             page.CurrentPage = pageable.CurrentPage;
             string statSql = StatisticsSql(pageable);
@@ -2242,9 +2246,11 @@ namespace Fap.Core.DataAccess
             {
                 dynamicParameters.Add(item.Key, item.Value);
             }
-            PageInfo<dynamic> page = new PageInfo<dynamic>();
-            page.PageSize = pageable.PageSize;
-            page.TotalCount = ExecuteScalar<int>(sqls[1], dynamicParameters);
+            PageInfo<dynamic> page = new PageInfo<dynamic>
+            {
+                PageSize = pageable.PageSize,
+                TotalCount = ExecuteScalar<int>(sqls[1], dynamicParameters)
+            };
             FapSqlParser parse = new FapSqlParser(_fapPlatformDomain, sqls[0], true)
             {
                 IsGridQuery = true,
@@ -2458,9 +2464,11 @@ namespace Fap.Core.DataAccess
             {
                 IDictionary<string, object> currRow = currentData as IDictionary<string, object>;
                 currRow.TryGetValue(FapDbConstants.FAPCOLUMN_FIELD_UpdateDate, out object datetime);
-                DataChangeHistory dcHistory = new DataChangeHistory();
-                dcHistory.ChangeDateTime = datetime.ToStringOrEmpty();
-                dcHistory.DataName = table.TableComment;
+                DataChangeHistory dcHistory = new DataChangeHistory
+                {
+                    ChangeDateTime = datetime.ToStringOrEmpty(),
+                    DataName = table.TableComment
+                };
                 if (preData == null)
                 {
                     dcHistory.ChangeType = DataChangeTypeEnum.ADD;

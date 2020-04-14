@@ -75,6 +75,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="McMaster.AspNetCore.LetsEncrypt" Version="0.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="3.0.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.6">

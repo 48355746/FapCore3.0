@@ -306,10 +306,12 @@ namespace Fap.Core.Infrastructure.Interceptor
             EventDataTracker tracker = _provider.GetService<EventDataTracker>();
             if (tracker != null)
             {
-                EventData data = new EventData();
-                data.ChangeDataType = oper.ToString();
-                data.EntityName = TableName;
-                data.ChangeData = list;
+                EventData data = new EventData
+                {
+                    ChangeDataType = oper.ToString(),
+                    EntityName = TableName,
+                    ChangeData = list
+                };
                 tracker.TrackEventData(data);
             }
         }
