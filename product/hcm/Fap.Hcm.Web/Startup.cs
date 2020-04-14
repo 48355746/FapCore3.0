@@ -74,9 +74,13 @@ namespace Fap.Hcm.Web
             {
                 options.Filters.Add(typeof(FapExceptionFilter));
             }).AddNewtonsoftJson().AddRazorRuntimeCompilation();
-            //自动申请SSL
-            services.AddLetsEncrypt();
-
+            IWebHostEnvironment env = services.BuildServiceProvider()
+                                              .GetService<IWebHostEnvironment>();
+            if (env.IsProduction())
+            {
+                //自动申请SSL
+                services.AddLetsEncrypt();
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
