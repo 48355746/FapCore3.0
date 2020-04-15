@@ -22046,7 +22046,7 @@ input.typeahead.scrollable ~ .tt-dropdown-menu {
     font-size: 13px;
     font-weight: normal;
     vertical-align: baseline;
-    white-space: nowrap;
+    /*white-space: nowrap;*/
     background-color: #91b8d0;
     color: #FFF;
     text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.15);
