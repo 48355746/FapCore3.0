@@ -1,4 +1,84 @@
 ﻿
-@*
-    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-*@
+<div class="form-inline">
+    <label class="inline">
+        <input type="checkbox" class="ace" id="chkorgdept" />
+        <span class="lbl"> 部门同事之间考核</span>
+    </label>
+    <input type="number" class="input-small" id="orgdeptWeights" placeholder="权重" />
+</div>
+<div class="space-2"></div>
+<div class="form-inline">
+    <label class="inline">
+        <input type="checkbox" class="ace" id="chkLeadership" />
+        <span class="lbl"> 直属领导考核</span>
+    </label>
+    <input type="number" class="input-small" id="leadershipWeights" placeholder="权重" />
+</div>
+<div class="space-2"></div>
+<div class="form-inline">
+    <label class="inline">
+        <input type="checkbox" class="ace" id="chkCustom" />
+        <span class="lbl"> 自定义</span>
+    </label>
+    <input type="number" class="input-small" id="customWeights" placeholder="权重" />
+</div>
+<div class="space-2"></div>
+<div class="inline">
+    <input type="text" name="tags" id="custom-examiner-tags" value="" placeholder="自定义考核人 ..." />
+</div>
+<script>
+    var customExaminer = [];
+
+    var tag_input = $('#custom-examiner-tags');
+    tag_input.tag({ placeholder: tag_input.attr('placeholder') });
+
+    tag_input.on("removed", function (args, value) {
+        customExaminer = $.grep(customExaminer, function (d) {
+            return d.value === value;
+        })
+    });
+    $(".inline").find("input[type='text']").on(ace.click_event, function () {
+        bootboxWindow0($.lang("examiner_selector", "考核人选择"), "/Assess/Manage/ObjectivesSelector", {
+            select: {
+                label: $.lang("add_select", "添加选中项"),
+                className: "btn-primary btn-link",
+                callback: function () {
+                    var rows = getSelectData();
+                    var $tag_obj = tag_input.data('tag');
+                    if (rows != null) {
+                        $.msg("已添加");
+                        $.each(rows, function (i, d) {
+                            var v = d.EmpName + "(" + d.EmpCode + ")";
+                            $tag_obj.add(v);
+                            customExaminer.push({ key: d.Fid, value: v });
+                        })
+                    }
+                    return false;
+                }
+            }
+        }, { objType: "Employee" });
+
+    });
+
+
+
+    function addExaminer(objectives) {
+        var data = { Objectives: objectives, }
+        if ($("#chkorgdept").is(":checked")) {
+            data.isorgdept = true;
+            data.deptWeights = $("#orgdeptWeights").val();
+        }
+        if ($("#chkLeadership").is(":checked")) {
+            data.isleadership = true;
+            data.leadershipWeights = $("#leadershipWeights").val();
+        }
+        if ($("#chkCustom").is(":checked")) {
+            data.iscustom = true;
+            data.customWeights = $("#customWeights").val();
+            data.customExaminers = $.map(customExaminer, function (d) {
+                return d.key;
+            })
+        }
+        return data;
+    }
+</script>

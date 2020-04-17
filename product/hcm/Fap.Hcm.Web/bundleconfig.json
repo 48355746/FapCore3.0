@@ -89,6 +89,7 @@
       "wwwroot/Content/js/jquery-ui.custom.js",
       "wwwroot/Content/js/jquery.ui.touch-punch.js",
       "wwwroot/Content/js/jquery.nestable.js",
+      "wwwroot/Content/js/bootstrap-tag.js",
       "wwwroot/Scripts/Fap/common.js", //fap常用js
       "wwwroot/Scripts/Fap/utils.js", //fap常用js
       "wwwroot/Content/js/date-time/bootstrap-datetimepicker.js",

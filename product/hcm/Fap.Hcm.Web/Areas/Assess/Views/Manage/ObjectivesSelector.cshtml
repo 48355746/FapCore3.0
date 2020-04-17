@@ -1,0 +1,33 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+<fap-grid id="objectives" grid-model="Model" wrapper="modal-body" register-authority="false" view-records="true"  multi-select="true"  shrink-fit="false"></fap-grid>
+<script>
+    function addSelectAll(schemeUid, objective) {
+        var jqPostData = $('#grid-objectives').jqGrid("getGridParam", "postData");
+        let filters = jqPostData.filters;      
+        addObjectives({ schemeUid: schemeUid, objective: objective, filter: filters });
+    }
+    function addSelectItem(schemeUid, objective) {
+        var rds = getSelectedRows('grid-objectives');
+        if (rds == null) {
+            return;
+        }
+        let fids= $.map(rds, function (d) {
+            return d.Fid;
+        })
+        let filters = { "groupOp": "AND", "rules": [{ "field": "Fid", "op": "in", "data": fids.join() }] }
+        addObjectives({ schemeUid: schemeUid, objective: objective, filter: JSON.stringify(filters) });
+    }
+    function addObjectives(data) {
+        $.post(basePath + "/Assess/Api/Objectives", data, function (rv) {
+            if (rv.success) {
+                refreshAssessObjectives();
+                $.msg(rv.msg);
+            } else {
+                bootbox.alert(rv.msg);
+            }
+        })
+    }
+    function getSelectData() {
+        return getSelectedRows("grid-objectives");
+    }
+</script>

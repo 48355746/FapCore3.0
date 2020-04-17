@@ -1,4 +1,11 @@
-﻿
-@*
-    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+<fap-grid id="assess-objectives" grid-model="Model" wrapper="modal-body" register-authority="false" view-records="true"  multi-select="true" oper-delete="true" shrink-fit="false"></fap-grid>
+
+<script>
+    function refreshAssessObjectives() {
+        refreshGrid("grid-assess-objectives");
+    }
+    function getObjectives() {
+        return getSelectedRows("grid-assess-objectives");
+    }
+</script>

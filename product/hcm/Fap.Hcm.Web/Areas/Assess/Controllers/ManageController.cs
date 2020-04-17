@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Fap.AspNetCore.Infrastructure;
 using Fap.AspNetCore.ViewModel;
 using Microsoft.AspNetCore.Mvc;
+using Fap.Core.Extensions;
 
 namespace Fap.Hcm.Web.Areas.Assess.Controllers
 {
@@ -30,58 +31,61 @@ namespace Fap.Hcm.Web.Areas.Assess.Controllers
         /// 考核指标
         /// </summary>
         /// <param name="fid">方案Uid</param>
-        /// <param name="prm">方案名称</param>
+        /// <param name="schemeName">方案名称</param>
         /// <returns></returns>
-        public ActionResult KPI(string fid, string prm)
+        public IActionResult KPI(string fid, string schemeName)
         {
             JqGridViewModel model = this.GetJqGridModel("PerfKPIs", qs =>
-                 {
-                     qs.InitWhere = "ProgramUid=@PrmUid";
-                     qs.AddParameter("PrmUid",
-                         fid);
-                 });
-            model.TempData.Add("prmUid", fid);
-            model.TempData.Add("prmName", prm);
-            ViewBag.PrmUid = fid;
-            ViewBag.PrmName = prm;
-            return View(model);
+            {
+                qs.GlobalWhere = "ProgramUid=@PrmUid";
+                qs.AddParameter("PrmUid", fid);
+                qs.AddDefaultValue("ProgramUid", fid);
+                qs.AddDefaultValue("ProgramUidMC", schemeName);
+            });
+            return PartialView(model);
+        }
+        public IActionResult KPIType(string fid, string schemeName)
+        {
+            var model = GetJqGridModel("PerfKPIType", qs =>
+            {
+                qs.GlobalWhere = "PerfProgram=@Scheme";
+                qs.AddParameter("Scheme", fid);
+                qs.AddDefaultValue("PerfProgram", fid);
+                qs.AddDefaultValue("PerfProgramMC", schemeName);
+            });
+            return PartialView(model);
         }
         /// <summary>
         /// 考核对象
         /// </summary>
-        /// <param name="id">方案UID</param>
-        /// <param name="prm">方案名称</param>
+        public ActionResult Objectives(string fid)
+        {            
+            JqGridViewModel model = this.GetJqGridModel("PerfObject", qs =>
+            {
+                qs.InitWhere = "ProgramUid=@PrmUid";
+                qs.AddParameter("PrmUid",fid);
+            });
+            return PartialView(model);                     
+        }
+        /// <summary>
+        /// 考核对象选择
+        /// </summary>
+        /// <param name="objType">对象类型</param>
         /// <returns></returns>
-        public ActionResult Objectives(string id, string prm)
+        public ActionResult ObjectivesSelector(string objType)
         {
-            //PerfObjectType ot = _perfService.GetObjectTypeByPrmUid(id);
-            //string objTableName = "Employee";
-            //string displayCols = "EmpCategory,EmpCode,EmpName,DeptUid,EmpPosition";
-            //if (ot != null && ot.Entity.IsNotNullOrEmpty())
-            //{
-            //    objTableName = ot.Entity;
-            //    displayCols = ot.DisplayProp;
-            //}
-            //MultiJqGridViewModel model = new MultiJqGridViewModel();
-
-            //JqGridViewModel jmObject = this.GetJqGridModel("PerfObject", qs =>
-            //{
-            //    qs.InitWhere = "ProgramUid=@PrmUid";
-            //    qs.Parameters.Add(new Parameter { ParamKey = "PrmUid", ParamValue = id });
-            //});
-            //model.JqGridViewModels.Add("PerfObject", jmObject);
-
-            //JqGridViewModel jmOri = this.GetJqGridModel(objTableName, qs =>
-            //{
-            //    qs.GlobalWhere = "fid not in (select objUid from  perfobject where ProgramUid=@PrmUid and " + _dataAccessor.ValidConditions() + ")";
-            //    qs.Parameters.Add(new Parameter { ParamKey = "PrmUid", ParamValue = id });
-            //    qs.QueryCols = "Id,Fid," + displayCols;
-            //});
-            //model.JqGridViewModels.Add(objTableName, jmOri);
-            //model.TempData.Add("prmUid", id);
-            //model.TempData.Add("prmName", prm);
-            //return View(model);
-            return View();
+            string tn = "Employee";
+            string cols = "Id,Fid,EmpCode,EmpName,EmpPinYin,EmpCategory,DeptUid";
+            if (objType.EqualsWithIgnoreCase("OrgDept"))
+            {
+                tn = "OrgDept";
+                cols = "Id,Fid,DeptCode,DeptName,FullName,DeptType,DeptManager,Director";
+            }
+            JqGridViewModel model = this.GetJqGridModel(tn, qs =>
+            {
+                qs.QueryCols = cols;
+            });
+            return PartialView(model);
         }
         /// <summary>
         /// 考核方式
@@ -89,7 +93,25 @@ namespace Fap.Hcm.Web.Areas.Assess.Controllers
         /// <returns></returns>
         public IActionResult Measure()
         {
-            return View();
+            return PartialView();
+        }
+        /// <summary>
+        /// 考核人
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult Examiner(string schemeUid,string modelUid)
+        {
+            JqGridViewModel model = this.GetJqGridModel("PerfModel", (q) =>
+            {
+                q.InitWhere = "ProgramUid=@PrmUid";
+                q.AddParameter("PrmUid", schemeUid);
+            });
+            return PartialView(model);
+        }
+        public IActionResult ScoreModel()
+        {
+            var model = GetJqGridModel("PerfScoreModel");
+            return PartialView(model);
         }
         /// <summary>
         /// 考核打分

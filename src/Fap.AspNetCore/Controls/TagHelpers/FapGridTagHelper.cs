@@ -527,6 +527,7 @@ namespace Fap.AspNetCore.Controls.TagHelpers
             {
                 ButtonID = btnId,
                 ButtonName = "表格按钮",
+                Enabled=1,
                 ButtonType = FapMenuButtonType.Grid,
                 Description = _dbContext.Table(querySet.TableName).TableComment
             };

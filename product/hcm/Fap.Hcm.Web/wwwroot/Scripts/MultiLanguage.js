@@ -136,7 +136,18 @@ var MultiLangHelper = (function () {
       'gap_analysis': { 'ZhCn': '差异比对', 'ZhTW': '', 'En': '', 'Ja': '' },
       'all_insurance_item': { 'ZhCn': '所有保险项', 'ZhTW': '', 'En': '', 'Ja': '' },
       'reserved_insurance_item': { 'ZhCn': '保留保险项', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'paycase_formula': { 'ZhCn': '薪资套公式', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'paycase_formula': { 'ZhCn': '薪资套公式', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'kpi': { 'ZhCn': '考核指标', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'kpi_type': { 'ZhCn': '考核指标类型', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'score_model': { 'ZhCn': '评分方式', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'objectives': { 'ZhCn': '考核对象', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'objectives_selector': { 'ZhCn': '考核对象选择', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'select': { 'ZhCn': '选择选中项', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'select_all': { 'ZhCn': '选择当前所有', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'add_objectives': { 'ZhCn': '添加考核对象', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'add_select': { 'ZhCn': '添加选中项', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'add_all': { 'ZhCn': '添加当前所有', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'set_examiner': { 'ZhCn': '设置考核人', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

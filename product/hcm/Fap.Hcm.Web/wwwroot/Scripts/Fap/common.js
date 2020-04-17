@@ -36,10 +36,13 @@ var layerWindow = function (url) {
     layer.full(index);
 };
 //打开模态页面
-var bootboxWindow = function (title, url, buttons, data, callback) {
+var bootboxWindow = function (title, url, buttons, data, callback,size) {
     if (buttons === undefined || buttons === null) {
         buttons = {
         };
+    }
+    if (size === undefined || size === null) {
+        size = "large";
     }
     if ($.isFunction(data)) {
         callback = data;
@@ -48,7 +51,7 @@ var bootboxWindow = function (title, url, buttons, data, callback) {
     var dialog = bootbox.dialog({
         title: title,
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
-        size: "large",
+        size: size,
         footer: false,
         buttons: buttons       
     });
@@ -65,7 +68,13 @@ var bootboxWindow = function (title, url, buttons, data, callback) {
         });
     });
 };
-
+//打开模态页面
+var bootboxWindow0 = function (title, url, buttons, data, callback) {
+    bootboxWindow(title, url, buttons, data, callback,"");
+};
+var bootboxWindow1 = function (title, url, buttons, data, callback) {
+    bootboxWindow(title, url, buttons, data, callback, "fullscreen");    
+};
 //利用window.open实现post方式的参数传递
 //page 是要跳转的页面URL
 //data 是参数， 字符串或者数组
