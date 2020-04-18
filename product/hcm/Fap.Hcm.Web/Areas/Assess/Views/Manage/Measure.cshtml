@@ -20,6 +20,7 @@
         <input type="checkbox" class="ace" id="chkCustom" />
         <span class="lbl"> 自定义</span>
     </label>
+    <input type="text" class="input-large" id="customModel" placeholder="考核方式名称" />
     <input type="number" class="input-small" id="customWeights" placeholder="权重" />
 </div>
 <div class="space-2"></div>
@@ -59,26 +60,32 @@
         }, { objType: "Employee" });
 
     });
-
-
-
-    function addExaminer(objectives) {
-        var data = { Objectives: objectives, }
+    function addExaminer(objectives, schemeUid) {
+        var data = { Objectives: objectives, schemeUid: schemeUid }
         if ($("#chkorgdept").is(":checked")) {
             data.isorgdept = true;
+            data.deptModelName = "部门同事之间考核";
             data.deptWeights = $("#orgdeptWeights").val();
         }
         if ($("#chkLeadership").is(":checked")) {
             data.isleadership = true;
+            data.leadshipModelName = "直属领导考核";
             data.leadershipWeights = $("#leadershipWeights").val();
         }
         if ($("#chkCustom").is(":checked")) {
             data.iscustom = true;
+            data.customModelName = $("#customModel").val();
             data.customWeights = $("#customWeights").val();
             data.customExaminers = $.map(customExaminer, function (d) {
                 return d.key;
             })
         }
-        return data;
+        $.post(basePath + "/Assess/Api/Examiner", { examiner: data }, function (rv) {
+            if (rv.success) {
+                $.msg(rv.msg);
+            } else {
+                bootbox.alert(rv.msg);
+            }
+        })
     }
 </script>

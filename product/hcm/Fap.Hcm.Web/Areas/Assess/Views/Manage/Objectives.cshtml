@@ -1,7 +1,39 @@
 ﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
-<fap-grid id="assess-objectives" grid-model="Model" wrapper="modal-body" register-authority="false" view-records="true"  multi-select="true" oper-delete="true" shrink-fit="false"></fap-grid>
+@using Fap.AspNetCore.Controls.JqGrid
+@{ 
+    Column column = new Column("oper");
+    column.SetLabel("考核人");
+    column.SetSortable(false);
+    column.SetWidth(80);
+
+}
+<fap-grid id="assess-objectives" attach-column="column" grid-model="Model" wrapper="modal-body"
+          register-authority="false" view-records="true" 
+          on-grid-complete="initExaminerMenu"
+          multi-select="true" oper-delete="true" shrink-fit="false"></fap-grid>
 
 <script>
+     /**
+     * 初始化列表菜单
+     * */
+    function initExaminerMenu()
+    {
+        var ids = $("#grid-assess-objectives").jqGrid('getDataIDs');
+        for (var i = 0; i < ids.length; i++) {
+            var de = '';
+            var cl = ids[i];
+            var ret = jQuery('#grid-assess-objectives').jqGrid('getRowData', cl);
+            var fid = ret.ObjUid; 
+            var schemeUid = ret.ProgramUid;
+            de += "<a  href='javascript:void(0)' onclick='showExaminers(\"" + fid + "\",\"" + schemeUid + "\")'>"+$.lang("view","查看")+"</a>  ";
+             
+            jQuery('#grid-assess-objectives').jqGrid('setRowData', ids[i], { oper: de });
+        }
+    }
+    function showExaminers(objUid, schemeUid) {
+        bootboxWindow0($.lang("examiner", "考核人"), basePath + "/Assess/Manage/Examiner"
+            , null, { schemeUid: schemeUid, objUid: objUid });
+    }
     function refreshAssessObjectives() {
         refreshGrid("grid-assess-objectives");
     }

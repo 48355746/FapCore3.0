@@ -32,6 +32,9 @@
                     </a>
                 </div>
                 <div class="widget-toolbar">
+                    <fap-button id="btnPerfCopy" content="复制方案" btn-tag="link" icon-before="fa fa-clipboard"></fap-button>
+                </div>
+                <div class="widget-toolbar">
                     <fap-button id="btnStart" content="启动" data-status="Starting" btn-tag="link" icon-before="fa fa-play"></fap-button>
                     <fap-button id="btnArchive" content="归档" data-status="Filed" btn-tag="link" icon-before="fa fa-file-archive-o"></fap-button>
                     <fap-button id="btnClose" content="关闭" data-status="Closed" btn-tag="link" icon-before="fa fa-times"></fap-button>
@@ -39,7 +42,6 @@
                 <div class="widget-toolbar no-border">
                     <fap-button id="btnPerfKpi" content="考核指标" btn-tag="link" icon-before="fa fa-list"></fap-button>
                     <fap-button id="btnPerfObject" content="考核对象" btn-tag="link" icon-before="fa fa-users"></fap-button>
-                    <fap-button id="btnPerfModel" content="考核方式" btn-tag="link" icon-before="fa fa-cogs"></fap-button>
                 </div>
             </div>
             <div class="widget-body">
@@ -142,7 +144,7 @@
                                         addSelectItem(rd.Fid, rd.ObjectType)
                                         return false;
                                     }
-                                }  
+                                }
                             }, { objType: rd.ObjectType });
                             return false;
                         }
@@ -161,10 +163,9 @@
                                     className: "btn-primary btn-link",
                                     callback: function () {
                                         var objs = $.map(objectives, function (d) {
-                                            return d.Fid;
+                                            return d.ObjUid;
                                         });
-                                        var data = addExaminer(objs);
-                                        alert(JSON.stringify(data));
+                                        addExaminer(objs,rd.Fid);
                                     }
                                 }
                             });
@@ -174,97 +175,54 @@
                 }, { fid: rd.Fid});
 
             })
-            //考核方式
-            $("#btnPerfModel").on(ace.click_event, function () {
-                var gr = jQuery("#grid-scheme").jqGrid('getGridParam', 'selrow');
-                if (gr === null) {
-                    bootbox.alert("请选中一个方案查看");
-                    return;
-                }
-                var rowData = jQuery("#grid-scheme").getRowData(gr);
-                var prm = encodeURIComponent(rowData.PrmName);
-                //window.open("@Url.Content("~/Performance/Perf/PerfModel/")" + rowData.Fid + "?prm=" + prm, "_blank");
-                openNewWindow("@Url.Content("~/Performance/Perf/PerfModel/")" + rowData.Fid + "?prm=" + prm);
+
+            $("#btnStart").on(ace.click_event, function () {
+                let status = $(this).data("status");
+                setSchemeStatus(status);
             })
-            $("#btnScoreResult").on(ace.click_event, function () {
-                var gr = jQuery("#grid-scheme").jqGrid('getGridParam', 'selrow');
-                if (gr === null) {
-                    bootbox.alert("请选中一个方案查看");
-                    return;
-                }
-                var rowData = jQuery("#grid-scheme").getRowData(gr);
-                //Result	成绩公布            Filed	已归档            Closed	已关闭            Ended	已结束
-                //Init	初始化            Issued 	发布            Starting	考核中
-                if (rowData.PrmStatus == "Init" || rowData.PrmStatus == "Issued" || rowData.PrmStatus == "Starting") {
-                    bootbox.alert("考核结果还没有生成");
-                    return;
-                }
-                openNewWindow("@Url.Content("~/Performance/Perf/ScoreResult/")" + rowData.Fid);
+            $("#btnArchive").on(ace.click_event, function () {
+                let status = $(this).data("status");
+                setSchemeStatus(status);
             })
-            //启动
-            $("[data-action=setprmstatus]").off(ace.click_event).on(ace.click_event, function (e) {
-                e.preventDefault();
-                var prmstatus = $(this).data("status");
-                var gr = jQuery("#grid-scheme").jqGrid('getGridParam', 'selrow');
-                if (gr === null) {
-                    bootbox.alert("请选中一个方案查看");
+            $("#btnClose").on(ace.click_event, function () {
+                let status = $(this).data("status");
+                setSchemeStatus(status);
+            })
+            var setSchemeStatus = function (status) {
+                var rows = getSelectedRows("grid-scheme");
+                if (rows === null) {
                     return;
                 }
-                var grs = getSelectedRows("grid-scheme");// jQuery("#grid-perfprogram").jqGrid('getGridParam', 'selarrrow');
-                if (grs === null)
-                {
-                    return;
-                }
-                var fids = [];
-                $.each(grs, function (i, d) {
-                    //var rowData = $("#grid-perfprogram").getRowData(d);
-                    fids.push(d.Fid);
-                })
-                $.post("@Url.Content("~/api/Perf/SetPerfPrmStatus/")", { status: prmstatus, prms: fids }, function (rv) {
-                    if (rv.success == true) {
-                        var ref = $('#tree-schemecategory').jstree(true);
-                        var sel = ref.get_selected();
-                        if (sel == "") {
-                            RefreshPrm("0", "");
+                let schemeUids = $.map(rows, function (d) {
+                    return d.Fid;
+                });
+                $.post(basePath + "/Assess/Api/SchemeStatus",
+                    { schemeUids: schemeUids.join(), status: status }, function (rv) {
+                        if (rv.success) {
+                            $.msg(rv.msg);
+                            refreshGrid("grid-scheme");
                         } else {
-                            var catUid = sel[0];
-                            var catName = ref.get_node(catUid).text;
-                            RefreshPrm(catUid, catName);
+                            bootbox.alert(rv.msg);
                         }
-                    }
-                })
-            })
+                    });
+            }
 
-            $('#grid-scheme').jqGrid('navButtonAdd', '#pager-perfprogram', {
-                caption: '',
-                title: '复制',
-                position: 'first',
-                buttonicon: 'ace-icon fa fa-clipboard purple',
-                onClickButton: function () {
-                    var gsr = jQuery('#grid-scheme').jqGrid('getGridParam', 'selrow');
-                    if (gsr) {
-                        bootbox.confirm("确定要复制一份选中的考核方案?", function (result) {
-                            if (result) {
-                                //
-                                var ret = jQuery('#grid-scheme').jqGrid('getRowData', gsr);
-                                //alert(ret.Fid);
-                                $.get("@Url.Content("~/api/Perf/CopyProgram/")" + ret.Fid, function (rv) {
-                                    if (rv.success) {
-                                        $("#grid-scheme").jqGrid('setGridParam', {
-                                            datatype: 'json',
-                                            page: 1
-                                        }).trigger("reloadGrid"); //重新载入
-                                    }
-                                })
+            $("#btnPerfCopy").on(ace.click_event, function () {
+                bootbox.confirm("确定要复制一份选中的考核方案?", function (result) {
+                    if (result) {
+                        var ret = getSelectedRow('grid-scheme');
+                        $.post("@Url.Content("~/Assess/Api/CopyScheme/")", { schemeUid: ret.Fid}, function (rv) {
+                            if (rv.success) {
+                                $.msg(rv.msg);
+                                refreshGrid("grid-scheme");
+                            } else {
+                                bootbox.alert(rv.msg);
                             }
-                        });
-
-                    } else {
-                        $.msg('请选择一条数据')
+                        })
                     }
-
-                }
-            });
+                });
+            })
+            
         })
 
     })

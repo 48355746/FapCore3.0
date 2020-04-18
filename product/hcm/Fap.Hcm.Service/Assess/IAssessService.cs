@@ -8,5 +8,7 @@ namespace Fap.Hcm.Service.Assess
     {
         IEnumerable<TreeDataView> GetSchemeCategoryTree();
         ResponseViewModel OperSchemeCategory(TreePostData postData);
+        void CreateExaminer(ExaminerViewModel examinerVM);
+        void CopyScheme(string fid);
     }
 }

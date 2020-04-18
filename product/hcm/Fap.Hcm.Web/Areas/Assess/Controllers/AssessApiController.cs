@@ -68,5 +68,31 @@ namespace Fap.Hcm.Web.Areas.Assess.Controllers
             }
             return Json(ResponseViewModelUtils.Sueecss());
         }
+        [HttpPost("Examiner")]
+        public JsonResult Examiner(ExaminerViewModel examiner)
+        {
+            Guard.Against.Null(examiner,nameof(examiner));
+            _assessService.CreateExaminer(examiner);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+        [HttpPost("SchemeStatus")]
+        public JsonResult SchemeStatus(string schemeUids,string status)
+        {
+            var schemeList = schemeUids.SplitComma();
+            string sql = $"select * from {nameof(PerfProgram)} where Fid in @Fids";
+            var schemes= _dbContext.Query<PerfProgram>(sql, new Dapper.DynamicParameters(new { Fids = schemeList }));
+            foreach (var scheme in schemes)
+            {
+                scheme.PrmStatus = status;
+            }
+            _dbContext.UpdateBatch(schemes);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+        [HttpPost("CopyScheme")]
+        public JsonResult CopyScheme(string schemeUid)
+        {
+            _assessService.CopyScheme(schemeUid);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
     }
 }

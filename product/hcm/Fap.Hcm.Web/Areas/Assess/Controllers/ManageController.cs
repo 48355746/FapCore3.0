@@ -6,6 +6,7 @@ using Fap.AspNetCore.Infrastructure;
 using Fap.AspNetCore.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Fap.Core.Extensions;
+using Fap.AspNetCore.Controls.JqGrid;
 
 namespace Fap.Hcm.Web.Areas.Assess.Controllers
 {
@@ -99,12 +100,13 @@ namespace Fap.Hcm.Web.Areas.Assess.Controllers
         /// 考核人
         /// </summary>
         /// <returns></returns>
-        public IActionResult Examiner(string schemeUid,string modelUid)
+        public IActionResult Examiner(string schemeUid,string objUid)
         {
-            JqGridViewModel model = this.GetJqGridModel("PerfModel", (q) =>
+            JqGridViewModel model = this.GetJqGridModel("PerfExaminer", (q) =>
             {
-                q.InitWhere = "ProgramUid=@PrmUid";
+                q.GlobalWhere = "ProgramUid=@PrmUid and ObjectUid=@ObjUid";
                 q.AddParameter("PrmUid", schemeUid);
+                q.AddParameter("ObjUid", objUid);
             });
             return PartialView(model);
         }
@@ -124,6 +126,11 @@ namespace Fap.Hcm.Web.Areas.Assess.Controllers
         public IActionResult Scored()
         {
             return View();
+        }
+        public IActionResult Consequent()
+        {
+            JqGridViewModel model = this.GetJqGridModel("PerfObject");           
+            return View(model);
         }
     }
 }

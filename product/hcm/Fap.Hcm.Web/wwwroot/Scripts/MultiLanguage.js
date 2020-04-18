@@ -147,7 +147,9 @@ var MultiLangHelper = (function () {
       'add_objectives': { 'ZhCn': '添加考核对象', 'ZhTW': '', 'En': '', 'Ja': '' },
       'add_select': { 'ZhCn': '添加选中项', 'ZhTW': '', 'En': '', 'Ja': '' },
       'add_all': { 'ZhCn': '添加当前所有', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'set_examiner': { 'ZhCn': '设置考核人', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'set_examiner': { 'ZhCn': '设置考核人', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'examiner_selector': { 'ZhCn': '考核人选择', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'examiner': { 'ZhCn': '考核人', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种
