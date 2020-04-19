@@ -7,6 +7,8 @@ using Fap.AspNetCore.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Fap.Core.Extensions;
 using Fap.AspNetCore.Controls.JqGrid;
+using Fap.Hcm.Service.Assess;
+using Dapper;
 
 namespace Fap.Hcm.Web.Areas.Assess.Controllers
 {
@@ -104,6 +106,7 @@ namespace Fap.Hcm.Web.Areas.Assess.Controllers
         {
             JqGridViewModel model = this.GetJqGridModel("PerfExaminer", (q) =>
             {
+                q.QueryCols = "Id,Fid,ObjectUid,ProgramUid,AssessModel,EmpUid,Weight";
                 q.GlobalWhere = "ProgramUid=@PrmUid and ObjectUid=@ObjUid";
                 q.AddParameter("PrmUid", schemeUid);
                 q.AddParameter("ObjUid", objUid);
@@ -129,8 +132,15 @@ namespace Fap.Hcm.Web.Areas.Assess.Controllers
         }
         public IActionResult Consequent()
         {
+            ViewBag.SchemeList= _dbContext.Query<PerfProgram>("select * from PerfProgram",null,true);
             JqGridViewModel model = this.GetJqGridModel("PerfObject");           
             return View(model);
+        }
+        public IActionResult AssessChart(string schemeUid)
+        {
+            ViewBag.SchemeUid = schemeUid;
+            return PartialView();
+           
         }
     }
 }

@@ -10,5 +10,6 @@ namespace Fap.Hcm.Service.Assess
         ResponseViewModel OperSchemeCategory(TreePostData postData);
         void CreateExaminer(ExaminerViewModel examinerVM);
         void CopyScheme(string fid);
+        void AssessCalculate(string schemeUid);
     }
 }

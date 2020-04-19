@@ -246,5 +246,37 @@ namespace Fap.Hcm.Service.Assess
                 });
             }
         }
+        [Transactional]
+        public void AssessCalculate(string schemeUid)
+        {
+            DynamicParameters param = new DynamicParameters();
+            param.Add("PrmUid", schemeUid);
+            string sql = $"select avg({nameof(PerfExaminer.Score)}) {nameof(PerfExaminer.Score)},{nameof(PerfExaminer.ObjectUid)},{nameof(PerfExaminer.AssessModel)},{nameof(PerfExaminer.Weights)} from PerfExaminer where  {nameof(PerfExaminer.ProgramUid)}=@PrmUid and {nameof(PerfExaminer.Score)}>0  group by {nameof(PerfExaminer.ObjectUid)}, {nameof(PerfExaminer.AssessModel)},{nameof(PerfExaminer.Weights)}";
+            
+            IEnumerable<PerfExaminer> examiners = _dbContext.Query<PerfExaminer>(sql, param);
+            IEnumerable<PerfObject> objectives = _dbContext.QueryWhere<PerfObject>("ProgramUid=@PrmUid", param);
+            if (examiners.Any())
+            {
+                var examinerScores= examiners.GroupBy(e => e.ObjectUid);
+                foreach (var escore in examinerScores)
+                {
+                    var objective= examiners.FirstOrDefault(p => p.Fid == escore.Key);
+                    if (objective != null)
+                    {
+                        double score = 0.0;
+                        foreach (var es in escore)
+                        {
+                            score += (es.Score * es.Weights) / escore.Sum(e => e.Weights);
+                        }
+                        objective.Score =Math.Round(score,2);
+                    }
+                }
+                _dbContext.UpdateBatchSql(objectives);
+            }
+            //修改考核方案状态为 成绩发布
+            PerfProgram prm = _dbContext.Get<PerfProgram>(schemeUid);
+            prm.PrmStatus = PerfPrmStatus.Result;
+            _dbContext.Update<PerfProgram>(prm);
+        }
     }
 }

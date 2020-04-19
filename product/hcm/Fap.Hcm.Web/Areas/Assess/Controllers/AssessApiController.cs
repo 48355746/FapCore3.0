@@ -13,6 +13,7 @@ using Fap.Core.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Ardalis.GuardClauses;
+using Dapper;
 
 namespace Fap.Hcm.Web.Areas.Assess.Controllers
 {
@@ -93,6 +94,22 @@ namespace Fap.Hcm.Web.Areas.Assess.Controllers
         {
             _assessService.CopyScheme(schemeUid);
             return Json(ResponseViewModelUtils.Sueecss());
+        }
+        [HttpPost("Calculate")]
+        public JsonResult AssessCalculate(string schemeUid)
+        {
+            _assessService.AssessCalculate(schemeUid);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+        [HttpGet("Chart")]
+        public JsonResult AssessChart(string schemeUid)
+        {
+            DynamicParameters param = new DynamicParameters();
+            param.Add("PrmUid", schemeUid);
+            int yx = _dbContext.Count("PerfObject", "ProgramUid=@PrmUid and Score>=90", param);
+            int lh = _dbContext.Count("PerfObject", "ProgramUid=@PrmUid  and Score>=80 and Score<90", param);
+            int yb = _dbContext.Count("PerfObject", "ProgramUid=@PrmUid  and Score<80", param);
+            return Json(new int[] { yx, lh, yb });
         }
     }
 }

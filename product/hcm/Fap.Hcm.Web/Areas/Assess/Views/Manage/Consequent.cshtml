@@ -1,4 +1,96 @@
-﻿
-@*
-    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@using System.Linq
+@{
+    IEnumerable<Fap.Hcm.Service.Assess.PerfProgram> schemes = ViewBag.SchemeList;
+}
+<title>
+    <fap-multilang lang-key="assess_consequent" default-content="考核结果"></fap-multilang>
+</title>
+
+<div class="row">
+    <div class="col-xs-12">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title"> <fap-multilang lang-key="assess_consequent" default-content="考核结果"></fap-multilang></h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar">
+                    <fap-button id="btnCalculate" content="考核结果计算" btn-tag="link" icon-before="fa fa-calculator"></fap-button>
+                    <fap-button id="btnChart" content="统计图表" btn-tag="link" icon-before="fa fa-line-chart"></fap-button>
+                </div>
+                <div class="widget-toolbar">
+                    <select class="chosen-select form-control" style="width:300px" id="selScheme" multi-placeholder="考核方案...">
+                       <option value=""></option>
+                        @foreach (var scheme in schemes.GroupBy(s => s.PrmCategoryMC))
+                        {
+                            <optgroup label="@scheme.Key">
+                                @foreach (var sc in scheme)
+                                {
+                                    <option value="@sc.Fid">@(sc.PrmName+"("+sc.PrmStatusMC+")")</option>
+                                }
+                            </optgroup>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    <fap-grid id="perfobjectives" grid-model="Model" source-type="Local" shrink-fit="false" multi-select="true" multi-box-only="true"></fap-grid>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var scripts = [null, null];
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+
+            })
+            $('.chosen-select').chosen({ allow_single_deselect: true }).on("change", function () {
+                refreshConsequent();
+            });
+            var refreshConsequent = function () {
+                var c = $("#selScheme").val();
+                if (c === "") {
+                    return;
+                }
+                var filter = '{"groupOp":"AND","rules":[{"field":"ProgramUid","op":"eq","data":"' + c + '"}]}'
+
+                reloadGrid("grid-perfobjectives", { filters: filter })
+            }
+            $("#btnCalculate").on(ace.click_event, function () {
+                var c = $("#selScheme").val();
+                if (c === "") {
+                    return;
+                }
+                $.post(basePath + "/Assess/Api/Calculate", { schemeUid: c }, function (rv) {
+                    if (rv.success) {
+                        $.msg(rv.msg);
+                        refreshConsequent();
+                    } else {
+                        bootbox.alert(rv.msg);
+                    }
+                })
+            })
+            $("#btnChart").on(ace.click_event, function () {
+                var c = $("#selScheme").val();
+                if (c === "") {
+                    return;
+                }
+                bootboxWindow0($.lang("assess_chart", "考核结果图表"), basePath + "/Assess/Manage/AssessChart", null, { schemeUid:c});
+            })
+        })
+
+    })
+</script>
+
+
+

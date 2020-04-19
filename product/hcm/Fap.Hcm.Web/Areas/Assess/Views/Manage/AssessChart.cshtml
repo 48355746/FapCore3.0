@@ -1,0 +1,83 @@
+﻿<div data-toggle="buttons" class="btn-group charttype">
+    <label class="btn btn-white btn-info active">
+        <input type="radio" value="bar" checked />
+        <i class="icon-only ace-icon fa fa-bar-chart"></i>
+    </label>
+
+    <label class="btn btn-white btn-info">
+        <input type="radio" value="pie" />
+        <i class="icon-only ace-icon fa fa-pie-chart"></i>
+    </label>
+
+    <label class="btn btn-white btn-info">
+        <input type="radio" value="line" />
+        <i class="icon-only ace-icon fa fa-line-chart"></i>
+    </label>
+</div>
+
+<div id="fapChart" style="width:auto;height:400px"></div>
+<script>
+    var schemeUid = '@ViewBag.SchemeUid';
+    var fapChart = echarts.init(document.getElementById('fapChart'));
+    $(".charttype label").on(ace.click_event, function () {
+        var chartType = $(this).find("input").val();
+        assessChart(schemeUid, chartType);
+    })
+    function assessChart(schemeUid, bartype) {  
+        fapChart.clear();
+        $.get(basePath + "/Assess/Api/Chart", { schemeUid: schemeUid }, function (data) {
+            if (bartype === 'bar' || bartype === "line") {
+                option = {
+                    xAxis: {
+                        type: 'category',
+                        data: ['优秀', '良好', '一般']
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    tooltip: {},
+                    series: [{
+                        name: '考核结果',
+                        data: data,
+                        type: bartype,
+                        showBackground: true,
+                        backgroundStyle: {
+                            color: 'rgba(220, 220, 220, 0.8)'
+                        }
+                    }]
+                };
+                fapChart.setOption(option);
+                fapChart.resize();
+            } else {
+                option = {                  
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{a} <br/>{b} : {c} ({d}%)'
+                    },
+                    series: [
+                        {
+                            name:'考核结果',
+                            type: 'pie',
+                            radius: '55%',
+                            //center: ['50%', '60%'],
+                            data: [
+                                { value: data[0], name: '优秀' },
+                                { value: data[1], name: '良好' },
+                                { value: data[2], name: '一般' }
+                            ],
+                            emphasis: {
+                                itemStyle: {
+                                    shadowBlur: 10,
+                                    shadowOffsetX: 0,
+                                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                }
+                            }
+                        }
+                    ]
+                };
+                fapChart.setOption(option);
+                fapChart.resize();
+            }
+        })
+    }
+</script>
