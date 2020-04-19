@@ -1,4 +1,26 @@
-﻿
-@*
-    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+
+}
+<script>
+        var EnterToViewScore =function(fid, prmUid) {
+            $.get("@Url.Content("~/api/Perf/PerfObjectType/")" + prmUid, function (data) {
+                //根据考核对象 跳转不同的界面
+                if (data) {
+                    if (data.entity == 'OrgDept') {
+                        openNewWindow("@Url.Content("~/SelfService/Ess/PerfScoreDeptViewIE8/")" + fid);
+                    } else {
+                        openNewWindow("@Url.Content("~/SelfService/Ess/PerfScoreViewIE8/")" + fid);
+                    }
+                } else {
+                    bootbox.alert("获取考核对象失败！");
+                }
+
+            })
+        }
+</script>
+
+<fap-grid id="perfexaminer" grid-model="Model" wrapper="modal-body" auto-width="true" view-records="true" multi-box-only="true" multi-select="true"></fap-grid>
+
+
+

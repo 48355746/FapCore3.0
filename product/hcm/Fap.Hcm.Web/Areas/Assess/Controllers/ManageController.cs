@@ -106,7 +106,7 @@ namespace Fap.Hcm.Web.Areas.Assess.Controllers
         {
             JqGridViewModel model = this.GetJqGridModel("PerfExaminer", (q) =>
             {
-                q.QueryCols = "Id,Fid,ObjectUid,ProgramUid,AssessModel,EmpUid,Weight";
+                q.QueryCols = "Id,Fid,ObjectUid,ProgramUid,AssessModel,EmpUid,Weights";
                 q.GlobalWhere = "ProgramUid=@PrmUid and ObjectUid=@ObjUid";
                 q.AddParameter("PrmUid", schemeUid);
                 q.AddParameter("ObjUid", objUid);
@@ -126,10 +126,20 @@ namespace Fap.Hcm.Web.Areas.Assess.Controllers
         {
             return View();
         }
-        public IActionResult Scored()
+        /// <summary>
+        /// 打分结果
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult Scored(string objUid)
         {
-            return View();
+            JqGridViewModel model = this.GetJqGridModel("PerfExaminer", qs =>
+            {
+                qs.GlobalWhere = "ObjectUid=@ObjUid";
+                qs.AddParameter("ObjUid", objUid);
+            });
+            return View(model);
         }
+
         public IActionResult Consequent()
         {
             ViewBag.SchemeList= _dbContext.Query<PerfProgram>("select * from PerfProgram",null,true);
@@ -139,8 +149,11 @@ namespace Fap.Hcm.Web.Areas.Assess.Controllers
         public IActionResult AssessChart(string schemeUid)
         {
             ViewBag.SchemeUid = schemeUid;
-            return PartialView();
-           
+            return PartialView();           
+        }
+        public IActionResult Monitor()
+        {
+            return View();
         }
     }
 }

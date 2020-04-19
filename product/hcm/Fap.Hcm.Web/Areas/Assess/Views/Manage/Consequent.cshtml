@@ -1,12 +1,33 @@
 ﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@using Fap.AspNetCore.Controls.JqGrid
 @using System.Linq
 @{
+    Column column = new Column("oper");
+    column.SetLabel("明细");
+    column.SetSortable(false);
+    column.SetWidth(80);
     IEnumerable<Fap.Hcm.Service.Assess.PerfProgram> schemes = ViewBag.SchemeList;
 }
 <title>
     <fap-multilang lang-key="assess_consequent" default-content="考核结果"></fap-multilang>
 </title>
+<script>
+    function initAssessScoreMenu() {
+        var ids = $("#grid-perfobjectives").jqGrid('getDataIDs');
+        for (var i = 0; i < ids.length; i++) {
+            var de = '';
+            var cl = ids[i];
+            var ret = jQuery('#grid-perfobjectives').jqGrid('getRowData', cl);
+            var fid = ret.ObjUid;
+            de += "<a  href='javascript:void(0)' onclick='showAssessScore(\"" + fid + "\")'>" + $.lang("view", "查看") + "</a>  ";
 
+            jQuery('#grid-perfobjectives').jqGrid('setRowData', ids[i], { oper: de });
+        }
+    }
+    function showAssessScore(fid) {
+        bootboxWindow0($.lang("score_result", "打分结果"), basePath + "/Assess/Manage/Scored", null, { objUid: fid });
+    }
+</script>
 <div class="row">
     <div class="col-xs-12">
         <div class="widget-box">
@@ -39,15 +60,14 @@
             </div>
             <div class="widget-body">
                 <div class="widget-main">
-                    <fap-grid id="perfobjectives" grid-model="Model" source-type="Local" shrink-fit="false" multi-select="true" multi-box-only="true"></fap-grid>
+                    <fap-grid id="perfobjectives" attach-column="column" grid-model="Model" on-grid-complete="initAssessScoreMenu" source-type="Local" shrink-fit="false" multi-select="true" multi-box-only="true"></fap-grid>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-
 <script>
+
     var scripts = [null, null];
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
