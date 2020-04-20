@@ -151,7 +151,8 @@ var MultiLangHelper = (function () {
       'examiner_selector': { 'ZhCn': '考核人选择', 'ZhTW': '', 'En': '', 'Ja': '' },
       'examiner': { 'ZhCn': '考核人', 'ZhTW': '', 'En': '', 'Ja': '' },
       'assess_chart': { 'ZhCn': '考核结果图表', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'score_result': { 'ZhCn': '打分结果', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'score_result': { 'ZhCn': '打分结果', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'assess_complete_chart': { 'ZhCn': '完成情况统计', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

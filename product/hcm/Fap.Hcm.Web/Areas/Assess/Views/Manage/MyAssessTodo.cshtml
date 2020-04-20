@@ -1,0 +1,75 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@using Fap.AspNetCore.Controls.JqGrid
+@{
+    Column column = new Column("oper");
+    column.SetLabel("打分");
+    column.SetSortable(false);
+    column.SetWidth(80);
+}
+<title>
+    <fap-multilang lang-key="my_assess_score" default-content="考核打分"></fap-multilang>
+</title>
+<script>
+    function initAssessScoreMenu() {
+        var ids = $("#grid-myscore").jqGrid('getDataIDs');
+        for (var i = 0; i < ids.length; i++) {
+            var de = '';
+            var cl = ids[i];
+            var ret = jQuery('#grid-myscore').jqGrid('getRowData', cl);
+            var fid = ret.Fid;
+            var schemeUid = ret.ProgramUid;
+            de += "<a  href='javascript:void(0)' onclick='showAssessScore(\"" + fid + "\",\"" + schemeUid + "\")'>" + $.lang("score", "打分") + "</a>  ";
+
+            jQuery('#grid-myscore').jqGrid('setRowData', ids[i], { oper: de });
+        }
+    }
+    function showAssessScore(fid,schemeUid) {
+        bootboxWindow1($.lang("score", "打分"), basePath + "/Assess/Manage/Scoring", {
+            add: {
+                label: $.lang("ok", "确定"),
+                className: "btn-primary btn-link",
+                callback: function () {
+                    var scores = saveScore();
+                    alert(scores.join());
+                    return false;
+                }
+            }
+        }, { examinerUid: fid, schemeUid: schemeUid });
+    }
+</script>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title"> <fap-multilang lang-key="assess_score_todolist" default-content="待打分列表"></fap-multilang></h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>              
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    <fap-grid id="myscore" attach-column="column" grid-model="Model" on-grid-complete="initAssessScoreMenu"  shrink-fit="false" register-authority="false"></fap-grid>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    var scripts = [null, null];
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+
+            })
+           
+        })
+
+    })
+</script>
+
+
+

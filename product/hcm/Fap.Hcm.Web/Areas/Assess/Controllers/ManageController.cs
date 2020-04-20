@@ -118,14 +118,7 @@ namespace Fap.Hcm.Web.Areas.Assess.Controllers
             var model = GetJqGridModel("PerfScoreModel");
             return PartialView(model);
         }
-        /// <summary>
-        /// 考核打分
-        /// </summary>
-        /// <returns></returns>
-        public IActionResult Scoring()
-        {
-            return View();
-        }
+     
         /// <summary>
         /// 打分结果
         /// </summary>
@@ -151,8 +144,45 @@ namespace Fap.Hcm.Web.Areas.Assess.Controllers
             ViewBag.SchemeUid = schemeUid;
             return PartialView();           
         }
+        public IActionResult CompleteChart(string schemeUid)
+        {
+            ViewBag.SchemeUid = schemeUid;
+            return PartialView();
+        }
         public IActionResult Monitor()
         {
+            ViewBag.SchemeList = _dbContext.Query<PerfProgram>("select * from PerfProgram", null, true);
+            JqGridViewModel model = this.GetJqGridModel("PerfExaminer");
+            return View(model);
+        }
+        /// <summary>
+        /// 我的待处理考核
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult MyAssessTodo()
+        {
+            JqGridViewModel model = this.GetJqGridModel("PerfExaminer", (qs) =>
+            {
+                qs.GlobalWhere = "EmpUid=@EmpUid  and ProgramUid in(select fid from perfprogram where PrmStatus='Starting')";
+                qs.AddParameter("EmpUid", _applicationContext.EmpUid);
+                qs.QueryCols = "Id,Fid,ObjectUid,ProgramUid,AssessModel,Score";
+            });
+            return View(model);
+        }
+        /// <summary>
+        /// 考核打分
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult Scoring(string examinerUid,string schemeUid)
+        {
+            var kpis = _dbContext.Query<PerfKPIs>("select * from PerfKPIs where ProgramUid=@SchemeUid", new DynamicParameters(new { SchemeUid = schemeUid }),true);
+            var scores= _dbContext.Query<PerfScore>("select * from PerfScore where ExaminerUid=@ExaminerUid", new DynamicParameters(new { ExaminerUid = examinerUid }),true);
+            var scoreModels = _dbContext.Query<PerfScoreModel>("select * from PerfScoreModel");
+            var examiner = _dbContext.Get<PerfExaminer>(examinerUid);
+            ViewBag.KPIs = kpis;
+            ViewBag.Scores = scores;
+            ViewBag.ScoreModels = scoreModels;
+            ViewBag.Examiner = examiner;
             return View();
         }
     }

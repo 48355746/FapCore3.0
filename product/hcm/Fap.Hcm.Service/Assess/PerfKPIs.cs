@@ -40,7 +40,7 @@ namespace Fap.Hcm.Service.Assess
         /// <summary>
         /// 权重
         /// </summary>
-        public double Weight { get; set; }
+        public double Weights { get; set; }
         /// <summary>
         /// 指标性质
         /// </summary>

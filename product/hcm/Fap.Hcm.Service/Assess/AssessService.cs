@@ -78,12 +78,14 @@ namespace Fap.Hcm.Service.Assess
         public void CreateExaminer(ExaminerViewModel examinerVM)
         {
             IList<PerfExaminer> perfExaminers = new List<PerfExaminer>();
-            var objectives = examinerVM.Objectives;
-            var param= new DynamicParameters(new { EmpUids = objectives });
-            if (!objectives.Any())
+            //存放的是fid 非ObjUid
+            var objectiveUids = examinerVM.Objectives;
+            if (!objectiveUids.Any())
             {
                 return;
             }
+            var objectivesList= _dbContext.Query<PerfObject>("select * from PerfObject where Fid in @Fids", new DynamicParameters(new { Fids = objectiveUids }));
+            var param= new DynamicParameters(new { EmpUids = objectivesList.Select(o=>o.ObjUid) });
             if (examinerVM.IsOrgDept)
             {
                 DeptExaminer();
@@ -103,14 +105,14 @@ namespace Fap.Hcm.Service.Assess
             void CustomExaminer() {
                 if (examinerVM.CustomExaminers != null && examinerVM.CustomExaminers.Any())
                 {
-                    foreach (var objUid in objectives)
+                    foreach (var obj in objectivesList)
                     {
                         foreach (var empuid in examinerVM.CustomExaminers)
                         {
                             PerfExaminer examiner = new PerfExaminer
                             {
                                 ProgramUid = examinerVM.SchemeUid,
-                                ObjectUid = objUid,
+                                ObjectUid = obj.Fid,
                                 AssessModel = examinerVM.CustomModelName??"自定义",
                                 EmpUid = empuid,
                                 Weights = examinerVM.CustomWeights
@@ -124,19 +126,21 @@ namespace Fap.Hcm.Service.Assess
             {
                 string sql = $"select {nameof(Employee.Fid)},{nameof(Employee.Leadership)} from {nameof(Employee)} where Fid in @EmpUids";
                 var leaderships = _dbContext.Query<Employee>(sql, param);
-                foreach (var leadership in leaderships)
+                foreach (var obj in objectivesList)
                 {
-                    if (leadership.Leadership.IsPresent())
+                    var emp = leaderships.FirstOrDefault(e => e.Fid == obj.ObjUid);
+                    if (emp != null&&emp.Leadership.IsPresent())
                     {
-                        PerfExaminer examiner = new PerfExaminer
-                        {
-                            ProgramUid = examinerVM.SchemeUid,
-                            ObjectUid = leadership.Fid,
-                            AssessModel = examinerVM.LeadershipModelName,
-                            EmpUid = leadership.Leadership,
-                            Weights = examinerVM.LeaderShipWeights
-                        };
-                        perfExaminers.Add(examiner);
+                            PerfExaminer examiner = new PerfExaminer
+                            {
+                                ProgramUid = examinerVM.SchemeUid,
+                                ObjectUid = obj.Fid,
+                                AssessModel = examinerVM.LeadershipModelName,
+                                EmpUid = emp.Leadership,
+                                Weights = examinerVM.LeaderShipWeights
+                            };
+                            perfExaminers.Add(examiner);
+                        
                     }
                 }
             }
@@ -144,24 +148,21 @@ namespace Fap.Hcm.Service.Assess
             {
                 string sql = "select Fid,DeptUid from Employee where DeptUid in(select DeptUid from Employee where Fid in @EmpUids)";
                 var employees = _dbContext.Query<Employee>(sql, param);
-                foreach (var empUid in objectives)
+                foreach (var obj in objectivesList)
                 {
-                    var currEmployee = employees.FirstOrDefault(e => e.Fid == empUid);
-                    if (currEmployee != null)
+                    var currEmployee = employees.FirstOrDefault(e => e.Fid == obj.ObjUid);
+                    var currDeptEmps = employees.Where(e => e.DeptUid == currEmployee.DeptUid && e.Fid != currEmployee.Fid);
+                    foreach (var emp in currDeptEmps)
                     {
-                        var currDeptEmps = employees.Where(e => e.DeptUid == currEmployee.DeptUid && e.Fid != currEmployee.Fid);
-                        foreach (var emp in currDeptEmps)
+                        PerfExaminer examiner = new PerfExaminer
                         {
-                            PerfExaminer examiner = new PerfExaminer
-                            {
-                                ProgramUid = examinerVM.SchemeUid,
-                                ObjectUid = currEmployee.Fid,
-                                AssessModel = examinerVM.DeptModelName,
-                                EmpUid = emp.Fid,
-                                Weights = examinerVM.DeptWeights
-                            };
-                            perfExaminers.Add(examiner);
-                        }
+                            ProgramUid = examinerVM.SchemeUid,
+                            ObjectUid = obj.Fid,
+                            AssessModel = examinerVM.DeptModelName,
+                            EmpUid = emp.Fid,
+                            Weights = examinerVM.DeptWeights
+                        };
+                        perfExaminers.Add(examiner);
                     }
                 }
             }

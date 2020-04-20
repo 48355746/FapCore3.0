@@ -23,21 +23,21 @@
         var chartType = $(this).find("input").val();
         assessChart(schemeUid, chartType);
     })
-    function assessChart(schemeUid, bartype) {  
+    function assessChart(schemeUid, bartype) {
         fapChart.clear();
-        $.get(basePath + "/Assess/Api/AssessChart", { schemeUid: schemeUid }, function (data) {
+        $.get(basePath + "/Assess/Api/ComplementChart", { schemeUid: schemeUid }, function (data) {
             if (bartype === 'bar' || bartype === "line") {
                 option = {
                     xAxis: {
                         type: 'category',
-                        data: ['优秀', '良好', '一般']
+                        data: ['全部', '已打分', '未打分']
                     },
                     yAxis: {
                         type: 'value'
                     },
                     tooltip: {},
                     series: [{
-                        name: '考核结果',
+                        name: '完成情况',
                         data: data,
                         type: bartype,
                         showBackground: true,
@@ -49,21 +49,21 @@
                 fapChart.setOption(option);
                 fapChart.resize();
             } else {
-                option = {                  
+                option = {
                     tooltip: {
                         trigger: 'item',
                         formatter: '{a} <br/>{b} : {c} ({d}%)'
                     },
                     series: [
                         {
-                            name:'考核结果',
+                            name:'完成情况',
                             type: 'pie',
                             radius: '55%',
                             //center: ['50%', '60%'],
                             data: [
-                                { value: data[0], name: '优秀' },
-                                { value: data[1], name: '良好' },
-                                { value: data[2], name: '一般' }
+                                { value: data[0], name: '全部' },
+                                { value: data[1], name: '已打分' },
+                                { value: data[2], name: '未打分' }
                             ],
                             emphasis: {
                                 itemStyle: {

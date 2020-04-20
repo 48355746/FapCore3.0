@@ -23,7 +23,7 @@
             var de = '';
             var cl = ids[i];
             var ret = jQuery('#grid-assess-objectives').jqGrid('getRowData', cl);
-            var fid = ret.ObjUid; 
+            var fid = ret.Fid; 
             var schemeUid = ret.ProgramUid;
             de += "<a  href='javascript:void(0)' onclick='showExaminers(\"" + fid + "\",\"" + schemeUid + "\")'>"+$.lang("view","查看")+"</a>  ";
              

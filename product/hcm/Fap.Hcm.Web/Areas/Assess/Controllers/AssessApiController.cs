@@ -101,7 +101,7 @@ namespace Fap.Hcm.Web.Areas.Assess.Controllers
             _assessService.AssessCalculate(schemeUid);
             return Json(ResponseViewModelUtils.Sueecss());
         }
-        [HttpGet("Chart")]
+        [HttpGet("AssessChart")]
         public JsonResult AssessChart(string schemeUid)
         {
             DynamicParameters param = new DynamicParameters();
@@ -110,6 +110,16 @@ namespace Fap.Hcm.Web.Areas.Assess.Controllers
             int lh = _dbContext.Count("PerfObject", "ProgramUid=@PrmUid  and Score>=80 and Score<90", param);
             int yb = _dbContext.Count("PerfObject", "ProgramUid=@PrmUid  and Score<80", param);
             return Json(new int[] { yx, lh, yb });
+        }
+        [HttpGet("ComplementChart")]
+        public JsonResult ComplementChart(string schemeUid)
+        {
+            DynamicParameters param = new DynamicParameters();
+            param.Add("PrmUid", schemeUid);
+            int df = _dbContext.Count("PerfExaminer", "ProgramUid=@PrmUid and Score>0", param);
+            int all = _dbContext.Count("PerfExaminer", "ProgramUid=@PrmUid", param);
+            int wdf = all - df;
+            return Json(new int[] { all, df, wdf });
         }
     }
 }

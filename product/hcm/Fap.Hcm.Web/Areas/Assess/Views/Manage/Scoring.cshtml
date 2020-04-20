@@ -1,4 +1,93 @@
-﻿
-@*
-    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@using Fap.Hcm.Service.Assess
+@using Fap.Core.Extensions
+@{
+    IEnumerable<PerfKPIs> kpis = ViewBag.KPIs;
+    IEnumerable<PerfScore> scores = ViewBag.Scores;
+    IEnumerable<PerfScoreModel> scoreModels = ViewBag.ScoreModels;
+    PerfExaminer examiner = ViewBag.Examiner;
+}
+<div class="row">
+    <div class="col-xs-12">
+        <form>
+            <table class="table table-striped table-bordered table-hover" id="tbScore">
+                <thead class="thin-border-bottom">
+                    <tr>
+                        <th>指标分类</th>
+                        <th>指标名称</th>
+                        <th>指标性质</th>
+                        <th>指标说明</th>
+                        <th>权重</th>
+                        <th>打分</th>
+                        <th>打分说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var kpi in kpis)
+                    {
+                        <tr>
+                            <td>@kpi.KpiTypeMC</td>
+                            <td>@kpi.KpiTypeMC</td>
+                            <td>@kpi.KpiName</td>
+                            <td>@kpi.KpiNote</td>
+                            <td>
+                                <label class="weights" data-kpiuid="@kpi.Fid">@kpi.Weights</label>
+                            </td>
+                            <td>
+                                @if (kpi.ScoreModel.IsPresent())
+                                {
+                                    var sm = scoreModels.FirstOrDefault(s => s.Fid == kpi.ScoreModel);
+                                    if (sm.IsChoose == 1)
+                                    {
+                                        var cs = sm.ChooseSource.TrimStart('{').TrimEnd('}').SplitComma();
+                                        <select style="width:80px;height:34px" name="kpiScore">
+                                            @foreach (var c in cs)
+                                            {
+                                                var s = c.Split(':');
+                                                <option value="@s[0]">@s[1]</option>
+                                            }
+                                        </select>
+                                    }
+                                    else
+                                    {
+                                        <input type="number" style="width:80px" name="kpiScore" min="@sm.MinScore" max="@sm.MaxScore" />
+                                    }
+                                }
+                                else
+                                {
+                                    <input type="number" style="width:80px" name="kpiScore" min="0" max="100" />
+                                }
+                            </td>
+                            <td><textarea rows="2" name="kpiNote" /></td>
+                        </tr>
+                    }
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>合计</td>
+                        <td><input type="number" style="width:80px" name="total" value="@examiner.Score" /></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+    </div>
+</div>
+<script>
+    function saveScore() {
+        var scores = [];
+        $('#tbScore > tbody  > tr').each(function (index, tr) {
+            var $this = $(this);
+            var $weights = $this.find(".weights");
+            var weights = $weights.html();
+            var kpiUid = $weights.data("kpiuid");
+            var score = $this.find("[name='kpiScore']").val();
+            var note = $this.find("[name='kpiNote']").val();
+            debugger
+            scores.push({weights:weights,kpiUid:kpiUid,score:score,scoreNote:note});
+        });
+        return scores;
+
+    }
+</script>

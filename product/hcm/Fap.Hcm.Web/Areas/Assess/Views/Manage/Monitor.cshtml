@@ -3,25 +3,25 @@
 @using System.Linq
 @{
     Column column = new Column("oper");
-    column.SetLabel("明细");
+    column.SetLabel("打分详情");
     column.SetSortable(false);
     column.SetWidth(80);
     IEnumerable<Fap.Hcm.Service.Assess.PerfProgram> schemes = ViewBag.SchemeList;
 }
 <title>
-    <fap-multilang lang-key="assess_consequent" default-content="考核结果"></fap-multilang>
+    <fap-multilang lang-key="assess_monitor" default-content="考核监控"></fap-multilang>
 </title>
 <script>
     function initAssessScoreMenu() {
-        var ids = $("#grid-perfobjectives").jqGrid('getDataIDs');
+        var ids = $("#grid-monitor").jqGrid('getDataIDs');
         for (var i = 0; i < ids.length; i++) {
             var de = '';
             var cl = ids[i];
-            var ret = jQuery('#grid-perfobjectives').jqGrid('getRowData', cl);
-            var fid = ret.Fid;
+            var ret = jQuery('#grid-monitor').jqGrid('getRowData', cl);
+            var fid = ret.ObjUid;
             de += "<a  href='javascript:void(0)' onclick='showAssessScore(\"" + fid + "\")'>" + $.lang("view", "查看") + "</a>  ";
 
-            jQuery('#grid-perfobjectives').jqGrid('setRowData', ids[i], { oper: de });
+            jQuery('#grid-monitor').jqGrid('setRowData', ids[i], { oper: de });
         }
     }
     function showAssessScore(fid) {
@@ -40,12 +40,11 @@
                     </a>
                 </div>
                 <div class="widget-toolbar">
-                    <fap-button id="btnCalculate" content="考核结果计算" btn-tag="link" icon-before="fa fa-calculator"></fap-button>
-                    <fap-button id="btnChart" content="统计图表" btn-tag="link" icon-before="fa fa-line-chart"></fap-button>
+                    <fap-button id="btnChart" content="完成情况统计" btn-tag="link" icon-before="fa fa-line-chart"></fap-button>
                 </div>
                 <div class="widget-toolbar">
                     <select class="chosen-select form-control" style="width:300px" id="selScheme" multi-placeholder="考核方案...">
-                       <option value=""></option>
+                        <option value=""></option>
                         @foreach (var scheme in schemes.GroupBy(s => s.PrmCategoryMC))
                         {
                             <optgroup label="@scheme.Key">
@@ -60,7 +59,7 @@
             </div>
             <div class="widget-body">
                 <div class="widget-main">
-                    <fap-grid id="perfobjectives" attach-column="column" grid-model="Model" on-grid-complete="initAssessScoreMenu" source-type="Local" shrink-fit="false" multi-select="true" multi-box-only="true"></fap-grid>
+                    <fap-grid id="monitor" attach-column="column" grid-model="Model" on-grid-complete="initAssessScoreMenu" source-type="Local" shrink-fit="false" multi-select="true" multi-box-only="true"></fap-grid>
                 </div>
             </div>
         </div>
@@ -84,28 +83,15 @@
                 }
                 var filter = '{"groupOp":"AND","rules":[{"field":"ProgramUid","op":"eq","data":"' + c + '"}]}'
 
-                reloadGrid("grid-perfobjectives", { filters: filter })
+                reloadGrid("grid-monitor", { filters: filter })
             }
-            $("#btnCalculate").on(ace.click_event, function () {
-                var c = $("#selScheme").val();
-                if (c === "") {
-                    return;
-                }
-                $.post(basePath + "/Assess/Api/Calculate", { schemeUid: c }, function (rv) {
-                    if (rv.success) {
-                        $.msg(rv.msg);
-                        refreshConsequent();
-                    } else {
-                        bootbox.alert(rv.msg);
-                    }
-                })
-            })
+        
             $("#btnChart").on(ace.click_event, function () {
                 var c = $("#selScheme").val();
                 if (c === "") {
                     return;
                 }
-                bootboxWindow0($.lang("assess_chart", "考核结果图表"), basePath + "/Assess/Manage/AssessChart", null, { schemeUid:c});
+                bootboxWindow0($.lang("assess_complete_chart", "完成情况统计"), basePath + "/Assess/Manage/CompleteChart", null, { schemeUid:c});
             })
         })
 
