@@ -1,26 +1,31 @@
 ﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@using Fap.AspNetCore.Controls.JqGrid
 @{
-
+    Column column = new Column("oper");
+    column.SetLabel("明细");
+    column.SetSortable(false);
+    column.SetWidth(80);
 }
-<script>
-        var EnterToViewScore =function(fid, prmUid) {
-            $.get("@Url.Content("~/api/Perf/PerfObjectType/")" + prmUid, function (data) {
-                //根据考核对象 跳转不同的界面
-                if (data) {
-                    if (data.entity == 'OrgDept') {
-                        openNewWindow("@Url.Content("~/SelfService/Ess/PerfScoreDeptViewIE8/")" + fid);
-                    } else {
-                        openNewWindow("@Url.Content("~/SelfService/Ess/PerfScoreViewIE8/")" + fid);
-                    }
-                } else {
-                    bootbox.alert("获取考核对象失败！");
-                }
+    <script>
+        function initConsequentScoreMenu() {
+            var ids = $("#grid-examinerscore").jqGrid('getDataIDs');
+            for (var i = 0; i < ids.length; i++) {
+                var de = '';
+                var cl = ids[i];
+                var rd = jQuery('#grid-examinerscore').jqGrid('getRowData', cl);
+                var fid = rd.Fid;
+                var schemeUid = rd.ProgramUid;
+                de += "<a  href='javascript:void(0)' onclick='showConsequentScore(\"" + fid + "\",\"" + schemeUid + "\")'>" + $.lang("view", "查看") + "</a>  ";
 
-            })
+                jQuery('#grid-examinerscore').jqGrid('setRowData', ids[i], { oper: de });
+            }
         }
-</script>
+        function showConsequentScore(fid, schemeUid) {
+            bootboxWindow1($.lang("detail", "明细"), basePath + "/Assess/Manage/Scoring", null, { examinerUid: fid, schemeUid: schemeUid });
+        }
+    </script>
 
-<fap-grid id="perfexaminer" grid-model="Model" wrapper="modal-body" auto-width="true" view-records="true" multi-box-only="true" multi-select="true"></fap-grid>
+<fap-grid id="examinerscore" attach-column="column" grid-model="Model" wrapper="modal-body" on-grid-complete="initConsequentScoreMenu" register-authority="false" auto-width="true" view-records="true" ></fap-grid>
 
 
 

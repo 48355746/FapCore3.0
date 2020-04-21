@@ -12,19 +12,19 @@
     <fap-multilang lang-key="assess_consequent" default-content="考核结果"></fap-multilang>
 </title>
 <script>
-    function initAssessScoreMenu() {
+    function initConsequentMenu() {
         var ids = $("#grid-perfobjectives").jqGrid('getDataIDs');
         for (var i = 0; i < ids.length; i++) {
             var de = '';
             var cl = ids[i];
             var ret = jQuery('#grid-perfobjectives').jqGrid('getRowData', cl);
             var fid = ret.Fid;
-            de += "<a  href='javascript:void(0)' onclick='showAssessScore(\"" + fid + "\")'>" + $.lang("view", "查看") + "</a>  ";
+            de += "<a  href='javascript:void(0)' onclick='showConsequent(\"" + fid + "\")'>" + $.lang("view", "查看") + "</a>  ";
 
             jQuery('#grid-perfobjectives').jqGrid('setRowData', ids[i], { oper: de });
         }
     }
-    function showAssessScore(fid) {
+    function showConsequent(fid) {
         bootboxWindow0($.lang("score_result", "打分结果"), basePath + "/Assess/Manage/Scored", null, { objUid: fid });
     }
 </script>
@@ -60,7 +60,7 @@
             </div>
             <div class="widget-body">
                 <div class="widget-main">
-                    <fap-grid id="perfobjectives" attach-column="column" grid-model="Model" on-grid-complete="initAssessScoreMenu" source-type="Local" shrink-fit="false" multi-select="true" multi-box-only="true"></fap-grid>
+                    <fap-grid id="perfobjectives" attach-column="column" grid-model="Model" on-grid-complete="initConsequentMenu" source-type="Local" shrink-fit="false" multi-select="true" multi-box-only="true"></fap-grid>
                 </div>
             </div>
         </div>

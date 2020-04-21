@@ -12,20 +12,21 @@
     <fap-multilang lang-key="assess_monitor" default-content="考核监控"></fap-multilang>
 </title>
 <script>
-    function initAssessScoreMenu() {
+    function initSchemeMonitorMenu() {
         var ids = $("#grid-monitor").jqGrid('getDataIDs');
         for (var i = 0; i < ids.length; i++) {
             var de = '';
             var cl = ids[i];
-            var ret = jQuery('#grid-monitor').jqGrid('getRowData', cl);
-            var fid = ret.ObjUid;
-            de += "<a  href='javascript:void(0)' onclick='showAssessScore(\"" + fid + "\")'>" + $.lang("view", "查看") + "</a>  ";
+            var rd = jQuery('#grid-monitor').jqGrid('getRowData', cl);
+            var fid = rd.Fid;
+            var schemeUid = rd.ProgramUid;
+            de += "<a  href='javascript:void(0)' onclick='showSchemeMonitor(\"" + fid + "\",\"" + schemeUid + "\")'>" + $.lang("view", "查看") + "</a>  ";
 
             jQuery('#grid-monitor').jqGrid('setRowData', ids[i], { oper: de });
         }
     }
-    function showAssessScore(fid) {
-        bootboxWindow0($.lang("score_result", "打分结果"), basePath + "/Assess/Manage/Scored", null, { objUid: fid });
+    function showSchemeMonitor(fid, schemeUid) {
+        bootboxWindow1($.lang("view", "查看"), basePath + "/Assess/Manage/Scoring", null, { examinerUid: fid, schemeUid: schemeUid });
     }
 </script>
 <div class="row">
@@ -59,7 +60,7 @@
             </div>
             <div class="widget-body">
                 <div class="widget-main">
-                    <fap-grid id="monitor" attach-column="column" grid-model="Model" on-grid-complete="initAssessScoreMenu" source-type="Local" shrink-fit="false" multi-select="true" multi-box-only="true"></fap-grid>
+                    <fap-grid id="monitor" attach-column="column" grid-model="Model" on-grid-complete="initSchemeMonitorMenu" source-type="Local" shrink-fit="false" multi-select="true" multi-box-only="true"></fap-grid>
                 </div>
             </div>
         </div>

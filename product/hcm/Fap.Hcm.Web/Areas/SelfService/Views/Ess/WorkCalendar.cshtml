@@ -1,0 +1,340 @@
+﻿
+@model IEnumerable<Fap.Core.Infrastructure.Model.CfgCalendarEvent>
+@{
+    Layout = null;
+}
+<title>
+    <fap-multilang lang-key="work_calendar" default-content="工作日历"></fap-multilang>
+</title>
+
+<link href="~/Content/css/jquery-ui.custom.css" rel="stylesheet" />
+<link href="~/Content/css/fullcalendar.css" rel="stylesheet" />
+<link href="~/Content/css/fullcalendar.print.css" rel="stylesheet" media='print' />
+
+<div class="row">
+    <div class="col-xs-12">
+
+        <div class="row">
+            <div class="col-sm-9">
+                <div class="space"></div>
+                @*<div id='loading'>loading...</div>*@
+                <!-- #section:plugins/data-time.calendar -->
+                <div id="calendar"></div>
+
+                <!-- /section:plugins/data-time.calendar -->
+            </div>
+
+            <div class="col-sm-3">
+                <div class="widget-box transparent">
+                    <div class="widget-header">
+                        <h4 class="widget-title">
+                            <fap-multilang lang-key="common_events" default-content="常用事件"></fap-multilang>
+                        </h4>
+                        <div class="widget-toolbar">
+                            <a href="#" data-ctrl="widgetAction" data-action="addEvent">
+                                <i class="ace-icon info fa fa-plus"></i>
+                            </a>
+                            <a href="#" data-ctrl="widgetAction" data-action="delEvent">
+                                <i class="ace-icon red fa fa-times"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="widget-body">
+                        <div class="widget-main no-padding">
+                            <div id="external-events" class="control-group">
+                                @foreach (var ev in Model)
+                                {
+                                    <div class="external-event @ev.EventColor" data-class="@ev.EventColor">
+                                        <i class="ace-icon fa fa-arrows"></i>
+                                        <label>
+                                            <input name="eventcheck" type="checkbox" class="ace" data-fid="@ev.Fid" />
+                                            <span class="lbl h6"> @ev.EventName</span>
+                                        </label>
+                                    </div>
+                                }
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!-- page specific plugin scripts -->
+<script type="text/javascript">
+    var scripts = [null, "/Content/js/fullcalendar.js", "/Content/js/language/lang-all.js", null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+
+    jQuery(function ($) {
+
+        /* initialize the external events
+    -----------------------------------------------------------------*/
+
+        $('#external-events div.external-event').each(function () {
+            // store data so the calendar knows to render an event upon drop
+            $(this).data('event', {
+                title: $.trim($(this).text()), // use the element's text as the event title
+                className: $(this).data("class"),
+                stick: false // maintain when user navigates (see docs on the renderEvent method)
+            });
+
+            // make the event draggable using jQuery UI
+            $(this).draggable({
+                zIndex: 999,
+                revert: true,      // will cause the event to go back to its
+                revertDuration: 0  //  original position after the drag
+            });
+
+        });
+        /* initialize the calendar
+        -----------------------------------------------------------------*/
+        var date = new Date();
+        var d = date.getDate();
+        var m = date.getMonth();
+        var y = date.getFullYear();
+        var calendar = $('#calendar').fullCalendar({
+            lang: "zh-cn",
+            buttonHtml: {
+                prev: '<i class="ace-icon fa fa-chevron-left"></i>',
+                next: '<i class="ace-icon fa fa-chevron-right"></i>'
+            },
+            header: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'month,agendaWeek,agendaDay'
+            },
+            //defaultDate: '2016-01-12',
+            selectable: true,
+            selectHelper: true,
+            select: function (start, end) {
+                bootbox.prompt($.lang("new_event", "新建事件") + ":", function (title) {
+                    if (title !== null) {
+                        var res = $('#calendar').fullCalendar('renderEvent',
+                              {
+                                  title: title,
+                                  start: start,
+                                  end: end,
+                                  //allDay: allDay,
+                                  className: 'label-info'
+                              },
+                              false // make the event "stick"
+                          );
+                        //保存res
+                        var event = res[0];
+                        event.id = 0;
+                        saveEvent(event);
+                        $('#calendar').fullCalendar('unselect');
+                    }
+                });
+            },
+            droppable: true, // this allows things to be dropped onto the calendar
+            drop: function () { // this function is called when something is dropped
+                // is the "remove after drop" checkbox checked?
+                if ($('#drop-remove').is(':checked')) {
+                    // if so, remove the element from the "Draggable Events" list
+                    $(this).remove();
+                }
+            },
+            //外界拖动后激发事件，参数为添加的事件，这里可以写保存
+            eventReceive: function (event) {
+                event.id = 0;
+                saveEvent(event);
+            },
+            //改变时间大小
+            eventResize: function (event, delta, revertFunc, jsEvent, ui, view) {
+                saveEvent(event);
+            },
+            //拖动改变日期
+            eventDrop: function (event, jsEvent, ui, view) {
+                saveEvent(event);
+            },
+            editable: true,
+            eventLimit: true, // allow "more" link when too many events
+            events: {
+                url: '@Url.Content("~/SelfService/Api/Calendars")',
+                error: function () {
+                    bootbox.alert($.lang("error", "出现错误了"));
+                }
+            },
+            eventClick: function (calEvent, jsEvent, view) {
+                //display a modal
+                var modal =
+                '<div class="modal fade">\
+			  <div class="modal-dialog">\
+			   <div class="modal-content">\
+				 <div class="modal-body">\
+				   <button type="button" class="close" data-dismiss="modal" style="margin-top:-10px;">&times;</button>\
+				   <form class="no-margin">\
+					  <label>'+$.lang('event_change','更改事件')+' &nbsp;</label>\
+					  <input class="middle" autocomplete="off" type="text" value="' + calEvent.title + '" />\
+					 <button type="submit" class="btn btn-sm btn-success"><i class="ace-icon fa fa-check"></i>'+$.lang("save","保存")+'</button>\
+				   </form>\
+				 </div>\
+				 <div class="modal-footer">\
+					<button type="button" class="btn btn-sm btn-danger" data-action="delete"><i class="ace-icon fa fa-trash-o"></i>'+$.lang("event_delete","删除事件")+'</button>\
+					<button type="button" class="btn btn-sm" data-dismiss="modal"><i class="ace-icon fa fa-times"></i>'+$.lang("cancel","取消")+'</button>\
+				 </div>\
+			  </div>\
+			 </div>\
+			</div>';
+                var modal = $(modal).appendTo('body');
+                modal.find('form').on('submit', function (ev) {
+                    ev.preventDefault();
+                    calEvent.title = $(this).find("input[type=text]").val();
+                    calendar.fullCalendar('updateEvent', calEvent);
+                    saveEvent(calEvent);
+                    modal.modal("hide");
+                });
+                modal.find('button[data-action=delete]').on('click', function () {
+                    calendar.fullCalendar('removeEvents', function (ev) {
+                        if (ev._id == calEvent._id) {
+                            deleteEvent(ev);
+                        }
+                        return (ev._id == calEvent._id);
+                    })
+                    modal.modal("hide");
+                });
+
+                modal.modal('show').on('hidden', function () {
+                    modal.remove();
+                });
+            }
+        });
+        $(document).one('ajaxloadstart.page', function (e) {
+            $("#cboxOverlay").remove();
+            $("#colorbox").remove();
+        })
+        $(document).off(ace.click_event, '[data-ctrl=widgetAction]').on(ace.click_event, '[data-ctrl=widgetAction]', function (ev) {
+            ev.preventDefault();
+            var $this = $(this);
+            var $action = $this.data('action');
+            if ($action == 'addEvent') {
+                bootbox.dialog({
+                    title:$.lang("add","添加"),
+                        message: '<div class="row">  ' +
+                          '<div class="col-md-12"> ' +
+                          '<form class="form-horizontal"> ' +
+                          '<div class="form-group"> ' +
+                          '<label class="col-md-4 control-label" for="name">'+$.lang("event_name","事件名称")+'</label> ' +
+                          '<div class="col-md-4"> ' +
+                            '<input id="name" name="name" type="text" placeholder="' + $.lang("event_name", "事件名称")+'" class="form-control input-md"> ' +
+                            '<span class="help-block">' + $.lang("this_is_your_event_name","这是你的事件名称")+'</span> </div> ' +
+                          '</div> ' +
+                          '<div class="form-group"> ' +
+                          '<label class="col-md-4 control-label" for="awesomeness">'+$.lang("select_style","选择样式")+'</label> ' +
+                          '<div class="col-md-4"> ' +
+                          '<select id="simple-colorpicker-1" class="hide">' +
+                            '<option selected="" data-class="info" value="#307ECC">#307ECC</option>' +
+                            '<option data-class="success" value="#82AF6F">#82AF6F</option>' +
+                            '<option data-class="danger" value="#E2755F">#E2755F</option>' +
+                            '<option data-class="yellow" value="#FFC657">#FFC657</option>' +
+                            '<option data-class="purple" value="#7E6EB0">#7E6EB0</option>' +
+                            '<option data-class="pink" value="#CE6F9E">#CE6F9E</option>' +
+
+                            '<option data-class="grey" value="#848484">#848484</option>' +
+                            '<option data-class="default" value="#EEE">#EEE</option>' +
+                        '</select>' +
+                          '</div> </div>' +
+                          '</form> </div></div>',
+                        buttons: {
+                            success: {
+                                label: $.lang("save", "保存"),
+                                className: "btn-success",
+                                callback: function () {
+                                    var event_name = $('#name').val();
+                                    var color_class = 'label-' + $("#simple-colorpicker-1").find('option:selected').data('class');
+                                    $.post("@Url.Content("~/SelfService/Api/CalendarEvent")", { EventName: event_name, EventColor: color_class }, function (rv) {
+                                        if (rv.success) {
+                                            let data = rv.data;
+                                            var $this = $('<div class="external-event ' + data.eventColor + '" data-class="' + data.eventColor + '">  <i class="ace-icon fa fa-arrows"></i> <label>' +
+                                            '<input name="eventcheck" type="checkbox" class="ace" data-fid="' + data.fid + '" />' +
+                                            '<span class="lbl h6"> ' + data.eventName + '</span>' +
+                                            '</label> </div>');
+                                            // store data so the calendar knows to render an event upon drop
+                                            $this.data('event', {
+                                                title: $.trim($this.text()), // use the element's text as the event title
+                                                className: $this.data("class"),
+                                                stick: false // maintain when user navigates (see docs on the renderEvent method)
+                                            });
+
+                                            // make the event draggable using jQuery UI
+                                            $this.draggable({
+                                                zIndex: 999,
+                                                revert: true,      // will cause the event to go back to its
+                                                revertDuration: 0  //  original position after the drag
+                                            });
+                                            $("#external-events").append($this);
+                                        }
+                                    })
+                                    //alert("Hello " + name + ". You've chosen <b>" + color_class + "</b>");
+                                }
+                            }
+                        }
+                    })
+                    $("#simple-colorpicker-1").ace_colorpicker();
+
+                } else if ($action == 'delEvent') {
+                    //$("input[name='eventcheck']:checked")
+                    var fids = [];
+                    $("input[name='eventcheck']:checked").each(function () {
+                        fids.push($(this).data("fid"));
+                    });
+                    if (fids.length < 1) {
+                        bootbox.alert($.lang("please_select_delete", "请选中删除"));
+                    } else {
+                        bootbox.confirm($.lang("confirm_delete", "确定删除"), function (result) {
+                            if (result) {
+                                $.delete("@Url.Content("~/SelfService/Api/CalendarEvent/")"+ fids.join(), function (rv) {
+                                    if (rv.success) {
+                                        $("input[name='eventcheck']:checked").each(function () {
+                                            $(this).closest("div").remove();
+                                        });
+                                    } else {
+                                        bootbox.alert(rv.msg);
+                                    }
+                                })
+                            }
+                        });
+
+                    }
+                }
+
+            })
+        });
+        var saveEvent = function (event) {
+            var se = {};
+            se.Id = event.id;
+            se.EventName = event.title;
+            se.StartTime = event.start.format("YYYY-MM-DD HH:mm:ss");
+            se.EndTime = event.end != null ? event.end.format("YYYY-MM-DD HH:mm:ss") : null;
+            se.EventClass = event.className[0];
+            se.IsAllDay = event.allDay == true ? 1 : 0;
+            $.post("@Url.Content("~/SelfService/Api/Calendar")", se, function (result) {
+                if (result.id == null) {
+                    bootbox.alert($.lang("save_error", "存储出现错误") + "," + $.lang("please_contact_the_administrator", "请联系管理员"));
+                } else {
+                    event._id = result.id;
+                    event.id = result.id;
+                }
+            });
+        }
+        var deleteEvent = function (event) {
+            var se = {};
+            se.Dr = 1;
+            se.Id = event.id;
+            se.EventName = event.title;
+            se.StartTime = event.start.format("YYYY-MM-DD HH:mm:ss");
+            se.EndTime = event.end != null ? event.end.format("YYYY-MM-DD HH:mm:ss") : null;
+            se.EventClass = event.className[0];
+            se.IsAllDay = event.allDay == true ? 1 : 0;
+            $.post("@Url.Content("~/SelfService/Api/Calendar")", se, function (result) {
+                if (result.success == false) {
+                    bootbox.alert($.lang("delete_error", "移除出现错误") + "，" + $.lang("please_contact_the_administrator", "请联系管理员"));
+                }
+            });
+        }
+    })
+</script>

@@ -152,7 +152,15 @@ var MultiLangHelper = (function () {
       'examiner': { 'ZhCn': '考核人', 'ZhTW': '', 'En': '', 'Ja': '' },
       'assess_chart': { 'ZhCn': '考核结果图表', 'ZhTW': '', 'En': '', 'Ja': '' },
       'score_result': { 'ZhCn': '打分结果', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'assess_complete_chart': { 'ZhCn': '完成情况统计', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'assess_complete_chart': { 'ZhCn': '完成情况统计', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'score': { 'ZhCn': '打分', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'score': { 'ZhCn': '打分', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'score': { 'ZhCn': '打分', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'detail': { 'ZhCn': '明细', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'event_name': { 'ZhCn': '事件名称', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'this_is_your_event_name': { 'ZhCn': '这是你的事件名称', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'select_style': { 'ZhCn': '选择样式', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'new_event': { 'ZhCn': '新建事件', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

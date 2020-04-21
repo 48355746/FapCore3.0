@@ -5,6 +5,7 @@
     IEnumerable<PerfScore> scores = ViewBag.Scores;
     IEnumerable<PerfScoreModel> scoreModels = ViewBag.ScoreModels;
     PerfExaminer examiner = ViewBag.Examiner;
+    var totalWeights = kpis.Sum(k => k.Weights);
 }
 <div class="row">
     <div class="col-xs-12">
@@ -24,49 +25,61 @@
                 <tbody>
                     @foreach (var kpi in kpis)
                     {
+                        var score = scores?.FirstOrDefault(s => s.ProgramUid == kpi.ProgramUid && s.KPIUid == kpi.Fid && s.ExaminerUid == examiner.Fid);
+
                         <tr>
                             <td>@kpi.KpiTypeMC</td>
                             <td>@kpi.KpiTypeMC</td>
                             <td>@kpi.KpiName</td>
                             <td>@kpi.KpiNote</td>
                             <td>
-                                <label class="weights" data-kpiuid="@kpi.Fid">@kpi.Weights</label>
+                                <label class="weights" data-kpiuid="@kpi.Fid" data-percent="@Math.Round(kpi.Weights/totalWeights,2)">@kpi.Weights</label>
                             </td>
                             <td>
+
                                 @if (kpi.ScoreModel.IsPresent())
                                 {
                                     var sm = scoreModels.FirstOrDefault(s => s.Fid == kpi.ScoreModel);
                                     if (sm.IsChoose == 1)
                                     {
                                         var cs = sm.ChooseSource.TrimStart('{').TrimEnd('}').SplitComma();
+
                                         <select style="width:80px;height:34px" name="kpiScore">
                                             @foreach (var c in cs)
                                             {
                                                 var s = c.Split(':');
-                                                <option value="@s[0]">@s[1]</option>
+                                                double sv = score?.Score ?? 0;
+                                                if (sv == s[0].ToDouble())
+                                                {
+                                                    <option value="@s[0]" selected>@s[1]</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@s[0]">@s[1]</option>
+                                                }
                                             }
                                         </select>
                                     }
                                     else
                                     {
-                                        <input type="number" style="width:80px" name="kpiScore" min="@sm.MinScore" max="@sm.MaxScore" />
+                                        <input type="number" style="width:80px" name="kpiScore" value="@score?.Score" min="@sm.MinScore" max="@sm.MaxScore" />
                                     }
                                 }
                                 else
                                 {
-                                    <input type="number" style="width:80px" name="kpiScore" min="0" max="100" />
+                                    <input type="number" style="width:80px" name="kpiScore" value="@score?.Score" min="0" max="100" />
                                 }
                             </td>
-                            <td><textarea rows="2" name="kpiNote" /></td>
+                            <td><textarea rows="2" name="kpiNote">@score?.ScoreNote</textarea></td>
                         </tr>
                     }
-                    <tr>
+                    <tr class="foot">
                         <td></td>
                         <td></td>
                         <td></td>
                         <td></td>
                         <td>合计</td>
-                        <td><input type="number" style="width:80px" name="total" value="@examiner.Score" /></td>
+                        <td><input type="number" style="width:80px" name="total" readonly="readonly" value="@examiner.Score" /></td>
                         <td></td>
                     </tr>
                 </tbody>
@@ -75,18 +88,23 @@
     </div>
 </div>
 <script>
-    function saveScore() {
+    function saveScore(examinerUid, schemeUid,objectUid) {
         var scores = [];
         $('#tbScore > tbody  > tr').each(function (index, tr) {
             var $this = $(this);
+            if ($this.hasClass("foot")) {
+                return;
+            }
             var $weights = $this.find(".weights");
             var weights = $weights.html();
             var kpiUid = $weights.data("kpiuid");
             var score = $this.find("[name='kpiScore']").val();
+            var percent = $weights.data("percent");
+            var scoreRv = (score * percent).toFixed(2);
             var note = $this.find("[name='kpiNote']").val();
-            debugger
-            scores.push({weights:weights,kpiUid:kpiUid,score:score,scoreNote:note});
+            scores.push({ examinerUid: examinerUid, ProgramUid: schemeUid, objectUid: objectUid, weights: weights, kpiUid: kpiUid, score: score, scoreResult: scoreRv, scoreNote: note });
         });
+
         return scores;
 
     }

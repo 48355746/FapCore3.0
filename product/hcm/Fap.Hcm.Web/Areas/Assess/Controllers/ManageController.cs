@@ -51,10 +51,10 @@ namespace Fap.Hcm.Web.Areas.Assess.Controllers
         {
             var model = GetJqGridModel("PerfKPIType", qs =>
             {
-                qs.GlobalWhere = "PerfProgram=@Scheme";
+                qs.GlobalWhere = "ProgramUid=@Scheme";
                 qs.AddParameter("Scheme", fid);
-                qs.AddDefaultValue("PerfProgram", fid);
-                qs.AddDefaultValue("PerfProgramMC", schemeName);
+                qs.AddDefaultValue("ProgramUid", fid);
+                qs.AddDefaultValue("ProgramUidMC", schemeName);
             });
             return PartialView(model);
         }

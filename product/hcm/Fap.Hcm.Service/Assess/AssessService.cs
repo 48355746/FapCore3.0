@@ -84,8 +84,8 @@ namespace Fap.Hcm.Service.Assess
             {
                 return;
             }
-            var objectivesList= _dbContext.Query<PerfObject>("select * from PerfObject where Fid in @Fids", new DynamicParameters(new { Fids = objectiveUids }));
-            var param= new DynamicParameters(new { EmpUids = objectivesList.Select(o=>o.ObjUid) });
+            var objectivesList = _dbContext.Query<PerfObject>("select * from PerfObject where Fid in @Fids", new DynamicParameters(new { Fids = objectiveUids }));
+            var param = new DynamicParameters(new { EmpUids = objectivesList.Select(o => o.ObjUid) });
             if (examinerVM.IsOrgDept)
             {
                 DeptExaminer();
@@ -102,7 +102,8 @@ namespace Fap.Hcm.Service.Assess
             {
                 _dbContext.InsertBatchSql(perfExaminers);
             }
-            void CustomExaminer() {
+            void CustomExaminer()
+            {
                 if (examinerVM.CustomExaminers != null && examinerVM.CustomExaminers.Any())
                 {
                     foreach (var obj in objectivesList)
@@ -113,7 +114,7 @@ namespace Fap.Hcm.Service.Assess
                             {
                                 ProgramUid = examinerVM.SchemeUid,
                                 ObjectUid = obj.Fid,
-                                AssessModel = examinerVM.CustomModelName??"自定义",
+                                AssessModel = examinerVM.CustomModelName ?? "自定义",
                                 EmpUid = empuid,
                                 Weights = examinerVM.CustomWeights
                             };
@@ -129,18 +130,18 @@ namespace Fap.Hcm.Service.Assess
                 foreach (var obj in objectivesList)
                 {
                     var emp = leaderships.FirstOrDefault(e => e.Fid == obj.ObjUid);
-                    if (emp != null&&emp.Leadership.IsPresent())
+                    if (emp != null && emp.Leadership.IsPresent())
                     {
-                            PerfExaminer examiner = new PerfExaminer
-                            {
-                                ProgramUid = examinerVM.SchemeUid,
-                                ObjectUid = obj.Fid,
-                                AssessModel = examinerVM.LeadershipModelName,
-                                EmpUid = emp.Leadership,
-                                Weights = examinerVM.LeaderShipWeights
-                            };
-                            perfExaminers.Add(examiner);
-                        
+                        PerfExaminer examiner = new PerfExaminer
+                        {
+                            ProgramUid = examinerVM.SchemeUid,
+                            ObjectUid = obj.Fid,
+                            AssessModel = examinerVM.LeadershipModelName,
+                            EmpUid = emp.Leadership,
+                            Weights = examinerVM.LeaderShipWeights
+                        };
+                        perfExaminers.Add(examiner);
+
                     }
                 }
             }
@@ -191,7 +192,7 @@ namespace Fap.Hcm.Service.Assess
             var kpiTypes = _dbContext.QueryWhere<PerfKPIType>("PerfProgram=@PrmUid", param);
             //获取指标
             var kpis = _dbContext.QueryWhere<PerfKPIs>("ProgramUid=@PrmUid", param);
-          
+
             kpiTypes.ToList().ForEach((k) =>
             {
                 //获取指标分类下的指标
@@ -230,7 +231,7 @@ namespace Fap.Hcm.Service.Assess
             });
             //复制考核对象
             var objects = _dbContext.QueryWhere<PerfObject>("ProgramUid=@PrmUid", param);
-            if ( objects.Any())
+            if (objects.Any())
             {
                 objects.ToList().ForEach((m) =>
                 {
@@ -253,15 +254,15 @@ namespace Fap.Hcm.Service.Assess
             DynamicParameters param = new DynamicParameters();
             param.Add("PrmUid", schemeUid);
             string sql = $"select avg({nameof(PerfExaminer.Score)}) {nameof(PerfExaminer.Score)},{nameof(PerfExaminer.ObjectUid)},{nameof(PerfExaminer.AssessModel)},{nameof(PerfExaminer.Weights)} from PerfExaminer where  {nameof(PerfExaminer.ProgramUid)}=@PrmUid and {nameof(PerfExaminer.Score)}>0  group by {nameof(PerfExaminer.ObjectUid)}, {nameof(PerfExaminer.AssessModel)},{nameof(PerfExaminer.Weights)}";
-            
+
             IEnumerable<PerfExaminer> examiners = _dbContext.Query<PerfExaminer>(sql, param);
             IEnumerable<PerfObject> objectives = _dbContext.QueryWhere<PerfObject>("ProgramUid=@PrmUid", param);
             if (examiners.Any())
             {
-                var examinerScores= examiners.GroupBy(e => e.ObjectUid);
+                var examinerScores = examiners.GroupBy(e => e.ObjectUid);
                 foreach (var escore in examinerScores)
                 {
-                    var objective= examiners.FirstOrDefault(p => p.Fid == escore.Key);
+                    var objective = objectives.FirstOrDefault(p => p.Fid == escore.Key);
                     if (objective != null)
                     {
                         double score = 0.0;
@@ -269,7 +270,7 @@ namespace Fap.Hcm.Service.Assess
                         {
                             score += (es.Score * es.Weights) / escore.Sum(e => e.Weights);
                         }
-                        objective.Score =Math.Round(score,2);
+                        objective.Score = Math.Round(score, 2);
                     }
                 }
                 _dbContext.UpdateBatchSql(objectives);
@@ -278,6 +279,26 @@ namespace Fap.Hcm.Service.Assess
             PerfProgram prm = _dbContext.Get<PerfProgram>(schemeUid);
             prm.PrmStatus = PerfPrmStatus.Result;
             _dbContext.Update<PerfProgram>(prm);
+        }
+        [Transactional]
+        public void AssessScore(IEnumerable<PerfScore> scores)
+        {
+            string examinerUid = scores.First()?.ExaminerUid;
+            if (examinerUid.IsMissing())
+            {
+                return;
+            }
+            _dbContext.DeleteExec(nameof(PerfScore), $"{nameof(PerfScore.ExaminerUid)}=@ExaminerUid", new DynamicParameters(new { ExaminerUid = examinerUid }));
+            _dbContext.InsertBatchSql(scores);
+            var total = scores.Sum(s => s.ScoreResult);
+
+            _dbContext.Execute($"update {nameof(PerfExaminer)} set Score=@Score where Fid=@Fid",
+                new DynamicParameters(new
+                {
+                    Score = total,
+                    Fid = examinerUid
+                }));
+
         }
     }
 }

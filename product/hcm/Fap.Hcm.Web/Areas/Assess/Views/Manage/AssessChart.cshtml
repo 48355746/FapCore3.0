@@ -23,6 +23,10 @@
         var chartType = $(this).find("input").val();
         assessChart(schemeUid, chartType);
     })
+    setTimeout(function () {
+        assessChart(schemeUid, "bar");
+    }, 0);
+    assessChart(schemeUid, chartType);
     function assessChart(schemeUid, bartype) {  
         fapChart.clear();
         $.get(basePath + "/Assess/Api/AssessChart", { schemeUid: schemeUid }, function (data) {

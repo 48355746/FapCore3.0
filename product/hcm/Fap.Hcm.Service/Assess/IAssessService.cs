@@ -11,5 +11,6 @@ namespace Fap.Hcm.Service.Assess
         void CreateExaminer(ExaminerViewModel examinerVM);
         void CopyScheme(string fid);
         void AssessCalculate(string schemeUid);
+        void AssessScore(IEnumerable<PerfScore> scores);
     }
 }

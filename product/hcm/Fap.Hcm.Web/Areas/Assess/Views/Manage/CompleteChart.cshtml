@@ -21,16 +21,19 @@
     var fapChart = echarts.init(document.getElementById('fapChart'));
     $(".charttype label").on(ace.click_event, function () {
         var chartType = $(this).find("input").val();
-        assessChart(schemeUid, chartType);
+        complationChart(schemeUid, chartType);
     })
-    function assessChart(schemeUid, bartype) {
+    setTimeout(function () {
+        complationChart(schemeUid, "bar");
+    }, 0);
+    function complationChart(schemeUid, bartype) {
         fapChart.clear();
         $.get(basePath + "/Assess/Api/ComplementChart", { schemeUid: schemeUid }, function (data) {
             if (bartype === 'bar' || bartype === "line") {
                 option = {
                     xAxis: {
                         type: 'category',
-                        data: ['全部', '已打分', '未打分']
+                        data: [ '已打分', '未打分']
                     },
                     yAxis: {
                         type: 'value'
@@ -60,10 +63,9 @@
                             type: 'pie',
                             radius: '55%',
                             //center: ['50%', '60%'],
-                            data: [
-                                { value: data[0], name: '全部' },
-                                { value: data[1], name: '已打分' },
-                                { value: data[2], name: '未打分' }
+                            data: [                                
+                                { value: data[0], name: '已打分' },
+                                { value: data[1], name: '未打分' }
                             ],
                             emphasis: {
                                 itemStyle: {

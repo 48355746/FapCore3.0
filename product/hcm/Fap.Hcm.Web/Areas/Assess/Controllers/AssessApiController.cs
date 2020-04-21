@@ -119,7 +119,18 @@ namespace Fap.Hcm.Web.Areas.Assess.Controllers
             int df = _dbContext.Count("PerfExaminer", "ProgramUid=@PrmUid and Score>0", param);
             int all = _dbContext.Count("PerfExaminer", "ProgramUid=@PrmUid", param);
             int wdf = all - df;
-            return Json(new int[] { all, df, wdf });
+            return Json(new int[] {df, wdf });
+        }
+        [HttpPost("Score")]
+        public JsonResult AssessScore(IEnumerable<PerfScore> scores)
+        {
+            Guard.Against.Null(scores, nameof(scores));
+            foreach (var score in scores)
+            {
+                score.EmpUid = _applicationContext.EmpUid;
+            }
+            _assessService.AssessScore(scores);
+            return Json(ResponseViewModelUtils.Sueecss());
         }
     }
 }
