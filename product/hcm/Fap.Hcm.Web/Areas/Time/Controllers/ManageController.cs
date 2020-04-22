@@ -159,5 +159,13 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
             });
             return View(model);
         }
+        /// <summary>
+        /// 我的考勤
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult MyDayResult()
+        {
+            return View();
+        }
     }
 }

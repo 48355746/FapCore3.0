@@ -110,7 +110,7 @@ namespace Fap.Hcm.Web.Controllers
                 {
                     if (loginUser.UserIdentity.IsMissing())
                     {
-                        if (loginUser.UserName.Equals(developer))
+                        if (loginUser.UserName.EqualsWithIgnoreCase(developer))
                         {
                             emp = new Employee { Fid = "00000000000000000000", EmpCode = "Administrator", EmpName = "Administrator" };
                         }
@@ -121,7 +121,7 @@ namespace Fap.Hcm.Web.Controllers
                     }
                     else
                     {
-                        emp = _dbContext.Get<Employee>(loginUser.UserIdentity, true);
+                        emp = _dbContext.QueryFirstOrDefault<Employee>("select Fid,EmpCode,EmpName,DeptUid,DeptCode,EmpPhoto,GroupUid,OrgUid from Employee where Fid=@Fid",new Dapper.DynamicParameters(new { Fid = loginUser.UserIdentity }), true);
                         if (emp == null)
                         {
                             errorMsg = GetOrAddPageMultiLanguageContent("login_page_no_find_mapping_employee", "用户关联的人员不存在"); ;

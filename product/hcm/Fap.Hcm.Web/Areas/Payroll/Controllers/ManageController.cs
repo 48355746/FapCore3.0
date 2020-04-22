@@ -156,5 +156,9 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
             });
             return PartialView(model);
         }
+        public IActionResult MyPayroll()
+        {
+            return View();
+        }
     }
 }

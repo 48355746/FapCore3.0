@@ -77,7 +77,7 @@ namespace Fap.Hcm.Service.Payroll
             }
             return payItems;
         }
-      
+
         [Transactional]
         public long CreatePayCase(string caseUid)
         {
@@ -187,8 +187,8 @@ namespace Fap.Hcm.Service.Payroll
             int pcount = 1;
             if (records.Any())
             {
-                var existRecord= records.FirstOrDefault(r => r.PayFlag == 0);
-                if (existRecord==null)
+                var existRecord = records.FirstOrDefault(r => r.PayFlag == 0);
+                if (existRecord == null)
                 {
                     pcount = records.Max(r => r.PayCount) + 1;
                     //添加发放记录
@@ -214,7 +214,7 @@ namespace Fap.Hcm.Service.Payroll
                 newRecord.PayFlag = 0;
                 _dbContext.Insert(newRecord);
             }
-            pCols = pCols.ReplaceIgnoreCase("PaymentTimes", pcount.ToString()+ " as PaymentTimes");
+            pCols = pCols.ReplaceIgnoreCase("PaymentTimes", pcount.ToString() + " as PaymentTimes");
             pCols = pCols.ReplaceIgnoreCase("PayConfirm", "0 as PayConfirm");
             string sql = $"select {pCols} from PayCenter where {where}";
             var pastData = _dbContext.QueryOriSql(sql);
@@ -307,7 +307,7 @@ namespace Fap.Hcm.Service.Payroll
                 _dbContext.InsertDynamicData(caseEmp);
             }
 
-        }       
+        }
 
         [Transactional]
         public void PayrollOff(string caseUid)
@@ -382,7 +382,7 @@ namespace Fap.Hcm.Service.Payroll
         }
         public GapEmployee PayGapAnalysis(string recordUid)
         {
-            PayRecord payRecord= _dbContext.Get<PayRecord>(recordUid);
+            PayRecord payRecord = _dbContext.Get<PayRecord>(recordUid);
             PayCase payCase = _dbContext.Get<PayCase>(payRecord.CaseUid);
             //当前月有 历史数据没有的语句（入职的）
             string sql1 = string.Format($"select EmpUid from {payCase.TableName} where PaymentTimes={payCase.PayCount} and EmpUid NOT IN(select EmpUid from {PAYROLLCENTER} where  PayYM='{payRecord.PayYM}' and PayCaseUid='{payRecord.CaseUid}' and PaymentTimes={payRecord.PayCount})");
@@ -393,7 +393,7 @@ namespace Fap.Hcm.Service.Payroll
             GapEmployee emps = new GapEmployee();
             if (list1.Any())
             {
-                emps.AddedList = _dbContext.QueryWhere<Employee>("Fid in @Fids",new DynamicParameters(new { Fids=list1.Select(l=>l.EmpUid) }));
+                emps.AddedList = _dbContext.QueryWhere<Employee>("Fid in @Fids", new DynamicParameters(new { Fids = list1.Select(l => l.EmpUid) }));
             }
             if (list2.Any())
             {
@@ -414,7 +414,7 @@ namespace Fap.Hcm.Service.Payroll
             {
                 string mailContent = pc.PayYM + "份薪资已发放，请登录HCM系统查看。员工自助--》我的薪资";
                 string msgContent = pc.PayYM + "份薪资已发放。";
-                string sendTime = DateTimeUtils.CurrentDateTimeStr;             
+                string sendTime = DateTimeUtils.CurrentDateTimeStr;
                 List<string> lmail = new List<string>();
                 List<FapMessage> lmsg = new List<FapMessage>();
                 foreach (var emp in empList)
@@ -442,5 +442,62 @@ namespace Fap.Hcm.Service.Payroll
 
             }
         }
+        public IEnumerable<MyPayroll> GetMyPayroll(string startYM, string endYM)
+        {
+            string payrollSql = "select * from PayCenter where PayYM>=@StartYM and PayYM<=@EndYM and EmpUid=@EmpUid";
+            var payrollList = _dbContext.Query(payrollSql, new DynamicParameters(new { StartYM = startYM, EndYM = endYM, EmpUid = _applicationContext.EmpUid }),true);
+            if (payrollList.Any())
+            {
+                return MyPayrolls();
+
+            }
+            return Enumerable.Empty<MyPayroll>();
+            IEnumerable<MyPayroll> MyPayrolls()
+            {
+                var caseUids = payrollList.Select(p => p.PayCaseUid);
+                string itemSql = "select CaseUid,ColumnUid from PayItem where ShowCard=1 and CaseUid in @CaseUids";
+                var items = _dbContext.Query<PayItem>(itemSql, new DynamicParameters(new { CaseUids = caseUids }));
+                var grpPayrolls = payrollList.GroupBy(p => p.PayCaseUid);
+                foreach (var grpPayroll in grpPayrolls)
+                {
+                    string caseUid = grpPayroll.Key;
+                    MyPayroll myPayroll = new MyPayroll { CaseUid = caseUid };
+                    var payItems = items.Where(i => i.CaseUid == caseUid);
+                    var cols = _dbContext.Columns("PayCenter").Where(c => payItems.Select(p => p.ColumnUid).Contains(c.Fid)).OrderBy(c => c.ColOrder);
+                    myPayroll.PayrollRows = GetPayrollRows(cols,grpPayroll);                    
+                    yield return myPayroll;
+                }
+            }
+            IEnumerable<PayrollRow> GetPayrollRows(IEnumerable<FapColumn> cols,IEnumerable<dynamic> payrollRows)
+            {
+                foreach (var data in payrollRows)
+                {
+                    IDictionary<string, object> dataDic = data as IDictionary<string, object>;
+                    PayrollRow row = new PayrollRow()
+                    {
+                        PayrollItems = GetPayrollItems(cols, dataDic)
+                    };
+                    yield return row;                   
+                }
+            }
+            IEnumerable<PayrollItem> GetPayrollItems(IEnumerable<FapColumn> cols, IDictionary<string, object> dicData)
+            {
+                foreach (var col in cols)
+                {
+                    object v = dicData[col.ColName];
+                    if (col.CtrlType==FapColumn.CTRL_TYPE_COMBOBOX||col.CtrlType==FapColumn.CTRL_TYPE_REFERENCE)
+                    {
+                        v = dicData[col.ColName + "MC"];
+                    }
+                    PayrollItem pi = new PayrollItem
+                    {
+                        ItemName = col.ColComment,
+                        ItemValue = v
+                    };
+                    yield return pi;
+                }
+            }
+        }
     }
+
 }

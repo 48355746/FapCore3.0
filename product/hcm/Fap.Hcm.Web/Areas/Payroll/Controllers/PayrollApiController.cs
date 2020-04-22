@@ -181,5 +181,11 @@ namespace Fap.Hcm.Web.Areas.Payroll.Controllers
             _payrollService.PayrollOffNotice(caseUid);
             return Json(ResponseViewModelUtils.Sueecss());
         }
+        [HttpPost("MyPayroll")]
+        public JsonResult MyPayroll(string startYm,string endYM)
+        {
+            var myPayrolls= _payrollService.GetMyPayroll(startYm, endYM);
+            return Json(ResponseViewModelUtils.Sueecss(myPayrolls));
+        }
     }
 }

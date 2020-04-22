@@ -1,0 +1,236 @@
+﻿@{
+    Layout = null;
+    //获取申请人参照列,请假
+   
+}
+<title>
+    <fap-multilang lang-key="my_attendance" default-content="我的考勤"></fap-multilang>
+</title>
+
+<link href="~/Content/css/fullcalendar.css" rel="stylesheet" />
+<link href="~/Content/css/fullcalendar.print.css" rel="stylesheet" media='print' />
+<style>
+    .billskin .layui-layer-btn0 {
+        background-color: #d15b47 !important;
+        border-color: #428bca;
+    }
+</style>
+<div class="row">
+    <div class="col-xs-12">
+        <div id="dialog-bizprocess" class=""><div class="row"><div id="DialogFrame_BizProcess" class="col-xs-12"></div></div></div>
+
+        <div class="row">
+            <div class="col-sm-9">
+                <div class="space"></div>
+                @*<div id='loading'>loading...</div>*@
+                <!-- #section:plugins/data-time.calendar -->
+                <div id="calendar"></div>
+
+                <!-- /section:plugins/data-time.calendar -->
+            </div>
+
+            <div class="col-sm-3">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <p>
+                            <button id="btnleave" class="btn btn-primary">
+                                <i class="ace-icon fa fa-plus"></i>
+                                请假
+                            </button>
+                            <button id="btnout" class="btn btn-purple hide">
+                                <i class="ace-icon fa fa-plus"></i>
+                                出差
+                            </button>
+                            <button id="btnbiz" class="btn btn-pink">
+                                <i class="ace-icon fa fa-plus"></i>
+                                补签
+                            </button>
+
+                        </p>
+
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="widget-box transparent">
+                            <div class="widget-header">
+                                <h4 class="widget-title">
+                                <fap-multilang lang-key="stat" default-content="统计"></fap-multilang>
+                          </h4>
+
+                            </div>
+
+                            <div class="widget-body">
+                                <div class="space-4"></div>
+                                <div class="widget-main no-padding center">
+                                    <span class="btn btn-app btn-sm btn-danger no-hover">
+                                        <span class="line-height-1 bigger-170" id="kg"> 0 </span>
+
+                                        <br>
+                                        <span class="line-height-1 smaller-90"> 旷工天数 </span>
+                                    </span>
+
+                                </div>
+                                <div class="widget-main no-padding center">
+                                    <span class="btn btn-app btn-sm btn-warning no-hover">
+                                        <span class="line-height-1 bigger-170" id="ct"> 0 </span>
+
+                                        <br>
+                                        <span class="line-height-1 smaller-90"> 迟、退次数 </span>
+                                    </span>
+
+                                </div>
+                                <div class="widget-main no-padding center">
+                                    <span class="btn btn-app btn-sm btn-info no-hover">
+                                        <span class="line-height-1 bigger-170" id="cc"> 0 </span>
+
+                                        <br>
+                                        <span class="line-height-1 smaller-90"> 出差时长 </span>
+                                    </span>
+
+                                </div>
+                                <div class="widget-main no-padding center">
+                                    <span class="btn btn-app btn-sm btn-yellow no-hover">
+                                        <span class="line-height-1 bigger-170" id="qj"> 0 </span>
+
+                                        <br>
+                                        <span class="line-height-1 smaller-90"> 请假时长 </span>
+                                    </span>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var refreshList=function()
+    {
+        $.msg("申请成功");
+        //$.gritter.removeAll();
+        $('.modal').modal('hide');
+    }
+    var scripts = [null, "/Content/js/fullcalendar.js", "/Content/js/language/lang-all.js","/Scripts/Workflow/business.js", null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            var startDate,endDate;
+            var date = new Date();
+            var d = date.getDate();
+            var m = date.getMonth();
+            var y = date.getFullYear();
+            var calendar = $('#calendar').fullCalendar({
+                lang: "zh-cn",
+                buttonHtml: {
+                    prev: '<i class="ace-icon fa fa-chevron-left"></i>',
+                    next: '<i class="ace-icon fa fa-chevron-right"></i>'
+                },
+                header: {
+                    left: 'title',
+                    center: '',
+                    right: 'prev,next today'
+                },
+                //defaultDate: '2016-01-12',
+                selectable: true,
+                selectHelper: true,
+                select: function (start, end) {
+                    startDate=moment(start).format('YYYY-MM-DD');
+                    endDate = moment(end).format('YYYY-MM-DD');                    
+                    $.ajax({
+                        url: '@Url.Content("~/Time/Api/MyCardRecord")',
+                        type: 'post',
+                        dataType: 'json',
+                        //async: false,//使用同步的方式,true为异步方式
+                        data: { start:startDate , end: endDate },//这里使用json对象
+                        success: function (data) {
+                            var msg = $.lang("no_card_data", "未找到打卡数据") + "！";
+                            if (data.length > 0) {
+                                msg = "";
+                                for (var i = 0; i < data.length; i++) {
+                                    if (msg != "") msg += "<br/>";
+                                    msg += $.lang("card_time", "打卡时间") + ":" + data[i].cardTime;
+                                }
+
+                            }
+                            bootbox.dialog({
+                                message: msg,
+                                title: moment(start).format("MM月DD日打卡信息"),
+                                buttons: {
+                                    OK: {
+                                        label: "OK",
+                                        className: "btn-primary",
+                                        callback: function () {
+                                        }
+                                    }
+                                }
+                            });
+
+                        },
+                        fail: function () {
+                            //code here...
+                        }
+                    });
+
+                },
+                editable: true,
+                eventLimit: true, // allow "more" link when too many events
+                events: function (start, end, callback) {
+                    $.ajax({
+                        url: '@Url.Content("~/Time/Api/MyDayResult")',
+                        type: "post",
+                        dataType: "json",
+                        data: { start: moment(start).format("YYYY-MM-DD"), end: moment(end).format("YYYY-MM-DD"), month: moment($('#calendar').fullCalendar('getDate')).format("YYYY-MM") },
+                        success: function (data) {
+                            $("#cc").text(data.cc);
+                            $("#qj").text(data.qj);
+                            $("#kg").text(data.kg);
+                            $("#ct").text(data.cd + "、" + data.zt);
+                            for (var i = 0; i < data.list.length; i++) {
+                                //$("#calendar").fullCalendar("removeEvents", data.list[i].id);
+                                var className = 'label-success';
+
+                                if (data.list[i].calResult.indexOf("迟到") > -1 || data.list[i].calResult.indexOf("早退") > -1) {
+                                    className = 'label-warning'
+
+                                }
+                                if (data.list[i].calResult.indexOf("出差") > -1 || data.list[i].calResult.indexOf("公差") > -1 || data.list[i].calResult.indexOf("同城") > -1 || data.list[i].calResult.indexOf("外") > -1) {
+                                    className = 'label-info'
+                                }
+                                if (data.list[i].calResult.indexOf("假") > -1) {
+                                    className = 'label-yellow'
+                                }
+                                if (data.list[i].calResult.indexOf("缺勤") > -1) {
+
+                                    className = 'label-important'
+                                }
+
+                                calendar.fullCalendar('renderEvent',
+                                {
+                                    id: data.list[i].id,
+                                    title: data.list[i].calResult,
+                                    start: new Date(data.list[i].currDate),
+                                    end: new Date(new Date(data.list[i].currDate).getTime() + 24 * 60 * 60 * 1000),
+                                    className: className,
+                                    allDay: "allDay",
+                                },
+                                false // make the event "stick"
+                            );
+                            }
+                        },
+                        error: function (e) {
+                            alert("异常！");
+                        }
+                    });
+
+                },
+                eventClick: function (calEvent, jsEvent, view) {
+
+                    //弹出打卡记录
+
+                }
+            });
+        })
+    })
+</script>

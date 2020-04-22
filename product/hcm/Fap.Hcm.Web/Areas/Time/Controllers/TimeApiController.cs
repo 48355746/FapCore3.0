@@ -156,5 +156,44 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
             double hours=_timeService.OvertimeValidHours(empUid);
             return Json(new ResponseViewModel { success = true, data = hours });
         }
+        [HttpPost("MyCardRecord")]
+        public JsonResult MyCardRecord(string start,string end)
+        {
+            DynamicParameters param = new DynamicParameters();
+            param.Add("EmpUid",_applicationContext.EmpUid);
+            param.Add("Start", start);
+            param.Add("End", end);
+            var clist = _dbContext.Query<dynamic>("select CardTime from TmCardRecord where EmpUid=@EmpUid and CardTime>=@Start and CardTime<@End", param);
+            return JsonIgnoreNull(clist);
+        }
+        //获取员工考勤日结果
+        [HttpPost("MyDayResult")]
+        public JsonResult GetMyDayResult(string start, string end, string month)
+        {
+            string sql = string.Format("select Id,CurrDate,CalResult from TmDayResult where EmpUid=@EmpUid and CurrDate>=@Start and CurrDate<=@End");
+            DynamicParameters param = new DynamicParameters();
+            param.Add("EmpUid", _applicationContext.EmpUid);
+            param.Add("Start", start);
+            param.Add("End", end);
+            param.Add("Month", month + "%");
+            var list = _dbContext.Query<dynamic>(sql, param);
+            var kg = _dbContext.Count("TmDayResult", "CurrDate like @Month and EmpUid=@EmpUid and CalResult like '%缺勤%'", param);
+            var cd = _dbContext.Count("TmDayResult", "CurrDate like @Month and EmpUid=@EmpUid and CalResult like '%迟%'", param);
+            var zt = _dbContext.Count("TmDayResult", "CurrDate like @Month and EmpUid=@EmpUid and CalResult like '%早%'", param);
+            var cc = _dbContext.Sum("TmDayResult", "TravelHours", "CurrDate like @Month and EmpUid=@EmpUid and (CalResult like '%差%' or CalResult like '%外%' or CalResult like '%城%')", param);
+            var qj = _dbContext.Sum("TmDayResult", "LeavelHours", "CurrDate like @Month and EmpUid=@EmpUid and CalResult like '%假%'", param);
+            var data = new
+            {
+                list = list,
+                cd = cd,
+                zt = zt,
+                kg = kg,
+                cc = Convert.ToDouble(cc),
+                qj = Convert.ToDouble(qj),
+
+            };
+            return JsonIgnoreNull(data);
+
+        }
     }
 }

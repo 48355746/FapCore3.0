@@ -160,7 +160,9 @@ var MultiLangHelper = (function () {
       'event_name': { 'ZhCn': '事件名称', 'ZhTW': '', 'En': '', 'Ja': '' },
       'this_is_your_event_name': { 'ZhCn': '这是你的事件名称', 'ZhTW': '', 'En': '', 'Ja': '' },
       'select_style': { 'ZhCn': '选择样式', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'new_event': { 'ZhCn': '新建事件', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'new_event': { 'ZhCn': '新建事件', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'event_change': { 'ZhCn': '更改事件', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'event_delete': { 'ZhCn': '删除事件', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

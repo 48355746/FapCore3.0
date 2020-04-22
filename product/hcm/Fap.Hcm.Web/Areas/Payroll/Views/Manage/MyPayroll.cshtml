@@ -1,0 +1,90 @@
+﻿@{
+    Layout = null;
+}
+<title>我的薪资</title>
+@*<link href="~/Content/css/datepicker.css" rel="stylesheet" />*@
+<div class="row">
+    <div class="col-xs-12">
+        <div class="row">
+            <form class="form-horizontal" role="form">
+                <!-- #section:elements.form -->
+                <div class="form-group">
+                    <label class="col-sm-2 control-label no-padding-right" for="form-field-1"> 薪资年月</label>
+                    <div class="col-sm-4">
+                        <div class="input-daterange input-group">
+                            <input type="text" class="input-sm form-control" id="txtStart" name="start" />
+                            <span class="input-group-addon">
+                                <i class="fa fa-exchange"></i>
+                            </span>
+
+                            <input type="text" class="input-sm form-control" id="txtEnd" name="end" />
+                        </div>
+                    </div>
+                    <button type="button" id="btnQueryPayroll" class="btn btn-white btn-sm btn-info">查看</button>
+                </div>
+            </form>
+
+        </div>
+        <div class="space-2"></div>
+        <div class="row">
+            <div class="col-xs-12">
+                <div id="payMain" style="overflow:auto">
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    var scripts = [null,null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $("#txtStart").val(moment().subtract(2, "months").format("YYYY-MM"));
+            $("#txtEnd").val(moment().format("YYYY-MM"))
+
+            $('.input-daterange').datepicker({ format: 'yyyy-mm', autoclose: true, minViewMode: "months" });
+            $("#btnQueryPayroll").on(ace.click_event, function () {
+
+                var start = $("#txtStart").val();
+                var end = $("#txtEnd").val();
+
+                $.post("@Url.Content("~/Payroll/Api/MyPayroll")", { startYM: start, endYM: end }, function (rv) {
+                    if (rv.success) {
+                        $("#payMain").html("");
+                        var mypayrolls = rv.data;
+                        $.each(mypayrolls, function (i, data) {
+                            var $table = $("<table  class='table table-striped table-bordered table-hover'><thead class='thin-border-bottom'><tr></tr></thead><tbody></tbody></table>");
+                            var $thead = $table.find("thead tr");
+                            var $tbody = $table.find("tbody");
+                            $.each(data.payrollRows, function (i, row) {
+                                if (i === 0) {
+                                    var $tr = $("<tr>");
+                                    $.each(row.payrollItems, function (i, item) {
+                                        $thead.append("<td>" + item.itemName + "</td>");
+                                        $tr.append("<td>" + item.itemValue + "</td>");
+                                    })
+                                    $tbody.append($tr);
+                                } else {
+                                    var $tr = $("<tr>");
+                                    $.each(row.payrollItems, function (i, item) {
+                                        $tr.append("<td>" + item.itemValue + "</td>");
+                                    })
+                                    $tbody.append($tr);
+                                }
+                            });
+                            $("#payMain").append($table.get(0));
+                            
+                        })
+                    } else {
+                        bootbox.alert(rv.msg);
+                    }
+
+                })
+            })
+
+
+
+        })
+    })
+</script>

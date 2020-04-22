@@ -14,5 +14,6 @@ namespace Fap.Hcm.Service.Payroll
         void PayrollOffCancel(string caseUid);
         GapEmployee PayGapAnalysis(string recordUid);
         void PayrollOffNotice(string caseUid);
+        IEnumerable<MyPayroll> GetMyPayroll(string startYM, string endYM);
     }
 }
