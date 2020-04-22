@@ -1,25 +1,29 @@
-﻿function applyBusiness(title, processUid, frmType, businessUid, initData) {
-    var openUrl = $.randomUrl(basePath + '/Workflow/Business/ApplyBill?processUid=' + processUid + '&businessUid=' + businessUid);
+﻿
+function applyBusiness(businessUid,title, initData) {  
+
+    var openUrl = $.randomUrl(basePath+'/Workflow/Business/ApplyBill?businessUid=' + businessUid);
 
     var dialog = bootbox.dialog({
-        title: '"' + title + '"申请',
+        title: title,
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
         size: "large",
         footer: false,
         buttons: {
             tempSave: {
-                label: '暂存',
-                className: "btn-info",
+                label: $.lang("temporary", '暂存'),
+                className: "btn-link btn-info",
                 callback: function () {
-                    temporarySave();
-                    return false;
+                    var r = temporarySave();
+                    if (r === false) {
+                        return r;
+                    }
                 }
             }, submit: {
-                label: '提交',
-                className: "btn-primary",
+                label: $.lang("submit", "提交"),
+                className: "btn-link btn-primary",
                 callback: function () {
                     submitBill(function () {
-                        $.msg('提交成功,业务中心查看我的申请');
+                        bootbox.hideAll();
                     });
                     return false;
                 }
@@ -33,9 +37,9 @@
             if (initData) {
                 for (var key in initData) {
                     dialog.find("[name$=" + key + "]").val(initData[key]);
+                    dialog.find("[name$=" + key + "]").trigger("change");
                 }
             }
         });
     });
-
 }

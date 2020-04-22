@@ -162,7 +162,10 @@ var MultiLangHelper = (function () {
       'select_style': { 'ZhCn': '选择样式', 'ZhTW': '', 'En': '', 'Ja': '' },
       'new_event': { 'ZhCn': '新建事件', 'ZhTW': '', 'En': '', 'Ja': '' },
       'event_change': { 'ZhCn': '更改事件', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'event_delete': { 'ZhCn': '删除事件', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'event_delete': { 'ZhCn': '删除事件', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'card_time': { 'ZhCn': '打卡时间', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'card_time': { 'ZhCn': '打卡时间', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'no_card_data': { 'ZhCn': '未找到打卡数据', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种
