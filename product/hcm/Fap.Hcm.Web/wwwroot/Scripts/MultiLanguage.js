@@ -165,7 +165,8 @@ var MultiLangHelper = (function () {
       'event_delete': { 'ZhCn': '删除事件', 'ZhTW': '', 'En': '', 'Ja': '' },
       'card_time': { 'ZhCn': '打卡时间', 'ZhTW': '', 'En': '', 'Ja': '' },
       'card_time': { 'ZhCn': '打卡时间', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'no_card_data': { 'ZhCn': '未找到打卡数据', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'no_card_data': { 'ZhCn': '未找到打卡数据', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'chang_photo': { 'ZhCn': '更换照片', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

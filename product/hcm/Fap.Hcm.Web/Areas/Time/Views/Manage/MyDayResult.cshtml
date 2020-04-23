@@ -33,79 +33,43 @@
                 <div class="row">
                     <div class="col-sm-12">
                         <div class="space-32"></div>
-                        <div class="infobox infobox-orange" id="Absence">
-                            <div class="infobox-progress">
-                                <!-- #section:pages/dashboard.infobox.easypiechart -->
-                                <div class="easy-pie-chart percentage" data-percent="42" data-size="46">
-                                    <span class="percent">42</span>%
-                                </div>
-
-                                <!-- /section:pages/dashboard.infobox.easypiechart -->
+                        <div class="infobox infobox-red">
+                            <div class="infobox-icon">
+                                <i class="ace-icon fa fa-ban"></i>
                             </div>
-
                             <div class="infobox-data">
-                                <span class="infobox-text">缺勤</span>
-
-                                <div class="infobox-content">
-                                    
-                                </div>
+                                <span class="infobox-data-number absense">0</span>
+                                <div class="infobox-content">缺勤</div>
                             </div>
                         </div>
-                        <div class="infobox infobox-blue2" id="Takeleave">
-                            <div class="infobox-progress">
-                                <!-- #section:pages/dashboard.infobox.easypiechart -->
-                                <div class="easy-pie-chart percentage" data-percent="42" data-size="46">
-                                    <span class="percent">42</span>%
-                                </div>
-
-                                <!-- /section:pages/dashboard.infobox.easypiechart -->
+                        <div class="infobox infobox-pink">
+                            <div class="infobox-icon">
+                                <i class="ace-icon fa fa-clock-o"></i>
                             </div>
-
                             <div class="infobox-data">
-                                <span class="infobox-text">请假时长</span>
-
-                                <div class="infobox-content">
-                                   
-                                </div>
+                                <span class="infobox-data-number cz">0</span>
+                                <div class="infobox-content">迟、退次数</div>
                             </div>
                         </div>
-                        <div class="infobox infobox-pink" id="cz">
-                            <div class="infobox-progress">
-                                <!-- #section:pages/dashboard.infobox.easypiechart -->
-                                <div class="easy-pie-chart percentage" data-percent="42" data-size="46">
-                                    <span class="percent">42</span>%
-                                </div>
-
-                                <!-- /section:pages/dashboard.infobox.easypiechart -->
+                        <div class="infobox infobox-blue">
+                            <div class="infobox-icon">
+                                <i class="ace-icon fa fa-leaf"></i>
                             </div>
-
                             <div class="infobox-data">
-                                <span class="infobox-text">迟、退次数</span>
-
-                                <div class="infobox-content">
-                                   
-                                </div>
+                                <span class="infobox-data-number takeleave">0</span>
+                                <div class="infobox-content">请假时长</div>
                             </div>
                         </div>
-                        <div class="infobox infobox-red" id="travel">
-                            <div class="infobox-progress">
-                                <!-- #section:pages/dashboard.infobox.easypiechart -->
-                                <div class="easy-pie-chart percentage" data-percent="42" data-size="46">
-                                    <span class="percent">42</span>%
-                                </div>
-
-                                <!-- /section:pages/dashboard.infobox.easypiechart -->
+                        <div class="infobox infobox-blue2">
+                            <div class="infobox-icon">
+                                <i class="ace-icon fa fa-plane"></i>
                             </div>
-
                             <div class="infobox-data">
-                                <span class="infobox-text">出差时长</span>
-
-                                <div class="infobox-content">
-                                    
-                                </div>
+                                <span class="infobox-data-number travel">0</span>
+                                <div class="infobox-content">出差时长</div>
                             </div>
                         </div>
-
+                       
                     </div>
                 </div>
             </div>
@@ -113,7 +77,7 @@
     </div>
 </div>
 <script> 
-    var scripts = [null,"/Content/js/jquery.easypiechart.js", "/Content/js/fullcalendar.js", "/Content/js/language/lang-all.js","/Scripts/Workflow/business.js?v=3", null]
+    var scripts = [null, "/Content/js/fullcalendar.js", "/Content/js/language/lang-all.js","/Scripts/Workflow/business.js", null]
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
             var startDate,endDate;
@@ -207,37 +171,11 @@
                         data: { start: moment(start).format("YYYY-MM-DD"), end: moment(end).format("YYYY-MM-DD"), month: moment($('#calendar').fullCalendar('getDate')).format("YYYY-MM") },
                         success: function (data) {
                             layer.close(index);
-                            $("#cc").text(data.cc);
-                            $("#qj").text(data.qj);
-                            $("#kg").text(data.kg);
-                            $("#ct").text(data.cd + "、" + data.zt);
-                            $("#Absence").find(".easy-pie-chart.percentage").data("percent", data.cc * 100 / 22);
-                            $("#Absence").find(".infobox-content").html(data.cc);
-                            $("#Absence").find(".easy-pie-chart.percentage").data("percent", data.cc * 100 / 22);
-                            $("#Absence").find(".infobox-content").html(data.cc);
-                            $("#cz").find(".easy-pie-chart.percentage").data("percent", data.cc * 100 / 22);
-                            $("#cz").find(".infobox-content").html(data.cc);
-                            $("#Absence").find(".easy-pie-chart.percentage").data("percent", data.cc * 100 / 22);
-                            $("#Absence").find(".infobox-content").html(data.cc);
-
-
-                            $('.easy-pie-chart.percentage').each(function () {
-                                var $box = $(this).closest('.infobox');
-                                var barColor = $(this).data('color') || (!$box.hasClass('infobox-dark') ? $box.css('color') : 'rgba(255,255,255,0.95)');
-                                var trackColor = barColor == 'rgba(255,255,255,0.95)' ? 'rgba(255,255,255,0.25)' : '#E2E2E2';
-                                var size = parseInt($(this).data('size')) || 50;
-                                $(this).easyPieChart({
-                                    barColor: barColor,
-                                    trackColor: trackColor,
-                                    scaleColor: false,
-                                    lineCap: 'butt',
-                                    lineWidth: parseInt(size / 10),
-                                    animate: /msie\s*(8|7|6)/.test(navigator.userAgent.toLowerCase()) ? false : 1000,
-                                    size: size
-                                });
-                            })
-
-
+                            $(".infobox-data-number.absense").html(data.kg);
+                            $(".infobox-data-number.takeleave").html(data.qj);
+                            $(".infobox-data-number.cz").html((data.cd + data.zt));
+                            $(".infobox-data-number.travel").html(data.cc);
+                           
 
                             for (var i = 0; i < data.list.length; i++) {
                                 //$("#calendar").fullCalendar("removeEvents", data.list[i].id);

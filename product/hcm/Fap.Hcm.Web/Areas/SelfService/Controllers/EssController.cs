@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using Fap.AspNetCore.Infrastructure;
+using Fap.AspNetCore.ViewModel;
 using Fap.Core.Infrastructure.Model;
+using Fap.Core.Utility;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Fap.Hcm.Web.Areas.SelfService.Controllers
@@ -26,6 +28,22 @@ namespace Fap.Hcm.Web.Areas.SelfService.Controllers
             param.Add("EmpUid", _applicationContext.EmpUid);
             IEnumerable<CfgCalendarEvent> list = _dbContext.QueryWhere<CfgCalendarEvent>("EmpUid=@EmpUid", param);
             return View(list);
+        }
+        #endregion
+
+        #region 日报周报
+        public ActionResult DailyWeekly()
+        {
+            JqGridViewModel model = this.GetJqGridModel("EssReport", (qs) =>
+            {
+                qs.GlobalWhere = "EmpUid='" +_applicationContext.EmpUid + "'";
+                qs.AddDefaultValue("EmpUid", _applicationContext.EmpUid);
+                qs.AddDefaultValue("EmpUidMC", _applicationContext.EmpName);
+                qs.AddDefaultValue("RptDate", DateTimeUtils.CurrentDateTimeStr);
+                qs.AddOrderBy("RptDate", "desc");
+
+            });
+            return View(model);
         }
         #endregion
     }

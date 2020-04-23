@@ -732,7 +732,11 @@ namespace Fap.AspNetCore.Serivce
             //构造jqgrid过滤条件
             if (jqGridPostData.Filters.IsPresent())
             {
-                lwhere.Add(jfs.BuilderFilter(tableName, jqGridPostData.Filters));
+                var filters= jfs.BuilderFilter(tableName, jqGridPostData.Filters);
+                if (filters.IsPresent())
+                {
+                    lwhere.Add(filters);
+                }
             }
             if (jqGridPostData.QuerySet.GlobalWhere.IsPresent())
             {

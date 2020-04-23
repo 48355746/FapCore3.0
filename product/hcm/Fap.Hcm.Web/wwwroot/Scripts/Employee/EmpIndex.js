@@ -6,7 +6,7 @@ var ShowPhoto = function (rid) {
         $.gritter.add({
             title: rowData.EmpName,
             text: $.lang("department", "部门") + '：' + rowData.DeptUidMC,
-            image: $.randomUrl(basePath + "/Component/Photo/" + rowData.Fid),
+            image: $.randomUrl(basePath + "/Component/Photo/" + rowData.EmpPhoto),
             dataimage: rowData.EmpPhoto,
             sticky: false,
             time: '',
@@ -111,7 +111,7 @@ $(document).on(ace.click_event, ".gritter-image", function () {
             file.ace_file_input('loading', true);
 
             deferred = $.ajax({
-                url: basePath + "/Core/Api/uploadfile/" + empphoto,
+                url: basePath + "/Component/Uploadfile/" + empphoto,
                 type: "POST",
                 processData: false,//important
                 contentType: false,//important

@@ -1,0 +1,105 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@{
+    Layout = null;
+}
+<title>
+    <fap-multilang lang-key="dail_weekly" default-content="日报周报"></fap-multilang>
+</title>
+
+@*@{await Html.RenderPartialAsync("_ControlCssPartial"); }*@
+<link href="~/Content/css/daterangepicker.css" rel="stylesheet" />
+<link href="~/Content/css/bootstrap-timeline.css" rel="stylesheet" />
+<script id="TimelineTemplate" type="text/x-jquery-tmpl">
+    <li class="active">
+        <div class="timeline-time">
+            <strong>${RptDate}</strong>
+        </div>
+        <div class="timeline-icon">
+            <div class="bg-primary">
+                {{if RptCategory=='Daily'}}日
+                {{else  RptCategory=='Weekly'}}周
+                {{else RptCategory=='Monthly'}}月
+                {{else}}日{{/if}}
+            </div>
+        </div>
+        <div class="timeline-content">
+            <h2>
+                ${EmpUidMC}(${WorkHour}小时)
+            </h2>
+            <p>
+                {{html Title}}
+            </p>
+            <p class="text-warning">评价：${Review}</p>
+        </div>
+    </li>
+</script>
+
+
+<div class="space-4"></div>
+<div class="widget-box ui-sortable-handle" style="opacity: 1;">
+    <div class="widget-header widget-header-flat">
+        <h5 class="widget-title smaller">
+            <fap-multilang lang-key="dail_weekly" default-content="日报周报"></fap-multilang>
+        </h5>
+
+        <!-- #section:custom/widget-box.tabbed -->
+        <div class="widget-toolbar no-border">
+            <ul class="nav nav-tabs" id="myTab">
+                <li class="active">
+                    <a data-toggle="tab" href="#home">
+                        <i class=" blue ace-icon fa  fa-list bigger-120"></i>
+                        <fap-multilang lang-key="list" default-content="列表"></fap-multilang>
+                    </a>
+                </li>
+
+                <li>
+                    <a data-toggle="tab" href="#timeline">
+                        <i class="green ace-icon fa fa-calendar-check-o bigger-120"></i>
+                        <fap-multilang lang-key="timeline" default-content="时间轴"></fap-multilang>
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+    
+        <!-- /section:custom/widget-box.tabbed -->
+    </div>
+    <div class="widget-body">
+        <div class="widget-main">
+            <div class="tab-content padding-2">
+                <div id="home" class="tab-pane fade in active">
+                    <fap-grid id="essreport"  grid-model="Model" wrapper="myTab,home" row-num="10" shrink-fit="false" on-grid-complete="refreshTimeLine" view-records="true"></fap-grid>
+                </div>
+                <div id="timeline" class="tab-pane fade">
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <ul id="timelineContent" class="timeline animated"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    //刷新时间轴
+    function refreshTimeLine() {
+        var obj = $("#grid-essreport").jqGrid("getRowData", null);
+        if (obj.length > 0) {
+            $("#timelineContent").empty();
+            $("#TimelineTemplate").tmpl(obj).appendTo("#timelineContent");
+        }
+    }
+    var scripts = [null, "/Content/js/jquery.tmpl.js", null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        //inline scripts related to this page
+        jQuery(function ($) {      
+            $(document).one('ajaxloadstart.page', function (e) {
+                $('#myTab a[data-toggle="tab"]').off('shown.bs.tab');
+               
+            })
+        })
+    })
+</script>
+

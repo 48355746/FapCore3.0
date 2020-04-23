@@ -7,6 +7,7 @@ using Fap.Core.Infrastructure.Metadata;
 using Fap.Hcm.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Fap.Core.Extensions;
+using Fap.AspNetCore.ViewModel;
 
 namespace Fap.Hcm.Web.Areas.Employee.Controllers
 {
@@ -45,6 +46,14 @@ namespace Fap.Hcm.Web.Areas.Employee.Controllers
             var model = this.GetJqGridModel("Employee");
             return View(model);
         }
-
+        public IActionResult Profile()
+        {
+            FormViewModel model = GetFormViewModel("Employee", "frm-Employee", _applicationContext.EmpUid);
+            model.FormStatus = AspNetCore.Controls.DataForm.FormStatus.View;
+            IEnumerable<FapTable> empChilds = _dbContext.Tables(t => t.TableCategory == "EmpSub");//||t.TableCategory=="EmpBiz");
+            var gvms = empChilds.Select(t => new GridViewModel { TableLabel = t.TableComment, TableName = t.TableName, Condition = "EmpUid='" + _applicationContext.EmpUid + "'" });
+            ViewBag.SubInfo = gvms.ToJson();
+            return View(model);
+        }
     }
 }
