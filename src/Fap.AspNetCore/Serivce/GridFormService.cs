@@ -77,12 +77,19 @@ namespace Fap.AspNetCore.Serivce
                     //组装成DataResultView对象
                     PageDataResultView dataResultView = new PageDataResultView();
                     dataResultView.Data = pi.Items.ToFapDynamicObjectList(fapColumns);
-                    //当未获取数据的时候才获取默认值
-                    //if (!dataObject.Data.Any())
-                    //{
-                    //wyf表单应用，表格暂时不用取默认值
-                    //dataResultView.DefaultData = queryOption.Wraper.GetDefaultData();
-                    //}
+                    var richCols = fapColumns.Where(f => f.CtrlType == FapColumn.CTRL_TYPE_RICHTEXTBOX);
+                    if (richCols.Any())
+                    {
+                        //富文本去html标签
+                        string reg = @"[<].*?[>]";
+                        foreach (var col in richCols)
+                        {
+                            foreach (var item in pi.Items as IEnumerable<IDictionary<string, object>>)
+                            {
+                                item[col.ColName] = Regex.Replace(item[col.ColName]?.ToString(), reg, "");
+                            }
+                        }
+                    }
                     dataResultView.DataJson = JsonConvert.SerializeObject(pi.Items);
                     dataResultView.TotalCount = pi.TotalCount;
                     dataResultView.CurrentPage = pi.CurrentPage;
@@ -732,7 +739,7 @@ namespace Fap.AspNetCore.Serivce
             //构造jqgrid过滤条件
             if (jqGridPostData.Filters.IsPresent())
             {
-                var filters= jfs.BuilderFilter(tableName, jqGridPostData.Filters);
+                var filters = jfs.BuilderFilter(tableName, jqGridPostData.Filters);
                 if (filters.IsPresent())
                 {
                     lwhere.Add(filters);

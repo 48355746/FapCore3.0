@@ -258,6 +258,7 @@ var loadRefMessageBox = function (title, frmid, colfid, ctrlid, refurl, extra) {
                 className: "btn-primary",
                 callback: function () {
                     var res = GetRefResult();
+                    
                     if (res) {
                         $("#" + frmid + " #" + ctrlid + "MC").val(res.name).change();
                         $("#" + frmid + " #" + ctrlid).val(res.code).change();
@@ -266,7 +267,12 @@ var loadRefMessageBox = function (title, frmid, colfid, ctrlid, refurl, extra) {
                             var fcs = res.frmcols.split(',');
                             var exts = res.ext.split("^-^");
                             for (var i = 0; i < fcs.length; i++) {
+                                debugger
                                 $("#" + frmid + " #" + fcs[i]).val(exts[i]).change();
+                                var reg = /<[^>]+>/gim;
+                                if (exts[i].match(reg)) {
+                                    $("#" + frmid + " #" + fcs[i]).html(exts[i]).change();
+                                }
                             }
                         }
 

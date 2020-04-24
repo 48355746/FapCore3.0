@@ -210,7 +210,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 return $"<textarea id=\"{ctrlName}\" name=\"{ctrlName}\" ng-model=\"{ngModel}\" { editAble } rows=\"{rows}\"   class=\"form-control autosize-transition\">{fieldValue}</textarea>";
             }
         }
-        public static string AsRichTextBox(this FapColumn fapColumn,  string fieldValue)
+        public static string AsRichTextBox(this FapColumn fapColumn, string fieldValue)
         {
             string ctrlName = fapColumn.ColName;
             string required = " data-nullable=1 ";
@@ -218,7 +218,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             {
                 required = " data-nullable=0 ";
             }
-            return $"<div class=\"form-control wysiwyg-editor\" name=\"{ctrlName}\" id=\"{ctrlName}\" {required}>{fieldValue}</div>";
+            return $"<div class=\"form-control wysiwyg-editor\" name=\"{ctrlName}\" id=\"{ctrlName}\" {required} >{fieldValue}</div>";
         }
 
         public static string AsMultiLanguageTextBox(this FapColumn fapColumn, string editAble, string ctrlName,  string currentLangDesc, Dictionary<string, string> formData, string fieldValue)

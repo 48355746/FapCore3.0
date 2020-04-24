@@ -107,6 +107,8 @@
     <Folder Include="Areas\Organization\Models\" />
     <Folder Include="Areas\Payroll\Data\" />
     <Folder Include="Areas\Payroll\Models\" />
+    <Folder Include="Areas\Recruit\Data\" />
+    <Folder Include="Areas\Recruit\Models\" />
     <Folder Include="Areas\SelfService\Data\" />
     <Folder Include="Areas\SelfService\Models\" />
     <Folder Include="Areas\System\Data\" />

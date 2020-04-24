@@ -72,7 +72,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             string editAble = string.Empty;
             if (_fapColumn.EditAble == 0 || ReadOnly)
             {
-                editAble = "disabled='disabled'";
+                editAble = "disabled='disabled'";               
             }
             StringBuilder sbFormGroup = new StringBuilder();
             string labelCol = " col-sm-2 col-xs-12";

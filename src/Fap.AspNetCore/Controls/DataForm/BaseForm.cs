@@ -490,6 +490,10 @@ namespace Fap.AspNetCore.Controls.DataForm
 						'viewSource'
 						]
 					}).prev().addClass('wysiwyg-style1');");
+                    if (column.EditAble == 0)
+                    {
+                        script.AppendLine("$('#"+ column.ColName+"').attr('contenteditable', false);");
+                    }
                     //script.AppendLine("$(\"#frm-" + _id + " #" + column.ColName + "\").html('" + StringUtil.TextToHtml(field.FieldValue.ToString()) + "');");
                 }
                 #endregion
