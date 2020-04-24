@@ -1,17 +1,17 @@
 ﻿@inject Fap.Core.Rbac.ILoginService _loginService
 @using Fap.Core.Rbac.Model
 @{
-    IEnumerable<FapRole> roles = _loginService.GetUserRoles(_applicationContext.UserUid) ;
-    FapRole cr =roles.FirstOrDefault(r=>r.Fid==_applicationContext.CurrentRoleUid);
+    IEnumerable<FapRole> roles = _loginService.GetUserRoles(_applicationContext.UserUid);
+    FapRole cr = roles.FirstOrDefault(r => r.Fid == _applicationContext.CurrentRoleUid);
 }
 <li class="light-blue">
     <a data-toggle="dropdown" href="#" class="dropdown-toggle">
         <img class="nav-user-photo" src="@Url.Content($"~/Component/Photo/{_applicationContext.EmpPhoto}")" alt="" />
         <span class="user-info">
             <small><fap-multilang lang-key="welcome" default-content="欢迎"></fap-multilang>,</small>
-           
+
             <text>@_applicationContext.EmpName</text>
-           
+
         </span>
 
         <i class="ace-icon fa fa-caret-down"></i>
@@ -39,16 +39,25 @@
         <li class="divider"></li>
         <li>
             <a href="#SelfService/Ess/UserProfile/">
-                <i class="ace-icon fa fa-user"></i>                
+                <i class="ace-icon fa fa-user"></i>
                 <fap-multilang lang-key="personal_information" default-content="个人信息"></fap-multilang>
             </a>
         </li>
         <li>
             <a href="#Home/ResetPassword/">
-                <i class="ace-icon fa fa-lock"></i>                
+                <i class="ace-icon fa fa-lock"></i>
                 <fap-multilang lang-key="page_modifypassword_title" default-content="修改密码"></fap-multilang>
             </a>
         </li>
+        @if (_applicationContext.UserName == Fap.Core.Infrastructure.Domain.FapPlatformConstants.Administrator)
+        {
+            <li>
+                <a href="javascript:void(0)" id="btnClearCache">
+                    <i class="ace-icon fa fa-refresh"></i>
+                    <fap-multilang lang-key="clear_cache" default-content="清除缓存"></fap-multilang>
+                </a>
+            </li>
+        }
         <li class="divider"></li>
         <li>
             <a href="#modal-productinfo" data-toggle="modal">
@@ -59,8 +68,25 @@
         <li>
             <a href="@Url.Content("~/Home/SignOut")">
                 <i class="ace-icon fa fa-power-off"></i>
-                <fap-multilang lang-key="logout" default-content="登出"></fap-multilang> 
+                <fap-multilang lang-key="logout" default-content="登出"></fap-multilang>
             </a>
         </li>
     </ul>
 </li>
+@if (_applicationContext.UserName == Fap.Core.Infrastructure.Domain.FapPlatformConstants.Administrator)
+{
+    <script>
+        $(function () {
+            $("#btnClearCache").on(ace.click_event, function () {
+                $.post(basePath + "/System/Api/Manage/Setting/ClearCache", function (rv) {
+                    if (rv.success) {
+                        $.msg(rv.msg);
+                    } else {
+                        bootbox.alert(rv.msg);
+                    }
+                })
+            })
+
+        })
+    </script>
+}

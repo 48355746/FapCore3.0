@@ -133,7 +133,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
                 list.Add(model);
             }
             _dbContext.InsertBatch<FapBizRoleEmployee>(list);
-            return Json(new { success = true });
+            return Json(ResponseViewModelUtils.Sueecss());
         }
         [HttpPost]
         [Route("RemoveBizRoleEmployee")]
@@ -146,7 +146,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             }
             string sql = "delete from FapBizRoleEmployee where BizRoleUid=@BizRoleUid and EmpUid in @EmpUids";
             _dbContext.Execute(sql, new DynamicParameters(new { BizRoleUid = bizRole, EmpUids = listEmp }));
-            return Json(new { success = true });
+            return Json(ResponseViewModelUtils.Sueecss());
         }
         #endregion
 
@@ -453,7 +453,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         public JsonResult ClearConfigCache()
         {
             _platformDomain.ParamSet.Refresh();
-            return Json(new { success = "success" });
+            return Json(ResponseViewModelUtils.Sueecss());
         }
 
         /// <summary>
@@ -466,7 +466,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         public JsonResult ClearCache()
         {
             _platformDomain.Refresh();
-            return Json(new { success = "success" });
+            return Json(ResponseViewModelUtils.Sueecss());
         }
 
         /// <summary>

@@ -2364,9 +2364,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 script.AppendLine(_onEditAfterInitDataForm);
             }
             script.Append(@"      });
-                      } else {
-                        $.msg('"+ _multiLang.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page, "general_select_row", "请选择一条数据") + @"');
-                      }
+                      } 
                     }
                   });");
         }

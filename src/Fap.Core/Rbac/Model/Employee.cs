@@ -40,6 +40,33 @@ namespace Fap.Core.Rbac.Model
         [Computed]
         public string DeptUidMC { get; set; }
         /// <summary>
+		/// 其他职衔
+		/// </summary>
+		public string OJobTitle { get; set; }
+        /// <summary>
+        /// 其他职衔 的显性字段MC
+        /// </summary>
+        [Computed]
+        public string OJobTitleMC { get; set; }
+        /// <summary>
+        /// 专业职衔
+        /// </summary>
+        public string PJobTitle { get; set; }
+        /// <summary>
+        /// 专业职衔 的显性字段MC
+        /// </summary>
+        [Computed]
+        public string PJobTitleMC { get; set; }
+        /// <summary>
+        /// 管理职衔
+        /// </summary>
+        public string MJobTitle { get; set; }
+        /// <summary>
+        /// 管理职衔 的显性字段MC
+        /// </summary>
+        [Computed]
+        public string MJobTitleMC { get; set; }
+        /// <summary>
         /// 性别
         /// </summary>
         public string Gender { get; set; }

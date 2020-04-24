@@ -45,7 +45,7 @@ namespace Fap.Workflow.Engine.WriteBack
             dynamic billData = _dbContext.Get(tableName, fid, true);
             //业务实体 只有设置了映射才会有            
             dynamic bizData = null;
-            dynamic fapBizData = null;
+            FapDynamicObject fapBizData = null;
             string bizTableName = string.Empty;
             string effectiveTime = billData.EffectiveTime;
             if (effectiveTime.IsPresent())
@@ -118,7 +118,7 @@ namespace Fap.Workflow.Engine.WriteBack
                                 if (bizData != null)
                                 {
                                     IDictionary<string, object> dicBizData = bizData as IDictionary<string, object>;
-                                    fapBizData = dicBillData.ToFapDynamicObject(_dbContext.Columns(bizTableName));
+                                    fapBizData = dicBizData.ToFapDynamicObject(_dbContext.Columns(bizTableName));
                                     //更新业务对象
                                     foreach (JObject map in mappings)
                                     {
@@ -128,7 +128,7 @@ namespace Fap.Workflow.Engine.WriteBack
                                         string billCol = arryMap[0].Split('.')[1];
 
                                         string bizCol = arryMap[1].Split('.')[1];
-                                        fapBizData.Add(bizCol, fapBillData.Get(billCol).ToString());
+                                        fapBizData.SetValue(bizCol, fapBillData.Get(billCol).ToString());
                                     }
                                     //bizData.TableName = bizTableName;
                                     //update
@@ -238,7 +238,7 @@ namespace Fap.Workflow.Engine.WriteBack
         /// <param name="rule"></param>
         /// <param name="billData">单据数据</param>
         /// <param name="bizObject">业务数据</param>
-        private void NotifyPayroll(CfgBillWriteBackRule rule, dynamic billData, dynamic bizObject)
+        private void NotifyPayroll(CfgBillWriteBackRule rule, FapDynamicObject billData, FapDynamicObject bizObject)
         {
             //影响工资,业务单据必须是Employee
             if (rule.IsNotifyPayroll == 1 && rule.BizEntityUid == "Employee")
@@ -249,7 +249,7 @@ namespace Fap.Workflow.Engine.WriteBack
                 {
                     return;
                 }
-                string empUid = bizObject.Fid;
+                string empUid = bizObject.Get("Fid").ToString();
                 Employee empInfo = _dbContext.Get<Employee>(empUid);
                 List<FapDynamicObject> payToDos = new List<FapDynamicObject>();
                 foreach (var pc in payCases)
@@ -291,7 +291,7 @@ namespace Fap.Workflow.Engine.WriteBack
         /// <param name="rule"></param>
         /// <param name="billData">单据数据</param>
         /// <param name="bizObject">业务数据</param>
-        private void NotifyInsurance(CfgBillWriteBackRule rule, dynamic billData, dynamic bizObject)
+        private void NotifyInsurance(CfgBillWriteBackRule rule, FapDynamicObject billData, FapDynamicObject bizObject)
         {
             //影响工资同时影响保险,业务单据必须是Employee
             if (rule.IsNotifyPayroll == 1 && rule.BizEntityUid == "Employee")
@@ -302,7 +302,7 @@ namespace Fap.Workflow.Engine.WriteBack
                 {
                     return;
                 }
-                string empUid = bizObject.Fid;
+                string empUid = bizObject.Get("Fid").ToString();
                 Employee empInfo = _dbContext.Get<Employee>(empUid);
                 List<FapDynamicObject> insToDos = new List<FapDynamicObject>();
                 foreach (var cs in insCases)

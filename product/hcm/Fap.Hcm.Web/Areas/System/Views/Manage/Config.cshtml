@@ -147,37 +147,23 @@
                 //console.log(data.selected);
             });
             $("#btnClearCache").click(function () {
-                $.ajax({
-                    type: 'POST',
-                    url: "/System/Api/Manage/Setting/ClearCache",
-                    data: {},
-                    async: false,
-                    success: function (data) {
-                        if (data.success == 'success') {
-                            $.msg("刷新系统数据缓存成功");
-                        } else {
-                            bootbox.alert("刷新系统数据缓存失败，请重新刷新");
-                        }
-                    },
-                    dataType: "JSON"
-                });
+                $.post(basePath + "/System/Api/Manage/Setting/ClearCache", function (rv) {
+                    if (rv.success) {
+                        $.msg(rv.msg);
+                    } else {
+                        bootbox.alert(rv.msg);
+                    }
+                })                
             });
 
             $("#btnClearConfigCache").click(function () {
-                $.ajax({
-                    type: 'POST',
-                    url: "/System/Api/Manage/Setting/ClearConfigCache",
-                    data: {},
-                    async: false,
-                    success: function (data) {
-                        if (data.success == 'success') {
-                            $.msg("刷新系统配置缓存成功");
-                        } else {
-                            bootbox.alert("刷新系统配置缓存失败，请重新刷新");
-                        }
-                    },
-                    dataType: "JSON"
-                });
+                $.post(basePath + "/System/Api/Manage/Setting/ClearConfigCache", function (rv) {
+                    if (rv.success) {
+                        $.msg(rv.msg);
+                    } else {
+                        bootbox.alert(rv.msg);
+                    }
+                })                
             });
 
             //增加配置项

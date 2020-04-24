@@ -1,0 +1,9 @@
+﻿@model IEnumerable<Fap.Hcm.Service.Organization.OrgJobTitle>
+
+@foreach (var title in Model)
+{
+    <h2>@title.Name</h2>
+    <p>
+       @Html.Raw(title.Outline)
+    </p>
+}

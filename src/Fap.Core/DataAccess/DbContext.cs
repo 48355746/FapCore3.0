@@ -2016,14 +2016,14 @@ namespace Fap.Core.DataAccess
                     {
                         var currDate = DateTimeUtils.CurrentDateTimeStr;
                         var enableDate = DateTimeUtils.LastSecondDateTimeStr;
-                        //复制一份old data 形成新数据，修改EnableDate为当前日期                       
-                        oriData.EnableDate = enableDate;
+                        //复制一份old data 形成新数据
                         string columnList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")));
                         string paramList = string.Join(',', fieldList.Where(f => !f.EqualsWithIgnoreCase("ID")).Select(f => $"@{f}"));
                         long newId = _dbSession.Insert(tableName, columnList, paramList, oriData);
 
-                        //更新新数据
+                        //更新新数据 修改EnableDate为当前日期      
                         fapDynData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Id, newId);
+                        fapDynData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_EnableDate, enableDate);
                         fapDynData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_UpdateDate, currDate);
                         fapDynData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_UpdateBy, _applicationContext.EmpUid);
                         fapDynData.SetValue(FapDbConstants.FAPCOLUMN_FIELD_UpdateName, _applicationContext.EmpName);
@@ -2036,7 +2036,6 @@ namespace Fap.Core.DataAccess
                         oldUpdate.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Ts, ts);
                         oldUpdate.SetValue(FapDbConstants.FAPCOLUMN_FIELD_DisableDate, enableDate);
                         return _dbSession.Update(oldUpdate);
-
                     }
                     catch (Exception ex)
                     {

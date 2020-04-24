@@ -28,7 +28,7 @@
         //流程模板
     var wfProcessUid = '@wfProcessUid';
     var businessUid = '@businessUid';
-    var appName = '@appName';
+    var appName = '@Html.Raw(appName)';
     var billTable = '@business.BillEntity';
         /**
          * 暂存

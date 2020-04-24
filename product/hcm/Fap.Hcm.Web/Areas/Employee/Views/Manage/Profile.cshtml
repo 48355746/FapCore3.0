@@ -46,7 +46,7 @@
                     附属信息
                 </a>
 
-                <a href="javascript:void(0)" id="btnJobSummary" class="btn btn-link">
+                <a href="javascript:void(0)" id="btnJobSummary" data-title="@ViewBag.Titles" class="btn btn-link">
                     <i class="ace-icon fa fa-globe bigger-125 blue"></i>
                     职位说明
                 </a>
@@ -277,7 +277,12 @@
                 });
             })
             $("#btnJobSummary").on(ace.click_event, function () {
-
+                var title = $(this).data("title");
+                if (title) {
+                    bootboxWindow($.lang("summary", "说明书"), basePath + "/Organization/OrgDept/TitleOutline", null, { fids: title });
+                } else {
+                    $.msg("无职位头衔，无法查看");
+                }
             })
         });
     })

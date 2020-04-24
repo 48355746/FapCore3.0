@@ -8,6 +8,7 @@ using Fap.Hcm.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Fap.Core.Extensions;
 using Fap.AspNetCore.ViewModel;
+using E = Fap.Core.Rbac.Model;
 
 namespace Fap.Hcm.Web.Areas.Employee.Controllers
 {
@@ -25,11 +26,11 @@ namespace Fap.Hcm.Web.Areas.Employee.Controllers
             ViewBag.EmpStatus = _dbContext.Dictionarys("EmpStatus");
 
             IEnumerable<FapTable> empChilds = _dbContext.Tables(t => t.TableCategory == "EmpSub");//||t.TableCategory=="EmpBiz");
-            var gvms= empChilds.Select(t => new GridViewModel { TableLabel = t.TableComment, TableName = t.TableName, Condition = "EmpUid='" + _applicationContext.EmpUid + "'" });
-            ViewBag.SubInfo =gvms.ToJson();
+            var gvms = empChilds.Select(t => new GridViewModel { TableLabel = t.TableComment, TableName = t.TableName, Condition = "EmpUid='" + _applicationContext.EmpUid + "'" });
+            ViewBag.SubInfo = gvms.ToJson();
             return View(model);
         }
-        public PartialViewResult EmpPartJob(string empUid,string empName,string empCode)
+        public PartialViewResult EmpPartJob(string empUid, string empName, string empCode)
         {
             var model = GetJqGridModel("EmpPartJob", qs =>
             {
@@ -53,6 +54,9 @@ namespace Fap.Hcm.Web.Areas.Employee.Controllers
             IEnumerable<FapTable> empChilds = _dbContext.Tables(t => t.TableCategory == "EmpSub");//||t.TableCategory=="EmpBiz");
             var gvms = empChilds.Select(t => new GridViewModel { TableLabel = t.TableComment, TableName = t.TableName, Condition = "EmpUid='" + _applicationContext.EmpUid + "'" });
             ViewBag.SubInfo = gvms.ToJson();
+            string jobEmpSql = $"select {nameof(E.Employee.OJobTitle)},{nameof(E.Employee.MJobTitle)},{nameof(E.Employee.PJobTitle)} from {nameof(E.Employee)} where Fid=@Fid";
+            var emp = _dbContext.QueryFirstOrDefault<E.Employee>(jobEmpSql, new Dapper.DynamicParameters(new { Fid = _applicationContext.EmpUid }));
+            ViewBag.Titles = $"{emp.OJobTitle},{emp.MJobTitle},{emp.PJobTitle}";
             return View(model);
         }
     }

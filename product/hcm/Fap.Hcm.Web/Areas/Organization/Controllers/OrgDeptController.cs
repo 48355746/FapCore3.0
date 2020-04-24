@@ -9,6 +9,8 @@ using System;
 using Fap.Core.Rbac.Model;
 using Fap.Core.Infrastructure.Query;
 using Fap.Core.Infrastructure.Domain;
+using Fap.Hcm.Service.Organization;
+using Ardalis.GuardClauses;
 
 namespace Fap.Hcm.Web.Areas.Organization.Controllers
 {
@@ -108,6 +110,17 @@ namespace Fap.Hcm.Web.Areas.Organization.Controllers
         {
             JqGridViewModel model = this.GetJqGridModel("OrgJobTitle");
             return View(model);
+        }
+        /// <summary>
+        /// 职位头衔说明书
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult TitleOutline(string fids)
+        {
+            Guard.Against.NullOrEmpty(fids, nameof(fids));
+            var fidList= fids.SplitComma();
+            var model= _dbContext.QueryWhere<OrgJobTitle>("Fid in @Fids", new DynamicParameters(new { Fids = fidList }));
+            return PartialView(model);
         }
         /// <summary>
         /// 历史架构
