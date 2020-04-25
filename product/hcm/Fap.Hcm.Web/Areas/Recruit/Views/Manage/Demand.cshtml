@@ -1,101 +1,38 @@
 ﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
 @using Fap.AspNetCore.Controls.JqGrid
-@{
-    Layout = null;
-    //增加操作列
-    Column column = new Column("oper");
-    column.SetLabel("操作");
-    column.SetSortable(false);
-    column.SetWidth(110);
+@{   
     var execStatusList= _dbContext.Dictionarys("RcrtExecStatus");
 }
-<title>发布职位</title>
-<style>
-    .tablediv .ui-jqgrid .ui-jqgrid-pager {
-        line-height: 15px;
-        height: 40px;
-        padding-top: 5px !important;
-        padding-bottom: 5px !important;
-    }
+<title>
+    <fap-multilang lang-key="job_demand" default-content="职位需求"></fap-multilang>
+</title>
 
-    .ui-jqgrid .ui-subgrid .ui-jqgrid .ui-jqgrid-hdiv .ui-jqgrid-htable th div {
-        padding-top: 10px;
-        padding-bottom: 22px;
-    }
-</style>
-<script>
-      //加载历史版本
-    function showHJobResumeGrid(parentRowID, parentRowKey)
-    {
-        $('#' + parentRowID).load($.randomUrl("@Url.Content("~/Recruit/RcrtMain/JobResumeList/")"+parentRowKey));
-    }
-    function showResume(fid) {
-         openNewWindow("@Url.Content("~/Recruit/RcrtMain/ResumeProcessing/")" + fid);
-    }
-</script>
 <div class="row">
     <div class="col-xs-12">
         <div class="widget-box">
             <div class="widget-header widget-header-flat">
-                <h4 class="widget-title">职位列表</h4>
+                <h4 class="widget-title">
+                    <fap-multilang lang-key="job_demand" default-content="职位需求"></fap-multilang>
+                </h4>
 
                 <div class="widget-toolbar">
                     <a href="#" data-action="fullscreen" class="orange2">
                         <i class="ace-icon fa fa-expand"></i>
                     </a>
                 </div>
+                <div class="widget-toolbar">
+                    <fap-button id="btnPublishWebsite" btn-tag="link" content="发布到招聘网站" icon-before="fa fa-website blue" class-name="info"></fap-button>
+                    <fap-button id="btnInvalid" btn-tag="link" content="作废" icon-before="fa fa-website blue" class-name="info"></fap-button>
+                    <fap-button id="btnCompleted" btn-tag="link" content="完成" icon-before="fa fa-website blue" class-name="info"></fap-button>
+                </div>
+                <div class="widget-toolbar">
+                    <fap-button id="btnResume" btn-tag="link" content="简历" icon-before="fa fa-website blue" class-name="info"></fap-button>
+                </div>
             </div>
             <div class="widget-body">
 
-                <div class="widget-toolbox">
-                    <div class="btn-toolbar">
-                        <div class="btn-group">
-                          
-                            <div class="btn-group" id="divOperDemandStatus" style="margin-left: 1px;">
-                                <button data-toggle="dropdown" class="btn btn-success btn-round btn-sm dropdown-toggle">
-                                    <i class="ace-icon fa fa-pencil bigger-110 "></i>
-                                    标记为
-                                    <span class="ace-icon fa fa-caret-down icon-on-right"></span>
-                                </button>
-                                <ul class="dropdown-menu dropdown-info dropdown-menu-left">
-
-                                    @foreach (var execStatus in execStatusList)
-                                    {
-                                        <li>
-                                            <a href="javascript:void(0)" data-action="@execStatus.Code">@execStatus.Name</a>
-                                        </li>
-                                    }
-
-                                </ul>
-                            </div><!-- /.btn-group -->
-
-                        </div>
-                        <div class="btn-group" id="divResumeStatus">
-                            <button data-toggle="dropdown" class="btn btn-info btn-round btn-sm dropdown-toggle">
-                                <i class="ace-icon fa fa-search bigger-110 "></i>
-                                处理状态
-                                <span class="ace-icon fa fa-caret-down icon-on-right"></span>
-                            </button>
-
-
-                            <ul class="dropdown-menu dropdown-info dropdown-menu-left">
-                                <li>
-                                    <a href="javascript:void(0)" data-action="All">全部</a>
-                                </li>
-                                @foreach (var execStatus in execStatusList)
-                                {
-                                    <li>
-                                        <a href="javascript:void(0)" data-action="@execStatus.Code">@execStatus.Name</a>
-                                    </li>
-                                }
-
-                            </ul>
-                        </div><!-- /.btn-group -->
-                        
-                    </div>
-                </div>
                 <div class="widget-main">
-                    <fap-grid id="rcrtdemand" attach-column="column" grid-model="Model" wrapper="widget-main" view-records="true" shrink-fit="false" on-grid-complete="initMenu" subgrid-rowexpanded="showHJobResumeGrid"></fap-grid>
+                    <fap-grid id="rcrtdemand"  grid-model="Model" wrapper="widget-main" register-authority="false" oper-chart="true" view-records="true" shrink-fit="false"></fap-grid>
 
                     <!-- /.row -->
                 </div>
@@ -106,46 +43,7 @@
 </div>
 
 
-<script>
-    //初始化菜单
-    var initMenu = function () {
-        var ids = jQuery("#grid-rcrtdemand").jqGrid('getDataIDs');
-        for (var i = 0; i < ids.length; i++) {
-            var de = '';
-            var cl = ids[i];
-            var ret = jQuery('#grid-rcrtdemand').jqGrid('getRowData', cl);
-            var fid = ret.Fid;
-            de += "<a  href='javascript:void(0)' onclick='showJobSummary(\"" + fid + "\",\"" + ret.PositionUid + "\")'>岗位说明书 </a>";
-            jQuery('#grid-rcrtdemand').jqGrid('setRowData', ids[i], { oper: de });
-        }
-    }
-    //岗位说明书
-    function showJobSummary(fid, puid) {
-        debugger
-        if (puid == '') {
-            bootbox.alert(MultiLangHelper.getResName("rectmain_demandlist_page_thedemandnotpost", "本需求没有岗位") + "！");
-            return;
-        }
-        $.get(basePath + "/api/orgdept/positionmanual/" + uid, function (rv) {
-            if (rv.manualContent != "") {
-                var index = layer.open({
-                    type: 1,
-                    title: MultiLangHelper.getResName("ess_userpropfule_page_jobdescription", "岗位说明书"),
-                    content: rv.manualContent
-
-                });
-            } else {
-                var url = "@Html.Raw(Url.Action("EntityDocument", "CommonCtrls", new { area = "Common", moduleuid = "OrgPositionDocument", tn = "OrgPosition" }))" + "&fid=" + uid;
-                $.get(url, function (rv) {
-                    var index = layer.open({
-                        type: 1,
-                        title: MultiLangHelper.getResName("ess_userpropfule_page_jobdescription", "岗位说明书"),
-                        content: rv //这里content是一个普通的String
-                    });
-                })
-            }
-        })
-    }
+<script> 
     var setAssoResume = function (fid,demandName) {
         var dialog = bootbox.dialog({
             title: "关联简历",
