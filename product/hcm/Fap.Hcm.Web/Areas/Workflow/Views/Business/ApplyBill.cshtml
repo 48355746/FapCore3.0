@@ -24,6 +24,7 @@
 <environment exclude="Development">
     <script src="~/lib/ueditor/ueditor.parse.js"></script>
 </environment>
+
 <script>
         //流程模板
     var wfProcessUid = '@wfProcessUid';
@@ -40,9 +41,7 @@
 
         // 提交单据
     function submitBill(callback) {
-        var sv = Persistence('frm-@formName', billTable, function (data) {
-            data.BillName = appName;
-        });
+        var sv = Persistence('frm-@formName', billTable);
         if (sv === false) {
             return;
         }

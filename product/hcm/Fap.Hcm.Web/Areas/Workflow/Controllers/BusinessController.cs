@@ -68,6 +68,7 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
                 SubTableDefaultValue sub = new SubTableDefaultValue() { TableName = "TmTravelBudget", Data = new Dictionary<string, string> { ["Currency"] = "fcdc11e5828cc236d2ab", ["CurrencyMC"] = "人民币" } };
                 model.SubDefaultDataList.AsList().Add(sub);
             }
+            model.DefaultData.Add("BillName", business.BizName);
             //关联的业务类型Uid
             ViewBag.Business = business;
             //当前流程

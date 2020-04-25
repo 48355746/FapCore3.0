@@ -77,19 +77,7 @@ namespace Fap.AspNetCore.Serivce
                     //组装成DataResultView对象
                     PageDataResultView dataResultView = new PageDataResultView();
                     dataResultView.Data = pi.Items.ToFapDynamicObjectList(fapColumns);
-                    var richCols = fapColumns.Where(f => f.CtrlType == FapColumn.CTRL_TYPE_RICHTEXTBOX);
-                    if (richCols.Any())
-                    {
-                        //富文本去html标签
-                        string reg = @"[<].*?[>]";
-                        foreach (var col in richCols)
-                        {
-                            foreach (var item in pi.Items as IEnumerable<IDictionary<string, object>>)
-                            {
-                                item[col.ColName] = Regex.Replace(item[col.ColName]?.ToString(), reg, "");
-                            }
-                        }
-                    }
+                
                     dataResultView.DataJson = JsonConvert.SerializeObject(pi.Items);
                     dataResultView.TotalCount = pi.TotalCount;
                     dataResultView.CurrentPage = pi.CurrentPage;

@@ -6,3 +6,7 @@
 .form-inline .checkbox label {
     padding-left: 10px !important
 }
+/*jqgrid div 行高问题*/
+td div{
+    display:inline-block;
+}

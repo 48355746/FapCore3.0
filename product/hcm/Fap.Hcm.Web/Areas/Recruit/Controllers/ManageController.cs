@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Fap.Hcm.Web.Areas.Recruit.Controllers
 {
+    [Area("Recruit")]
     public class ManageController : FapController
     {
         public ManageController(IServiceProvider serviceProvider) : base(serviceProvider)
