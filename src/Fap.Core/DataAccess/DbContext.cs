@@ -2675,6 +2675,10 @@ namespace Fap.Core.DataAccess
 
         public void InsertBatchSql<T>(IEnumerable<T> entityListToInsert) where T : BaseModel
         {
+            if (entityListToInsert == null||!entityListToInsert.Any())
+            {
+                return;
+            }
             StringBuilder sql = new StringBuilder(null);
             int i = 0;
             foreach (var entity in entityListToInsert)

@@ -32,7 +32,7 @@ namespace Fap.Core.Rbac.AC
             {
                 #region 获取所有menu
 
-                _allMenus = _dbSession.Query<FapMenu>($"select * from FapMenu where ActiveFlag=1");
+                _allMenus = _dbSession.Query<FapMenu>($"select * from FapMenu where ActiveFlag=1 and Dr=0");
 
                 #endregion
                 _initialized = true;

@@ -1,0 +1,30 @@
+﻿@model IEnumerable<Fap.Hcm.Service.Recruit.RcrtWebsite>
+@foreach (var website in Model)
+{
+    <div class="form-inline websiteselector">
+        <label class="inline">
+            <input type="checkbox" data-website="@website.WebName" class="ace" />
+            <span class="lbl"> @website.WebName</span>
+        </label>
+    </div>
+    <div class="space-2"></div>
+}
+<script>
+    function publishWebsite(demandUid) {
+        var websites = [];
+        $(".websiteselector input[type='checkbox']:checked").each(function () {
+            websites.push($(this).data("website"));
+        })
+        if (websites.length < 1) {
+            $.msg("请选择要发布的网站");
+            return;
+        }
+        $.post(basePath + "/Recruit/Api/PublishWebsite", { demandUid: demandUid, websites: websites }, function (rv) {
+            if (rv.success) {
+                $.msg(rv.msg);
+            } else {
+                bootbox.alert(rv.msg);
+            }
+        })
+    }
+</script>

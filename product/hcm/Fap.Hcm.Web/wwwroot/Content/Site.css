@@ -6,6 +6,10 @@
 .form-inline .checkbox label {
     padding-left: 10px !important
 }
+.dropdown-menu.dropdown-light.dropdown-caret{
+    max-height:300px;
+    overflow-y:auto;
+}
 /*jqgrid div 行高问题*/
 .ui-jqgrid-btable td div {
     display: inline-block;

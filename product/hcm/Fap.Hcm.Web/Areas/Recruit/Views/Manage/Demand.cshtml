@@ -21,12 +21,12 @@
                     </a>
                 </div>
                 <div class="widget-toolbar">
-                    <fap-button id="btnPublishWebsite" btn-tag="link" content="发布到招聘网站" icon-before="fa fa-website blue" class-name="info"></fap-button>
-                    <fap-button id="btnInvalid" btn-tag="link" content="作废" icon-before="fa fa-website blue" class-name="info"></fap-button>
-                    <fap-button id="btnCompleted" btn-tag="link" content="完成" icon-before="fa fa-website blue" class-name="info"></fap-button>
+                    <fap-button id="btnInvalid" btn-tag="link" content="作废" icon-before="fa fa-ban blue" class-name="info"></fap-button>
+                    <fap-button id="btnCompleted" btn-tag="link" content="完成" icon-before="fa fa-check blue" class-name="info"></fap-button>
                 </div>
                 <div class="widget-toolbar">
-                    <fap-button id="btnResume" btn-tag="link" content="简历" icon-before="fa fa-website blue" class-name="info"></fap-button>
+                    <fap-button id="btnPublishWebsite" btn-tag="link" content="发布到招聘网站" icon-before="fa fa-globe blue" class-name="info"></fap-button>
+                    <fap-button id="btnResume" btn-tag="link" content="简历" icon-before="fa fa-users blue" class-name="info"></fap-button>
                 </div>
             </div>
             <div class="widget-body">
@@ -44,175 +44,52 @@
 
 
 <script> 
-    var setAssoResume = function (fid,demandName) {
-        var dialog = bootbox.dialog({
-            title: "关联简历",
-            size: "large",
-            message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
-            buttons: {
-                success: {
-                    label: MultiLangHelper.getResName("global_oper_enter", "确定"),
-                    className: "btn-primary",
-                    callback: function () {
-                        $('#grid-rcrtdemand').jqGrid('setGridParam', {
-
-                        }).trigger("reloadGrid"); //重新载入
-                    }
-                },
-                cancel: {
-                    label: MultiLangHelper.getResName("global_oper_cancel", "取消"), className: "btn-default"
-                }
-            }
-
-        });
-        dialog.on("shown.bs.modal", function () {
-            $(window).triggerHandler('resize.jqGrid');//触发窗口调整,使Grid得到正确的大小
-        });
-        dialog.init(function () {
-            var url = basePath + '/Recruit/RcrtMain/DemandResume';
-            $.get(url, { demandUid: fid, demandName: demandName }, function (ev) {
-                dialog.find('.bootbox-body').html(ev);
-
-            })
-        });
-    }
     var scripts = [null, "/Scripts/Workflow/business.js?v=2", null]
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
             $(document).one('ajaxloadstart.page', function (e) {
             })
-            //标记
-            $("#divOperDemandStatus ul>li a").on(ace.click_event, function () {
-                alert($(this).data("action"));
+            //发布到招聘网站
+            $("#btnPublishWebsite").on(ace.click_event, function () {
+                var rw = getSelectedRow("grid-rcrtdemand");
+                if (rw === null) {
+                    return;
+                }
+                bootboxWindow0($.lang("recruit_website", "招聘网站"), basePath + "/Recruit/Manage/WebsiteSelector", {
+                    ok: {
+                        label: $.lang("ok", "确定"),
+                        className: "btn-primary btn-link",
+                        callback: function () {
+                            publishWebsite(rw.Fid);
+                            refreshGrid("grid-rcrtdemand");
+                            //return false;
+                        }
+                    }
+                });
             });
-            //修改
-            $("#btnAssoResume").on(ace.click_event, function () {
-                var gsr = jQuery('#grid-rcrtdemand').jqGrid('getGridParam', 'selrow');
-                if (gsr) {
-                    var ret = jQuery('#grid-rcrtdemand').jqGrid('getRowData', gsr);
-                    var dialog = bootbox.dialog({
-                        title: "关联简历",
-                        message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
-                        buttons: {
-                            success: {
-                                label: MultiLangHelper.getResName("global_oper_enter", "确定"),
-                                className: "btn-primary",
-                                callback: function () {
-                                    $('#grid-rcrtdemand').jqGrid('setGridParam', {
-
-                                    }).trigger("reloadGrid"); //重新载入
-                                }
-                            },
-                            cancel: {
-                                label: MultiLangHelper.getResName("global_oper_cancel", "取消"), className: "btn-default"
-                            }
-                        }
-
-                    });
-                    dialog.on("shown.bs.modal", function () {
-                        $(window).triggerHandler('resize.jqGrid');//触发窗口调整,使Grid得到正确的大小
-                    });
-                    dialog.init(function () {
-                        var url = basePath + '/Recruit/RcrtMain/DemandResume';
-                        $.get(url, { demandUid: ret.Fid, demandName: ret.DemandName }, function (ev) {
-                            dialog.find('.bootbox-body').html(ev);
-
-                        })
-                    });
-
-                    //loadFormMessageBox(MultiLangHelper.getResName("global_oper_edit", "编辑"), 'grid-rcrtdemand', 'fa fa-pencil-square-o', 'RcrtDemand', ret.Id);
-                } else {
-                    bootbox.alert(MultiLangHelper.getResName("global_oper_selectrow", "请选择一条数据"));
+            $("#btnInvalid").on(ace.click_event, function () {
+                var rw = getSelectedRow("grid-rcrtdemand");
+                if (rw === null) {
+                    return;
                 }
-            });
-            //发送Offer
-            $("#btnSendOffer").on(ace.click_event, function () {
-                var gsr = jQuery('#grid-rcrtdemand').jqGrid('getGridParam', 'selrow');
-                if (gsr) {
-                    var ret = jQuery('#grid-rcrtdemand').jqGrid('getRowData', gsr);
-                    var ruid = ret.ResumeUid;
-                    if (ruid == '') {
-                        bootbox.alert(MultiLangHelper.getResName("rectmain_demandlist_page_demandnothaveresume", "此需求还没有关联简历"));
-                        return;
-                    }
-                    openNewWindow("@Url.Content("~/Recruit/RcrtMain/ResumeProcessing/")" + ruid);
-                } else {
-                    bootbox.alert(MultiLangHelper.getResName("global_oper_selectrow", "请选择一条数据"));
-                }
+                execStatus(rw.Fid, "Obsolete");
             })
-            //物品准备
-            $("#btnSendPreparation").on(ace.click_event, function () {
-                var dataRow = getSelectedRow("grid-rcrtdemand");
-                if (dataRow) {
-                    if (dataRow.ResumeUid == '') {
-                        bootbox.alert(MultiLangHelper.getResName("rectmain_demandlist_page_demandnothaveresume", "此需求还没有关联简历"));
-                        return;
-                    }
-                    debugger
-                    var filter = { "groupOp": "AND" };
-                    var rules = [];
-                    rules.push({ "field": "ResumeUid", "op": "eq", "data": dataRow.ResumeUid });
-                    filter.rules = rules;
-                    $.post(basePath + "api/coreapi/querydata", { EntityName: "RcrtEntryPreparation", QueryCols: "Id", filters: JSON.stringify(filter) }, function (rv) {
-                        debugger
-                        if (rv.success == false) {
-                            bootbox.alert("关联简历还没有发送入职看板，暂无法查看！");
-                        } else {
-                            var dialog = bootbox.dialog({
-                                title: '查看入职看板',
-                                message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
-                                buttons: {
-                                    cancel: {
-                                        label: MultiLangHelper.getResName("global_oper_close", "关闭"), className: "btn-default"
-                                    }
-                                }
-
-                            });
-                            var preparation = JSON.parse(rv.msg);
-                            dialog.init(function () {
-                                var url = $.randomUrl(basePath + '/PublicCtrl/Dataform/' + preparation[0].Id + '?tn=RcrtEntryPreparation');
-                                $.get(url, function (ev) {
-                                    dialog.find('.bootbox-body').html(ev);
-                                    //设置只读
-                                    $(".form-control").attr("disabled", true);
-                                })
-                            });
-                        }
-                    })
+            $("#btnCompleted").on(ace.click_event, function () {
+                var rw = getSelectedRow("grid-rcrtdemand");
+                if (rw === null) {
+                    return;
                 }
-
+                execStatus(rw.Fid, "Processed");
             })
-            $("#btnEntry").on(ace.click_event, function () {
-                var dataRow = getSelectedRow("grid-rcrtdemand");
-                if (dataRow) {
-                    if (dataRow.ResumeUid == '') {
-                        bootbox.alert(MultiLangHelper.getResName("rectmain_demandlist_page_demandnothaveresume", "此需求还没有关联简历"));
-                        return;
+            function execStatus(demandUid, status) {
+                $.post(basePath + "/Recruit/Api/ExecStatus", { demandUid: demandUid, status: status }, function (rv) {
+                    if (rv.success) {
+                        $.msg(rv.msg);
+                    } else {
+                        bootbox.alert(rv.msg);
                     }
-                    var workflow = new Workflow("EntryProcess", "3d4211e6b8eec86e01d4", MultiLangHelper.getResName("rcrtmain_resumeprocess_page_entryprocess", "入职流程"), '0', function () { bootbox.alert("操作成功!") });
-
-                    var filter = { "groupOp": "AND" };
-                    var rules = [];
-                    rules.push({ "field": "Fid", "op": "eq", "data": dataRow.ResumeUid });
-                    filter.rules = rules;
-                    $.post(basePath + "api/coreapi/querydata", { EntityName: "RcrtResume", QueryCols: "Id,FullName,Gender,Emails,Mobile,Education", filters: JSON.stringify(filter) }, function (rv) {
-                        if (rv.success == true) {
-                            debugger
-                            var resume = JSON.parse(rv.msg);
-                            var initData = {};
-                            initData.EmpName = resume[0].FullName;
-                            initData.Gender = resume[0].Gender;
-                            initData.Mailbox = resume[0].Emails;
-                            initData.Mobile = resume[0].Mobile;
-                            initData.Education = resume[0].Education;
-                            workflow.FormRenderData = initData;
-                            workflow.initBill();
-                        } else {
-                            bootbox.alert("未找到简历信息！不能入职。");
-                        }
-                    })
-                }
-            })
+                })
+            }
 
         })
     })

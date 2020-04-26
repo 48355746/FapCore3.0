@@ -1,0 +1,60 @@
+﻿@model Fap.AspNetCore.ViewModel.MultiJqGridViewModel
+@{
+    Fap.AspNetCore.ViewModel.JqGridViewModel wmodel = Model.JqGridViewModels["website"];
+    Fap.AspNetCore.ViewModel.JqGridViewModel mmodel = Model.JqGridViewModels["mail"];
+    Fap.AspNetCore.ViewModel.JqGridViewModel tmodel = Model.JqGridViewModels["template"];
+}
+<title><fap-multilang default-content="基础设置" lang-key="basic_setting"></fap-multilang> </title>
+
+<div class="row">
+    <div class="col-xs-12">
+        <!-- #section:elements.tab -->
+        <div class="tabbable" id="myTab">
+            <ul class="nav nav-tabs">
+                <li class="active">
+                    <a data-toggle="tab" href="#website">
+                        <i class="green ace-icon fa fa-cog bigger-120"></i>
+                        <fap-multilang default-content="招聘网站" lang-key="recruit_website"></fap-multilang>
+                    </a>
+                </li>
+
+                <li>
+                    <a data-toggle="tab" href="#mailbox">
+                        <i class="green ace-icon fa fa-cog bigger-120"></i>
+                        <fap-multilang default-content="招聘邮箱" lang-key="recruit_mailbox"></fap-multilang>
+                    </a>
+                </li>
+                <li>
+                    <a data-toggle="tab" href="#template">
+                        <i class="green ace-icon fa fa-cog bigger-120"></i>
+                        <fap-multilang default-content="邮件模板" lang-key="mail_template"></fap-multilang>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div id="website" class="tab-pane fade in active">
+                    <fap-grid id="rcrtwebsite" grid-model="wmodel" auto-width="true" wrapper="myTab,website" shrink-fit="false" view-records="true" oper-cud="true"></fap-grid>
+                </div>
+
+                <div id="mailbox" class="tab-pane fade">
+                    <fap-grid id="rcrtmailbox" grid-model="mmodel" auto-width="true" wrapper="myTab,mailbox" shrink-fit="false" view-records="true" oper-cud="true"></fap-grid>
+                </div>
+
+                <div id="template" class="tab-pane fade">
+                    <fap-grid id="rcrtmailtemplate" grid-model="tmodel" auto-width="true" wrapper="myTab,template" shrink-fit="false" view-records="true" multi-select="true"></fap-grid>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+        })
+    })
+</script>

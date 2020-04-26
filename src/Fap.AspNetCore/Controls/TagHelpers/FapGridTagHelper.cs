@@ -493,7 +493,8 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                 formType |= OperEnum.Chart;
             }
             formType |= OperEnum.Search;
-           
+            formType |= OperEnum.QueryProgram;
+            formType |= OperEnum.View;
             grid.SetFormType(formType);
         }
         private void SetGirdOper(Grid grid, string authorize)

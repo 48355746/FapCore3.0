@@ -45,5 +45,6 @@ namespace Fap.Core.Message.Mail.Infrastructure.Internal
         /// enable security 
         /// </summary>
         public bool Security { get; set; } = false;
+
     }
 }

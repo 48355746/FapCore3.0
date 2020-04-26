@@ -1,6 +1,8 @@
 ﻿$("#TableNameMC").on("change", function () {    
     initTemplate();
 });
+setTimeout(function () { initTemplate(); }, 0);
+
 function initTemplate() {
     var tn = $("#TableName").val();
     if (tn === '') {
@@ -104,4 +106,3 @@ function initTemplate() {
         }).prev().addClass('wysiwyg-style1');
     });
 }
-initTemplate();

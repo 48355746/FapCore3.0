@@ -260,8 +260,8 @@ var loadRefMessageBox = function (title, frmid, colfid, ctrlid, refurl, extra) {
                     var res = GetRefResult();
                     
                     if (res) {
-                        $("#" + frmid + " #" + ctrlid + "MC").val(res.name).change();
                         $("#" + frmid + " #" + ctrlid).val(res.code).change();
+                        $("#" + frmid + " #" + ctrlid + "MC").val(res.name).change();
                         //扩展返回值
                         if (res.frmcols !== undefined && res.frmcols !== '') {
                             var fcs = res.frmcols.split(',');

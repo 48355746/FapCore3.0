@@ -236,7 +236,7 @@ namespace Fap.Core.Message.Mail.Core
         /// </summary>
         /// <param name="uids">已读uid</param>
         /// <returns></returns>
-        public async Task<List<MimeMessage>> RecieveEmailByPop3Async(List<string> readedUids)
+        public async Task<List<MimeMessage>> RecieveEmailByPop3Async(IEnumerable<string> readedUids)
         {
             try
             {
@@ -246,7 +246,7 @@ namespace Fap.Core.Message.Mail.Core
                     for (int i = 0; i < client.Count; i++)
                     {
                         string uid = client.GetMessageUid(i);
-                        if (readedUids != null && readedUids.Contains(uid))
+                        if (readedUids.Any() && readedUids.Contains(uid))
                         {
                             continue;
                         }
@@ -270,7 +270,7 @@ namespace Fap.Core.Message.Mail.Core
         /// <param name="readedUids">已读列表</param>
         /// <param name="query">查询条件</param>
         /// <returns></returns>
-        public async Task<List<MimeMessage>> RecieveEmailByImapAsync(List<string> readedUids, SearchQuery query = null)
+        public async Task<List<MimeMessage>> RecieveEmailByImapAsync(IEnumerable<string> readedUids, SearchQuery query = null)
         {
             try
             {
@@ -295,7 +295,7 @@ namespace Fap.Core.Message.Mail.Core
                     foreach (var item in uidss)
                     {
                         string uid = item.Id.ToString();
-                        if (readedUids != null && readedUids.Contains(uid))
+                        if (readedUids.Any() && readedUids.Contains(uid))
                         {
                             continue;
                         }

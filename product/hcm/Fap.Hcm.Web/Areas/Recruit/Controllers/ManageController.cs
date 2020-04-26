@@ -7,6 +7,7 @@ using Fap.AspNetCore.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Fap.Core.Extensions;
 using Ardalis.GuardClauses;
+using Fap.Hcm.Service.Recruit;
 
 namespace Fap.Hcm.Web.Areas.Recruit.Controllers
 {
@@ -27,7 +28,30 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
             });
             return View(model);
         }
-
+        public IActionResult WebsiteSelector()
+        {
+            var websites= _dbContext.Query<RcrtWebsite>($"select {nameof(RcrtWebsite.WebName)},{nameof(RcrtWebsite.WebUrl)} from {nameof(RcrtWebsite)}");
+            return PartialView(websites);
+        }
+        //基础设置
+        public IActionResult BasicSettings()
+        {
+            JqGridViewModel modelWebsite = this.GetJqGridModel("RcrtWebsite");
+            var modelMail = GetJqGridModel("RcrtMail");
+            var modelTemplate = GetJqGridModel("CfgEmailTemplate", qs =>
+            {
+                qs.QueryCols = "Id,Fid,Name,ModuleUid,TableName,TemplateContent,Enabled";
+                qs.GlobalWhere = "ModuleUid='RecruitMailTmpl'";
+                qs.AddDefaultValue("ModuleUid", "RecruitMailTmpl");
+                qs.AddDefaultValue("TableName", "RcrtResume");
+                qs.AddDefaultValue("TableNameMC", "招聘简历");
+            });
+            MultiJqGridViewModel multiModel = new MultiJqGridViewModel();
+            multiModel.JqGridViewModels.Add("website", modelWebsite);
+            multiModel.JqGridViewModels.Add("mail", modelMail);
+            multiModel.JqGridViewModels.Add("template",modelTemplate);
+            return View(multiModel);
+        }
 
 
     }
