@@ -270,7 +270,7 @@
                     <small>
                         @*<img src="~/Content/images/logo32.png" />*@
                         &nbsp;<i class="fa fa-globe"></i>&nbsp;
-                      <fap-multilang lang-key="system_name" default-content="@systemName"></fap-multilang> <span class="smaller-75">(v1.0.0)</span>
+                        <fap-multilang lang-key="system_name" default-content="@systemName"></fap-multilang> <span class="smaller-75">(v1.0.0)</span>
                     </small>
                 </a><!-- /.brand -->
             </div>
@@ -304,7 +304,7 @@
                                     <div class="widget-main">
                                         <h5 class="header blue lighter bigger">
                                             <i class="ace-icon fa fa-coffee green"></i>
-                                            <fap-multilang default-content="请输入你的信息" lang-key="login_title"></fap-multilang>    
+                                            <fap-multilang default-content="请输入你的信息" lang-key="login_title"></fap-multilang>
                                             (user:hr pwd:1)
                                         </h5>
 
@@ -336,7 +336,7 @@
                                                                 <fap-multilang default-content="忘记密码？" lang-key="login_forget"></fap-multilang>
                                                             </a>
                                                         </span><!-- /.col -->
-                                                      
+
                                                     </h4><!-- /.row -->
                                                 </div>
 
@@ -360,8 +360,8 @@
                                             </div>
 
                                             <div>
-                                                <a href="#" data-target="#signup-box" class="user-signup-link">                                                   
-                                                  <fap-multilang lang-key="register" default-content="注册"></fap-multilang>
+                                                <a href="#" data-target="#signup-box" class="user-signup-link">
+                                                    <fap-multilang lang-key="register" default-content="注册"></fap-multilang>
                                                 </a>
                                             </div>
                                         </div>
@@ -397,7 +397,8 @@
                                                     <button type="button" id="btnRecovery" class="width-35 pull-right btn btn-sm btn-danger">
                                                         <i class="ace-icon fa fa-lightbulb-o"></i>
                                                         <span class="bigger-110">
-                                                            <fap-multilang default-content="找回!" lang-key="login_password_buttonrecovery"></fap-multilang></span>
+                                                            <fap-multilang default-content="找回!" lang-key="login_password_buttonrecovery"></fap-multilang>
+                                                        </span>
                                                     </button>
                                                 </div>
                                             </fieldset>
@@ -519,14 +520,29 @@
                 </div><!-- /.col -->
             </div><!-- /.row -->
         </div><!-- /.main-content -->
+
     </div><!-- /.main-container -->
+
+    <div class="footer">
+        <div class="footer-inner">
+            <!-- #section:basics/footer -->
+            <div style="color:white">
+                <span class="bigger-120">
+                    <span class="blue bolder">HCM</span>
+                    京ICP备20014106号-1 &copy; 2020-2022
+                </span>
+            </div>
+
+            <!-- /section:basics/footer -->
+        </div>
+    </div>
     <!-- inline scripts related to this page -->
     <script type="text/javascript">
         jQuery(function ($) {
             //找回密码框切换
             $(document).on('click', '.toolbar a[data-target]', function (e) {
                 e.preventDefault();
-              
+
                 var target = $(this).data('target');
                 $('.widget-box.visible').removeClass('visible');//hide others
                 $(target).addClass('visible');//show target
@@ -540,7 +556,7 @@
                 }
             });
             //注册集团
-            $("#btnregister").on('click', function (e) { 
+            $("#btnregister").on('click', function (e) {
                 if (!$('#frm-register').valid()) {
                     e.preventDefault();
                 } else {
@@ -554,11 +570,11 @@
                 if (!$('#frm-logon').valid()) {
                     e.preventDefault();
                 } else {
-                    
+
                     $("#frm-logon").submit();
                 }
-            }          
-      
+            }
+
             $("#btnRecovery").on("click", function () {
                 var email = $("#txtemail").val();
                 if (email == "") {

@@ -1,7 +1,7 @@
 ﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
 @using Fap.AspNetCore.Controls.JqGrid
-@{   
-    var execStatusList= _dbContext.Dictionarys("RcrtExecStatus");
+@{
+    var execStatusList = _dbContext.Dictionarys("RcrtExecStatus");
 }
 <title>
     <fap-multilang lang-key="job_demand" default-content="职位需求"></fap-multilang>
@@ -21,19 +21,13 @@
                     </a>
                 </div>
                 <div class="widget-toolbar">
-                    <fap-button id="btnInvalid" btn-tag="link" content="作废" icon-before="fa fa-ban blue" class-name="info"></fap-button>
-                    <fap-button id="btnCompleted" btn-tag="link" content="完成" icon-before="fa fa-check blue" class-name="info"></fap-button>
-                </div>
-                <div class="widget-toolbar">
-                    <fap-button id="btnPublishWebsite" btn-tag="link" content="发布职位" icon-before="fa fa-globe blue" class-name="info"></fap-button>
-                    <fap-button id="btnReceiveResume" btn-tag="link" content="接收简历" icon-before="fa fa-envelope blue" class-name="info"></fap-button>
                     <fap-button id="btnResumeFilter" btn-tag="link" content="简历筛选" icon-before="fa fa-users blue" class-name="info"></fap-button>
                 </div>
             </div>
             <div class="widget-body">
 
                 <div class="widget-main">
-                    <fap-grid id="rcrtdemand"  grid-model="Model" wrapper="widget-main" register-authority="false" oper-chart="true" view-records="true" shrink-fit="false"></fap-grid>
+                    <fap-grid id="rcrtdemand" grid-model="Model" wrapper="widget-main" register-authority="false" oper-chart="true" view-records="true" shrink-fit="false"></fap-grid>
 
                     <!-- /.row -->
                 </div>
@@ -44,40 +38,12 @@
 </div>
 
 
-<script> 
+<script>
+
     var scripts = [null, "/Scripts/Workflow/business.js?v=2", null]
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
             $(document).one('ajaxloadstart.page', function (e) {
-            })
-            //发布到招聘网站
-            $("#btnPublishWebsite").on(ace.click_event, function () {
-                var rw = getSelectedRow("grid-rcrtdemand");
-                if (rw === null) {
-                    return;
-                }
-                bootboxWindow0($.lang("recruit_website", "招聘网站"), basePath + "/Recruit/Manage/WebsiteSelector", {
-                    ok: {
-                        label: $.lang("ok", "确定"),
-                        className: "btn-primary btn-link",
-                        callback: function () {
-                            publishWebsite(rw.Fid);
-                            refreshGrid("grid-rcrtdemand");
-                            //return false;
-                        }
-                    }
-                });
-            }); 
-            $("#btnReceiveResume").on(ace.click_event, function () {
-                var index = layer.load();
-                $.get(basePath + "/Recruit/Api/ReceiveResume", function (rv) {
-                    if (rv.success) {
-                        $.msg(rv.msg);
-                    } else {
-                        bootbox.alert(rv.msg);
-                    }
-                    layer.close(index);
-                })
             })
             $("#btnResumeFilter").on(ace.click_event, function () {
                 var rw = getSelectedRow("grid-rcrtdemand");
@@ -89,7 +55,7 @@
                         label: $.lang("add_blacklist", "加黑名单"),
                         className: "btn-primary btn-link",
                         callback: function () {
-                           
+
                             return false;
                         }
                     },
@@ -127,29 +93,7 @@
                     }
                 }, { title: rw.DemandName });
             })
-            $("#btnInvalid").on(ace.click_event, function () {
-                var rw = getSelectedRow("grid-rcrtdemand");
-                if (rw === null) {
-                    return;
-                }
-                execStatus(rw.Fid, "Obsolete");
-            })
-            $("#btnCompleted").on(ace.click_event, function () {
-                var rw = getSelectedRow("grid-rcrtdemand");
-                if (rw === null) {
-                    return;
-                }
-                execStatus(rw.Fid, "Processed");
-            })
-            function execStatus(demandUid, status) {
-                $.post(basePath + "/Recruit/Api/ExecStatus", { demandUid: demandUid, status: status }, function (rv) {
-                    if (rv.success) {
-                        $.msg(rv.msg);
-                    } else {
-                        bootbox.alert(rv.msg);
-                    }
-                })
-            }
+           
 
         })
     })

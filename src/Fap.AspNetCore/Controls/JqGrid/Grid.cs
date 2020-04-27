@@ -2420,14 +2420,14 @@ namespace Fap.AspNetCore.Controls.JqGrid
             script.AppendLine(@" 
                     jQuery('###gridid##').jqGrid('navButtonAdd', '###pager##',{
                       caption:'',
-                      title:'"+title+@"', 
+                      title:'"+title+ @"', 
                       position:'first',  
                       buttonicon:'ace-icon fa fa-search-plus grey',
                       onClickButton : function() {
                        var gsr = jQuery('###gridid##').jqGrid('getGridParam', 'selrow');
                       if (gsr) {
                         var ret = jQuery('###gridid##').jqGrid('getRowData', gsr);
-                        viewFormMessageBox(ret.Fid,'##gridid##','" + GetCurrentMenuUid() + "'" + @");
+                        viewFormMessageBox(ret.Fid,'##gridid##','" + TableName + @"','" + GetCurrentMenuUid() + "'" + @");
                         }else{
                             $.msg('"+ _multiLang.GetOrAndMultiLangValue(MultiLanguageOriginEnum.Page, "general_select_row", "请选择一条数据") + @"')
                         }

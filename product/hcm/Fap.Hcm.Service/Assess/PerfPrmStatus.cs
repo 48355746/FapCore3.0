@@ -14,31 +14,31 @@ namespace Fap.Hcm.Service.Assess
         /// <summary>
         /// 初始化
         /// </summary>
-        public static string Init = "Init";
+        public const string Init = "Init";
         /// <summary>
         /// 发布
         /// </summary>
-        public static string Issued = "Issued ";
+        public const string Issued = "Issued ";
         /// <summary>
         /// 考核中
         /// </summary>
-        public static string Starting = "Starting";
+        public const string Starting = "Starting";
         /// <summary>
         /// 成绩公布
         /// </summary>
-        public static string Result = "Result";
+        public const string Result = "Result";
         /// <summary>
         /// 已归档
         /// </summary>
-        public static string Filed = "Filed";
+        public const string Filed = "Filed";
         /// <summary>
         /// 已关闭
         /// </summary>
-        public static string Closed = "Closed";
+        public const string Closed = "Closed";
         /// <summary>
         /// 已结束
         /// </summary>
-        public static string Ended = "Ended";
+        public const string Ended = "Ended";
 
     }
 }

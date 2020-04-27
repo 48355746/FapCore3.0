@@ -74,18 +74,23 @@ namespace Fap.Hcm.Web
             {
                 options.Filters.Add(typeof(FapExceptionFilter));
             }).AddNewtonsoftJson().AddRazorRuntimeCompilation();
-            IWebHostEnvironment env = services.BuildServiceProvider()
-                                              .GetService<IWebHostEnvironment>();
-            if (env.IsProduction())
-            {
-                //自动申请SSL
-                services.AddLetsEncrypt();
-            }
+            //IWebHostEnvironment env = services.BuildServiceProvider()
+            //                                  .GetService<IWebHostEnvironment>();
+            //if (env.IsProduction())
+            //{
+            //    //自动申请SSL
+            //    services.AddLetsEncrypt();
+            //}
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            //nginx反向代理header设置
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
             // force the en-US culture, so that the app behaves the same even on machines with different default culture
             var supportedCultures = new[] { new CultureInfo("en-US") };
             //应用数据跟踪器呼应AddDataTracker();
@@ -126,12 +131,7 @@ namespace Fap.Hcm.Web
                 FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), $"{FapPlatformConstants.Template}")),
                 RequestPath = new PathString($"/{FapPlatformConstants.Template}")
             });
-            app.UseRouting();
-            //nginx反向代理header设置
-            app.UseForwardedHeaders(new ForwardedHeadersOptions
-            {
-                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-            });
+            app.UseRouting();           
             //认证
             app.UseAuthentication();
             //鉴权

@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 using Ardalis.GuardClauses;
 using Fap.AspNetCore.Infrastructure;
 using Fap.AspNetCore.ViewModel;
+using Fap.Hcm.Service.Recruit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
+using Microsoft.Extensions.DependencyInjection;
 namespace Fap.Hcm.Web.Areas.Recruit.Controllers
 {
     [Area("Recruit")]
@@ -16,8 +17,10 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
     [Route("[area]/Api")]
     public class RecruitApiController : FapController
     {
+        private readonly IRecruitService _recruitService;
         public RecruitApiController(IServiceProvider serviceProvider) : base(serviceProvider)
         {
+            _recruitService = serviceProvider.GetService<IRecruitService>();
         }
         [HttpPost("PublishWebsite")]
         public JsonResult PublishWebsite(string demandUid,string[] websites)
@@ -33,6 +36,12 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
             Guard.Against.NullOrEmpty(demandUid, nameof(demandUid));
             Guard.Against.Null(status, nameof(status));
             _dbContext.Execute("Update RcrtDemand set ExecStatus=@Status where Fid=@Fid", new Dapper.DynamicParameters(new { Fid = demandUid, Status = status }));
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+        [HttpGet("ReceiveResume")]
+        public JsonResult ReceiveResume()
+        {
+            _recruitService.ReceiveResume();
             return Json(ResponseViewModelUtils.Sueecss());
         }
     }

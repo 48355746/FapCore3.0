@@ -7,6 +7,6 @@ namespace Fap.Hcm.Service.Recruit
 {
     public interface IRecruitService
     {
-        void ReceiveResume(string host, int port, string account, string pwd, bool useSSL, MailProtocolEnum protocol);
+        void ReceiveResume();
     }
 }

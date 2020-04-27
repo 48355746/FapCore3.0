@@ -4,7 +4,7 @@ using Fap.Core.Infrastructure.Model;
 using Fap.Core.Utility;
 using Microsoft.Extensions.Logging;
 using MimeKit;
-using Sys=System;
+using Sys = System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,7 +16,7 @@ namespace Fap.Hcm.Service.Recruit
     /// </summary>
     public interface IParseEmailService
     {
-        void Analysis(IEnumerable<MimeMessage> mimeMessages);
+        bool Analysis(MimeMessage mimeMessages);
 
     }
     public abstract class ParseEmailService : IParseEmailService
@@ -30,29 +30,20 @@ namespace Fap.Hcm.Service.Recruit
             _loggerFactory = loggerFactory;
             _fapFileService = fapFileService;
         }
-        public void Analysis(IEnumerable<MimeMessage> mimeMessages)
+        public bool Analysis(MimeMessage mimeMessage)
         {
-            if (mimeMessages.Any())
+            RcrtResume resume = ParseHtmlContent(mimeMessage);
+            if (resume == null)
             {
-                //简历
-                List<RcrtResume> list = new List<RcrtResume>();
-                foreach (var mimeMessage in mimeMessages)
-                {
-                    RcrtResume resume = ParseHtmlContent(mimeMessage);
-                    if (resume == null)
-                    {
-                        continue;
-                    }
-                    resume.Attachment = ParseAttachment(mimeMessage);
-                    list.Add(resume);
-                }            
-                   
-                 _dbContext.InsertBatchSql(list);
-               
+                return false;
             }
+            resume.Attachment = ParseAttachment(mimeMessage);
+            _dbContext.Insert(resume);
+            return true;
+
         }
         public abstract RcrtResume ParseHtmlContent(MimeMessage mimeMessage);
-        public  string ParseAttachment(MimeMessage message)
+        public string ParseAttachment(MimeMessage message)
         {
             string uuid = UUIDUtils.Fid;
             //解析附件

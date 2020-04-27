@@ -16,6 +16,8 @@ using System.Text;
 using Fap.Core.Extensions;
 using Sys = System;
 using Microsoft.Extensions.DependencyInjection;
+using Fap.Core.Exceptions;
+using Ardalis.GuardClauses;
 
 namespace Fap.Hcm.Service.Recruit
 {
@@ -38,95 +40,124 @@ namespace Fap.Hcm.Service.Recruit
         /// <summary>
         /// 接收简历
         /// </summary>
-        public async void ReceiveResume(string host, int port, string account, string pwd, bool useSSL, MailProtocolEnum protocol)
+        public async void ReceiveResume()
         {
-            DynamicParameters param = new DynamicParameters();
-            param.Add("EmpUid", _applicationContext.EmpUid);
-            var seenUids = _dbContext.QueryWhere<RcrtMailReadRecord>("EmpUid=@EmpUid", param).Select(s => s.MessageUid);
-
-            MailKitOptions moptions = new MailKitOptions() { Server = host, Port = port, Account = account, Password = pwd, Security = useSSL, SenderEmail = account, SenderName = account };
-            IEmailService mailService = new EmailService(new MailKitProvider(moptions));
-
-            if (protocol == MailProtocolEnum.Pop3)
+            var mails = _dbContext.QueryWhere<RcrtMail>("Enabled=1");
+            if (mails.Any())
             {
-                List<MimeMessage> mimeMsg = await mailService.RecieveEmailByPop3Async(seenUids).ConfigureAwait(false);
-                if (mimeMsg.Any())
+                foreach (var mail in mails)
                 {
-                    var newUids = mimeMsg.Select(m => m.MessageId).ToList();
-                    AddResumeByMail(mimeMsg);
-                    AddReadRecord(newUids);
-                }
-
-            }
-            else if (protocol == MailProtocolEnum.Imap)
-            {
-                //默认收取前一天至今
-                List<MimeMessage> mimeMsg = await mailService.RecieveEmailByImapAsync(seenUids).ConfigureAwait(false);
-                if (mimeMsg.Any())
-                {
-                    var newUids = mimeMsg.Select(m => m.MessageId).ToList();
-                    AddResumeByMail(mimeMsg);
-                    AddReadRecord(newUids);
+                    ReceiveFromMailBox(mail.Pop3Server, mail.Pop3Port, mail.Account, mail.Password, mail.UseSSL == 1 ? true : false, Core.Infrastructure.Enums.MailProtocolEnum.Pop3);
                 }
             }
-        }
-
-        public void AddReadRecord(IEnumerable<string> newUids)
-        {
-            List<RcrtMailReadRecord> list = new List<RcrtMailReadRecord>();
-            foreach (var uid in newUids)
+            else
             {
-                RcrtMailReadRecord model = new RcrtMailReadRecord();
-                model.EmpUid = _applicationContext.EmpUid;
-                model.MessageUid = uid;
-                list.Add(model);
+                Guard.Against.FapBusiness("请配置招聘邮箱");
             }
-            if (list.Any())
+            async void ReceiveFromMailBox(string host, int port, string account, string pwd, bool useSSL, MailProtocolEnum protocol)
             {
-                _dbContext.InsertBatchSql(list);
-            }
-        }
 
-        private void AddResumeByMail(IEnumerable<MimeMessage> messages)
-        {
-            var list = _dbContext.QueryAll<RcrtWebsite>();
-            foreach (var website in list)
-            {
-                if (website.EmailAnalysisPlugin.IsPresent())
+                DynamicParameters param = new DynamicParameters();
+                param.Add("EmpUid", _applicationContext.EmpUid);
+                var seenUids = _dbContext.QueryWhere<RcrtMailReadRecord>("EmpUid=@EmpUid", param).Select(s => s.MessageUid);
+
+                MailKitOptions moptions = new MailKitOptions() { Server = host, Port = port, Account = account, Password = pwd, Security = useSSL, SenderEmail = account, SenderName = account };
+                IEmailService mailService = new EmailService(new MailKitProvider(moptions));
+
+                if (protocol == MailProtocolEnum.Pop3)
                 {
-                    //解析插件
-                    IParseEmailService analysis = ParseEmailService(website.EmailAnalysisPlugin);
-                    if (analysis != null)
+                    List<MimeMessage> mimeMsg = await mailService.RecieveEmailByPop3Async(seenUids).ConfigureAwait(false);
+                    if (mimeMsg.Any())
                     {
-                        analysis.Analysis(messages);
+                        var newUids = mimeMsg.Select(m => m.MessageId).ToList();
+                        AddResumeByMail(mimeMsg);
+                        AddReadRecord(newUids);
+                    }
+
+                }
+                else if (protocol == MailProtocolEnum.Imap)
+                {
+                    //默认收取前一天至今
+                    List<MimeMessage> mimeMsg = await mailService.RecieveEmailByImapAsync(seenUids).ConfigureAwait(false);
+                    if (mimeMsg.Any())
+                    {
+                        var newUids = mimeMsg.Select(m => m.MessageId).ToList();
+                        AddResumeByMail(mimeMsg);
+                        AddReadRecord(newUids);
                     }
                 }
             }
-        }
-        private IParseEmailService ParseEmailService(string parseEmailServiceClass)
-        {
-            IParseEmailService dataInterceptor = null;
-            if (parseEmailServiceClass.IsPresent())
+            void AddReadRecord(IEnumerable<string> newUids)
             {
-                //此处不能缓存，容易使session丢失，若要缓存的话需要重新赋值session
-                try
+                List<RcrtMailReadRecord> list = new List<RcrtMailReadRecord>();
+                foreach (var uid in newUids)
                 {
-                    Type type = Sys.Type.GetType(parseEmailServiceClass);
-                    if (type != null && type.GetInterface("IParseEmailService") != null)
-                    {
-                        //dataInterceptor = (IDataInterceptor)Activator.CreateInstance(type, new object[] { _serviceProvider, this });
-                        dataInterceptor = (IParseEmailService)ActivatorUtilities.GetServiceOrCreateInstance(_serviceProvider, type);
-                    }
+                    RcrtMailReadRecord model = new RcrtMailReadRecord();
+                    model.EmpUid = _applicationContext.EmpUid;
+                    model.MessageUid = uid;
+                    list.Add(model);
                 }
-                catch (Exception ex)
+                if (list.Any())
                 {
-                    _logger.LogError(ex.Message);
-                    return null;
+                    _dbContext.InsertBatchSql(list);
                 }
             }
 
-            return dataInterceptor;
-        }
+            void AddResumeByMail(IEnumerable<MimeMessage> messages)
+            {
+                var list = _dbContext.QueryAll<RcrtWebsite>();
+                List<IParseEmailService> parseMailServiceList = new List<IParseEmailService>();
+                foreach (var website in list)
+                {
+                    if (website.EmailAnalysisPlugin.IsPresent())
+                    {
+                        //解析插件
+                        IParseEmailService analysis = ParseEmailService(website.EmailAnalysisPlugin);
+                        if (analysis != null)
+                        {
+                            parseMailServiceList.Add(analysis);
+                        }
+                    }
+                }
+                if (parseMailServiceList.Any())
+                {
+                    foreach (var message in messages)
+                    {
+                        foreach (var service in parseMailServiceList)
+                        {
+                            var result = service.Analysis(message);
+                            if (result)
+                            {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            IParseEmailService ParseEmailService(string parseEmailServiceClass)
+            {
+                IParseEmailService dataInterceptor = null;
+                if (parseEmailServiceClass.IsPresent())
+                {
+                    //此处不能缓存，容易使session丢失，若要缓存的话需要重新赋值session
+                    try
+                    {
+                        Type type = Sys.Type.GetType(parseEmailServiceClass);
+                        if (type != null && type.GetInterface("IParseEmailService") != null)
+                        {
+                            //dataInterceptor = (IDataInterceptor)Activator.CreateInstance(type, new object[] { _serviceProvider, this });
+                            dataInterceptor = (IParseEmailService)ActivatorUtilities.GetServiceOrCreateInstance(_serviceProvider, type);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex.Message);
+                        return null;
+                    }
+                }
 
+                return dataInterceptor;
+            }
+        }
     }
 }

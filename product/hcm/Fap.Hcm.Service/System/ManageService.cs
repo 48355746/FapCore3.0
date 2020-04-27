@@ -651,6 +651,7 @@ namespace Fap.Hcm.Service.System
                 OperEnum.Search => "fa fa-search orange",
                 OperEnum.Update => "fa fa-pencil blue",
                 OperEnum.View => "fa fa-search-plus grey",
+                OperEnum.Chart=> "fa fa-bar-chart green",
                 _ => "fa fa-bolt"
             };
         }

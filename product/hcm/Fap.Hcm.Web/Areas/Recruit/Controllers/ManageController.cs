@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Fap.Core.Extensions;
 using Ardalis.GuardClauses;
 using Fap.Hcm.Service.Recruit;
+using Fap.Core.Infrastructure.Metadata;
 
 namespace Fap.Hcm.Web.Areas.Recruit.Controllers
 {
@@ -28,10 +29,41 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
             });
             return View(model);
         }
+        /// <summary>
+        /// 经理自助--招聘职位
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult DeptDemand()
+        {
+            var cols = _dbContext.Columns("RcrtDemand").Where(c => !c.ColProperty.EqualsWithIgnoreCase("3"))?.Select(c => c.ColName);
+            Guard.Against.Null(cols, nameof(cols));
+            JqGridViewModel model = this.GetJqGridModel("RcrtDemand", (qs) =>
+            {
+                qs.QueryCols = string.Join(',', cols);
+                qs.GlobalWhere = "BillStatus='PASSED' and Leader=@EmpUid";
+                qs.AddParameter("EmpUid", _applicationContext.EmpUid);
+            });
+            return View(model);
+        }
         public IActionResult WebsiteSelector()
         {
             var websites= _dbContext.Query<RcrtWebsite>($"select {nameof(RcrtWebsite.WebName)},{nameof(RcrtWebsite.WebUrl)} from {nameof(RcrtWebsite)}");
             return PartialView(websites);
+        }
+        /// <summary>
+        /// 职位简历
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult JobResume(string title)
+        {
+            var cols = _dbContext.Columns("RcrtResume").Where(c => c.CtrlType != FapColumn.CTRL_TYPE_RICHTEXTBOX).Select(c => c.ColName);
+            var model = GetJqGridModel("RcrtResume", qs =>
+            {
+                qs.QueryCols =string.Join(',', cols);
+                qs.GlobalWhere = "ResumeName=@Title";
+                qs.AddParameter("Title", title);
+            });
+            return PartialView(model);
         }
         //基础设置
         public IActionResult BasicSettings()

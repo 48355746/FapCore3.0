@@ -191,7 +191,7 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid, menuid, fro
 
 
 //查看数据
-var viewFormMessageBox = function (fid, gid, menuid) {
+var viewFormMessageBox = function (fid, gid,tableName, menuid) {
     var dialog = bootbox.dialog({
         title: '<i class="ace-icon fa fa-search-plus"></i> ' + $.lang("view", "查看"),
         message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
@@ -199,7 +199,7 @@ var viewFormMessageBox = function (fid, gid, menuid) {
         footer: false
     });
     dialog.init(function () {
-        dialog.find('.bootbox-body').load(basePath + "/Component/DataForm/" + fid, { gid: gid, menuid: menuid, fs: 3 });
+        dialog.find('.bootbox-body').load(basePath + "/Component/DataForm/" + fid, { gid: gid, tn: tableName, menuid: menuid, fs: 3 });
 
     });
 };

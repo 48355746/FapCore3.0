@@ -9,44 +9,44 @@ namespace Fap.Hcm.Service.Recruit
     /// 注意：最好由FAP工具生成，不需要手动修改
     /// 只针对属于系统编码的字典
     /// </summary>
-    public class RcrtResumeStatus
+    public static class RcrtResumeStatus
     {
         /// <summary>
         /// 简历被创建
         /// </summary>
-        public static string Created = "Created";
+        public const string Created = "Created";
         /// <summary>
         /// 简历被筛选
         /// </summary>
-        public static string Screen = "Screen";
+        public const string Screen = "Screen";
         /// <summary>
         /// 批准面试
         /// </summary>
-        public static string Interview = "Interview";
+        public const string Interview = "Interview";
         /// <summary>
         /// 现场面试
         /// </summary>
-        public static string Interviewing = "Interviewing";
+        public const string Interviewing = "Interviewing";
         /// <summary>
         /// 发出Offer
         /// </summary>
-        public static string Offer = "Offer";
+        public const string Offer = "Offer";
         /// <summary>
         /// 入职
         /// </summary>
-        public static string Entry = "Entry";
+        public const string Entry = "Entry";
         /// <summary>
         /// 黑名单
         /// </summary>
-        public static string BlackList = "BlackList";
+        public const string BlackList = "BlackList";
         /// <summary>
         /// 优才库
         /// </summary>
-        public static string TalentPool = "TalentPool";
+        public const string TalentPool = "TalentPool";
         /// <summary>
         /// 后备人才
         /// </summary>
-        public static string Reserve = "Reserve";
+        public const string Reserve = "Reserve";
 
     }
 
