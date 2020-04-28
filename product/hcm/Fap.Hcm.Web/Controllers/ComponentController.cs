@@ -406,9 +406,9 @@ namespace Fap.Hcm.Web.Controllers
         /// <param name="fs">单据状态</param>
         /// <param name="qrycols">优先级高，指定的col</param>
         /// <returns></returns>
-        public IActionResult DataForm(string fid, string gid, string menuid, int fs,string tn, string qrycols)
+        public IActionResult DataForm(string fid, string gid, string menuid, int fs,string tn, string qrycols,string rCols)
         {
-            if (menuid.IsMissing())
+            if (menuid.IsMissing()||_platformDomain.MenuColumnSet.NotRegistryAuthority(menuid,gid))
             {
                 FormViewModel fd = this.GetFormViewModel(tn, gid, fid, qs =>
                 {
@@ -419,6 +419,10 @@ namespace Fap.Hcm.Web.Controllers
                     else
                     {
                         qs.QueryCols = "*";
+                    }
+                    if (rCols.IsPresent())
+                    {
+                        qs.ReadOnlyCols = rCols;
                     }
                 });
                 fd.FormStatus = (FormStatus)fs;                

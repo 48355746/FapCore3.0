@@ -98,7 +98,9 @@ namespace Fap.Core.DataAccess
         {
             if (entity.Fid.IsMissing())
             {
-                entity.Fid = UUIDUtils.Fid;
+                string fid= UUIDUtils.Fid;
+                //_logger.LogInformation(fid);
+                entity.Fid =fid ;
             }
             string tableName = typeof(T).Name;
             entity.CreateDate = DateTimeUtils.CurrentDateTimeStr;

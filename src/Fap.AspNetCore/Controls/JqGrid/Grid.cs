@@ -1934,9 +1934,9 @@ namespace Fap.AspNetCore.Controls.JqGrid
                     AppendLine();
 
             // onDblClickRow
-            if (!_onDblClickRow.IsMissing())
-                script.AppendFormat("ondblClickRow: function(rowid, iRow, iCol, e) {{{0}}},", _onDblClickRow).AppendLine
-                    ();
+            //if (!_onDblClickRow.IsMissing())
+            script.AppendLine(@"ondblClickRow: function(rowid, iRow, iCol, e) {var ret = jQuery('###gridid##').jqGrid('getRowData', rowid);
+                        viewFormMessageBox(ret.Fid, '##gridid##', '" + TableName + @"', '" + GetCurrentMenuUid() + "'" + @");},");
 
             // onHeaderClick
             if (!_onHeaderClick.IsMissing())
@@ -2358,7 +2358,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                       onClickButton : function() {
                       var rd = getSelectedRow('##gridid##');
                       if (rd!=null) {
-                        loadFormMessageBox('" + title+@"','##gridid##','fa fa-pencil','" + TableName + @"',rd.Fid,'" + GetCurrentMenuUid() + "',function(){");
+                        loadFormMessageBox('" + title+@"','##gridid##','fa fa-pencil','" + TableName + @"',rd.Fid,'" + GetCurrentMenuUid()+ "','"+_querySet.ReadOnlyCols + "',function(){");
             if (_onEditAfterInitDataForm.IsPresent())
             {
                 script.AppendLine(_onEditAfterInitDataForm);
@@ -2382,7 +2382,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                       position:'first',  
                       buttonicon:'ace-icon fa fa-plus-circle purple',
                       onClickButton : function() {
-                      loadFormMessageBox('"+title+@"','##gridid##','fa fa-plus-circle','" + TableName + @"',0,'" + GetCurrentMenuUid() + "',function(){");
+                      loadFormMessageBox('"+title+@"','##gridid##','fa fa-plus-circle','" + TableName + @"',0,'" + GetCurrentMenuUid() + "','" + _querySet.ReadOnlyCols + "',function(){");
             if (_onAddAfterInitDataForm.IsPresent())
             {
                 script.AppendLine(_onAddAfterInitDataForm);

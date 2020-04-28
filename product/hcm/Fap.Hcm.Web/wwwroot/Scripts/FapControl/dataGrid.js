@@ -66,7 +66,7 @@ function reloadGrid(gridid, postData) {
 //callback 扩展js方法
 //title 标题;gid jqgrid的ID;icon 图标;tablename 表名（frm-tablename 表单名称）;
 //id业务数据主键值;fromInitCallback 表单初始化事件;saveCompletedCallback 保存完毕事件
-var loadFormMessageBox = function (title, gid, icon, tablename, fid, menuid, fromInitCallback, saveCompletedCallback) {
+var loadFormMessageBox = function (title, gid, icon, tablename, fid, menuid,readonlyCols, fromInitCallback, saveCompletedCallback) {
     var buttons = {
         success: {
             label: $.lang("save", "保存"),
@@ -179,7 +179,7 @@ var loadFormMessageBox = function (title, gid, icon, tablename, fid, menuid, fro
     });
     function initDialog() {
         var url = $.randomUrl(basePath + '/Component/Dataform/' + fid);
-        $.get(url, { gid: gid, menuid: menuid, fs: 1, tn: tablename }, function (ev) {
+        $.get(url, { gid: gid, menuid: menuid, fs: 1, tn: tablename, rcols: readonlyCols }, function (ev) {
             dialog.find('.bootbox-body').html(ev);
             if ($.isFunction(fromInitCallback)) {
                 fromInitCallback();

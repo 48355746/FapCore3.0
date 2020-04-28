@@ -27,15 +27,23 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
         {
             Guard.Against.NullOrEmpty(demandUid, nameof(demandUid));
             Guard.Against.Null(websites, nameof(websites));
-            _dbContext.Execute("Update RcrtDemand set PublishedIn=@Websites,ExecStatus='Processing' where Fid=@Fid", new Dapper.DynamicParameters(new {Fid=demandUid, Websites = string.Join(',', websites) }));
+            _recruitService.PublishWebsite(demandUid, string.Join(',', websites));
             return Json(ResponseViewModelUtils.Sueecss());
         }
         [HttpPost("ExecStatus")]
-        public JsonResult SetExecStatus(string demandUid,string status)
+        public JsonResult SetDemandExecStatus(string demandUid,string status)
         {
             Guard.Against.NullOrEmpty(demandUid, nameof(demandUid));
             Guard.Against.Null(status, nameof(status));
-            _dbContext.Execute("Update RcrtDemand set ExecStatus=@Status where Fid=@Fid", new Dapper.DynamicParameters(new { Fid = demandUid, Status = status }));
+            _recruitService.DemandExecStatus(demandUid, status);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+        [HttpPost("ResumeStatus")]
+        public JsonResult SetResumeStatus(List<string> fids,string status)
+        {
+            Guard.Against.Null(fids, nameof(fids));
+            Guard.Against.NullOrEmpty(status, nameof(status));
+            _recruitService.ResumeStatus(fids, status);
             return Json(ResponseViewModelUtils.Sueecss());
         }
         [HttpGet("ReceiveResume")]

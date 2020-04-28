@@ -27,7 +27,7 @@
                 <div class="widget-toolbar">
                     <fap-button id="btnPublishWebsite" btn-tag="link" content="发布职位" icon-before="fa fa-globe blue" class-name="info"></fap-button>
                     <fap-button id="btnReceiveResume" btn-tag="link" content="接收简历" icon-before="fa fa-envelope blue" class-name="info"></fap-button>
-                    <fap-button id="btnResumeFilter" btn-tag="link" content="简历筛选" icon-before="fa fa-users blue" class-name="info"></fap-button>
+                    <fap-button id="btnResumeFilter" btn-tag="link" content="简历筛选" icon-before="fa fa-filter blue" class-name="info"></fap-button>
                 </div>
             </div>
             <div class="widget-body">
@@ -89,39 +89,39 @@
                         label: $.lang("add_blacklist", "加黑名单"),
                         className: "btn-primary btn-link",
                         callback: function () {
-                           
+                            setResumeStatus('BlackList');
                             return false;
                         }
                     },
                     talentPool: {
-                        label: $.lang("talent_pool", "加人才库"),
+                        label: $.lang("talent_pool", "加优才库"),
                         className: "btn-primary btn-link",
                         callback: function () {
-
+                            setResumeStatus('TalentPool');
                             return false;
                         }
                     },
                     remove: {
-                        label: $.lang("remove", "移除"),
+                        label: $.lang("reserve", "加后备人才库"),
                         className: "btn-primary btn-link",
                         callback: function () {
-
+                            setResumeStatus('Reserve');
                             return false;
                         }
                     },
                     sendToDept: {
-                        label: $.lang("send_to_department", "发送给部门经理"),
+                        label: $.lang("send_to_department", "推送给部门"),
                         className: "btn-primary btn-link",
                         callback: function () {
-
+                            setResumeStatus('Screen');
                             return false;
                         }
                     },
-                    interview: {
-                        label: $.lang("interview_notice", "面试通知"),
+                    sendToInterview: {
+                        label: $.lang("send_to_interview", "发送面试邮件"),
                         className: "btn-primary btn-link",
                         callback: function () {
-
+                            setInterviewMail();
                             return false;
                         }
                     }

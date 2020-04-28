@@ -8,7 +8,7 @@ using Sys = System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
+using Fap.Core.Extensions;
 namespace Fap.Hcm.Service.Recruit
 {
     /// <summary>
@@ -16,7 +16,7 @@ namespace Fap.Hcm.Service.Recruit
     /// </summary>
     public interface IParseEmailService
     {
-        bool Analysis(MimeMessage mimeMessages);
+        bool Analysis(MimeMessage mimeMessages,IEnumerable<RcrtResume> blacklist);
 
     }
     public abstract class ParseEmailService : IParseEmailService
@@ -30,12 +30,20 @@ namespace Fap.Hcm.Service.Recruit
             _loggerFactory = loggerFactory;
             _fapFileService = fapFileService;
         }
-        public bool Analysis(MimeMessage mimeMessage)
+        public bool Analysis(MimeMessage mimeMessage, IEnumerable<RcrtResume> blacklist)
         {
             RcrtResume resume = ParseHtmlContent(mimeMessage);
             if (resume == null)
             {
                 return false;
+            }
+            if (blacklist.Any() && resume.Mobile.IsPresent())
+            {
+                //黑名单
+                if (blacklist.Select(r => r.Mobile).Contains(resume.Mobile))
+                {
+                    return false;
+                }
             }
             resume.Attachment = ParseAttachment(mimeMessage);
             _dbContext.Insert(resume);

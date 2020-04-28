@@ -1,0 +1,92 @@
+﻿@model Fap.AspNetCore.ViewModel.MultiJqGridViewModel
+@using Fap.AspNetCore.Controls.JqGrid
+@{
+    Fap.AspNetCore.ViewModel.JqGridViewModel rmodel = Model.JqGridViewModels["resume"];
+    Fap.AspNetCore.ViewModel.JqGridViewModel imodel = Model.JqGridViewModels["interview"];
+    Fap.AspNetCore.ViewModel.JqGridViewModel cmodel = Model.JqGridViewModels["recommend"];
+    //增加操作列
+    Column assessColumn = new Column("oper");
+    assessColumn.SetLabel("查看");
+    assessColumn.SetSearch(false);
+    assessColumn.SetSortable(false);
+    assessColumn.SetWidth(140);
+}
+<title><fap-multilang default-content="我的招聘" lang-key="my_recruit"></fap-multilang> </title>
+<script>
+    function initAssessMenu() {
+        var ids = jQuery("#grid-resumeassess").jqGrid('getDataIDs');
+        for (var i = 0; i < ids.length; i++) {
+            var cl = ids[i];
+            var ret = jQuery('#grid-resumeassess').jqGrid('getRowData', cl);
+            var fid = ret.Fid;
+            var resumeUid = ret.ResumeUid;
+            var de = "<a  href='javascript:void(0)' onclick='showResume(\"" + fid + "\",\"" + resumeUid + "\")'>" + $.lang("resume", "简历") + "</a>  ";
+               
+            jQuery('#grid-resumeassess').jqGrid('setRowData', ids[i], { oper: de });
+        }
+    }
+    function showResume(fid,resumeUid) {
+        bootboxWindow($.lang("resume", "简历"), basePath + "/Component/DataForm/" + resumeUid,
+            {
+                assess: {
+                    label: $.lang("assess", "评估"),
+                    className: "btn-primary btn-link",
+                    callback: function () {
+                        loadFormMessageBox($.lang("assess", "评估"), "grid-resumeassess", "fa fa-comment-o", "RcrtResumeReview", fid)
+                        return false;
+                    }
+                },
+            }, { tn: "RcrtResume", fs: 3 });
+    }
+</script>
+<div class="row">
+    <div class="col-xs-12">
+        <!-- #section:elements.tab -->
+        <div class="tabbable" id="myTab">
+            <ul class="nav nav-tabs">
+                <li class="active">
+                    <a data-toggle="tab" href="#resume">
+                        <i class="green ace-icon fa fa-comment-o bigger-120"></i>
+                        <fap-multilang default-content="简历评价" lang-key="resume_assess"></fap-multilang>
+                    </a>
+                </li>
+
+                <li>
+                    <a data-toggle="tab" href="#interview">
+                        <i class="green ace-icon fa fa-comments bigger-120"></i>
+                        <fap-multilang default-content="面试评价" lang-key="interview_assess"></fap-multilang>
+                    </a>
+                </li>
+                <li>
+                    <a data-toggle="tab" href="#recommend">
+                        <i class="green ace-icon fa fa-cloud-upload bigger-120"></i>
+                        <fap-multilang default-content="内部推荐" lang-key="inner_recommend"></fap-multilang>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div id="resume" class="tab-pane fade in active">
+                    <fap-grid id="resumeassess" attach-column="assessColumn" grid-model="rmodel" on-grid-complete="initAssessMenu" auto-width="true" wrapper="myTab,resume" register-authority="false"  shrink-fit="false" view-records="true" ></fap-grid>
+                </div>
+
+                <div id="interview" class="tab-pane fade">
+                    <fap-grid id="interviewassess" grid-model="imodel" auto-width="true" wrapper="myTab,interview" register-authority="false" oper-update="true" shrink-fit="false" view-records="true" ></fap-grid>
+                </div>
+                <div id="recommend" class="tab-pane fade">
+                    <fap-grid id="innerrecommend" grid-model="cmodel" auto-width="true" wrapper="myTab,recommend" shrink-fit="false" register-authority="false" view-records="true" ></fap-grid>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+        })
+    })
+</script>

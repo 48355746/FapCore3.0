@@ -9,5 +9,6 @@ namespace Fap.Core.Rbac.AC
     {
         void Refresh();
         bool TryGetValue(string menuUid, out IEnumerable<FapMenuColumn> fapColumnList);
+        bool NotRegistryAuthority(string menuUid, string gridId);
     }
 }

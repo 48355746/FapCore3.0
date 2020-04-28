@@ -55,7 +55,15 @@ namespace Fap.Core.Rbac.AC
             fapColumnList = _allColumn.Where(m => m.MenuUid == menuUid);
             return fapColumnList.Any();
         }
-
+        public bool NotRegistryAuthority(string menuUid,string gridId)
+        {
+            if (!_initialized)
+            {
+                Init();
+            }
+            var r= _allColumn.Where(m => m.MenuUid == menuUid&&m.GridId==gridId);
+            return r.Any()?false:true;
+        }
         IEnumerator IEnumerable.GetEnumerator()
         {
             if (!_initialized)

@@ -1,2 +1,55 @@
 ﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
-<fap-grid id="jobresume" grid-model="Model" wrapper="modal-body" register-authority="false" view-records="true" multi-select="true" multi-box-only="true" shrink-fit="false"></fap-grid>
+<fap-grid id="jobresume" grid-model="Model" wrapper="modal-body" register-authority="false" view-records="true"  multi-select="true" multi-box-only="true" shrink-fit="false"></fap-grid>
+
+<script>
+    function setResumeStatus(status) {
+        var rows = getSelectedRows("grid-jobresume");
+        if (rows === null) {
+            return;
+        }
+        var fids= $.map(rows, function (r) {
+            return r.Fid;
+        })
+        $.post(basePath + "/Recruit/Api/ResumeStatus", { fids: fids, status: status }, function (rv) {
+            if (rv.success) {
+                $.msg(rv.msg);
+                refreshGrid("grid-jobresume");
+            } else {
+                bootbox.alert(rv.msg);
+            }
+        })
+    }
+    //简历评估
+    function resumeAssess() {
+        var rw = getSelectedRow("grid-jobresume");
+        if (rw === null) {
+            return;
+        }
+        var buttons = null;
+        if (rw.ResumeStatus === "Screen") {
+            buttons = {
+                interview: {
+                    label: $.lang("allow_interview", "允许面试"),
+                    className: "btn-primary btn-link",
+                    callback: function () {
+                        setResumeStatus('Interview');
+                        return false;
+                    }
+                }
+            };
+        }
+        bootboxWindow($.lang("resume_assess", "简历评估"), basePath + "/Recruit/Manage/ResumeAssess", buttons,{ fid: rw.Fid, name: rw.ResumeName });
+    }
+    //发送面试邮件
+    function setInterviewMail() {
+        var row = getSelectedRow("grid-jobresume");
+        if (row == null) {
+            return;
+        }
+        if (row.ResumeStatus === "Interview") {
+
+        } else {
+            $.msg("发送面试邮件需要部门同意");
+        }
+    }
+</script>

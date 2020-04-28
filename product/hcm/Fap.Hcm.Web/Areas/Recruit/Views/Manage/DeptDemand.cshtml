@@ -21,7 +21,8 @@
                     </a>
                 </div>
                 <div class="widget-toolbar">
-                    <fap-button id="btnResumeFilter" btn-tag="link" content="简历筛选" icon-before="fa fa-users blue" class-name="info"></fap-button>
+                    <fap-button id="btnResumeFilter" btn-tag="link" content="简历筛选" icon-before="fa fa-filter blue" class-name="info"></fap-button>
+                    <fap-button id="btnDemandApply" btn-tag="link" content="招聘职位申请" icon-before="fa fa-plus blue" class-name="info"></fap-button>
                 </div>
             </div>
             <div class="widget-body">
@@ -34,10 +35,7 @@
             </div>
         </div>
     </div>
-
 </div>
-
-
 <script>
 
     var scripts = [null, "/Scripts/Workflow/business.js?v=2", null]
@@ -45,56 +43,43 @@
         jQuery(function ($) {
             $(document).one('ajaxloadstart.page', function (e) {
             })
+            $("#btnDemandApply").on(ace.click_event, function () {
+                let initData = { DeptUid: '@_applicationContext.DeptUid', DeptUidMC: '@Html.Raw(_applicationContext.DeptName)', Leader: '@_applicationContext.EmpUid', LeaderMC: '@Html.Raw(_applicationContext.EmpName)' };
+                applyBusiness('3577655145439166464', "招聘职位申请", initData);
+            })
             $("#btnResumeFilter").on(ace.click_event, function () {
                 var rw = getSelectedRow("grid-rcrtdemand");
                 if (rw === null) {
                     return;
                 }
-                bootboxWindow1($.lang("resume_filter", "简历筛选"), basePath + "/Recruit/Manage/JobResume", {
-                    blacklist: {
-                        label: $.lang("add_blacklist", "加黑名单"),
+                bootboxWindow1($.lang("resume_filter", "简历筛选"), basePath + "/Recruit/Manage/DeptResume", {
+                    assess: {
+                        label: $.lang("assess", "评估"),
                         className: "btn-primary btn-link",
                         callback: function () {
-
+                            resumeAssess();
                             return false;
                         }
-                    },
+                    },                  
                     talentPool: {
-                        label: $.lang("talent_pool", "加人才库"),
+                        label: $.lang("talent_pool", "加优才库"),
                         className: "btn-primary btn-link",
                         callback: function () {
-
+                            setResumeStatus('TalentPool');
                             return false;
                         }
                     },
                     remove: {
-                        label: $.lang("remove", "移除"),
+                        label: $.lang("reserve", "加后备人才库"),
                         className: "btn-primary btn-link",
                         callback: function () {
-
-                            return false;
-                        }
-                    },
-                    sendToDept: {
-                        label: $.lang("send_to_department", "发送给部门经理"),
-                        className: "btn-primary btn-link",
-                        callback: function () {
-
-                            return false;
-                        }
-                    },
-                    interview: {
-                        label: $.lang("interview_notice", "面试通知"),
-                        className: "btn-primary btn-link",
-                        callback: function () {
-
+                            setResumeStatus('Reserve');
                             return false;
                         }
                     }
+                 
                 }, { title: rw.DemandName });
             })
-           
-
         })
     })
 

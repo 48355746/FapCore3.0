@@ -13,6 +13,7 @@ function applyBusiness(businessUid,title, initData) {
                 label: $.lang("temporary", '暂存'),
                 className: "btn-link btn-info",
                 callback: function () {
+                    $.msg("请到[业务中心]查看详情");
                     var r = temporarySave();
                     if (r === false) {
                         return r;
@@ -24,6 +25,7 @@ function applyBusiness(businessUid,title, initData) {
                 callback: function () {
                     submitBill(function () {
                         bootbox.hideAll();
+                        $.msg("请到[业务中心]查看详情");
                     });
                     return false;
                 }

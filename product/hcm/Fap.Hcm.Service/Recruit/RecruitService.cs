@@ -18,6 +18,7 @@ using Sys = System;
 using Microsoft.Extensions.DependencyInjection;
 using Fap.Core.Exceptions;
 using Ardalis.GuardClauses;
+using System.Threading.Tasks;
 
 namespace Fap.Hcm.Service.Recruit
 {
@@ -37,6 +38,18 @@ namespace Fap.Hcm.Service.Recruit
             _applicationContext = applicationContext;
             _serviceProvider = serviceProvider;
         }
+        public void PublishWebsite(string demandUid, string websites)
+        {
+            _dbContext.Execute("Update RcrtDemand set PublishedIn=@Websites,ExecStatus='Processing' where Fid=@Fid", new Dapper.DynamicParameters(new { Fid = demandUid, Websites = websites }));
+        }
+        public void DemandExecStatus(string demandUid, string status)
+        {
+            _dbContext.Execute("Update RcrtDemand set ExecStatus=@Status where Fid=@Fid", new Dapper.DynamicParameters(new { Fid = demandUid, Status = status }));
+        }
+        public void ResumeStatus(List<string> fids, string status)
+        {
+            _dbContext.Execute("Update RcrtResume set ResumeStatus=@Status where Fid in @Fids",new DynamicParameters(new { Status=status,Fids=fids}));
+        }
         /// <summary>
         /// 接收简历
         /// </summary>
@@ -47,14 +60,14 @@ namespace Fap.Hcm.Service.Recruit
             {
                 foreach (var mail in mails)
                 {
-                    ReceiveFromMailBox(mail.Pop3Server, mail.Pop3Port, mail.Account, mail.Password, mail.UseSSL == 1 ? true : false, Core.Infrastructure.Enums.MailProtocolEnum.Pop3);
+                    await ReceiveFromMailBox(mail.Pop3Server, mail.Pop3Port, mail.Account, mail.Password, mail.UseSSL == 1 ? true : false, MailProtocolEnum.Pop3).ConfigureAwait(false);
                 }
             }
             else
             {
                 Guard.Against.FapBusiness("请配置招聘邮箱");
             }
-            async void ReceiveFromMailBox(string host, int port, string account, string pwd, bool useSSL, MailProtocolEnum protocol)
+            async Task ReceiveFromMailBox(string host, int port, string account, string pwd, bool useSSL, MailProtocolEnum protocol)
             {
 
                 DynamicParameters param = new DynamicParameters();
@@ -119,13 +132,15 @@ namespace Fap.Hcm.Service.Recruit
                         }
                     }
                 }
+                //获取黑名单
+                var blackList= _dbContext.Query<RcrtResume>($"select {nameof(RcrtResume.Mobile)} from {nameof(RcrtResume)} where {nameof(RcrtResume.ResumeStatus)}='{RcrtResumeStatus.BlackList}'");
                 if (parseMailServiceList.Any())
                 {
                     foreach (var message in messages)
                     {
                         foreach (var service in parseMailServiceList)
                         {
-                            var result = service.Analysis(message);
+                            var result = service.Analysis(message,blackList);
                             if (result)
                             {
                                 break;

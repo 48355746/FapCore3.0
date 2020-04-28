@@ -8,7 +8,7 @@ namespace Fap.Core.Utility
 {
     public class UUIDUtils
     {
-        private static object obj = new object();
+        public static IdGenerator idGenerator = new IdGenerator(1);
         /// <summary>
         /// 时间戳
         /// </summary>
@@ -21,10 +21,8 @@ namespace Fap.Core.Utility
         {
             get
             {
-                lock (obj)
-                {
-                    return new IdGenerator(0).CreateId().ToString();
-                }
+                return idGenerator.CreateId().ToString();
+              
             }
         }
 
@@ -34,6 +32,6 @@ namespace Fap.Core.Utility
         /// </summary>
         /// <param name="nums"></param>
         /// <returns></returns>
-        public static IEnumerable<string> GetFids(int nums) => new IdGenerator(0).Take(nums).Select(l => l.ToString());
+        public static IEnumerable<string> GetFids(int nums) => idGenerator.Take(nums).Select(l => l.ToString());
     }
 }
