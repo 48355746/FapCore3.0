@@ -29,7 +29,20 @@ var MultiLangHelper = (function () {
       'saveas_common_query': { 'ZhCn': '保存为常用查询', 'ZhTW': '', 'En': '', 'Ja': '' },
       'common_query': { 'ZhCn': '常用查询', 'ZhTW': '', 'En': '', 'Ja': '' },
       'allow_interview': { 'ZhCn': '允许面试', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'resume_assess': { 'ZhCn': '简历评估', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'resume_assess': { 'ZhCn': '简历评估', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'select_row_empty': { 'ZhCn': '请选中数据操作', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'save_add': { 'ZhCn': '保存并新增', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'ok': { 'ZhCn': '确定', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'recruit_website': { 'ZhCn': '招聘网站', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'send_to_interview_notice': { 'ZhCn': '发送面试通知', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'send_interview_notice': { 'ZhCn': '发送面试通知', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'new_event': { 'ZhCn': '新建事件', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'cancel': { 'ZhCn': '取消', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'event_change': { 'ZhCn': '更改事件', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'event_delete': { 'ZhCn': '删除事件', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'send_to_interview_invite': { 'ZhCn': '面试邀约', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'clear': { 'ZhCn': '清空!', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'end_row': { 'ZhCn': '已到达最后一条数据', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

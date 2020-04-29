@@ -23,7 +23,7 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
             _recruitService = serviceProvider.GetService<IRecruitService>();
         }
         [HttpPost("PublishWebsite")]
-        public JsonResult PublishWebsite(string demandUid,string[] websites)
+        public JsonResult PublishWebsite(string demandUid, string[] websites)
         {
             Guard.Against.NullOrEmpty(demandUid, nameof(demandUid));
             Guard.Against.Null(websites, nameof(websites));
@@ -31,7 +31,7 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
             return Json(ResponseViewModelUtils.Sueecss());
         }
         [HttpPost("ExecStatus")]
-        public JsonResult SetDemandExecStatus(string demandUid,string status)
+        public JsonResult SetDemandExecStatus(string demandUid, string status)
         {
             Guard.Against.NullOrEmpty(demandUid, nameof(demandUid));
             Guard.Against.Null(status, nameof(status));
@@ -39,17 +39,35 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
             return Json(ResponseViewModelUtils.Sueecss());
         }
         [HttpPost("ResumeStatus")]
-        public JsonResult SetResumeStatus(List<string> fids,string status)
+        public JsonResult SetResumeStatus(List<string> fids, string status)
         {
             Guard.Against.Null(fids, nameof(fids));
             Guard.Against.NullOrEmpty(status, nameof(status));
             _recruitService.ResumeStatus(fids, status);
             return Json(ResponseViewModelUtils.Sueecss());
         }
+        [HttpPost("ResumeToDept")]
+        public JsonResult SendResumeToDept(List<string> resumeUids,string demandUid)
+        {
+            _recruitService.SendResumeToDept(resumeUids, demandUid);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
         [HttpGet("ReceiveResume")]
         public JsonResult ReceiveResume()
         {
-            _recruitService.ReceiveResume();
+            var mails = _dbContext.QueryWhere<RcrtMail>("Enabled=1");
+            if (!mails.Any())
+            {
+                return Json(ResponseViewModelUtils.Failure("请配置招聘邮箱[基础设置]"));
+            }
+            _recruitService.ReceiveResume(mails);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+        [HttpPost("InterviewNotice")]
+        public JsonResult InterviewNotice(InterviewNoticeViewModel interviewNotice)
+        {
+            Guard.Against.Null(interviewNotice,nameof(interviewNotice));
+            _recruitService.InterviewNotice(interviewNotice);
             return Json(ResponseViewModelUtils.Sueecss());
         }
     }

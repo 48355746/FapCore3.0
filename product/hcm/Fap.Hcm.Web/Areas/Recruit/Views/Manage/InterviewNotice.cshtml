@@ -1,0 +1,130 @@
+﻿@model IEnumerable<Fap.Core.Infrastructure.Config.CfgEmailTemplate>
+@{
+    var roundsList = _dbContext.Dictionarys("RcrtInterViewRounds");
+}
+
+<div class="row">
+    <div class="col-sm-11">
+        <form class="form-horizontal" role="form">
+            <h3 class="header smaller lighter blue">
+                通知面试官信息
+            </h3>
+            <!-- #section:elements.form -->
+            <div class="form-group">
+                <label class="col-sm-3 control-label no-padding-right" for="form-field-rounds">面试轮次 </label>
+
+                <div class="col-sm-4">
+                    <select class="form-control" id="form-field-rounds">
+                        <option value=""></option>
+                        @foreach (var dic in roundsList)
+                        {
+                            <option value="@dic.Code">@dic.Name</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-3 control-label no-padding-right" for="form-field-ivtime"> 面试时间</label>
+
+                <div class="col-sm-5">
+                    <div class="input-group">
+                        <input type="text" id="form-field-ivtime" placeholder="面试时间" class="form-control" />
+                        <span class="input-group-addon">
+                            <i class="fa fa-clock-o bigger-110"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label no-padding-right" for="form-field-locations"> 面试地点</label>
+
+                <div class="col-sm-9">
+                    <input type="text" id="form-field-locations" placeholder="面试地点" class="form-control" />
+                </div>
+            </div>
+            <div class="space-4"></div>
+            <h3 class="header smaller lighter blue">
+                通知应聘人邮件
+            </h3>
+            <div class="form-group">
+                <label class="col-sm-3 control-label no-padding-right" for="form-field-mailbox"> 应聘人邮箱地址</label>
+
+                <div class="col-sm-9">
+                    <input type="text" id="form-field-mailbox" placeholder="邮箱地址" class="form-control" value="@ViewBag.MailBox"/>
+                </div>
+            </div>
+            <!-- /section:elements.form -->
+            <div class="form-group">
+                <label class="col-sm-3 control-label no-padding-right" for="form-field-mailtemplate">邮件模板 </label>
+
+                <div class="col-sm-4">
+                    <select class="form-control" id="form-field-mailtemplate">
+                        <option value=""></option>
+                        @foreach (var tmpl in Model)
+                        {
+                            <option value="@tmpl.TemplateContent">@tmpl.Name</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label no-padding-right" for="form-field-2"> 邮件内容 </label>
+
+                <div class="col-sm-9">
+                    <div class="wysiwyg-editor" id="editorMail"></div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    function sendInterviewNotice(resumeUid) {
+        var interviewNotice = {
+            resumeUid: resumeUid, ivTime: $("#form-field-ivtime").val()
+            , rounds: $("#form-field-rounds").val()
+            , locations: $("#form-field-locations").val()
+            , mailbox: $("#form-field-mailbox").val()
+            , mailcontent: $("#editorMail").html()
+        }
+        if (interviewNotice.rounds === "") {
+            $.msg("面试轮次不能为空");
+            return false;
+        }
+        if (interviewNotice.ivTime === "") {
+            $.msg("面试时间不能为空");
+            return false;
+        }
+        if (interviewNotice.locations === "") {
+            $.msg("面试地点不能为空");
+            return false;
+        }
+        if (interviewNotice.mailbox === "") {
+            $.msg("邮箱地址不能为空");
+            return false;
+        }
+        if (interviewNotice.mailcontent === "") {
+            $.msg("邮件内容不能为空");
+            return false;
+        }
+        $.post(basePath + "/Recruit/Api/InterviewNotice", { interviewNotice: interviewNotice }, function (rv) {
+            if (rv.success) {
+                $.msg(rv.msg);
+            } else {
+                bootbox.alert(rv.msg);
+            }
+        })
+        return true;
+    }
+    $(function () {
+        $('#editorMail').ace_wysiwyg().prev().addClass('wysiwyg-style1');
+        $('#form-field-ivtime').datetimepicker({ format: "yyyy-mm-dd hh:ii", language: "zh-CN" }).next().on(ace.click_event, function () {
+            $(this).prev().focus();
+        });
+        $("#form-field-mailtemplate").on("change", function () {
+            $("#editorMail").html($(this).val());
+        })
+
+        
+    })
+</script>

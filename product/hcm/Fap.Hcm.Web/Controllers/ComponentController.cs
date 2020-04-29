@@ -82,25 +82,25 @@ namespace Fap.Hcm.Web.Controllers
                         fieldName = item.ToString();
                         if (fieldName.EqualsWithIgnoreCase(FapDbConstants.CurrentEmployee))
                         {
-                            refcondition = refcondition.Replace(item.ToString(), _applicationContext.EmpUid);
+                            refcondition = refcondition.Replace(item.ToString(), _applicationContext.EmpUid,StringComparison.OrdinalIgnoreCase);
                         }
                         else if (fieldName.EqualsWithIgnoreCase(FapDbConstants.CurrentUser))
                         {
-                            refcondition = refcondition.Replace(item.ToString(), _applicationContext.UserName);
+                            refcondition = refcondition.Replace(item.ToString(), _applicationContext.UserName, StringComparison.OrdinalIgnoreCase);
                         }
                         else if (fieldName.EqualsWithIgnoreCase(FapDbConstants.CurrentDept))
                         {
-                            refcondition = refcondition.Replace(item.ToString(), _applicationContext.DeptUid);
+                            refcondition = refcondition.Replace(item.ToString(), _applicationContext.DeptUid, StringComparison.OrdinalIgnoreCase);
                         }
                         else if (fieldName.EqualsWithIgnoreCase(FapDbConstants.CurrentDeptCode))
                         {
                             //OrgDept dept = da.Get<OrgDept>(_session.AcSession.Employee.DeptUid);
-                            refcondition = refcondition.Replace(item.ToString(), _applicationContext.DeptCode);
+                            refcondition = refcondition.Replace(item.ToString(), _applicationContext.DeptCode, StringComparison.OrdinalIgnoreCase);
                         }
                     }
                     else
                     {
-                        refcondition = refcondition.Replace(item.ToString(), Request.Query[fieldName].ToString());
+                        refcondition = refcondition.Replace(item.ToString(), Request.Query[fieldName].ToString(), StringComparison.OrdinalIgnoreCase);
                     }
                 }
             }

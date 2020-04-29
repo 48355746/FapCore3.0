@@ -113,12 +113,12 @@
                         label: $.lang("send_to_department", "推送给部门"),
                         className: "btn-primary btn-link",
                         callback: function () {
-                            setResumeStatus('Screen');
+                            sendResumeToDept(rw.Fid);
                             return false;
                         }
                     },
                     sendToInterview: {
-                        label: $.lang("send_to_interview", "发送面试邮件"),
+                        label: $.lang("send_to_interview_invite", "面试邀约"),
                         className: "btn-primary btn-link",
                         callback: function () {
                             setInterviewMail();

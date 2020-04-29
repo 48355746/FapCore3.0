@@ -10,6 +10,17 @@ namespace Fap.Hcm.Service.Recruit
         void PublishWebsite(string demandUid, string websites);
         void DemandExecStatus(string demandUid, string status);
         void ResumeStatus(List<string> fids, string status);
-        void ReceiveResume();
+        void ReceiveResume(IEnumerable<RcrtMail> mails);
+        /// <summary>
+        /// 简历推送给部门
+        /// </summary>
+        /// <param name="resumeUids"></param>
+        /// <param name="demandUid"></param>
+        void SendResumeToDept(List<string> resumeUids, string demandUid);
+        /// <summary>
+        /// 面试邀约
+        /// </summary>
+        /// <param name="interviewNotice"></param>
+        void InterviewNotice(InterviewNoticeViewModel interviewNotice);
     }
 }

@@ -24,6 +24,10 @@ namespace Fap.Hcm.Service.Recruit
         /// </summary>
         public const string Interview = "Interview";
         /// <summary>
+        /// 已发送面试通知
+        /// </summary>
+        public const string InterviewNoticed = "InterviewNoticed";
+        /// <summary>
         /// 现场面试
         /// </summary>
         public const string Interviewing = "Interviewing";

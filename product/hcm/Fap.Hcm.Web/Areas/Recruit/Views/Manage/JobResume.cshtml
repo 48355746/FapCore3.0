@@ -10,14 +10,19 @@
         var fids= $.map(rows, function (r) {
             return r.Fid;
         })
-        $.post(basePath + "/Recruit/Api/ResumeStatus", { fids: fids, status: status }, function (rv) {
-            if (rv.success) {
-                $.msg(rv.msg);
-                refreshGrid("grid-jobresume");
-            } else {
-                bootbox.alert(rv.msg);
+        bootbox.confirm("确定要执行此操作吗?", function (result) {
+            if (result) {
+                $.post(basePath + "/Recruit/Api/ResumeStatus", { fids: fids, status: status }, function (rv) {
+                    if (rv.success) {
+                        $.msg(rv.msg);
+                        refreshGrid("grid-jobresume");
+                    } else {
+                        bootbox.alert(rv.msg);
+                    }
+                })
             }
         })
+       
     }
     //简历评估
     function resumeAssess() {
@@ -40,16 +45,50 @@
         }
         bootboxWindow($.lang("resume_assess", "简历评估"), basePath + "/Recruit/Manage/ResumeAssess", buttons,{ fid: rw.Fid, name: rw.ResumeName });
     }
-    //发送面试邮件
+    //推送简历给部门
+    function sendResumeToDept(demandUid) {
+        var rows = getSelectedRows("grid-jobresume");
+        if (rows === null) {
+            return;
+        }
+        var sels= $.grep(rows, function (d) {
+            return d.ResumeStatus === "Created";
+        })
+        if (sels === null || sels.length < 1) {
+            $.msg("没有满足条件的简历");
+            return;
+        }
+        var fids = $.map(sels, function (r) {
+            return r.Fid;
+        })
+        $.post(basePath + "/Recruit/Api/ResumeToDept", { resumeUids: fids, demandUid: demandUid }, function (rv) {
+            if (rv.success) {
+                $.msg(rv.msg);
+                refreshGrid("grid-jobresume");
+            } else {
+                bootbox.alert(rv.msg);
+            }
+        })
+    }
+    //面试邀约
     function setInterviewMail() {
         var row = getSelectedRow("grid-jobresume");
         if (row == null) {
             return;
         }
-        if (row.ResumeStatus === "Interview") {
-
+        if (row.ResumeStatus === "Interview" || row.ResumeStatus === "InterviewNoticed" || row.ResumeStatus === "Interviewing") {
+            bootboxWindow($.lang("send_interview_notice", "发送面试通知"), basePath + "/Recruit/Manage/InterviewNotice",
+                {
+                    ok: {
+                        label: $.lang("ok", "确定"),
+                        className: "btn-primary btn-link",
+                        callback: function () {
+                            return sendInterviewNotice(row.Fid);                            
+                        }
+                    }
+                }, { resumeUid: row.Fid });
         } else {
-            $.msg("发送面试邮件需要部门同意");
+            $.msg("职位部门还没有批准面试，请联系职位部门批准");
         }
     }
 </script>

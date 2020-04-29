@@ -9,6 +9,9 @@ using Fap.Core.Extensions;
 using Ardalis.GuardClauses;
 using Fap.Hcm.Service.Recruit;
 using Fap.Core.Infrastructure.Metadata;
+using Fap.Core.Infrastructure.Config;
+using System.Text.RegularExpressions;
+using Fap.Core.Infrastructure.Domain;
 
 namespace Fap.Hcm.Web.Areas.Recruit.Controllers
 {
@@ -20,11 +23,11 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
         }
         public IActionResult Demand()
         {
-            var cols= _dbContext.Columns("RcrtDemand").Where(c => !c.ColProperty.EqualsWithIgnoreCase("3"))?.Select(c=>c.ColName);
+            var cols = _dbContext.Columns("RcrtDemand").Where(c => !c.ColProperty.EqualsWithIgnoreCase("3"))?.Select(c => c.ColName);
             Guard.Against.Null(cols, nameof(cols));
             JqGridViewModel model = this.GetJqGridModel("RcrtDemand", (qs) =>
             {
-                qs.QueryCols =string.Join(',',cols);
+                qs.QueryCols = string.Join(',', cols);
                 qs.GlobalWhere = "BillStatus='PASSED'";
             });
             return View(model);
@@ -47,7 +50,7 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
         }
         public IActionResult WebsiteSelector()
         {
-            var websites= _dbContext.Query<RcrtWebsite>($"select {nameof(RcrtWebsite.WebName)},{nameof(RcrtWebsite.WebUrl)} from {nameof(RcrtWebsite)}");
+            var websites = _dbContext.Query<RcrtWebsite>($"select {nameof(RcrtWebsite.WebName)},{nameof(RcrtWebsite.WebUrl)} from {nameof(RcrtWebsite)}");
             return PartialView(websites);
         }
         /// <summary>
@@ -59,8 +62,8 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
             var cols = _dbContext.Columns("RcrtResume").Where(c => c.CtrlType != FapColumn.CTRL_TYPE_RICHTEXTBOX).Select(c => c.ColName);
             var model = GetJqGridModel("RcrtResume", qs =>
             {
-                qs.QueryCols =string.Join(',', cols);
-                qs.GlobalWhere = $"{nameof(RcrtResume.ResumeName)}=@Title and {nameof(RcrtResume.ResumeStatus)} in ('{RcrtResumeStatus.Created}','{RcrtResumeStatus.Screen}','{RcrtResumeStatus.Interview}')";
+                qs.QueryCols = string.Join(',', cols);
+                qs.GlobalWhere = $"{nameof(RcrtResume.ResumeName)}=@Title and {nameof(RcrtResume.ResumeStatus)} not in ('{RcrtResumeStatus.BlackList}','{RcrtResumeStatus.TalentPool}','{RcrtResumeStatus.Reserve}')";
                 qs.AddParameter("Title", title);
             });
             return PartialView(model);
@@ -75,7 +78,7 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
             var model = GetJqGridModel("RcrtResume", qs =>
             {
                 qs.QueryCols = string.Join(',', cols);
-                qs.GlobalWhere = $"{nameof(RcrtResume.ResumeName)}=@Title and {nameof(RcrtResume.ResumeStatus)} in ('{RcrtResumeStatus.Screen}','{RcrtResumeStatus.Interview}')";
+                qs.GlobalWhere = $"{nameof(RcrtResume.ResumeName)}=@Title and {nameof(RcrtResume.ResumeStatus)} not in ('{RcrtResumeStatus.Created}','{RcrtResumeStatus.BlackList}','{RcrtResumeStatus.TalentPool}','{RcrtResumeStatus.Reserve}')";
                 qs.AddParameter("Title", title);
             });
             return PartialView("JobResume", model);
@@ -86,7 +89,7 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
         /// <param name="fid"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        public IActionResult ResumeAssess(string fid,string name)
+        public IActionResult ResumeAssess(string fid, string name)
         {
             var model = GetJqGridModel("RcrtResumeReview", qs =>
             {
@@ -98,6 +101,33 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
             return PartialView(model);
         }
         /// <summary>
+        /// 面试通知
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult InterviewNotice(string resumeUid)
+        {
+            Guard.Against.NullOrEmpty(resumeUid, nameof(resumeUid));
+            var resume = _dbContext.Get("RcrtResume", resumeUid) as IDictionary<string, object>;
+            var cols= _dbContext.Columns("RcrtResume");
+            var mailTemplates = _dbContext.QueryWhere<CfgEmailTemplate>("ModuleUid='RecruitMailTmpl' and TableName='RcrtResume'");
+            foreach (var template in mailTemplates)
+            {
+                Regex regex = new Regex(FapPlatformConstants.VariablePattern, RegexOptions.IgnoreCase);
+                var mat = regex.Matches(template.TemplateContent);
+                foreach (Match item in mat)
+                {
+                    var fieldName = item.ToString().Substring(2, item.ToString().Length - 3);
+                    var col= cols.FirstOrDefault(c => c.ColComment.EqualsWithIgnoreCase(fieldName));
+                    if (col!=null&&resume.ContainsKey(col.ColName))
+                    {
+                        template.TemplateContent = template.TemplateContent.Replace(item.ToString(), resume[col.ColName].ToString(), StringComparison.OrdinalIgnoreCase);
+                    }
+                }
+            }
+            ViewBag.MailBox = resume["Emails"].ToString();
+            return PartialView(mailTemplates);
+        }
+        /// <summary>
         /// 我的招聘
         /// </summary>
         /// <returns></returns>
@@ -105,11 +135,12 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
         {
             MultiJqGridViewModel multi = new MultiJqGridViewModel();
             //简历评价
-            var resumeAssess = GetJqGridModel("RcrtResumeReview",qs=> {
+            var resumeAssess = GetJqGridModel("RcrtResumeReview", qs =>
+            {
                 qs.InitWhere = "Review is null or Review=''";
                 qs.GlobalWhere = "EmpUid=@EmpUid";
                 qs.AddParameter("EmpUid", _applicationContext.EmpUid);
-                qs.ReadOnlyCols = "EmpUid";               
+                qs.ReadOnlyCols = "EmpUid";
             });
             //面试
             var interviewAssess = GetJqGridModel("RcrtInterview", qs =>
@@ -146,7 +177,7 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
             MultiJqGridViewModel multiModel = new MultiJqGridViewModel();
             multiModel.JqGridViewModels.Add("website", modelWebsite);
             multiModel.JqGridViewModels.Add("mail", modelMail);
-            multiModel.JqGridViewModels.Add("template",modelTemplate);
+            multiModel.JqGridViewModels.Add("template", modelTemplate);
             return View(multiModel);
         }
 
