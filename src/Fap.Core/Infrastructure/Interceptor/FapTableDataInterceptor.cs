@@ -124,6 +124,10 @@ namespace Fap.Core.Infrastructure.Interceptor
                 var features = tbFeature.SplitSemicolon();
                 foreach (var feature in features)
                 {
+                    if (fapTable.TableFeature.IsPresent()&&fapTable.TableFeature.IndexOf(feature) > -1)
+                    {
+                        continue;
+                    }
                     var featureColumns = GetColumnsByFeature(feature.Split(':')[0].Trim());
                     if (featureColumns.Any())
                     {

@@ -6,7 +6,7 @@
     Fap.AspNetCore.ViewModel.JqGridViewModel cmodel = Model.JqGridViewModels["recommend"];
     //增加操作列
     Column assessColumn = new Column("oper");
-    assessColumn.SetLabel("查看");
+    assessColumn.SetLabel("操作");
     assessColumn.SetSearch(false);
     assessColumn.SetSortable(false);
     assessColumn.SetWidth(140);
@@ -29,7 +29,7 @@
         bootboxWindow($.lang("resume", "简历"), basePath + "/Component/DataForm/" + resumeUid,
             {
                 assess: {
-                    label: $.lang("assess", "评估"),
+                    label: $.lang("resume_assess", "简历评价"),
                     className: "btn-primary btn-link",
                     callback: function () {
                         loadFormMessageBox($.lang("assess", "评估"), "grid-resumeassess", "fa fa-comment-o", "RcrtResumeReview", fid)
@@ -37,6 +37,51 @@
                     }
                 },
             }, { tn: "RcrtResume", fs: 3 });
+    }
+
+    function initInterviewMenu() {
+        var ids = jQuery("#grid-interviewassess").jqGrid('getDataIDs');
+        for (var i = 0; i < ids.length; i++) {
+            var cl = ids[i];
+            var ret = jQuery('#grid-interviewassess').jqGrid('getRowData', cl);
+            var fid = ret.Fid;
+            var resumeUid = ret.ResumeUid;
+            var de = "<a  href='javascript:void(0)' onclick='showResumeByInterview(\"" + fid + "\",\"" + resumeUid + "\")'>" + $.lang("resume", "简历") + "</a>  |  ";
+            de += "<a  href='javascript:void(0)' onclick='interviewAssess(\"" + fid + "\")'>" + $.lang("assess", "评价") + "</a>  ";
+
+            jQuery('#grid-interviewassess').jqGrid('setRowData', ids[i], { oper: de });
+        }
+    }
+    function showResumeByInterview(fid, resumeUid) {
+        bootboxWindow($.lang("resume", "简历"), basePath + "/Component/DataForm/" + resumeUid,
+            {
+                assess: {
+                    label: $.lang("interview_assess", "面试评价"),
+                    className: "btn-primary btn-link",
+                    callback: function () {
+                        loadFormMessageBox($.lang("interview_assess", "面试评价"), "grid-interviewassess", "fa fa-comments", "RcrtInterview", fid)
+                        return false;
+                    }
+                },
+            }, { tn: "RcrtResume", fs: 3 });
+    }
+    function interviewAssess(fid) {
+        loadFormMessageBox($.lang("interview_assess", "面试评价"), "grid-interviewassess", "fa fa-comments", "RcrtInterview", fid)
+    }
+
+    function innerRecommendMenu() {
+        var ids = jQuery("#grid-innerrecommend").jqGrid('getDataIDs');
+        for (var i = 0; i < ids.length; i++) {
+            var cl = ids[i];
+            var ret = jQuery('#grid-innerrecommend').jqGrid('getRowData', cl);
+            var de = "<a  href='javascript:void(0)' onclick='innerRecommend(\"" + ret.DemandName + "\")'>" + $.lang("my_recommend", "我的推荐") + "</a>";
+            jQuery('#grid-innerrecommend').jqGrid('setRowData', ids[i], { oper: de });
+        }
+    }
+    function innerRecommend(demandName) {
+        bootboxWindow1($.lang("my_recommend", "我的推荐"), basePath + "/Recruit/Manage/MyRecommend",
+            {
+            }, { demandName: demandName });
     }
 </script>
 <div class="row">
@@ -71,10 +116,10 @@
                 </div>
 
                 <div id="interview" class="tab-pane fade">
-                    <fap-grid id="interviewassess" grid-model="imodel" auto-width="true" wrapper="myTab,interview" register-authority="false" oper-update="true" shrink-fit="false" view-records="true" ></fap-grid>
+                    <fap-grid id="interviewassess" attach-column="assessColumn" grid-model="imodel" on-grid-complete="initInterviewMenu" auto-width="true" wrapper="myTab,interview" register-authority="false"  shrink-fit="false" view-records="true" ></fap-grid>
                 </div>
                 <div id="recommend" class="tab-pane fade">
-                    <fap-grid id="innerrecommend" grid-model="cmodel" auto-width="true" wrapper="myTab,recommend" shrink-fit="false" register-authority="false" view-records="true" ></fap-grid>
+                    <fap-grid id="innerrecommend" attach-column="assessColumn" grid-model="cmodel" on-grid-complete="innerRecommendMenu" auto-width="true" wrapper="myTab,recommend" shrink-fit="false" register-authority="false" view-records="true" ></fap-grid>
                 </div>
 
             </div>

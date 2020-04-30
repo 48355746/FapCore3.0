@@ -79,9 +79,11 @@
     </div>
 </div>
 <script>
-    function sendInterviewNotice(resumeUid) {
+    function sendInterviewNotice(demandUid,resumeUid) {
         var interviewNotice = {
-            resumeUid: resumeUid, ivTime: $("#form-field-ivtime").val()
+            demandUid: demandUid
+            ,resumeUid: resumeUid
+            ,ivTime: $("#form-field-ivtime").val()
             , rounds: $("#form-field-rounds").val()
             , locations: $("#form-field-locations").val()
             , mailbox: $("#form-field-mailbox").val()

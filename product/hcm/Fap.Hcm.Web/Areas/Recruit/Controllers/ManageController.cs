@@ -137,7 +137,6 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
             //简历评价
             var resumeAssess = GetJqGridModel("RcrtResumeReview", qs =>
             {
-                qs.InitWhere = "Review is null or Review=''";
                 qs.GlobalWhere = "EmpUid=@EmpUid";
                 qs.AddParameter("EmpUid", _applicationContext.EmpUid);
                 qs.ReadOnlyCols = "EmpUid";
@@ -145,7 +144,6 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
             //面试
             var interviewAssess = GetJqGridModel("RcrtInterview", qs =>
             {
-                qs.InitWhere = "IvStatus=1";
                 qs.GlobalWhere = "EmpUid=@EmpUid";
                 qs.AddParameter("EmpUid", _applicationContext.EmpUid);
             });
@@ -160,6 +158,20 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
             multi.JqGridViewModels.Add("interview", interviewAssess);
             multi.JqGridViewModels.Add("recommend", innerRecommend);
             return View(multi);
+        }
+        public IActionResult MyRecommend(string demandName)
+        {
+            var model = GetJqGridModel(nameof(RcrtResume), qs =>
+            {
+                qs.GlobalWhere = "EmpUid=@EmpUid";
+                qs.AddParameter("EmpUid", _applicationContext.EmpUid);
+                qs.AddDefaultValue("ResumeName", demandName);
+                qs.AddDefaultValue("ResumeStatus", RcrtResumeStatus.Created);
+                qs.AddDefaultValue("EmpUid", _applicationContext.EmpUid);
+                qs.AddDefaultValue("EmpUidMC", _applicationContext.EmpName);
+
+            });
+            return PartialView(model);
         }
         //基础设置
         public IActionResult BasicSettings()

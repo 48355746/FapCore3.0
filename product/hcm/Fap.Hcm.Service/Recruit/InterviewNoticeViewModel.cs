@@ -6,6 +6,7 @@ namespace Fap.Hcm.Service.Recruit
 {
     public class InterviewNoticeViewModel
     {
+        public string DemandUid { get; set; }
         public string ResumeUid { get; set; }
         public string Rounds { get; set; }
         public string IvTime { get; set; }

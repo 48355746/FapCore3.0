@@ -159,7 +159,7 @@ namespace Fap.Hcm.Web.Areas.Assess.Controllers
         /// 我的待处理考核
         /// </summary>
         /// <returns></returns>
-        public IActionResult MyAssessTodo()
+        public IActionResult MyAssess()
         {
             JqGridViewModel model = this.GetJqGridModel("PerfExaminer", (qs) =>
             {

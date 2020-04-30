@@ -201,7 +201,8 @@ namespace Fap.Hcm.Service.Recruit
         public void InterviewNotice(InterviewNoticeViewModel interviewNotice)
         {
             var resume = _dbContext.Get<RcrtResume>(interviewNotice.ResumeUid);
-            var assessList= _dbContext.QueryWhere<RcrtResumeReview>("ResumeUid=@ResumeUid", new DynamicParameters(new { ResumeUid = interviewNotice.ResumeUid }));
+            var demandDeptUid = _dbContext.ExecuteScalar<string>("select DeptUid from RcrtDemand where Fid=@DemandUid", new DynamicParameters(new { interviewNotice.DemandUid }));
+            var assessList= _dbContext.QueryWhere<RcrtResumeReview>("ResumeUid=@ResumeUid", new DynamicParameters(new { interviewNotice.ResumeUid }));
             resume.ResumeStatus = RcrtResumeStatus.InterviewNoticed;
             _dbContext.Update(resume);
          
@@ -211,6 +212,8 @@ namespace Fap.Hcm.Service.Recruit
                 RcrtInterview riv = new RcrtInterview
                 {
                     ResumeUid = interviewNotice.ResumeUid,
+                    Contenders=resume.FullName,
+                    DeptUid=demandDeptUid,
                     EmpUid = assess.EmpUid,
                     Rounds = interviewNotice.Rounds,
                     Locations = interviewNotice.Locations,

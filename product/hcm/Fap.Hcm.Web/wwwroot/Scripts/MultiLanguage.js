@@ -42,7 +42,16 @@ var MultiLangHelper = (function () {
       'event_delete': { 'ZhCn': '删除事件', 'ZhTW': '', 'En': '', 'Ja': '' },
       'send_to_interview_invite': { 'ZhCn': '面试邀约', 'ZhTW': '', 'En': '', 'Ja': '' },
       'clear': { 'ZhCn': '清空!', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'end_row': { 'ZhCn': '已到达最后一条数据', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'end_row': { 'ZhCn': '已到达最后一条数据', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'interview_assess': { 'ZhCn': '面试评价', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'score': { 'ZhCn': '打分', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'score': { 'ZhCn': '打分', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'score': { 'ZhCn': '打分', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'score': { 'ZhCn': '打分', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'recommend': { 'ZhCn': '推荐', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'my_recommend': { 'ZhCn': '我的推荐', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'form_validation_failed': { 'ZhCn': '表单校验失败', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'confirm_delete': { 'ZhCn': '确定要删除选中的数据吗?', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

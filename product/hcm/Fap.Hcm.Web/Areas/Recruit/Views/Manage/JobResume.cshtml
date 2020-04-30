@@ -71,7 +71,7 @@
         })
     }
     //面试邀约
-    function setInterviewMail() {
+    function setInterviewMail(demandUid) {
         var row = getSelectedRow("grid-jobresume");
         if (row == null) {
             return;
@@ -83,7 +83,7 @@
                         label: $.lang("ok", "确定"),
                         className: "btn-primary btn-link",
                         callback: function () {
-                            return sendInterviewNotice(row.Fid);                            
+                            return sendInterviewNotice(demandUid,row.Fid);                            
                         }
                     }
                 }, { resumeUid: row.Fid });
