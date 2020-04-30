@@ -51,7 +51,9 @@ var MultiLangHelper = (function () {
       'recommend': { 'ZhCn': '推荐', 'ZhTW': '', 'En': '', 'Ja': '' },
       'my_recommend': { 'ZhCn': '我的推荐', 'ZhTW': '', 'En': '', 'Ja': '' },
       'form_validation_failed': { 'ZhCn': '表单校验失败', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'confirm_delete': { 'ZhCn': '确定要删除选中的数据吗?', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'confirm_delete': { 'ZhCn': '确定要删除选中的数据吗?', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'submit': { 'ZhCn': '提交', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'temporary': { 'ZhCn': '暂存', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种
