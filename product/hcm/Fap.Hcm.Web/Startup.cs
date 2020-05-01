@@ -106,6 +106,8 @@ namespace Fap.Hcm.Web
                 app.UseDeveloperExceptionPage();
                 //生成多语js文件
                 app.BuilderMultiLanguageJsFile();
+                //迷你性能监控
+                app.UseMiniProfiler();
             }
             else
             {
@@ -136,7 +138,7 @@ namespace Fap.Hcm.Web
             app.UseAuthentication();
             //鉴权
             app.UseAuthorization();
-            app.UseMiniProfiler();
+            
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
