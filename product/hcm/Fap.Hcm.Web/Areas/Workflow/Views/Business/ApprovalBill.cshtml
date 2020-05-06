@@ -27,12 +27,12 @@
                         } else if (item.property === 1) {
                             //编辑
                             $("#frm-@formName .form-control[name$=" + item.fieldName + "]").removeAttr('disabled');
-                            $("#frm-@formName .form-control[name$=" + item.fieldName + "]").rules("add", {
+                            @*$("#frm-@formName .form-control[name$=" + item.fieldName + "]").rules("add", {
                                 required: true,
                                 messages: {
                                     required: "[" + item.fieldNameMC + "]--必须填写！"
                                 }
-                            });
+                            });*@
                         } else if (item.property === 3) {
                             //必填
                         }

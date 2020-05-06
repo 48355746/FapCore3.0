@@ -26,6 +26,10 @@ function getSelectedRows(grdid) {
             var rowData = grid.jqGrid('getRowData', selectedIDs[i]);
             result.push(rowData);
         }
+        if (result.length === 0) {
+            $.msg($.lang("select_row_empty", "请选中数据操作"));
+            return null;
+        }
         return result;
     }
 }
@@ -311,8 +315,7 @@ var openRefrenceWindow = function (title, colfid, refurl, selectcallback, clearc
 //批量编辑
 var loadBatchUpdateMessageBox = function (title, gid, qryCols, tablename, menuUid, callback) {
     var rowDatas = getSelectedRows(gid);
-    if (rowDatas === null || rowDatas.length === 0) {
-        $.msg($.lang("select_row_empty", "请选中数据操作"));
+    if (rowDatas === null) {
         return;
     }
     var dialog = bootbox.dialog({

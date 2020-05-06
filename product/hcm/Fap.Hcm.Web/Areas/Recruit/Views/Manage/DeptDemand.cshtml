@@ -53,14 +53,22 @@
                     return;
                 }
                 bootboxWindow1($.lang("resume_filter", "简历筛选"), basePath + "/Recruit/Manage/DeptResume", {
-                    assess: {
-                        label: $.lang("assess", "评估"),
+                    resumeAssess: {
+                        label: $.lang("resume_assess", "简历评估"),
                         className: "btn-primary btn-link",
                         callback: function () {
                             resumeAssess();
                             return false;
                         }
-                    },                  
+                    },   
+                    interviewAssess: {
+                        label: $.lang("view_interview_assess", "查看面试评价"),
+                        className: "btn-primary btn-link",
+                        callback: function () {
+                            interviewAssess();
+                            return false;
+                        }
+                    },  
                     talentPool: {
                         label: $.lang("talent_pool", "加优才库"),
                         className: "btn-primary btn-link",

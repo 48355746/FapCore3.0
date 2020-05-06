@@ -1,0 +1,47 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+
+<title>
+    <fap-multilang lang-key="entry_manage" default-content="入职管理"></fap-multilang>
+</title>
+
+<div class="row">
+    <div class="col-xs-12">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">
+                    <fap-multilang lang-key="entry_manage" default-content="入职管理"></fap-multilang>
+                </h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar">
+                    <fap-button id="btnItemPreperation" btn-tag="link" content="物品准备" icon-before="fa fa-ban blue" class-name="info"></fap-button>
+                    <fap-button id="btnInfoCompleted" btn-tag="link" content="信息完善" icon-before="fa fa-check blue" class-name="info"></fap-button>
+                </div>
+
+            </div>
+            <div class="widget-body">
+
+                <div class="widget-main">
+                    <fap-grid id="offer" grid-model="Model" wrapper="widget-main" register-authority="false" oper-chart="true" view-records="true" shrink-fit="false"></fap-grid>
+
+                    <!-- /.row -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    var scripts = [null, "/Scripts/Workflow/business.js?v=2", null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+            })
+        })
+    })
+</script>

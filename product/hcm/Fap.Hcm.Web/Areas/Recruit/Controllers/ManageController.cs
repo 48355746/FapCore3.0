@@ -12,6 +12,7 @@ using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.Infrastructure.Config;
 using System.Text.RegularExpressions;
 using Fap.Core.Infrastructure.Domain;
+using Fap.Core.Infrastructure.Enums;
 
 namespace Fap.Hcm.Web.Areas.Recruit.Controllers
 {
@@ -21,6 +22,10 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
         public ManageController(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
+        /// <summary>
+        /// 招聘需求
+        /// </summary>
+        /// <returns></returns>
         public IActionResult Demand()
         {
             var cols = _dbContext.Columns("RcrtDemand").Where(c => !c.ColProperty.EqualsWithIgnoreCase("3"))?.Select(c => c.ColName);
@@ -29,6 +34,33 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
             {
                 qs.QueryCols = string.Join(',', cols);
                 qs.GlobalWhere = "BillStatus='PASSED'";
+            });
+            return View(model);
+        }
+        /// <summary>
+        /// 入职管理
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult Entry()
+        {
+            var cols = _dbContext.Columns("RcrtBizOffer").Where(c => !c.ColProperty.EqualsWithIgnoreCase("3"))?.Select(c => c.ColName);
+            var model = GetJqGridModel("RcrtBizOffer", qs =>
+            {
+                qs.QueryCols = string.Join(',', cols);
+                qs.GlobalWhere = $"BillStatus='{BillStatus.PASSED}'";
+            });
+            return View(model);
+        }
+        /// <summary>
+        /// 简历库
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult Resume()
+        {
+            var cols = _dbContext.Columns("RcrtResume").Where(c => c.CtrlType != FapColumn.CTRL_TYPE_RICHTEXTBOX).Select(c => c.ColName);
+            var model = GetJqGridModel("RcrtResume", qs =>
+            {
+                qs.QueryCols = string.Join(',', cols);               
             });
             return View(model);
         }
@@ -97,6 +129,21 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
                 qs.AddParameter("Fid", fid);
                 qs.AddDefaultValue("ResumeUid", fid);
                 qs.AddDefaultValue("ResumeUidMC", name);
+            });
+            return PartialView(model);
+        }
+        /// <summary>
+        /// 面试评价
+        /// </summary>
+        /// <param name="resumeUid"></param>
+        /// <returns></returns>
+        public IActionResult InterviewAssess(string resumeUid)
+        {
+            var model = GetJqGridModel("RcrtInterview", qs =>
+            {
+                qs.QueryCols = "Id,Fid,EmpUid,Rounds,Locations,IvTime,IvResult,Ability,IvReview";
+                qs.GlobalWhere = "ResumeUid=@ResumeUid";
+                qs.AddParameter("ResumeUid", resumeUid);
             });
             return PartialView(model);
         }

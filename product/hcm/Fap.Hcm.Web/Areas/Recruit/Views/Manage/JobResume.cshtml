@@ -45,6 +45,13 @@
         }
         bootboxWindow($.lang("resume_assess", "简历评估"), basePath + "/Recruit/Manage/ResumeAssess", buttons,{ fid: rw.Fid, name: rw.ResumeName });
     }
+    function interviewAssess() {
+        var rw = getSelectedRow("grid-jobresume");
+        if (rw === null) {
+            return;
+        }
+        bootboxWindow($.lang("view_interview_assess", "查看面试评价"), basePath + "/Recruit/Manage/InterviewAssess", null, { resumeUid: rw.Fid });
+    }
     //推送简历给部门
     function sendResumeToDept(demandUid) {
         var rows = getSelectedRows("grid-jobresume");
@@ -90,5 +97,23 @@
         } else {
             $.msg("职位部门还没有批准面试，请联系职位部门批准");
         }
+    }
+    function sendOfferApply(demand) {
+        var resume = getSelectedRow("grid-jobresume");
+        if (resume == null) {
+            return;
+        }
+        applyBusiness("3532118617262915584", "offer审批",
+            {
+                "DemandUid": demand.Fid,
+                "ResumeUid": resume.Fid,
+                "ResumeUidMC": resume.ResumeName,
+                "EmpName": resume.FullName,
+                "Gender": resume.Gender,
+                "DeptUid": demand.DeptUid,
+                "DeptUidMC": demand.DeptUidMC,
+                "ArrivalDate": demand.EntryDate,
+                "WorkingPlace": demand.WorkPlace
+            });
     }
 </script>

@@ -11,6 +11,6 @@
     overflow-y:auto;
 }
 /*jqgrid div 行高问题*/
-.ui-jqgrid-btable td div{
+[role=gridcell] div {
     display: inline-block;
 }

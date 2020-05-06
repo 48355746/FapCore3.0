@@ -124,6 +124,14 @@
                             setInterviewMail(rw.Fid);
                             return false;
                         }
+                    },
+                    sendToOfferApply: {
+                        label: $.lang("send_to_offer_apply", "发起offer审批"),
+                        className: "btn-primary btn-link",
+                        callback: function () {
+                            sendOfferApply(rw);                           
+                            return false;
+                        }
                     }
                 }, { title: rw.DemandName });
             })

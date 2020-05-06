@@ -20,7 +20,10 @@
                             <input type="text" class="input-sm form-control" id="txtEnd" name="end" />
                         </div>
                     </div>
-                    <button type="button" id="btnQueryPayroll" class="btn btn-white btn-sm btn-info">查看</button>
+                    <div class="col-sm-1">
+                        <button type="button" id="btnQueryPayroll" class="btn btn-white btn-sm btn-info">查看</button>
+
+                    </div>
                 </div>
             </form>
 
@@ -74,7 +77,7 @@
                                 }
                             });
                             $("#payMain").append($table.get(0));
-                            
+
                         })
                     } else {
                         bootbox.alert(rv.msg);

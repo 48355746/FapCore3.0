@@ -53,7 +53,18 @@ var MultiLangHelper = (function () {
       'form_validation_failed': { 'ZhCn': '表单校验失败', 'ZhTW': '', 'En': '', 'Ja': '' },
       'confirm_delete': { 'ZhCn': '确定要删除选中的数据吗?', 'ZhTW': '', 'En': '', 'Ja': '' },
       'submit': { 'ZhCn': '提交', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'temporary': { 'ZhCn': '暂存', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'temporary': { 'ZhCn': '暂存', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'flow_diagram': { 'ZhCn': '流程图', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'invalid': { 'ZhCn': '作废', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'invalid': { 'ZhCn': '作废', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'replace_photo': { 'ZhCn': '更换照片', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'send_to_offer_apply': { 'ZhCn': '发起offer审批', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'workflow_designer': { 'ZhCn': '流程设计器', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'recall': { 'ZhCn': '撤回', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'print': { 'ZhCn': '打印', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'close': { 'ZhCn': '关闭', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'handler': { 'ZhCn': '办理', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'success': { 'ZhCn': '授权成功！', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种
