@@ -9,7 +9,7 @@
         <div class="widget-box">
             <div class="widget-header widget-header-flat">
                 <h4 class="widget-title">
-                    <fap-multilang lang-key="entry_manage" default-content="入职管理"></fap-multilang>
+                    <fap-multilang lang-key="offer_list" default-content="offer列表"></fap-multilang>
                 </h4>
 
                 <div class="widget-toolbar">
@@ -18,7 +18,8 @@
                     </a>
                 </div>
                 <div class="widget-toolbar">
-                    <fap-button id="btnItemPreperation" btn-tag="link" content="物品准备" icon-before="fa fa-ban blue" class-name="info"></fap-button>
+                    <fap-button id="btnSendOffer" btn-tag="link" content="发送Offer" icon-before="fa fa-envelope blue" class-name="info"></fap-button>
+                    <fap-button id="btnItemPreperation" btn-tag="link" content="物品准备" icon-before="fa fa-cart-plus blue" class-name="info"></fap-button>
                     <fap-button id="btnInfoCompleted" btn-tag="link" content="信息完善" icon-before="fa fa-check blue" class-name="info"></fap-button>
                 </div>
 
@@ -41,6 +42,33 @@
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
             $(document).one('ajaxloadstart.page', function (e) {
+            })
+            $("#btnSendOffer").on(ace.click_event, function () {
+                var rw = getSelectedRow("grid-offer");
+                if (rw == null) {
+                    return;
+                }
+                bootboxWindow($.lang("send_offer_notice", "发送Offer通知"), basePath + "/Recruit/Manage/OfferNotice",
+                    {
+                        ok: {
+                            label: $.lang("ok", "确定"),
+                            className: "btn-primary btn-link",
+                            callback: function () {
+                                return sendOfferNotice();
+                            }
+                        }
+                    }, { offerUid: rw.Fid });
+            })
+            $("#btnItemPreperation").on(ace.click_event, function () {
+                var rw = getSelectedRow("grid-offer");
+                if (rw == null) {
+                    return;
+                }
+                bootboxWindow($.lang("item_preparation", "物品准备"), basePath + "/Recruit/Manage/ItemPreparation", null,
+                    { offerUid:rw.Fid,offerName:rw.EmpName,menuUrl:"~/Recruit/Manage/Entry"});
+            })
+            $("#btnInfoCompleted").on(ace.click_event, function () {
+
             })
         })
     })

@@ -15,7 +15,7 @@ namespace Fap.Hcm.Web.Models
         /// <summary>
         /// 初始化表单默认值
         /// </summary>
-        public List<DefaultValue> DefaultValues { get; set; } = new List<DefaultValue>();
+        public List<DefaultValue> DefaultValues { get;} = new List<DefaultValue>();
     }
     //public class MultiGridViewModel
     //{

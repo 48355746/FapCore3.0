@@ -277,7 +277,7 @@ namespace Fap.Core.DataAccess
         }
 
         private object lockSequence = new object();
-        private Dictionary<string, string> GetBillCode(string tableName)
+        public Dictionary<string, string> GetBillCode(string tableName)
         {
             Dictionary<string, string> dictCodes = new Dictionary<string, string>();
 

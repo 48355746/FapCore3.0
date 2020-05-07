@@ -13,6 +13,7 @@ using Fap.Core.Infrastructure.Config;
 using System.Text.RegularExpressions;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Infrastructure.Enums;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Fap.Hcm.Web.Areas.Recruit.Controllers
 {
@@ -51,6 +52,17 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
             });
             return View(model);
         }
+        public IActionResult ItemPreparation(string offerUid, string offerName)
+        {
+            var model = GetJqGridModel("RcrtEntryPreparation", qs =>
+            {
+                qs.GlobalWhere = "OfferUid=@OfferUid";
+                qs.AddParameter("OfferUid", offerUid);
+                qs.AddDefaultValue("OfferUid", offerUid);
+                qs.AddDefaultValue("OfferUidMC", offerName);
+            });
+            return PartialView(model);
+        }
         /// <summary>
         /// 简历库
         /// </summary>
@@ -60,7 +72,7 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
             var cols = _dbContext.Columns("RcrtResume").Where(c => c.CtrlType != FapColumn.CTRL_TYPE_RICHTEXTBOX).Select(c => c.ColName);
             var model = GetJqGridModel("RcrtResume", qs =>
             {
-                qs.QueryCols = string.Join(',', cols);               
+                qs.QueryCols = string.Join(',', cols);
             });
             return View(model);
         }
@@ -155,7 +167,7 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
         {
             Guard.Against.NullOrEmpty(resumeUid, nameof(resumeUid));
             var resume = _dbContext.Get("RcrtResume", resumeUid) as IDictionary<string, object>;
-            var cols= _dbContext.Columns("RcrtResume");
+            var cols = _dbContext.Columns("RcrtResume");
             var mailTemplates = _dbContext.QueryWhere<CfgEmailTemplate>("ModuleUid='RecruitMailTmpl' and TableName='RcrtResume'");
             foreach (var template in mailTemplates)
             {
@@ -164,8 +176,8 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
                 foreach (Match item in mat)
                 {
                     var fieldName = item.ToString().Substring(2, item.ToString().Length - 3);
-                    var col= cols.FirstOrDefault(c => c.ColComment.EqualsWithIgnoreCase(fieldName));
-                    if (col!=null&&resume.ContainsKey(col.ColName))
+                    var col = cols.FirstOrDefault(c => c.ColComment.EqualsWithIgnoreCase(fieldName));
+                    if (col != null && resume.ContainsKey(col.ColName))
                     {
                         template.TemplateContent = template.TemplateContent.Replace(item.ToString(), resume[col.ColName].ToString(), StringComparison.OrdinalIgnoreCase);
                     }
@@ -173,6 +185,62 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
             }
             ViewBag.MailBox = resume["Emails"].ToString();
             return PartialView(mailTemplates);
+        }
+        /// <summary>
+        /// offer通知
+        /// </summary>
+        /// <param name="offerUid"></param>
+        /// <returns></returns>
+        public IActionResult OfferNotice(string offerUid)
+        {
+            Guard.Against.NullOrEmpty(offerUid, nameof(offerUid));
+            var offer = _dbContext.Get("RcrtBizOffer", offerUid) as IDictionary<string, object>;
+            var cols = _dbContext.Columns("RcrtBizOffer");
+            var mailTemplates = _dbContext.QueryWhere<CfgEmailTemplate>("ModuleUid='RecruitMailTmpl' and TableName='RcrtBizOffer'");
+            foreach (var template in mailTemplates)
+            {
+                Regex regex = new Regex(FapPlatformConstants.VariablePattern, RegexOptions.IgnoreCase);
+                var mat = regex.Matches(template.TemplateContent);
+                foreach (Match item in mat)
+                {
+                    var fieldName = item.ToString().Substring(2, item.ToString().Length - 3);
+                    var col = cols.FirstOrDefault(c => c.ColComment.EqualsWithIgnoreCase(fieldName));
+                    if (col != null && offer.ContainsKey(col.ColName))
+                    {
+                        template.TemplateContent = template.TemplateContent.Replace(item.ToString(), offer[col.ColName].ToString(), StringComparison.OrdinalIgnoreCase);
+                    }
+                }
+            }
+            //生成入职信息
+            var entryFid = _dbContext.ExecuteScalar<string>("select Fid from EmpEntryInfo where OfferUid=@OfferUid", new Dapper.DynamicParameters(new { OfferUid = offerUid }));
+            if (entryFid.IsMissing())
+            {
+                FapDynamicObject fdo = new FapDynamicObject(_dbContext.Columns("EmpEntryInfo"));
+                var dictCodes = _dbContext.GetBillCode("Employee");
+                if (dictCodes.Any() && dictCodes.ContainsKey("EmpCode"))
+                {
+                    fdo.SetValue("EmpCode", dictCodes["EmpCode"]);
+                }
+                fdo.SetValue("OfferUid", offerUid);
+                _dbContext.InsertDynamicData(fdo);
+                entryFid = fdo.Get("Fid").ToString();
+            }
+            ViewBag.Url = _applicationContext.BaseUrl + "/Recruit/Manage/Profile/" + entryFid;
+            ViewBag.MailBox = _dbContext.ExecuteScalar<string>("select Emails from RcrtResume where Fid=@Fid", new Dapper.DynamicParameters(new { Fid = offer["ResumeUid"]?.ToString() }));
+            return PartialView(mailTemplates);
+        }
+        /// <summary>
+        /// 信息维护
+        /// </summary>
+        /// <param name="fid"></param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        public IActionResult Profile(string fid)
+        {
+            var model = GetFormViewModel("EmpEntryInfo", "profile", fid,qs=> {
+                qs.QueryCols = "*";
+            });
+            return View(model);
         }
         /// <summary>
         /// 我的招聘

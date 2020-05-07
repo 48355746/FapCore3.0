@@ -251,5 +251,19 @@ namespace Fap.Hcm.Service.Recruit
                 MailCategory= "面试邀约"
             }) ;
         }
+        public void OfferNotice(OfferNoticeViewModel offerNotice)
+        {
+            var mailBox = _dbContext.ExecuteScalar<string>($"select {nameof(Employee.Mailbox)} from {nameof(Employee)} where Fid='{_applicationContext.EmpUid}'");
+            _messageService.SendMail(new Core.Infrastructure.Model.FapMail
+            {
+                Sender = _applicationContext.EmpUid,
+                SenderEmailAddress = mailBox,
+                Recipient = offerNotice.MailBox,
+                RecipientEmailAddress = offerNotice.MailBox,
+                Subject = "Offer通知",
+                MailContent = offerNotice.MailContent,
+                MailCategory = "Offer通知"
+            });
+        }
     }
 }

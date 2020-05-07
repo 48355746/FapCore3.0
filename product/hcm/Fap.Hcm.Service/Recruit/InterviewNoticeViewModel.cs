@@ -14,4 +14,9 @@ namespace Fap.Hcm.Service.Recruit
         public string MailBox { get; set; }
         public string MailContent { get; set; }
     }
+    public class OfferNoticeViewModel
+    {
+        public string MailBox { get; set; }
+        public string MailContent { get; set; }
+    }
 }

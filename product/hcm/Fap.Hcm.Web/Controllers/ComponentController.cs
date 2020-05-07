@@ -115,9 +115,9 @@ namespace Fap.Hcm.Web.Controllers
                 JArray arrMapping = JArray.Parse(fc.RefReturnMapping);
                 foreach (JObject item in arrMapping)
                 {
-                    string refCol = item.GetValue("RefCol").ToString();
+                    string refCol = item.GetValue("RefCol",StringComparison.OrdinalIgnoreCase).ToString();
                     refCols.Add(refCol);
-                    string frmCol = item.GetValue("FrmCol").ToString();
+                    string frmCol = item.GetValue("FrmCol", StringComparison.OrdinalIgnoreCase).ToString();
                     frmCols.Add(frmCol);
                     string refTable = fc.RefTable;
                     //针对参照列的特殊处理
@@ -148,7 +148,7 @@ namespace Fap.Hcm.Web.Controllers
             if (fc.RefTable.EqualsWithIgnoreCase("employee") && !_applicationContext.IsAdministrator)
             {
                 //包含权限设置
-                if (refcondition.IsPresent() && !refcondition.Contains(FapDbConstants.EmployeeNoPower))
+                if (refcondition.IsPresent() && !refcondition.Contains(FapDbConstants.EmployeeNoPower, StringComparison.OrdinalIgnoreCase))
                 {
                     string where = "DeptUid in(" + FapPlatformConstants.DepartmentAuthority + ")";
                     refcondition += " and " + where;
@@ -157,7 +157,7 @@ namespace Fap.Hcm.Web.Controllers
             }
             JqGridViewModel model = this.GetJqGridModel(fc.RefTable, (q) =>
             {
-                q.GlobalWhere = refcondition.Replace(FapDbConstants.EmployeeNoPower, "");
+                q.GlobalWhere = refcondition.Replace(FapDbConstants.EmployeeNoPower, "", StringComparison.OrdinalIgnoreCase);
                 q.QueryCols = string.Join(",", colList.Distinct());
 
             });
@@ -207,7 +207,7 @@ namespace Fap.Hcm.Web.Controllers
                 foreach (Match item in mat)
                 {
                     fieldName = item.ToString().Substring(2, item.ToString().Length - 3);
-                    refcondition = refcondition.Replace(item.ToString(), Request.Query[fieldName].ToString());
+                    refcondition = refcondition.Replace(item.ToString(), Request.Query[fieldName].ToString(), StringComparison.OrdinalIgnoreCase);
                 }
             }
 

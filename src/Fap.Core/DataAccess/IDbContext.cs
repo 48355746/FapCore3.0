@@ -14,6 +14,7 @@ namespace Fap.Core.DataAccess
         DatabaseDialectEnum DatabaseDialect { get; }
         void BeginTransaction();
         void Commit();
+        Dictionary<string, string> GetBillCode(string tableName);
         int Count(string tableName, string where = "", DynamicParameters parameters = null);
         int Count<T>(string where = "", DynamicParameters parameters = null);
         Task<int> CountAsync(string tableName, string where = "", DynamicParameters parameters = null);

@@ -1,0 +1,49 @@
+﻿@model Fap.AspNetCore.ViewModel.FormViewModel
+@{
+    ViewBag.Title = "个人信息";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section specificcss{
+    @{await Html.RenderPartialAsync("_ControlCssPartial"); }
+}
+@section specificscript{
+    @{await Html.RenderPartialAsync("_ControlJsPartial"); }
+<script>
+    $(function () {
+        $("body").prepend($("#navbar").get(0));
+        $(".main-content").wrap("<div class=\"main-container container\"></div>");
+    })
+</script>
+}
+<div id="navbar" class="navbar navbar-default navbar-fixed-top h-navbar">
+    <div class="navbar-container container" id="navbar-container">
+        <div class="navbar-header pull-left ace-navbar-brand">
+            <span class="no-skin">
+                <button data-target="#sidebar" type="button" class="navbar-toggle menu-toggler pull-left" id="menu-toggler">
+                    <span class="sr-only">Toggle sidebar</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </span>
+            <a href="#" class="navbar-brand">
+                <small>
+                    &nbsp;<i class="fa fa-user"></i>&nbsp;
+                    个人信息
+                </small>
+            </a><!-- /.brand -->
+        </div>
+        <div class="navbar-header pull-right ace-navbar-buttons">         
+            <button class="btn btn-app btn-info btn-xs" title="保存">
+                <i class="ace-icon fa fa-save bigger-160"></i>
+            </button>
+        </div>
+    </div>
+</div>
+<div class="row scrollable">
+    <div class="col-xs-12">
+        <div class="col-xs-12">
+            <fap-form id="@Model.FormId" form-model="Model"></fap-form>
+        </div>
+    </div>
+</div>

@@ -64,7 +64,14 @@ var MultiLangHelper = (function () {
       'print': { 'ZhCn': '打印', 'ZhTW': '', 'En': '', 'Ja': '' },
       'close': { 'ZhCn': '关闭', 'ZhTW': '', 'En': '', 'Ja': '' },
       'handler': { 'ZhCn': '办理', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'success': { 'ZhCn': '授权成功！', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'success': { 'ZhCn': '授权成功！', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'view_interview_assess': { 'ZhCn': '查看面试评价', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'name': { 'ZhCn': '名称', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'code': { 'ZhCn': '编码', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'chang_photo': { 'ZhCn': '更换照片', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'summary': { 'ZhCn': '说明书', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'item_preparation': { 'ZhCn': '物品准备', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'send_offer_notice': { 'ZhCn': '发送Offer通知', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

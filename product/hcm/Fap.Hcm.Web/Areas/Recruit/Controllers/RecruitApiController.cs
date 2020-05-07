@@ -70,5 +70,12 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
             _recruitService.InterviewNotice(interviewNotice);
             return Json(ResponseViewModelUtils.Sueecss());
         }
+        [HttpPost("OfferNotice")]
+        public JsonResult OfferNotice(OfferNoticeViewModel offerNotice)
+        {
+            Guard.Against.Null(offerNotice, nameof(offerNotice));
+            _recruitService.OfferNotice(offerNotice);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
     }
 }
