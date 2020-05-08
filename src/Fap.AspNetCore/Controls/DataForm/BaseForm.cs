@@ -672,7 +672,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                         }
                         if (col.RemoteChkURL.IsPresent())
                         {
-                            string oriValue = FormData.Get(col.ColName).ToString();
+                            string oriValue = FormData.Get(col.ColName)?.ToString()??"";
                             script.AppendLine("				remote: '" + _applicationContext.BaseUrl + col.RemoteChkURL + "&fid=" + HttpUtility.UrlEncode(FidValue) + "&orivalue=" + HttpUtility.UrlEncode(oriValue) + "&currcol=" + HttpUtility.UrlEncode(col.ColName) + "',");
                         }
                         script.AppendLine("			},");

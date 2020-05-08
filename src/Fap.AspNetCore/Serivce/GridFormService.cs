@@ -340,17 +340,17 @@ namespace Fap.AspNetCore.Serivce
                 {
                     if (cv == frmModel.AvoidDuplicateKey)
                     {
-                        return ResponseViewModelUtils.Failure("请勿重复提交数据");
+                        return ResponseViewModelUtils.Failure("请勿频繁提交数据");
                     }
                     else
                     {
                         //_memoryCache.Remove(avoid_repeat_tokenKey);
-                        _memoryCache.Set(avoid_repeat_tokenKey, frmModel.AvoidDuplicateKey, DateTimeOffset.Now.AddMinutes(30));
+                        _memoryCache.Set(avoid_repeat_tokenKey, frmModel.AvoidDuplicateKey, DateTimeOffset.Now.AddSeconds(30));
                     }
                 }
                 else
                 {
-                    _memoryCache.Set(avoid_repeat_tokenKey, frmModel.AvoidDuplicateKey, DateTimeOffset.Now.AddMinutes(30));
+                    _memoryCache.Set(avoid_repeat_tokenKey, frmModel.AvoidDuplicateKey, DateTimeOffset.Now.AddSeconds(30));
                 }
                 //CSRF 令牌验证
                 try

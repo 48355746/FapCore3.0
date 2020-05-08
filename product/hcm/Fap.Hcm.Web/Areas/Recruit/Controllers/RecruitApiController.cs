@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
 using Ardalis.GuardClauses;
+using Dapper;
 using Fap.AspNetCore.Infrastructure;
 using Fap.AspNetCore.ViewModel;
 using Fap.Hcm.Service.Recruit;
@@ -75,6 +76,12 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
         {
             Guard.Against.Null(offerNotice, nameof(offerNotice));
             _recruitService.OfferNotice(offerNotice);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+        [HttpPost("OfferStatus")]
+        public JsonResult OfferStatus(string fid,string status)
+        {
+            _dbContext.Execute("Update RcrtBizOffer set OfferStatus =@Status where Fid = @Fid", new DynamicParameters(new { Fid = fid,Status=status }));
             return Json(ResponseViewModelUtils.Sueecss());
         }
     }

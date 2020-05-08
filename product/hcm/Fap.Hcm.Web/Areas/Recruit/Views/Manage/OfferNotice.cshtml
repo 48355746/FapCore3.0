@@ -51,10 +51,11 @@
     </div>
 </div>
 <script>
-    function sendOfferNotice() {
-        var offerNotice = {            
-            mailbox: $("#form-field-mailbox").val()
-            , mailcontent: $("#editorMail").html()
+    function sendOfferNotice(offerUid,callback) {
+        var offerNotice = {
+            offerUid: offerUid,
+            mailbox: $("#form-field-mailbox").val(),
+            mailcontent: $("#editorMail").html()
         }       
         if (offerNotice.mailbox === "") {
             $.msg("邮箱地址不能为空");
@@ -67,6 +68,7 @@
         $.post(basePath + "/Recruit/Api/OfferNotice", { offerNotice: offerNotice }, function (rv) {
             if (rv.success) {
                 $.msg(rv.msg);
+                callback && callback();
             } else {
                 bootbox.alert(rv.msg);
             }

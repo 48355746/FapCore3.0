@@ -251,6 +251,7 @@ namespace Fap.Hcm.Service.Recruit
                 MailCategory= "面试邀约"
             }) ;
         }
+        [Transactional]
         public void OfferNotice(OfferNoticeViewModel offerNotice)
         {
             var mailBox = _dbContext.ExecuteScalar<string>($"select {nameof(Employee.Mailbox)} from {nameof(Employee)} where Fid='{_applicationContext.EmpUid}'");
@@ -264,6 +265,8 @@ namespace Fap.Hcm.Service.Recruit
                 MailContent = offerNotice.MailContent,
                 MailCategory = "Offer通知"
             });
+            _dbContext.Execute("Update RcrtBizOffer set OfferStatus='Email' where Fid=@Fid", new DynamicParameters(new { Fid = offerNotice.OfferUid }));
+
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Fap.Core.DataAccess;
 using Fap.Core.DataAccess.Interceptor;
+using Fap.Core.DI;
 using Fap.Core.Exceptions;
 using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Metadata;
@@ -9,6 +10,7 @@ using System;
 
 namespace Fap.Core.Infrastructure.Interceptor
 {
+    [Service]
     public class FapColumnDataInterceptor : DataInterceptorBase
     {
         private readonly IDbMetadataContext _metadataContext;

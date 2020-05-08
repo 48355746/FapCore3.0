@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace Fap.Hcm.Service.Recruit
@@ -16,7 +17,11 @@ namespace Fap.Hcm.Service.Recruit
     }
     public class OfferNoticeViewModel
     {
+        [Required]
+        public string OfferUid { get; set; }
+        [Required]
         public string MailBox { get; set; }
+        [Required]
         public string MailContent { get; set; }
     }
 }

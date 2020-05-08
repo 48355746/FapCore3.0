@@ -8,12 +8,23 @@
 }
 @section specificscript{
     @{await Html.RenderPartialAsync("_ControlJsPartial"); }
-<script>
+    <script>
     $(function () {
         $("body").prepend($("#navbar").get(0));
         $(".main-content").wrap("<div class=\"main-container container\"></div>");
+        $("#btnEntryInfoSave").on(ace.click_event, function () {
+            Persistence("frm-profile", "EmpEntryInfo", null, function () {
+                $.post(basePath + "/Recruit/Api/OfferStatus", { fid: '@ViewBag.OfferUid', status: 'InfoMaintenance' }, function (rv) {
+                    if (rv.success) {
+                        location.href = basePath + "/Home/Success";
+                    } else {
+                        bootbox.alert(rv.msg);
+                    }
+                })
+            });
+        })
     })
-</script>
+    </script>
 }
 <div id="navbar" class="navbar navbar-default navbar-fixed-top h-navbar">
     <div class="navbar-container container" id="navbar-container">
@@ -34,7 +45,7 @@
             </a><!-- /.brand -->
         </div>
         <div class="navbar-header pull-right ace-navbar-buttons">         
-            <button class="btn btn-app btn-info btn-xs" title="保存">
+            <button id="btnEntryInfoSave" class="btn btn-app btn-info btn-xs" title="保存">
                 <i class="ace-icon fa fa-save bigger-160"></i>
             </button>
         </div>

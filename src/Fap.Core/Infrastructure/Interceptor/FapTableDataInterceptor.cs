@@ -17,7 +17,7 @@ using Fap.Core.MultiLanguage;
 namespace Fap.Core.Infrastructure.Interceptor
 {
     [Service]
-    class FapTableDataInterceptor : DataInterceptorBase
+    public class FapTableDataInterceptor : DataInterceptorBase
     {
         private readonly IDbMetadataContext _metadataContext;
         public FapTableDataInterceptor(IServiceProvider provider, IDbContext dbContext, IDbMetadataContext metadataContext) : base(provider, dbContext)

@@ -1,5 +1,6 @@
 ﻿using Fap.Core.DataAccess;
 using Fap.Core.DataAccess.Interceptor;
+using Fap.Core.DI;
 using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.MultiLanguage;
 using Fap.Core.Rbac.Model;
@@ -10,6 +11,7 @@ using System.Text;
 
 namespace Fap.Core.Infrastructure.Interceptor
 {
+    [Service]
     public class FapMenuDataInterceptor: DataInterceptorBase
     {
         public FapMenuDataInterceptor(IServiceProvider provider, IDbContext dbContext) : base(provider, dbContext)

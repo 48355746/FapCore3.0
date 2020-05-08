@@ -20,9 +20,12 @@
                 <div class="widget-toolbar">
                     <fap-button id="btnSendOffer" btn-tag="link" content="发送Offer" icon-before="fa fa-envelope blue" class-name="info"></fap-button>
                     <fap-button id="btnItemPreperation" btn-tag="link" content="物品准备" icon-before="fa fa-cart-plus blue" class-name="info"></fap-button>
-                    <fap-button id="btnInfoCompleted" btn-tag="link" content="信息完善" icon-before="fa fa-check blue" class-name="info"></fap-button>
+                    <fap-button id="btnCheckInfo" btn-tag="link" content="信息核对" icon-before="fa fa-check-square  blue" class-name="info"></fap-button>
+                    <fap-button id="btnEntry" btn-tag="link" content="入职" icon-before="fa fa-user-plus blue" class-name="info"></fap-button>
                 </div>
-
+                <div class="widget-toolbar">
+                    <fap-button id="btnInvalidOffer" btn-tag="link" content="作废" icon-before="fa  fa-times-circle blue" class-name="info"></fap-button>
+                </div>
             </div>
             <div class="widget-body">
 
@@ -43,6 +46,24 @@
         jQuery(function ($) {
             $(document).one('ajaxloadstart.page', function (e) {
             })
+            $("#btnInvalidOffer").on(ace.click_event, function () {
+                bootbox.confirm($.lang("invalid", "作废"), function (result) {
+                    if (result) {
+                        var rw = getSelectedRow("grid-offer");
+                        if (rw == null) {
+                            return;
+                        }
+                        $.post(basePath + "/Recruit/Api/OfferStatus", { fid: rw.Fid, status: 'Invalid' }, function (rv) {
+                            if (rv.success) {
+                                refreshGrid("grid-offer");
+                            } else {
+                                bootbox.alert(rv.msg);
+                            }
+                        })
+                    }
+                })
+
+            })
             $("#btnSendOffer").on(ace.click_event, function () {
                 var rw = getSelectedRow("grid-offer");
                 if (rw == null) {
@@ -54,7 +75,9 @@
                             label: $.lang("ok", "确定"),
                             className: "btn-primary btn-link",
                             callback: function () {
-                                return sendOfferNotice();
+                                return sendOfferNotice(rw.Fid, function () {
+                                    refreshGrid("grid-offer");
+                                });
                             }
                         }
                     }, { offerUid: rw.Fid });
@@ -65,10 +88,58 @@
                     return;
                 }
                 bootboxWindow($.lang("item_preparation", "物品准备"), basePath + "/Recruit/Manage/ItemPreparation", null,
-                    { offerUid:rw.Fid,offerName:rw.EmpName,menuUrl:"~/Recruit/Manage/Entry"});
+                    { offerUid: rw.Fid, offerName: rw.EmpName, menuUrl: "~/Recruit/Manage/Entry" });
             })
-            $("#btnInfoCompleted").on(ace.click_event, function () {
+            $("#btnCheckInfo").on(ace.click_event, function () {
+                var rw = getSelectedRow("grid-offer");
+                if (rw == null) {
+                    return;
+                }
+                if (rw.OfferStatus === "InfoMaintenance") {
+                    bootboxWindow($.lang("check_information", "信息核对"), basePath + "/Recruit/Manage/CheckProfile",
+                        {
+                            ok: {
+                                label: $.lang("ok", "确定"),
+                                className: "btn-primary btn-link",
+                                callback: function () {
+                                    return Persistence("frm-profile", "EmpEntryInfo", null, function () {
+                                        $.post(basePath + "/Recruit/Api/OfferStatus", { fid: rw.Fid, status: 'Checked' }, function (rv) {
+                                            if (rv.success) {
+                                                refreshGrid("grid-offer");
+                                            } else {
+                                                bootbox.alert(rv.msg);
+                                            }
+                                        });
+                                    })
+                                }
+                            }                            
+                        },
+                        { offerUid: rw.Fid, formStatus:2 });
+                } else {
+                    $.msg("只有员工维护完信息以后方能核对");
+                }
+            })
 
+            $("#btnEntry").on(ace.click_event, function () {
+                var rw = getSelectedRow("grid-offer");
+                if (rw == null) {
+                    return;
+                }
+                if (rw.OfferStatus === "Checked") {
+                    bootboxWindow($.lang("entry", "入职"), basePath + "/Recruit/Manage/CheckProfile",
+                        {
+                            ok: {
+                                label: $.lang("entry", "入职"),
+                                className: "btn-primary btn-link",
+                                callback: function () {
+                                    return false;
+                                }
+                            }
+                        },
+                        { offerUid: rw.Fid, formStatus:3});
+                } else {
+                    $.msg("信息核对后才能入职");
+                }
             })
         })
     })

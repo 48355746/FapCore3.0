@@ -50,7 +50,7 @@ namespace Fap.Core.Infrastructure.Metadata
         /// </summary>
         public int MaxValue { get; set; }
         /// <summary>
-        /// 字段属性（标识主键0，固定字段1，扩展字段2，特性字段3）
+        /// 字段属性（标识主键0，固定字段1，扩展字段2，默认3）
         /// </summary>
         public string ColProperty { get; set; }
         /// <summary>

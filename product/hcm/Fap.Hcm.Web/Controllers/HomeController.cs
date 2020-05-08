@@ -86,25 +86,25 @@ namespace Fap.Hcm.Web.Controllers
                 PasswordHasher passwordHasher = new PasswordHasher();
                 if (loginUser == null)
                 {
-                    errorMsg = GetOrAddPageMultiLanguageContent("login_page_no_exist_user","不存在此用户");
+                    errorMsg = GetOrAddPageMultiLanguageContent("login_page_no_exist_user", "不存在此用户");
                 }
                 else if (loginUser.EnableState == 0)
                 {
-                    errorMsg =GetOrAddPageMultiLanguageContent("login_page_forbidden_user", "该账户已被禁用");
+                    errorMsg = GetOrAddPageMultiLanguageContent("login_page_forbidden_user", "该账户已被禁用");
                 }
                 else if (loginUser.IsLocked == 1)
                 {
-                    errorMsg =GetOrAddPageMultiLanguageContent("login_page_lock_user", "该账户暂被锁定");
+                    errorMsg = GetOrAddPageMultiLanguageContent("login_page_lock_user", "该账户暂被锁定");
                 }
                 else if (!passwordHasher.VerifyHashedPassword(loginUser.UserPassword, userpwd))
                 {
-                    errorMsg =GetOrAddPageMultiLanguageContent("login_page_password_error", "密码不正确");
+                    errorMsg = GetOrAddPageMultiLanguageContent("login_page_password_error", "密码不正确");
                     //增加尝试次数，超过5次冻结
                     _loginService.AddTryTimes(loginUser);
                 }
                 else if (loginUser.UserIdentity.IsMissing() && loginUser.UserName != developer)
                 {
-                    errorMsg =GetOrAddPageMultiLanguageContent("login_page_no_mapping_employee", "此用户没有关联人员信息");
+                    errorMsg = GetOrAddPageMultiLanguageContent("login_page_no_mapping_employee", "此用户没有关联人员信息");
                 }
                 else
                 {
@@ -116,12 +116,12 @@ namespace Fap.Hcm.Web.Controllers
                         }
                         else
                         {
-                            errorMsg =GetOrAddPageMultiLanguageContent("login_page_no_find_mapping_employee", "用户关联的人员不存在");
+                            errorMsg = GetOrAddPageMultiLanguageContent("login_page_no_find_mapping_employee", "用户关联的人员不存在");
                         }
                     }
                     else
                     {
-                        emp = _dbContext.QueryFirstOrDefault<Employee>("select Fid,EmpCode,EmpName,DeptUid,DeptCode,EmpPhoto,GroupUid,OrgUid from Employee where Fid=@Fid",new Dapper.DynamicParameters(new { Fid = loginUser.UserIdentity }), true);
+                        emp = _dbContext.QueryFirstOrDefault<Employee>("select Fid,EmpCode,EmpName,DeptUid,DeptCode,EmpPhoto,GroupUid,OrgUid from Employee where Fid=@Fid", new Dapper.DynamicParameters(new { Fid = loginUser.UserIdentity }), true);
                         if (emp == null)
                         {
                             errorMsg = GetOrAddPageMultiLanguageContent("login_page_no_find_mapping_employee", "用户关联的人员不存在"); ;
@@ -238,7 +238,7 @@ namespace Fap.Hcm.Web.Controllers
         }
         public async Task<IActionResult> SignOut()
         {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme).ConfigureAwait(false);
             _applicationContext.Session.Clear();
             return LocalRedirect("/");
         }
@@ -336,5 +336,48 @@ namespace Fap.Hcm.Web.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+        #region 游客
+        [AllowAnonymous]
+        public IActionResult Tourist(string fid)
+        {
+            LoginTourist(fid);
+            return Redirect("~/Recruit/Manage/Profile/" + fid);
+            void LoginTourist(string fid)
+            {
+                //初始化身份卡片
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, fid),//用户名
+                    new Claim(ClaimTypes.NameIdentifier,fid),//用户Fid
+                    new Claim(ClaimTypes.UserData,fid),//员工Fid
+                    new Claim(ClaimTypes.Surname,"准员工"),//员工姓名
+                    new Claim(ClaimTypes.PrimarySid,"-"),//员工部门
+                    new Claim(ClaimTypes.PrimaryGroupSid,"-"),//部门编码
+                    new Claim(ClaimTypes.System,"-"),//部门名称
+                    new Claim(ClaimTypes.DenyOnlyPrimaryGroupSid,""),//集团
+                    new Claim(ClaimTypes.DenyOnlyPrimarySid,""),//组织
+                    new Claim(ClaimTypes.Sid,"ZhCn"),//语言
+                    new Claim(ClaimTypes.Actor,"-"),//用户图像
+                    new Claim(ClaimTypes.Role,"-1")//角色普通用户
+                };
+                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+                var authenticationProperties = new AuthenticationProperties
+                {
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30),
+                    RedirectUri = "~/Home/Tourist/" + fid
+                };
+                HttpContext.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    claimsPrincipal, authenticationProperties).ConfigureAwait(false);
+            }
+        }
+        public async Task<IActionResult> Success()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme).ConfigureAwait(false);
+            _applicationContext.Session.Clear();
+            return View();
+        }
+        #endregion
     }
 }

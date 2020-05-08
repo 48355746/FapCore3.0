@@ -71,7 +71,11 @@ var MultiLangHelper = (function () {
       'chang_photo': { 'ZhCn': '更换照片', 'ZhTW': '', 'En': '', 'Ja': '' },
       'summary': { 'ZhCn': '说明书', 'ZhTW': '', 'En': '', 'Ja': '' },
       'item_preparation': { 'ZhCn': '物品准备', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'send_offer_notice': { 'ZhCn': '发送Offer通知', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'send_offer_notice': { 'ZhCn': '发送Offer通知', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'bill_biz_required': { 'ZhCn': '单据实体和业务实体必选', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'check_information': { 'ZhCn': '信息核对', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'photo_updated': { 'ZhCn': '照片已更新', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'entry': { 'ZhCn': '入职', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

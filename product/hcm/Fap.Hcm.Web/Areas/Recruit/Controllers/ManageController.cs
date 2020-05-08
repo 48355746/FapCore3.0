@@ -14,6 +14,11 @@ using System.Text.RegularExpressions;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Infrastructure.Enums;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Dapper;
+using Fap.AspNetCore.Controls.DataForm;
 
 namespace Fap.Hcm.Web.Areas.Recruit.Controllers
 {
@@ -221,27 +226,56 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
                 {
                     fdo.SetValue("EmpCode", dictCodes["EmpCode"]);
                 }
+                fdo.SetValue("DeptUid", offer["DeptUid"]);
+                fdo.SetValue("DeptCode", offer["DeptCode"]);
+                fdo.SetValue("EntryDate", offer["ArrivalDate"]);
                 fdo.SetValue("OfferUid", offerUid);
                 _dbContext.InsertDynamicData(fdo);
                 entryFid = fdo.Get("Fid").ToString();
             }
-            ViewBag.Url = _applicationContext.BaseUrl + "/Recruit/Manage/Profile/" + entryFid;
+            ViewBag.Url = _applicationContext.BaseUrl + "/Home/Tourist/" + entryFid;
             ViewBag.MailBox = _dbContext.ExecuteScalar<string>("select Emails from RcrtResume where Fid=@Fid", new Dapper.DynamicParameters(new { Fid = offer["ResumeUid"]?.ToString() }));
             return PartialView(mailTemplates);
         }
+        public IActionResult CheckProfile(string offerUid, FormStatus formStatus)
+        {
+            Guard.Against.NullOrEmpty(offerUid, nameof(offerUid));
+            var fid= _dbContext.ExecuteScalar<string>("select Fid from EmpEntryInfo where  OfferUid=@OfferUid", new DynamicParameters(new { OfferUid = offerUid }));
+            var model = GetFormViewModel("EmpEntryInfo", "profile", fid);
+            model.FormStatus = formStatus;
+            return PartialView(model);
+        }
         /// <summary>
-        /// 信息维护
+        /// 信息维护(对外)
         /// </summary>
         /// <param name="fid"></param>
         /// <returns></returns>
-        [AllowAnonymous]
         public IActionResult Profile(string fid)
         {
-            var model = GetFormViewModel("EmpEntryInfo", "profile", fid,qs=> {
-                qs.QueryCols = "*";
+            var offerUid = _dbContext.ExecuteScalar<string>("select OfferUid from  EmpEntryInfo where Fid=@Fid", new DynamicParameters(new { Fid = fid }));
+
+            if (offerUid.IsMissing())
+            {
+                return Content("链接已失效");
+            }
+            var offerStatus = _dbContext.ExecuteScalar<string>("select OfferStatus from RcrtBizOffer where Fid= @Fid", new DynamicParameters(new { Fid = offerUid }));
+            if (offerStatus.EqualsWithIgnoreCase("Entry") 
+                || offerStatus.EqualsWithIgnoreCase("Invalid")
+                ||offerStatus.EqualsWithIgnoreCase("Checked"))
+            {
+                return Content("链接已失效");
+            }
+            var cols = _dbContext.Columns("EmpEntryInfo").Where(c => !c.ColProperty.Equals("3", StringComparison.OrdinalIgnoreCase)).Select(c => c.ColName);
+            var model = GetFormViewModel("EmpEntryInfo", "profile", fid, qs =>
+            {
+                qs.QueryCols = string.Join(',', cols);
             });
+            ViewBag.OfferUid = offerUid;
             return View(model);
         }
+
+
+
         /// <summary>
         /// 我的招聘
         /// </summary>
