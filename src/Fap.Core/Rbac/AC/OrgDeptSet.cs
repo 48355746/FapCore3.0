@@ -31,7 +31,7 @@ namespace Fap.Core.Rbac.AC
             lock (Locker)
             {
                 string cdate = DateTimeUtils.CurrentDateTimeStr;
-                _allOrgs = _dbSession.Query<OrgDept>($"select * from OrgDept where EnableDate<'{cdate}' and DisableDate>'{cdate}' and Dr=0");
+                _allOrgs = _dbSession.Query<OrgDept>($"select *,(SELECT EmpName FROM Employee WHERE Employee.Fid = OrgDept.DeptManager AND Employee.EnableDate <='{cdate}' AND Employee.DisableDate >='{cdate}' AND Employee.Dr = 0) AS DeptManagerMC,(SELECT EmpName FROM Employee WHERE Employee.Fid = OrgDept.Director AND Employee.EnableDate <='{cdate}' AND Employee.DisableDate >='{cdate}' AND Employee.Dr = 0) AS DirectorMC  from OrgDept where EnableDate<'{cdate}' and DisableDate>'{cdate}' and Dr=0");
                         
                 _initialized = true;
             }

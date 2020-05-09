@@ -653,10 +653,10 @@ namespace Fap.AspNetCore.Controls.DataForm
                 script.AppendLine("		focusInvalid: false,");
                 script.AppendLine("		ignore: \"\",");
                 script.AppendLine("		rules: {");
-                foreach (FapColumn col in _fapColumns)
+                foreach (FapColumn col in _fapColumns.Where(c=>c.ShowAble==1))
                 {
                     //非空可见
-                    if ((col.NullAble == 0 && col.ShowAble == 1) || col.RemoteChkURL.IsPresent())
+                    if (col.NullAble == 0|| col.RemoteChkURL.IsPresent()|| col.CtrlType == FapColumn.CTRL_TYPE_TEXT)
                     {
                         if (col.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
                         {
@@ -666,9 +666,13 @@ namespace Fap.AspNetCore.Controls.DataForm
                         {
                             script.AppendLine("             " + col.ColName + ": {");
                         }
-                        if (col.NullAble == 0 && col.ShowAble == 1)
+                        if (col.NullAble == 0)
                         {
                             script.AppendLine("				required: true,");
+                        }
+                        if (col.CtrlType == FapColumn.CTRL_TYPE_TEXT)
+                        {
+                            script.AppendLine($" maxlength:{col.ColLength},");
                         }
                         if (col.RemoteChkURL.IsPresent())
                         {
@@ -685,10 +689,10 @@ namespace Fap.AspNetCore.Controls.DataForm
 
                 script.AppendLine("		messages: {");
 
-                foreach (FapColumn col in _fapColumns)
+                foreach (FapColumn col in _fapColumns.Where(c => c.ShowAble == 1))
                 {
                     //非空可见
-                    if ((col.NullAble == 0 && col.ShowAble == 1) || col.RemoteChkURL.IsPresent())
+                    if (col.NullAble == 0 || col.RemoteChkURL.IsPresent()|| col.CtrlType == FapColumn.CTRL_TYPE_TEXT)
                     {
                         if (col.CtrlType == FapColumn.CTRL_TYPE_REFERENCE)
                         {
@@ -698,9 +702,13 @@ namespace Fap.AspNetCore.Controls.DataForm
                         {
                             script.AppendLine("                " + col.ColName + ": {");
                         }
-                        if (col.NullAble == 0 && col.ShowAble == 1)
+                        if (col.NullAble == 0)
                         {
                             script.AppendLine("				required: \"[" + col.ColComment + "]必须填写！\",");
+                        }
+                        if (col.CtrlType == FapColumn.CTRL_TYPE_TEXT)
+                        {
+                            script.AppendLine($" maxlength:\"[{col.ColComment }]长度不超过{col.ColLength}个字符！\",");
                         }
                         if (col.RemoteChkURL.IsPresent())
                         {

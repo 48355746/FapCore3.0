@@ -6,12 +6,11 @@ using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Fap.Workflow.Engine.Exceptions;
-using Fap.Workflow.Engine.WriteBack;
 using Fap.Workflow.Engine.Message;
-using Fap.Core.DataAccess;
 using Fap.Core.Utility;
 using Fap.Core.Infrastructure.Enums;
 using Fap.Core.Extensions;
+using Fap.Workflow.Service;
 
 namespace Fap.Workflow.Engine.Manager
 {
@@ -210,7 +209,7 @@ namespace Fap.Workflow.Engine.Manager
                 MessageManager msgManager = new MessageManager(_dataAccessor, _loggerFactory);
                 msgManager.SendMessageWhenProcessCompleted(processIns, "通过");
 
-                IWriteBackRule bwb = _serviceProvider.GetService<IWriteBackRule>();
+                IWriteBackService bwb = _serviceProvider.GetService<IWriteBackService>();
                 //改变单据状态为通过
                 bwb.Approved(billTable, billUid);
                 //单据回写业务
@@ -239,7 +238,7 @@ namespace Fap.Workflow.Engine.Manager
                 MessageManager msgManager = new MessageManager(_dataAccessor, _loggerFactory);
                 msgManager.SendMessageWhenProcessCompleted(processIns, "驳回");
 
-                IWriteBackRule bwb =_serviceProvider.GetService<IWriteBackRule>();
+                IWriteBackService bwb =_serviceProvider.GetService<IWriteBackService>();
                 //改变单据状态为驳回
                 bwb.Rejected(processIns.BillTable, processIns.BillUid);
 

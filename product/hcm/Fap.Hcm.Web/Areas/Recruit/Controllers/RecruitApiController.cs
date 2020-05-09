@@ -84,5 +84,11 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
             _dbContext.Execute("Update RcrtBizOffer set OfferStatus =@Status where Fid = @Fid", new DynamicParameters(new { Fid = fid,Status=status }));
             return Json(ResponseViewModelUtils.Sueecss());
         }
+        [HttpPost("Entry")]
+        public JsonResult Entry(string offerUid,string entryUid)
+        {
+            _recruitService.Entry(offerUid, entryUid);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
     }
 }

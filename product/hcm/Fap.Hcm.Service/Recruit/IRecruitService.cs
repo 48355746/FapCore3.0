@@ -27,5 +27,11 @@ namespace Fap.Hcm.Service.Recruit
         /// </summary>
         /// <param name="offerNotice"></param>
         void OfferNotice(OfferNoticeViewModel offerNotice);
+        /// <summary>
+        /// 入职
+        /// </summary>
+        /// <param name="offerUid"></param>
+        /// <param name="entryUid"></param>
+        void Entry(string offerUid, string entryUid);
     }
 }

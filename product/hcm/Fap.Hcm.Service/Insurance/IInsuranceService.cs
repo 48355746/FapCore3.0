@@ -1,4 +1,5 @@
-﻿using Fap.Hcm.Service.Payroll;
+﻿using Fap.Core.Infrastructure.Model;
+using Fap.Hcm.Service.Payroll;
 using System;
 using System.Collections.Generic;
 using System.Text;

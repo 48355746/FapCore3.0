@@ -186,9 +186,8 @@ namespace Fap.Core.Infrastructure.Interceptor
                     if (password.IsMissing())
                     {
                         password = "1";
-                    }
-                    PasswordHasher pwdHasher = new PasswordHasher();
-                    password = pwdHasher.HashPassword(password);
+                    }                   
+                    password = passwordHasher.HashPassword(password);
                     user.UserPassword = password;
                 }
             }

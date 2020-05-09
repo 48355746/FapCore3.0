@@ -11,6 +11,7 @@ using System.Linq;
 using Fap.Core.Exceptions;
 using Fap.Core.DI;
 using Fap.Hcm.Service.Payroll;
+using Fap.Core.Infrastructure.Model;
 
 namespace Fap.Hcm.Service.Insurance
 {

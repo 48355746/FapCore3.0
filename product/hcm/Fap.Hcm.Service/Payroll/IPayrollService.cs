@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Fap.Core.Infrastructure.Model;
+using System.Collections.Generic;
 
 namespace Fap.Hcm.Service.Payroll
 {

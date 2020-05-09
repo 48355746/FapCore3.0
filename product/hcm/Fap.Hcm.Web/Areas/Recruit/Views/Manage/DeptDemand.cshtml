@@ -44,7 +44,13 @@
             $(document).one('ajaxloadstart.page', function (e) {
             })
             $("#btnDemandApply").on(ace.click_event, function () {
-                let initData = { DeptUid: '@_applicationContext.DeptUid', DeptUidMC: '@Html.Raw(_applicationContext.DeptName)', Leader: '@_applicationContext.EmpUid', LeaderMC: '@Html.Raw(_applicationContext.EmpName)' };
+                let initData = {
+                    DeptUid: '@_applicationContext.DeptUid',
+                    DeptCode:'@_applicationContext.DeptCode',
+                    DeptUidMC: '@Html.Raw(_applicationContext.DeptName)',
+                    Leader: '@_applicationContext.EmpUid',
+                    LeaderMC: '@Html.Raw(_applicationContext.EmpName)'
+                };
                 applyBusiness('3577655145439166464', "招聘职位申请", initData);
             })
             $("#btnResumeFilter").on(ace.click_event, function () {

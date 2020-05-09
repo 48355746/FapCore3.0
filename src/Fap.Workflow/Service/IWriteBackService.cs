@@ -5,12 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Fap.Workflow.Engine.WriteBack
+namespace Fap.Workflow.Service
 {
     /// <summary>
     /// 流程回写接口
     /// </summary>
-    public interface IWriteBackRule
+    public interface IWriteBackService
     {
         /// <summary>
         /// 流程成功时回写业务表

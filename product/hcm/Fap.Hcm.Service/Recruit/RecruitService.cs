@@ -22,6 +22,8 @@ using System.Threading.Tasks;
 using Fap.Core.Message;
 using Fap.Core.Rbac.Model;
 using Fap.Core.Utility;
+using Fap.Core.Infrastructure.Interface;
+using Fap.Workflow.Service;
 
 namespace Fap.Hcm.Service.Recruit
 {
@@ -34,6 +36,7 @@ namespace Fap.Hcm.Service.Recruit
         private readonly IFapFileService _fapFileService;
         private readonly IServiceProvider _serviceProvider;
         private readonly IMessageService _messageService;
+        private readonly IWriteBackService _writeBackService;
         public RecruitService(IDbContext dbContext, IServiceProvider serviceProvider, IFapFileService fapFileService, ILoggerFactory loggerFactory, IFapApplicationContext applicationContext)
         {
             _dbContext = dbContext;
@@ -42,6 +45,7 @@ namespace Fap.Hcm.Service.Recruit
             _applicationContext = applicationContext;
             _serviceProvider = serviceProvider;
             _messageService = serviceProvider.GetService<IMessageService>();
+            _writeBackService = serviceProvider.GetService<IWriteBackService>();
         }
         public void PublishWebsite(string demandUid, string websites)
         {
@@ -267,6 +271,12 @@ namespace Fap.Hcm.Service.Recruit
             });
             _dbContext.Execute("Update RcrtBizOffer set OfferStatus='Email' where Fid=@Fid", new DynamicParameters(new { Fid = offerNotice.OfferUid }));
 
+        }
+        [Transactional]
+        public void Entry(string offerUid,string entryUid)
+        {
+            _writeBackService.WriteBackToBusiness("EmpEntryInfo", entryUid);
+            _dbContext.Execute("Update RcrtBizOffer set OfferStatus='Entry' where Fid=@Fid", new DynamicParameters(new { Fid = offerUid }));
         }
     }
 }

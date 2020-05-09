@@ -95,7 +95,7 @@
                 if (rw == null) {
                     return;
                 }
-                if (rw.OfferStatus === "InfoMaintenance") {
+                if (rw.OfferStatus === "InfoMaintenance" || rw.OfferStatus === "Checked") {
                     bootboxWindow($.lang("check_information", "信息核对"), basePath + "/Recruit/Manage/CheckProfile",
                         {
                             ok: {
@@ -103,18 +103,24 @@
                                 className: "btn-primary btn-link",
                                 callback: function () {
                                     return Persistence("frm-profile", "EmpEntryInfo", null, function () {
-                                        $.post(basePath + "/Recruit/Api/OfferStatus", { fid: rw.Fid, status: 'Checked' }, function (rv) {
-                                            if (rv.success) {
-                                                refreshGrid("grid-offer");
-                                            } else {
-                                                bootbox.alert(rv.msg);
-                                            }
-                                        });
+                                        if (rw.OfferStatus === "InfoMaintenance") {
+                                            $.post(basePath + "/Recruit/Api/OfferStatus", { fid: rw.Fid, status: 'Checked' }, function (rv) {
+                                                if (rv.success) {
+                                                    refreshGrid("grid-offer");
+                                                } else {
+                                                    bootbox.alert(rv.msg);
+                                                }
+                                            });
+                                        }
                                     })
                                 }
-                            }                            
+                            }
                         },
-                        { offerUid: rw.Fid, formStatus:2 });
+                        { offerUid: rw.Fid, formStatus: 2 });
+                } else if (rw.OfferStatus === "Entry") {
+                    bootboxWindow($.lang("view_information", "查看信息"), basePath + "/Recruit/Manage/CheckProfile",
+                        null,
+                        { offerUid: rw.Fid, formStatus:3 });
                 } else {
                     $.msg("只有员工维护完信息以后方能核对");
                 }
@@ -132,11 +138,15 @@
                                 label: $.lang("entry", "入职"),
                                 className: "btn-primary btn-link",
                                 callback: function () {
-                                    return false;
+                                    entry(rw.Fid);
+                                    refreshGrid("grid-offer");
+                                    //return false;
                                 }
                             }
                         },
-                        { offerUid: rw.Fid, formStatus:3});
+                        { offerUid: rw.Fid, formStatus: 3 });
+                } else if (rw.OfferStatus === "Entry") {
+                    $.msg("已经完成了入职");
                 } else {
                     $.msg("信息核对后才能入职");
                 }

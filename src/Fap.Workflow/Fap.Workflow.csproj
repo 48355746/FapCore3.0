@@ -18,9 +18,6 @@
 
   <ItemGroup>
     <Compile Remove="Engine\Utility\DynamicExpression.cs" />
-    <Compile Remove="Engine\WriteBack\AddonFormInternalWriteBack.cs" />
-    <Compile Remove="Engine\WriteBack\WriteBackFactory.cs" />
-    <Compile Remove="Engine\WriteBack\WriteBackRuleBase.cs" />
   </ItemGroup>
 
   <ItemGroup>

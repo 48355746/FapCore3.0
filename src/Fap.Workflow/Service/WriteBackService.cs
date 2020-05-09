@@ -4,9 +4,11 @@ using Fap.Core.DataAccess;
 using Fap.Core.DI;
 using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Config;
+using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Infrastructure.Enums;
 using Fap.Core.Infrastructure.Interface;
 using Fap.Core.Infrastructure.Metadata;
+using Fap.Core.Infrastructure.Model;
 using Fap.Core.Rbac.Model;
 using Fap.Core.Utility;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,22 +18,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Fap.Workflow.Engine.WriteBack
+namespace Fap.Workflow.Service
 {
     /// <summary>
     /// 单据回写类
     /// </summary>
     [Service]
-    public class BillWriteBack : IWriteBackRule
+    public class WriteBackService : IWriteBackService
     {
         private readonly IDbContext _dbContext;
         private readonly IServiceProvider _serviceProvider;
-        private readonly ILogger<BillWriteBack> _logger;
-        public BillWriteBack(IDbContext dbContext, IServiceProvider serviceProvider)
+        private readonly ILogger<WriteBackService> _logger;
+        private readonly IFapApplicationContext _applicationContext;
+        public WriteBackService(IDbContext dbContext, IServiceProvider serviceProvider)
         {
             _dbContext = dbContext;
             _serviceProvider = serviceProvider;
-            _logger = serviceProvider.GetService<ILoggerFactory>().CreateLogger<BillWriteBack>();
+            _logger = serviceProvider.GetService<ILoggerFactory>().CreateLogger<WriteBackService>();
+            _applicationContext = serviceProvider.GetService<IFapApplicationContext>();
         }
         #region 审批完成单据回写
         /// <summary>
@@ -42,16 +46,16 @@ namespace Fap.Workflow.Engine.WriteBack
         public void WriteBackToBusiness(string tableName, string fid)
         {
             //单据实体
-            dynamic billData = _dbContext.Get(tableName, fid, true);
+            IDictionary<string, object> billData = _dbContext.Get(tableName, fid, true) as IDictionary<string, object>;
             //业务实体 只有设置了映射才会有            
-            dynamic bizData = null;
             FapDynamicObject fapBizData = null;
+            IDictionary<string, object> dicBizData = null;
             string bizTableName = string.Empty;
-            string effectiveTime = billData.EffectiveTime;
-            if (effectiveTime.IsPresent())
+            billData.TryGetValue("EffectiveTime", out object effectiveTime);
+            if (effectiveTime != null && effectiveTime.ToString().IsPresent())
             {
                 DateTime effTime;
-                if (DateTime.TryParse(effectiveTime, out effTime))
+                if (DateTime.TryParse(effectiveTime.ToString(), out effTime))
                 {
                     //生效时间大于当前时间
                     if (effTime > DateTime.Now)
@@ -60,11 +64,16 @@ namespace Fap.Workflow.Engine.WriteBack
                     }
                 }
             }
-            //设置生效状态
-            billData.EffectiveState = "1";
-            IDictionary<string, object> dicBillData = billData as IDictionary<string, object>;
-            var fapBillData = dicBillData.ToFapDynamicObject(_dbContext.Columns(tableName));
-            _dbContext.UpdateDynamicData(fapBillData);
+            if (billData.ContainsKey("EffectiveState"))
+            {
+                //设置生效状态
+                billData["EffectiveState"] = 1;
+            }
+            var fapBillData = billData.ToFapDynamicObject(_dbContext.Columns(tableName));
+            if (billData.ContainsKey("EffectiveState"))
+            {
+                _dbContext.UpdateDynamicData(fapBillData);
+            }
             DynamicParameters param = new DynamicParameters();
             param.Add("TableName", tableName);
             IEnumerable<CfgBillWriteBackRule> rules = _dbContext.QueryWhere<CfgBillWriteBackRule>("DocEntityUid=@TableName", param);
@@ -91,7 +100,8 @@ namespace Fap.Workflow.Engine.WriteBack
                                 string billCol = arryMap[0].Split('.')[1];
 
                                 string bizCol = arryMap[1].Split('.')[1];
-                                fdo.SetValue(bizCol, fapBillData.Get(billCol));
+                                billData.TryGetValue(billCol, out object bo);
+                                fdo.SetValue(bizCol, bo ?? "");
                             }
                             //insert
                             _dbContext.InsertDynamicData(fdo);
@@ -106,18 +116,16 @@ namespace Fap.Workflow.Engine.WriteBack
                         //更新
                         string association = rule.Association;
                         //获取关联字段值，这个是更新业务表的条件
-                        object fidValue = fapBillData.Get(association);
-
-                        if (rule.FieldMapping.IsPresent())
+                        billData.TryGetValue(association, out object fidValue);
+                        if (fidValue != null && rule.FieldMapping.IsPresent())
                         {
                             JArray mappings = JArray.Parse(rule.FieldMapping);
                             if (mappings != null && mappings.Any())
                             {
                                 //根据关联值获取业务值
-                                bizData = _dbContext.Get(bizTableName, fidValue.ToString());
-                                if (bizData != null)
+                                dicBizData = _dbContext.Get(bizTableName, fidValue.ToString()) as IDictionary<string, object>;
+                                if (dicBizData != null)
                                 {
-                                    IDictionary<string, object> dicBizData = bizData as IDictionary<string, object>;
                                     fapBizData = dicBizData.ToFapDynamicObject(_dbContext.Columns(bizTableName));
                                     //更新业务对象
                                     foreach (JObject map in mappings)
@@ -128,7 +136,8 @@ namespace Fap.Workflow.Engine.WriteBack
                                         string billCol = arryMap[0].Split('.')[1];
 
                                         string bizCol = arryMap[1].Split('.')[1];
-                                        fapBizData.SetValue(bizCol, fapBillData.Get(billCol).ToString());
+                                        billData.TryGetValue(billCol, out object bo);
+                                        fapBizData.SetValue(bizCol, bo ?? "");
                                     }
                                     //bizData.TableName = bizTableName;
                                     //update
@@ -150,15 +159,15 @@ namespace Fap.Workflow.Engine.WriteBack
                                         string billCol = arryMap[0].Split('.')[1];
 
                                         string bizCol = arryMap[1].Split('.')[1];
-                                        fdo.SetValue(bizCol, fapBillData.Get(billCol));
+                                        billData.TryGetValue(billCol, out object bo);
+                                        fdo.SetValue(bizCol, bo ?? "");
                                     }
                                     fdo.SetValue(FapDbConstants.FAPCOLUMN_FIELD_Fid, UUIDUtils.Fid);
 
                                     //insert
                                     _dbContext.InsertDynamicData(fdo);
-                                    bizData = _dbContext.Get(bizTableName, fdo.Get(FapDbConstants.FAPCOLUMN_FIELD_Fid).ToString());
-                                    IDictionary<string, object> dicBizData = bizData as IDictionary<string, object>;
-                                    fapBizData = dicBillData.ToFapDynamicObject(_dbContext.Columns(bizTableName));
+                                    dicBizData = _dbContext.Get(bizTableName, fdo.Get(FapDbConstants.FAPCOLUMN_FIELD_Fid).ToString()) as IDictionary<string, object>;
+                                    fapBizData = billData.ToFapDynamicObject(_dbContext.Columns(bizTableName));
                                     //提醒到工资保险
                                     NotifyPayroll(rule, fapBillData, fapBizData);
                                     NotifyInsurance(rule, fapBillData, fapBizData);
@@ -169,7 +178,7 @@ namespace Fap.Workflow.Engine.WriteBack
                     //执行自定义update sql                    
                     if (rule.CustomSql.IsPresent())
                     {
-                        string sql = GetFillSql(rule.CustomSql, billData, bizData, tableName, bizTableName);
+                        string sql = GetFillSql(rule.CustomSql, billData, dicBizData, tableName, bizTableName);
 
                         _dbContext.Execute(sql);
 
@@ -197,28 +206,24 @@ namespace Fap.Workflow.Engine.WriteBack
             }
 
         }
-        private string GetFillSql(string customSql, dynamic billData, dynamic bizData, string billTable, string bizTable)
+        private string GetFillSql(string customSql, IDictionary<string, object> billData, IDictionary<string, object> bizData, string billTable, string bizTable)
         {
-            var billDataJson = billData as IDictionary<string, object>;
-            IDictionary<string, object> bizDataJson = null;
-            if (bizData != null)
-            {
-                bizDataJson = bizData as IDictionary<string, object>;
-            }
-
             string _customSql = customSql.ToLower();
-            foreach (var item in billDataJson)
+            if (billData != null)
             {
-                string field = "${" + billTable + "_" + item.Key.ToStringOrEmpty() + "}".ToLower();
-                if (_customSql.Contains(field))
+                foreach (var item in billData)
                 {
-                    _customSql = _customSql.Replace(field, item.Value.ToStringOrEmpty());
+                    string field = "${" + billTable + "_" + item.Key.ToStringOrEmpty() + "}".ToLower();
+                    if (_customSql.Contains(field))
+                    {
+                        _customSql = _customSql.Replace(field, item.Value.ToStringOrEmpty());
+                    }
                 }
             }
 
-            if (bizDataJson != null)
+            if (bizData != null)
             {
-                foreach (var item in bizDataJson)
+                foreach (var item in bizData)
                 {
                     string field = "${" + bizTable + "_" + item.Key.ToStringOrEmpty() + "}".ToLower();
                     if (_customSql.Contains(field))
@@ -251,7 +256,7 @@ namespace Fap.Workflow.Engine.WriteBack
                 }
                 string empUid = bizObject.Get("Fid").ToString();
                 Employee empInfo = _dbContext.Get<Employee>(empUid);
-                List<FapDynamicObject> payToDos = new List<FapDynamicObject>();
+                List<PayToDo> payToDos = new List<PayToDo>();
                 foreach (var pc in payCases)
                 {
                     //解析工资套中的员工条件
@@ -267,18 +272,18 @@ namespace Fap.Workflow.Engine.WriteBack
                     if (_dbContext.Count("Employee", strWhere, param) > 0)
                     {
                         string caseUid = pc.Fid;
-                        dynamic payToDo = BuilderPayToDo(rule, billData, empInfo, caseUid);
+                        var payToDo = BuilderPayToDo(rule, billData, empInfo, caseUid);
                         payToDos.Add(payToDo);
                     }
                 }
                 if (payToDos.Count > 0)
                 {
-                    _dbContext.InsertDynamicDataBatch(payToDos);
+                    _dbContext.InsertBatch(payToDos);
                 }
                 else
                 {
-                    dynamic payToDo = BuilderPayToDo(rule, billData, empInfo, "");
-                    _dbContext.InsertDynamicData(payToDo);
+                    var payToDo = BuilderPayToDo(rule, billData, empInfo, "");
+                    _dbContext.Insert(payToDo);
                 }
             }
 
@@ -302,9 +307,9 @@ namespace Fap.Workflow.Engine.WriteBack
                 {
                     return;
                 }
-                string empUid = bizObject.Get("Fid").ToString();
-                Employee empInfo = _dbContext.Get<Employee>(empUid);
-                List<FapDynamicObject> insToDos = new List<FapDynamicObject>();
+                bizObject.TryGetValue("Fid", out object empUid);
+                Employee empInfo = _dbContext.Get<Employee>(empUid.ToString());
+                List<InsToDo> insToDos = new List<InsToDo>();
                 foreach (var cs in insCases)
                 {
                     //解析保险组中的员工条件
@@ -320,28 +325,28 @@ namespace Fap.Workflow.Engine.WriteBack
                     if (_dbContext.Count("Employee", strWhere, param) > 0)
                     {
                         string caseUid = cs.Fid;
-                        dynamic insToDo = BuilderInsToDo(rule, billData, empInfo, caseUid);
+                        var insToDo = BuilderInsToDo(rule, billData, empInfo, caseUid);
                         insToDos.Add(insToDo);
                     }
                 }
                 if (insToDos.Count > 0)
                 {
-                    _dbContext.InsertDynamicDataBatch(insToDos);
+                    _dbContext.InsertBatch(insToDos);
                 }
                 else
                 {
-                    dynamic insToDo = BuilderInsToDo(rule, billData, empInfo, "");
-                    _dbContext.InsertDynamicData(insToDo);
+                    var insToDo = BuilderInsToDo(rule, billData, empInfo, "");
+                    _dbContext.Insert(insToDo);
                 }
             }
 
 
         }
 
-        private dynamic BuilderInsToDo(CfgBillWriteBackRule rule, dynamic billData, Employee empInfo, string caseUid)
+        private InsToDo BuilderInsToDo(CfgBillWriteBackRule rule, FapDynamicObject billData, Employee empInfo, string caseUid)
         {
             //影响此保险组
-            dynamic insToDo = new FapDynamicObject(_dbContext.Columns("InsToDo"));
+            InsToDo insToDo = new InsToDo();
             insToDo.EmpUid = empInfo.Fid;
             insToDo.EmpCode = empInfo.EmpCode;
             insToDo.DeptUid = empInfo.DeptUid;
@@ -349,15 +354,15 @@ namespace Fap.Workflow.Engine.WriteBack
             insToDo.CaseUid = caseUid;//受影响保险组
             insToDo.TableUid = rule.DocEntityUid;//单据实体
             insToDo.BizDate = DateTimeUtils.CurrentDateStr;//业务日期--当前时间
-            insToDo.OperEmpUid = billData.BillEmpUid;//变动处理人--制单人
-            insToDo.OperFlag = 0;//变动应用 默认为0
-            insToDo.TransID = billData.Id;//单据ID
+            insToDo.OperEmpUid = billData.Get("BillEmpUid") == null ? _applicationContext.EmpUid : billData.Get("BillEmpUid").ToString();//变动处理人--制单人
+            insToDo.OperFlag = "0";//变动应用 默认为0
+            insToDo.TransID = billData.Get("Id").ToString();//单据ID
             return insToDo;
         }
-        private dynamic BuilderPayToDo(CfgBillWriteBackRule rule, dynamic billData, Employee empInfo, string caseUid)
+        private PayToDo BuilderPayToDo(CfgBillWriteBackRule rule, FapDynamicObject billData, Employee empInfo, string caseUid)
         {
             //影响此薪资套
-            dynamic payToDo = new FapDynamicObject(_dbContext.Columns("PayToDo"));
+            PayToDo payToDo = new PayToDo();
             payToDo.EmpUid = empInfo.Fid;
             payToDo.EmpCode = empInfo.EmpCode;
             payToDo.DeptUid = empInfo.DeptUid;
@@ -365,9 +370,9 @@ namespace Fap.Workflow.Engine.WriteBack
             payToDo.CaseUid = caseUid;//受影响薪资套
             payToDo.TableUid = rule.DocEntityUid;//单据实体
             payToDo.BizDate = DateTimeUtils.CurrentDateStr;//业务日期--当前时间
-            payToDo.OperEmpUid = billData.BillEmpUid;//变动处理人--制单人
-            payToDo.OperFlag = 0;//变动应用 默认为0
-            payToDo.TransID = billData.Id;//单据ID
+            payToDo.OperEmpUid = billData.Get("BillEmpUid")==null?_applicationContext.EmpUid: billData.Get("BillEmpUid").ToString();//变动处理人--制单人
+            payToDo.OperFlag = "0";//变动应用 默认为0
+            payToDo.TransID = billData.Get("Id").ToString();//单据ID
             return payToDo;
         }
 

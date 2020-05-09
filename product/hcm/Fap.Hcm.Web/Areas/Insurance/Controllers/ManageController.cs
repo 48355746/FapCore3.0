@@ -6,6 +6,7 @@ using Dapper;
 using Fap.AspNetCore.Infrastructure;
 using Fap.AspNetCore.ViewModel;
 using Fap.Core.Infrastructure.Metadata;
+using Fap.Core.Infrastructure.Model;
 using Fap.Core.Infrastructure.Query;
 using Fap.Hcm.Service.Insurance;
 using Microsoft.AspNetCore.Mvc;

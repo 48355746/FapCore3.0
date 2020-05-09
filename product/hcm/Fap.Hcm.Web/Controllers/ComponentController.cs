@@ -239,7 +239,7 @@ namespace Fap.Hcm.Web.Controllers
                             refMcSqls.Add($"(select {refColumn.RefName} from {refColumn.RefTable} where {refColumn.RefTable}.{refColumn.RefID}={refColumn.TableName}.{refColumn.ColName} ) as {refColumn.ColName}MC");
 
                             refRefCols.Add(refColumn.ColName + "MC");
-                            frmRefCols.Add(frmColumn.TableName + frmColumn.ColName + "MC");
+                            frmRefCols.Add(frmColumn.ColName + "MC");
                         }
                     }
                 }

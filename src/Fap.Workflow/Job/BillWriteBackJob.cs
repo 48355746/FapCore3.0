@@ -1,13 +1,8 @@
-﻿using Fap.Core.DataAccess;
-using Fap.Core.Scheduler;
-using Fap.Workflow.Engine.WriteBack;
-using Fap.Workflow.Model;
+﻿using Fap.Core.Scheduler;
 using Fap.Workflow.Service;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Fap.Workflow.Job

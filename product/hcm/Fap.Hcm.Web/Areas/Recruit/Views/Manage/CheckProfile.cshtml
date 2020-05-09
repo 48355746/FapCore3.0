@@ -1,2 +1,15 @@
 ﻿@model Fap.AspNetCore.ViewModel.FormViewModel
 <fap-form id="@Model.FormId" form-model="Model"></fap-form>
+
+<script>
+    function entry(offerUid) {
+        var entryUid = $("#frm-profile #Fid").val();
+        $.post(basePath + "/Recruit/Api/Entry", { offerUid: offerUid, entryUid: entryUid }, function (rv) {
+            if (rv.success) {
+                $.msg(rv.msg);
+            } else {
+                bootbox.alert(rv.msg);
+            }
+        })
+    }
+</script>

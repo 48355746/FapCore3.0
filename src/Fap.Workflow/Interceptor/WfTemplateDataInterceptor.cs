@@ -7,9 +7,11 @@ using Fap.Core.Utility;
 using Fap.Core.Infrastructure.Metadata;
 using Fap.Workflow.Model;
 using Fap.Core.Extensions;
+using Fap.Core.DI;
 
 namespace Fap.Workflow.Interceptor
 {
+    [Service]
     public class WfTemplateDataInterceptor : DataInterceptorBase
     {
         private readonly IWorkflowService _wfService;

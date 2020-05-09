@@ -3,9 +3,7 @@ using Dapper;
 using Fap.Core.DataAccess;
 using Fap.Core.DI;
 using Fap.Core.Exceptions;
-using Fap.Core.Extensions;
 using Fap.Core.Infrastructure.Domain;
-using Fap.Core.Infrastructure.Enums;
 using Fap.Core.Utility;
 using Fap.Workflow.Engine.Common;
 using Fap.Workflow.Engine.Core;
@@ -14,7 +12,6 @@ using Fap.Workflow.Engine.Event;
 using Fap.Workflow.Engine.Manager;
 using Fap.Workflow.Engine.Message;
 using Fap.Workflow.Engine.Utility;
-using Fap.Workflow.Engine.WriteBack;
 using Fap.Workflow.Engine.Xpdl;
 using Fap.Workflow.Engine.Xpdl.Entity;
 using Fap.Workflow.Model;
@@ -36,7 +33,7 @@ namespace Fap.Workflow.Service
         private readonly ILogger<WorkflowService> _logger;
         private readonly IFapApplicationContext _applicationContext;
         private IProcessModel _processModel;
-        private readonly IWriteBackRule _writeBack;
+        private readonly IWriteBackService _writeBack;
         private readonly IServiceProvider _serviceProvider;
         public WorkflowService(IServiceProvider serviceProvider)
         {
@@ -45,7 +42,7 @@ namespace Fap.Workflow.Service
             _loggerFactory = serviceProvider.GetService<ILoggerFactory>();
             _applicationContext = serviceProvider.GetService<IFapApplicationContext>();
             _logger =serviceProvider.GetService<ILoggerFactory>().CreateLogger<WorkflowService>();
-            _writeBack =serviceProvider.GetService<IWriteBackRule>();
+            _writeBack =serviceProvider.GetService<IWriteBackService>();
         }
 
         #region 流程CRUD

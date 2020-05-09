@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Fap.AspNetCore.Infrastructure;
 using Fap.AspNetCore.ViewModel;
 using Microsoft.AspNetCore.Mvc;
@@ -13,10 +12,6 @@ using Fap.Core.Infrastructure.Config;
 using System.Text.RegularExpressions;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Infrastructure.Enums;
-using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Dapper;
 using Fap.AspNetCore.Controls.DataForm;
 
@@ -230,6 +225,11 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
                 fdo.SetValue("DeptCode", offer["DeptCode"]);
                 fdo.SetValue("EntryDate", offer["ArrivalDate"]);
                 fdo.SetValue("OfferUid", offerUid);
+                fdo.SetValue("PJobTitle", offer["PJobTitle"]);
+                fdo.SetValue("PJobGroupGrade", offer["PJobGroupGrade"]);
+                fdo.SetValue("MJobTitle", offer["MJobTitle"]);
+                fdo.SetValue("MJobGroupGrade", offer["MJobGroupGrade"]);
+                fdo.SetValue("JobGrade", offer["JobGrade"]);
                 _dbContext.InsertDynamicData(fdo);
                 entryFid = fdo.Get("Fid").ToString();
             }
