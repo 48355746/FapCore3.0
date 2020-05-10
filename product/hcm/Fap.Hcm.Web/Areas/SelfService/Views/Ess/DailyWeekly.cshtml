@@ -1,12 +1,9 @@
 ﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
-@{
-    Layout = null;
-}
+
 <title>
     <fap-multilang lang-key="dail_weekly" default-content="日报周报"></fap-multilang>
 </title>
 
-@*@{await Html.RenderPartialAsync("_ControlCssPartial"); }*@
 <link href="~/Content/css/daterangepicker.css" rel="stylesheet" />
 <link href="~/Content/css/bootstrap-timeline.css" rel="stylesheet" />
 <script id="TimelineTemplate" type="text/x-jquery-tmpl">
@@ -68,7 +65,7 @@
         <div class="widget-main">
             <div class="tab-content padding-2">
                 <div id="home" class="tab-pane fade in active">
-                    <fap-grid id="essreport"  grid-model="Model" wrapper="myTab,home" row-num="10" shrink-fit="false" on-grid-complete="refreshTimeLine" view-records="true"></fap-grid>
+                    <fap-grid id="essreport"  grid-model="Model" wrapper="myTab,home" row-num="10" shrink-fit="false"  view-records="true"></fap-grid>
                 </div>
                 <div id="timeline" class="tab-pane fade">
                     <div class="row">
@@ -83,14 +80,7 @@
 </div>
 
 <script>
-    //刷新时间轴
-    function refreshTimeLine() {
-        var obj = $("#grid-essreport").jqGrid("getRowData", null);
-        if (obj.length > 0) {
-            $("#timelineContent").empty();
-            $("#TimelineTemplate").tmpl(obj).appendTo("#timelineContent");
-        }
-    }
+
     var scripts = [null, "/Content/js/jquery.tmpl.js", null]
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         //inline scripts related to this page
@@ -98,6 +88,15 @@
             $(document).one('ajaxloadstart.page', function (e) {
                 $('#myTab a[data-toggle="tab"]').off('shown.bs.tab');
                
+            })
+            $('#myTab a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                if ($(e.target).attr('href') == "#timeline") {
+                    var obj = $("#grid-essreport").jqGrid("getRowData", null);
+                    if (obj.length > 0) {
+                        $("#timelineContent").empty();
+                        $("#TimelineTemplate").tmpl(obj).appendTo("#timelineContent");
+                    }
+                };
             })
         })
     })

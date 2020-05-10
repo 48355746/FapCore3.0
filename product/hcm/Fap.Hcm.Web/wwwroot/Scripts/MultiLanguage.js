@@ -77,7 +77,8 @@ var MultiLangHelper = (function () {
       'photo_updated': { 'ZhCn': '照片已更新', 'ZhTW': '', 'En': '', 'Ja': '' },
       'entry': { 'ZhCn': '入职', 'ZhTW': '', 'En': '', 'Ja': '' },
       'inscase_authority': { 'ZhCn': '保险组权限', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'view_information': { 'ZhCn': '查看信息', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'view_information': { 'ZhCn': '查看信息', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'department': { 'ZhCn': '部门', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

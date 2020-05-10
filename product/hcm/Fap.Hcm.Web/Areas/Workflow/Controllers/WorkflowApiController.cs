@@ -42,7 +42,7 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
             TreeDataView treeRoot = new TreeDataView()
             {
                 Id = "0",
-                Text =_multiLangService.GetOrAndMultiLangValue(Core.MultiLanguage.MultiLanguageOriginEnum.MultiLangTag, "workflow_category", "流程分类"),
+                Text = _multiLangService.GetOrAndMultiLangValue(Core.MultiLanguage.MultiLanguageOriginEnum.MultiLangTag, "workflow_category", "流程分类"),
                 State = new NodeState { Opened = true },
                 Icon = "icon-folder blue ace-icon fa fa-sitemap",
             };
@@ -118,14 +118,9 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
         public JsonResult SaveWorkflowDiagraph(string xml)
         {
             xml = HttpUtility.UrlDecode(xml);
-            try
-            {
-                _workflowService.SaveProcessTemplate(xml);
-            }
-            catch (Exception ex)
-            {
-                return Json(ResponseViewModelUtils.Failure(ex.Message));
-            }
+
+            _workflowService.SaveProcessTemplate(xml);
+
             return Json(ResponseViewModelUtils.Sueecss());
         }
         /// <summary>
@@ -156,17 +151,17 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
         [HttpGet("BusinessType")]
         public JsonResult GetBusinessType()
         {
-             var businessTypes = _dbContext.Query<WfBusinessType>("select * from WfBusinessType");
-             
-             var oriList = businessTypes.Select(t => new TreeDataView { Id = t.Fid.ToString(), Pid = t.Pid, Data = new { group = "1",  typecode = t.TypeCode, typename = t.TypeName }, Text = t.TypeName , Icon = "icon-folder purple ace-icon fa fa-share-alt" });
-                
-           
+            var businessTypes = _dbContext.Query<WfBusinessType>("select * from WfBusinessType");
+
+            var oriList = businessTypes.Select(t => new TreeDataView { Id = t.Fid.ToString(), Pid = t.Pid, Data = new { group = "1", typecode = t.TypeCode, typename = t.TypeName }, Text = t.TypeName, Icon = "icon-folder purple ace-icon fa fa-share-alt" });
+
+
             List<TreeDataView> tree = new List<TreeDataView>();
             TreeDataView treeRoot = new TreeDataView()
             {
                 Id = "0",
-                Text =_multiLangService.GetOrAndMultiLangValue(Core.MultiLanguage.MultiLanguageOriginEnum.MultiLangTag, "business_category", "业务分类"),
-                Data = new { group = "0"},
+                Text = _multiLangService.GetOrAndMultiLangValue(Core.MultiLanguage.MultiLanguageOriginEnum.MultiLangTag, "business_category", "业务分类"),
+                Data = new { group = "0" },
                 State = new NodeState { Opened = true },
                 Icon = "icon-folder blue ace-icon fa fa-sitemap",
             };
