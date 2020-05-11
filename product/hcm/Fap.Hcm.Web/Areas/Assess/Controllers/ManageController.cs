@@ -161,13 +161,22 @@ namespace Fap.Hcm.Web.Areas.Assess.Controllers
         /// <returns></returns>
         public IActionResult MyAssess()
         {
-            JqGridViewModel model = this.GetJqGridModel("PerfExaminer", (qs) =>
+            JqGridViewModel scoreModel = this.GetJqGridModel("PerfExaminer", (qs) =>
             {
                 qs.GlobalWhere = "EmpUid=@EmpUid  and ProgramUid in(select fid from perfprogram where PrmStatus='Starting')";
                 qs.AddParameter("EmpUid", _applicationContext.EmpUid);
                 qs.QueryCols = "Id,Fid,ObjectUid,ProgramUid,AssessModel,Score";
             });
-            return View(model);
+            JqGridViewModel resultModel = this.GetJqGridModel("PerfObject", (q) =>
+            {
+                q.GlobalWhere = "ObjUid=@ObjUid";
+                q.ReadOnlyCols = "ProgramUid";
+                q.AddParameter("ObjUid", _applicationContext.EmpUid);
+            });
+            MultiJqGridViewModel multi = new MultiJqGridViewModel();
+            multi.JqGridViewModels.Add("score", scoreModel);
+            multi.JqGridViewModels.Add("result", resultModel);
+            return View(multi);
         }
         /// <summary>
         /// 考核打分

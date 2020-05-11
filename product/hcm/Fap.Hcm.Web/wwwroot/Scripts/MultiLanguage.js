@@ -78,7 +78,26 @@ var MultiLangHelper = (function () {
       'entry': { 'ZhCn': '入职', 'ZhTW': '', 'En': '', 'Ja': '' },
       'inscase_authority': { 'ZhCn': '保险组权限', 'ZhTW': '', 'En': '', 'Ja': '' },
       'view_information': { 'ZhCn': '查看信息', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'department': { 'ZhCn': '部门', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'department': { 'ZhCn': '部门', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'upload_template': { 'ZhCn': '上传模板', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'objectives': { 'ZhCn': '考核对象', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'set_examiner': { 'ZhCn': '设置考核人', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'add_objectives': { 'ZhCn': '添加考核对象', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'objectives_selector': { 'ZhCn': '考核对象选择', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'add_select': { 'ZhCn': '添加选中项', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'add_all': { 'ZhCn': '添加当前所有', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'examiner_selector': { 'ZhCn': '考核人选择', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'score_result': { 'ZhCn': '打分结果', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'annual': { 'ZhCn': '年假', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'no_card_data': { 'ZhCn': '未找到打卡数据', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'pending_item': { 'ZhCn': '待选项', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'export_item': { 'ZhCn': '导出项', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'select_property': { 'ZhCn': '选择编辑属性', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'set_property': { 'ZhCn': '设置属性值', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'next_step': { 'ZhCn': '下一步', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'previous_step': { 'ZhCn': '上一步', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'finish': { 'ZhCn': '完成', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'time_schedule': { 'ZhCn': '排班', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

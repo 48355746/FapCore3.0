@@ -8,9 +8,11 @@ using Fap.AspNetCore.ViewModel;
 using Fap.Core.Infrastructure.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Fap.Core.Utility;
 using Fap.Core.Extensions;
 using Dapper;
+using Fap.Hcm.Service.Organization;
 
 namespace Fap.Hcm.Web.Areas.SelfService.Controllers
 {
@@ -19,8 +21,10 @@ namespace Fap.Hcm.Web.Areas.SelfService.Controllers
     [Route("[area]/Api")]
     public class SelfServiceApiController : FapController
     {
+        private readonly IOrganizationService _organizationService;
         public SelfServiceApiController(IServiceProvider serviceProvider) : base(serviceProvider)
         {
+            _organizationService = serviceProvider.GetService<IOrganizationService>();
         }
         [HttpPost("CalendarEvent")]
         public JsonResult CalendarEvent(CfgCalendarEvent cevent)
@@ -93,6 +97,12 @@ namespace Fap.Hcm.Web.Areas.SelfService.Controllers
                 var updateC = _dbContext.Update<EssCalendar>(cal);
                 return JsonIgnoreNull(cal);
             }
+        }
+        [HttpGet("DominationDepartment")]
+        public JsonResult DominationDepartment()
+        {
+            var tree= _organizationService.GetDominationDepartmentTree();
+            return Json(tree);
         }
     }
 }

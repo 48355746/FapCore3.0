@@ -165,6 +165,9 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
         /// <returns></returns>
         public IActionResult MyDayResult()
         {
+            int annualNum=_dbContext.ExecuteScalar<int>($"select RemainderNum from TmAnnualLeave where Annual='{DateTime.Now.Year}' and EmpUid=@EmpUid",
+                new Dapper.DynamicParameters(new { EmpUid = _applicationContext.EmpUid }));
+            ViewBag.Annual = annualNum;
             return View();
         }
     }

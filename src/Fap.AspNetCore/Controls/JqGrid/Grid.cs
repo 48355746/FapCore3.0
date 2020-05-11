@@ -287,7 +287,14 @@ namespace Fap.AspNetCore.Controls.JqGrid
             {
 
                 List<Column> grdColumns = _fapColumns.OrderBy(c => c.ColOrder).ToColumns(_dbContext, _multiLang).ToList();
-
+                if (queryset.DisplayCols.IsPresent())
+                {
+                    var columns= grdColumns.Where(c => queryset.DisplayCols.SplitComma().Contains(c.Name, new FapStringEqualityComparer()));
+                    foreach (var column in columns)
+                    {
+                        column.SetHidden(false);
+                    }
+                }
                 _columns.AddRange(grdColumns);
             }
             return this;

@@ -90,5 +90,15 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
             _recruitService.Entry(offerUid, entryUid);
             return Json(ResponseViewModelUtils.Sueecss());
         }
+        [HttpPost("LinkJob")]
+        public JsonResult LinkJob(List<string> fids,string jobName)
+        {
+            Guard.Against.Null(fids, nameof(fids));
+            if (fids.Any())
+            {
+                _dbContext.Execute("update RcrtResume set ResumeName=@JobName where Fid in @Fids", new DynamicParameters(new { Fids = fids, JobName = jobName }));
+            }
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
     }
 }

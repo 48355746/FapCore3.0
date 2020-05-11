@@ -1,10 +1,12 @@
-﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+﻿@model Fap.AspNetCore.ViewModel.MultiJqGridViewModel
 @using Fap.AspNetCore.Controls.JqGrid
 @{
     Column column = new Column("oper");
     column.SetLabel("打分");
     column.SetSortable(false);
     column.SetWidth(80);
+    var scoreModel = Model.JqGridViewModels["score"];
+    var resultModel = Model.JqGridViewModels["result"];
 }
 <title>
     <fap-multilang lang-key="my_assess_score" default-content="考核打分"></fap-multilang>
@@ -47,22 +49,37 @@
 </script>
 <div class="row">
     <div class="col-xs-12">
-        <div class="widget-box">
-            <div class="widget-header widget-header-flat">
-                <h4 class="widget-title"> <fap-multilang lang-key="assess_score_todolist" default-content="待打分列表"></fap-multilang></h4>
-
-                <div class="widget-toolbar">
-                    <a href="#" data-action="fullscreen" class="orange2">
-                        <i class="ace-icon fa fa-expand"></i>
+        <!-- #section:elements.tab -->
+        <div class="tabbable" id="myTab">
+            <ul class="nav nav-tabs">
+                <li class="active">
+                    <a data-toggle="tab" href="#scoring">
+                        <i class="green ace-icon fa fa-bars bigger-120"></i>
+                        <fap-multilang default-content="待打分" lang-key="scoring"></fap-multilang>
                     </a>
-                </div>              
-            </div>
-            <div class="widget-body">
-                <div class="widget-main">
-                    <fap-grid id="myscore" attach-column="column" grid-model="Model" on-grid-complete="initAssessTodoMenu"  shrink-fit="false" register-authority="false"></fap-grid>
+                </li>
+
+                <li>
+                    <a data-toggle="tab" href="#result">
+                        <i class="green ace-icon fa fa-gavel  bigger-120"></i>
+                        <fap-multilang default-content="考核结果" lang-key="assess_result"></fap-multilang>
+                    </a>
+                </li>
+
+            </ul>
+
+            <div class="tab-content">
+                <div id="scoring" class="tab-pane fade in active">
+                    <fap-grid id="myscore" attach-column="column" grid-model="scoreModel" on-grid-complete="initAssessTodoMenu" shrink-fit="false" wrapper="myTab,scoring" register-authority="false"></fap-grid>
                 </div>
+
+                <div id="result" class="tab-pane fade">
+                    <fap-grid id="assessresult" grid-model="resultModel" auto-width="true" wrapper="myTab,result" register-authority="false" shrink-fit="false" view-records="true"></fap-grid>
+                </div>
+
             </div>
         </div>
+
     </div>
 </div>
 <script>
@@ -73,7 +90,7 @@
             $(document).one('ajaxloadstart.page', function (e) {
 
             })
-           
+
         })
 
     })

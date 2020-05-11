@@ -25,6 +25,10 @@ namespace Fap.Core.Infrastructure.Query
         /// <summary>
         /// 设置可见列，某些情况下需要把一些默认隐藏的列显示出来
         /// </summary>
+        public string DisplayCols { get; set; }
+        /// <summary>
+        /// 设置只读列
+        /// </summary>
         public string ReadOnlyCols { get; set; }
        
         /// <summary>
@@ -154,6 +158,9 @@ namespace Fap.Core.Infrastructure.Query
             ParamValue = value;
         }
         public string ParamKey { get; set; }
+        /// <summary>
+        /// object 类型无法获取到值
+        /// </summary>
         public string ParamValue { get; set; }
     }
     public class OrderBy

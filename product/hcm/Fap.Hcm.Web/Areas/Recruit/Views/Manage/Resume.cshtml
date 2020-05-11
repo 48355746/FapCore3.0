@@ -18,14 +18,18 @@
                     </a>
                 </div>
                 <div class="widget-toolbar">
-                    <fap-button id="btnAddBlacklist" btn-tag="link" content="加入黑名单" icon-before="fa fa-ban blue" class-name="info"></fap-button>
+                    <fap-button id="btnAddBlacklist" btn-tag="link" content="黑名单" icon-before="fa fa-plus-circle blue" class-name="info"></fap-button>
+                    <fap-button id="btnAddTalent" btn-tag="link" content="优才库" icon-before="fa fa-plus-circle blue" class-name="info"></fap-button>
+                    <fap-button id="btnAddReserve" btn-tag="link" content="后备人才库" icon-before="fa fa-plus-circle blue" class-name="info"></fap-button>
                 </div>
-
+                <div class="widget-toolbar">
+                    <fap-button id="btnLinkNewJob" btn-tag="link" content="关联新职位" icon-before="fa fa-link blue" class-name="info"></fap-button>
+                </div>
             </div>
             <div class="widget-body">
 
                 <div class="widget-main">
-                    <fap-grid id="resume" grid-model="Model" wrapper="widget-main" register-authority="false" oper-chart="true" view-records="true" shrink-fit="false"></fap-grid>
+                    <fap-grid id="resume" grid-model="Model" wrapper="widget-main" register-authority="false" oper-chart="true" oper-cud="true" multi-select="true" view-records="true" shrink-fit="false"></fap-grid>
 
                     <!-- /.row -->
                 </div>
@@ -41,6 +45,57 @@
         jQuery(function ($) {
             $(document).one('ajaxloadstart.page', function (e) {
             })
+            $("#btnAddBlacklist").on(ace.click_event, function () {
+                setResumeStatus('BlackList');
+            })
+            $("#btnAddTalent").on(ace.click_event, function () {
+                setResumeStatus('TalentPool');
+            })
+            $("#btnAddReserve").on(ace.click_event, function () {
+                setResumeStatus('Reserve');
+            })
+            $("#btnLinkNewJob").on(ace.click_event, function () {
+                var rows = getSelectedRows("grid-resume");
+                if (rows === null) {
+                    return;
+                }
+                var fids = $.map(rows, function (r) {
+                    return r.Fid;
+                })
+                bootbox.prompt("招聘职位名称", function (result) {
+                    if (result !== null && result !== "") {
+                        $.post(basePath + "/Recruit/Api/LinkJob", { fids: fids, jobName: result }, function (rv) {
+                            if (rv.success) {
+                                refreshGrid("grid-resume");
+                                $.msg(rv.msg);
+                            } else {
+                                bootbox.alert(rv.msg);
+                            }
+                        })
+                    }
+                });
+            })
+            var setResumeStatus = function (status) {
+                var rows = getSelectedRows("grid-resume");
+                if (rows === null) {
+                    return;
+                }
+                var fids = $.map(rows, function (r) {
+                    return r.Fid;
+                })
+                bootbox.confirm("确定要执行此操作吗?", function (result) {
+                    if (result) {
+                        $.post(basePath + "/Recruit/Api/ResumeStatus", { fids: fids, status: status }, function (rv) {
+                            if (rv.success) {
+                                $.msg(rv.msg);
+                                refreshGrid("grid-resume");
+                            } else {
+                                bootbox.alert(rv.msg);
+                            }
+                        })
+                    }
+                })
+            };
         })
     })
 </script>
