@@ -97,7 +97,16 @@ var MultiLangHelper = (function () {
       'next_step': { 'ZhCn': '下一步', 'ZhTW': '', 'En': '', 'Ja': '' },
       'previous_step': { 'ZhCn': '上一步', 'ZhTW': '', 'En': '', 'Ja': '' },
       'finish': { 'ZhCn': '完成', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'time_schedule': { 'ZhCn': '排班', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'time_schedule': { 'ZhCn': '排班', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'time_card_record': { 'ZhCn': '考勤打卡', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'day_report': { 'ZhCn': '日报周报', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'appertain_info': { 'ZhCn': '附属信息', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'employee_history': { 'ZhCn': '历史追溯', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'assess_chart': { 'ZhCn': '考核结果图表', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'chart': { 'ZhCn': '图表', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'orgdept_index_page_mergedepartment': { 'ZhCn': '合并部门', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'edit': { 'ZhCn': '编辑', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'guide': { 'ZhCn': '使用指南', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

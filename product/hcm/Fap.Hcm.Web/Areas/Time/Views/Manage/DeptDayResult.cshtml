@@ -1,0 +1,112 @@
+﻿@using Fap.AspNetCore.Controls
+@model Fap.AspNetCore.ViewModel.JqGridViewModel
+
+<title><fap-multilang lang-key="dept_time" default-content="部门考勤"></fap-multilang></title>
+
+<div class="row">
+    <div class="col-xs-12 col-sm-3">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">
+                <fap-multilang lang-key="department" default-content="部门"></fap-multilang>
+                </h4>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main treescrollable">
+                    <fap-tree id="orgdept" is-async="true" get-url="/SelfService/Api/DominationDepartment"></fap-tree>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-9">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h5 class="widget-title" id="rptDate">当月考勤结果</h5>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+
+                <div class="widget-toolbar no-border">
+                    <fap-button id="btnMakeup" btn-tag="link" content="补签" icon-before="fa  fa-plus-circle blue" class-name="info"></fap-button>
+                </div>
+
+            </div>
+            <div class="widget-body">
+                <div class="widget-main ">
+                    <fap-grid id="deptdayresult" grid-model="Model"  auto-width="true" view-records="true" multi-box-only="true"
+                              multi-select="true" ></fap-grid>
+                </div>
+            </div>
+        </div>
+        @*<div id="right-menu" class="modal aside" data-body-scroll="false" data-offset="true" data-placement="right" data-fixed="true" data-backdrop="invisible" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header no-padding">
+                        <div class="table-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                <span class="white">&times;</span>
+                            </button>
+                            <fap-multilang lang-key="department" default-content="部门"></fap-multilang>
+                        </div>
+                    </div>
+
+                    <div class="modal-body">
+                        <div id="treeDeptDiv" class="widget-main ">
+                            <div class="scrollable">
+                                <fap-tree id="orgdept" is-async="true" get-url="/SelfService/Api/DominationDepartment"></fap-tree>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="aside-trigger btn btn-purple btn-app btn-xs ace-settings-btn" data-target="#right-menu" data-toggle="modal" type="button">
+                    <i data-icon1="fa-sitemap" data-icon2="fa-minus" class="ace-icon fa fa-sitemap bigger-110 icon-only"></i>
+                </button>
+            </div>
+        </div>*@
+    </div>
+</div>
+<script>
+   
+    var scripts = [null, "/Scripts/Workflow/business.js", null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            //$('.modal.aside').ace_aside();
+            $(document).one('ajaxloadstart.page', function (e) {
+                //$('.modal.aside').remove();
+                //$(window).off('.aside');
+            })  
+            //部门变化事件，加载人员信息
+            $('#tree-orgdept').on("changed.jstree", function (e, data) {
+                if (data && data.selected && data.selected.length) {
+                    var deptid = data.selected[0];
+                    //获取所有子Fid
+                    var childs = data.node.children_d;
+                    var selids = childs.concat(deptid);
+                    var treeDept = $('#tree-orgdept').jstree(true);
+                    var sels = $.grep(selids, function (d, i) {
+                        return treeDept.get_node(d).data.isDept === 1;
+                    });
+                    var filter = { "groupOp": "AND", "rules": [{ "field": "DeptUid", "op": "in", "data": sels.join(', ')}] };
+                    reloadGrid("grid-deptdayresult", { filters: JSON.stringify(filter) });
+                }
+            });  
+            $("#btnMakeup").on(ace.click_event, function () {
+                var rw = getSelectedRow("grid-deptdayresult");
+                if (rw === null) {
+                    return;
+                }
+                let initData = {
+                    AppEmpUid: rw.EmpUid,
+                    AppEmpUidMC: rw.EmpUidMC,
+                    CardStartDate: rw.CurrDate,
+                    CardEndDate: rw.CurrDate
+                }
+                applyBusiness('3535685657470959616', "补签申请", initData);
+            })
+        })
+    });
+</script>

@@ -1,0 +1,23 @@
+﻿
+@model Fap.Core.Infrastructure.Model.FapGuide
+@{
+    Layout = null;
+}
+
+@Html.Raw(Model.Guide)
+
+<script>
+    function editGuid() {
+        var fid = '@Model.Fid';
+        bootboxWindow($.lang("edit", "编辑"), basePath + "/Component/DataForm/" + fid,
+            {
+                save: {
+                    label: $.lang("save", "保存"),
+                    className: "btn-primary btn-link",
+                    callback: function () {
+                        Persistence("frm-FapGuide", "FapGuide");
+                    }
+                },
+            }, { tn: "FapGuide", fs: 2 });
+    }
+</script>

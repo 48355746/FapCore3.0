@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Fap.Hcm.Service.Organization;
 using Fap.Core.Infrastructure.Metadata;
 using Fap.Hcm.Web.Models;
+using NPOI.SS.Formula.Functions;
 
 namespace Fap.Hcm.Web.Areas.SelfService.Controllers
 {
@@ -30,25 +31,27 @@ namespace Fap.Hcm.Web.Areas.SelfService.Controllers
             IEnumerable<FapTable> empChilds = _dbContext.Tables(t => t.TableCategory == "EmpSub");//||t.TableCategory=="EmpBiz");
             var gvms = empChilds.Select(t => new GridViewModel { TableLabel = t.TableComment, TableName = t.TableName, Condition = "EmpUid='" + _applicationContext.EmpUid + "'" });
             ViewBag.SubInfo = gvms.ToJson();
-            var deptUids= _organizationService.GetDominationDepartment().Select(d => $"'{d.Fid}'");
-            var model = GetJqGridModel("Employee",qs=> {
-                qs.GlobalWhere = deptUids.Any() ? $"DeptUid in({string.Join(',', deptUids)})" : "1=2";   
+            var deptUids = _organizationService.GetDominationDepartment().Select(d => $"'{d.Fid}'");
+            var model = GetJqGridModel("Employee", qs =>
+            {
+                qs.GlobalWhere = deptUids.Any() ? $"DeptUid in({string.Join(',', deptUids)})" : "1=2";
             });
             return View(model);
         }
+   
         /// <summary>
         /// 部门周报日报月报
         /// </summary>
         /// <returns></returns>
-        public IActionResult DeptReport()
+        public IActionResult EmpReport(string empUid)
         {
-            var deptUids = _organizationService.GetDominationDepartment().Select(d => $"'{d.Fid}'");
             var model = this.GetJqGridModel("EssReport", (q) =>
             {
-                q.GlobalWhere = $"EmpUid in(select Fid from Employee where DeptUid in({string.Join(',', deptUids)}))";
-                q.DisplayCols = "Review";
+                q.GlobalWhere = $"EmpUid=@EmpUid";
+                q.AddParameter("EmpUid", empUid);
             });
-            return View(model);
+            return PartialView(model);
         }
+       
     }
 }

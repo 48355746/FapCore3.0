@@ -39,6 +39,8 @@ namespace Fap.Hcm.Web.Areas.SelfService.Controllers
                 qs.GlobalWhere = "EmpUid='" +_applicationContext.EmpUid + "'";
                 qs.AddDefaultValue("EmpUid", _applicationContext.EmpUid);
                 qs.AddDefaultValue("EmpUidMC", _applicationContext.EmpName);
+                qs.AddDefaultValue("DeptUid", _applicationContext.DeptUid);
+                qs.AddDefaultValue("DeptUidMC", _applicationContext.DeptName);
                 qs.AddDefaultValue("RptDate", DateTimeUtils.CurrentDateTimeStr);
                 qs.AddOrderBy("RptDate", "desc");
 

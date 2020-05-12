@@ -37,11 +37,15 @@
                         </span>
                     </label>
                 </div>
-             
-                <div class="widget-toolbar no-border">
+
+                <div class="widget-toolbar">
                     <fap-button id="btnSchedule" btn-tag="link" content="排班" icon-before="fa fa-calendar-check-o blue" class-name="info"></fap-button>
                     <fap-button id="btnSubInfo" btn-tag="link" content="附属信息" icon-before="fa fa-paperclip blue" class-name="info"></fap-button>
                     <fap-button id="btnEmployeeHistory" btn-tag="link" content="历史" icon-before="fa fa-history blue" class-name="info"></fap-button>
+                </div>
+                <div class="widget-toolbar">
+                    <fap-button id="btnTmCardRecord" btn-tag="link" content="考勤打卡" icon-before="fa fa-credit-card blue" class-name="info"></fap-button>
+                    <fap-button id="btnEmpReport" btn-tag="link" content="日报周报" icon-before="fa fa-calendar-check-o blue" class-name="info"></fap-button>
                 </div>
             </div>
             <div class="widget-body">
@@ -119,9 +123,9 @@
                 var rowData = getSelectedRow("grid-employee");
                 if (rowData === null) {
                     return;
-                }
+                }               
                 var dialog = bootbox.dialog({
-                    title: "附属信息",
+                    title: $.lang("appertain_info", "附属信息"),
                     size: 'large',
                     message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
                     buttons: {
@@ -137,7 +141,7 @@
                     v.defaultValues.push({ "Field": "EmpCode", "Value": rowData.EmpCode });
                 });
                 dialog.init(function () {
-                    var url = "@Html.Raw(Url.Action("MultiDataGrid", "Component", new { area = "" }))" + "?menuUrl=~/Employee/Manage/EmpIndex";
+                    var url = "@Html.Raw(Url.Action("MultiDataGrid", "Component", new { area = "" }))";
                     $.post(url, data, function (ev) {
                         dialog.find('.bootbox-body').html(ev);
                     })
@@ -153,25 +157,26 @@
                     $.msg("此条信息为兼职信息，请选择主职信息查看！");
                     return;
                 }
-                var dialog = bootbox.dialog({
-                    title: "历史追溯",
-                    size:'large',
-                    message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
-                    buttons: {
-                        cancel: {
-                            label: "关闭", className: "btn-default"
-                        }
-                    }
-                });
-                dialog.init(function () {
-                    var url = "@Html.Raw(Url.Action("DataHistory", "Component",new { area=""}))";
-                     $.get(url, {bn:'Employee',fid:rowData.Fid}, function (ev) {
-                        dialog.find('.bootbox-body').html(ev);
-                    })
-                });
+                bootboxWindow($.lang("employee_history", "历史追溯"),
+                    basePath + "/Component/DataHistory", null, { bn: 'Employee', fid: rowData.Fid });               
 
             });
-           
+            $("#btnEmpReport").on(ace.click_event, function () {
+                var rowData = getSelectedRow("grid-employee");
+                if (rowData === null) {
+                    return;
+                }
+                bootboxWindow($.lang("day_report", "日报周报"),
+                    basePath + "/SelfService/Mss/EmpReport", null, { empUid: rowData.Fid });          
+            })
+            $("#btnTmCardRecord").on(ace.click_event, function () {
+                var rowData = getSelectedRow("grid-employee");
+                if (rowData === null) {
+                    return;
+                }
+                bootboxWindow($.lang("time_card_record", "考勤打卡"),
+                    basePath + "/Time/Manage/EmpCardRecord", null, { empUid: rowData.Fid });
+            })
             //部门变化事件，加载人员信息
             $('#tree-orgdept').on("changed.jstree", function (e, data) {
                 if (data && data.selected && data.selected.length) {

@@ -9,6 +9,8 @@ using Fap.Core.Extensions;
 using Fap.AspNetCore.Controls.JqGrid;
 using Fap.Hcm.Service.Assess;
 using Dapper;
+using Microsoft.Extensions.DependencyInjection;
+using Fap.Hcm.Service.Organization;
 
 namespace Fap.Hcm.Web.Areas.Assess.Controllers
 {
@@ -18,8 +20,10 @@ namespace Fap.Hcm.Web.Areas.Assess.Controllers
     [Area("Assess")]
     public class ManageController : FapController
     {
+        private readonly IOrganizationService _organizationService;
         public ManageController(IServiceProvider serviceProvider) : base(serviceProvider)
         {
+            _organizationService = serviceProvider.GetService<IOrganizationService>();
         }
         /// <summary>
         /// 考核方案
@@ -156,7 +160,7 @@ namespace Fap.Hcm.Web.Areas.Assess.Controllers
             return View(model);
         }
         /// <summary>
-        /// 我的待处理考核
+        /// 我的考核
         /// </summary>
         /// <returns></returns>
         public IActionResult MyAssess()
@@ -177,6 +181,15 @@ namespace Fap.Hcm.Web.Areas.Assess.Controllers
             multi.JqGridViewModels.Add("score", scoreModel);
             multi.JqGridViewModels.Add("result", resultModel);
             return View(multi);
+        }
+        public IActionResult DeptAssess()
+        {
+            var deptUids = _organizationService.GetDominationDepartment().Select(d => $"'{d.Fid}'");
+            ViewBag.SchemeList = _dbContext.Query<PerfProgram>("select * from PerfProgram", null, true);
+            var model = GetJqGridModel("PerfObject",qs=> {
+                qs.GlobalWhere = $"(ObjUid in({string.Join(',', deptUids)}) or ObjUid in(select Fid from Employee where DeptUid in ({string.Join(',', deptUids)})))";
+            });
+            return View(model);
         }
         /// <summary>
         /// 考核打分

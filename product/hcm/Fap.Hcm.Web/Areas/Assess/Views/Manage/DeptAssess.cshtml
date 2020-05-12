@@ -1,0 +1,136 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@using Fap.AspNetCore.Controls.JqGrid
+@using System.Linq
+@{
+    Column column = new Column("oper");
+    column.SetLabel("明细");
+    column.SetSortable(false);
+    column.SetWidth(80);
+    IEnumerable<Fap.Hcm.Service.Assess.PerfProgram> schemes = ViewBag.SchemeList;
+}
+<title>
+    <fap-multilang lang-key="assess_consequent" default-content="考核结果"></fap-multilang>
+</title>
+<script>
+    function initConsequentMenu() {
+        var ids = $("#grid-perfobjectives").jqGrid('getDataIDs');
+        for (var i = 0; i < ids.length; i++) {
+            var de = '';
+            var cl = ids[i];
+            var ret = jQuery('#grid-perfobjectives').jqGrid('getRowData', cl);
+            var fid = ret.Fid;
+            de += "<a  href='javascript:void(0)' onclick='showConsequent(\"" + fid + "\")'>" + $.lang("view", "查看") + "</a>  ";
+
+            jQuery('#grid-perfobjectives').jqGrid('setRowData', ids[i], { oper: de });
+        }
+    }
+    function showConsequent(fid) {
+        bootboxWindow($.lang("score_result", "打分结果"), basePath + "/Assess/Manage/Scored", null, { objUid: fid });
+    }
+</script>
+<div class="row">
+    @*<div class="col-xs-12 col-sm-3">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title">
+                    <fap-multilang lang-key="department" default-content="部门"></fap-multilang>
+                </h4>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main treescrollable">
+                    <fap-tree id="orgdept" is-async="true" get-url="/SelfService/Api/DominationDepartment"></fap-tree>
+                </div>
+            </div>
+        </div>
+    </div>*@
+    <div class="col-xs-12">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title"> <fap-multilang lang-key="assess_consequent" default-content="考核结果"></fap-multilang></h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar">
+                    <select class="chosen-select form-control" style="width:300px" id="selScheme" multi-placeholder="考核方案...">
+                        <option value=""></option>
+                        @foreach (var scheme in schemes.GroupBy(s => s.PrmCategoryMC))
+                        {
+                            <optgroup label="@scheme.Key">
+                                @foreach (var sc in scheme)
+                                {
+                                    <option value="@sc.Fid" data-ot="@sc.ObjectType">@(sc.PrmName+"("+sc.PrmStatusMC+")")</option>
+                                }
+                            </optgroup>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    <fap-grid id="perfobjectives" attach-column="column" register-authority="false" grid-model="Model" on-grid-complete="initConsequentMenu" source-type="Local" shrink-fit="false" multi-select="true" multi-box-only="true"></fap-grid>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    var scripts = [null, null];
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+
+            })
+            $('.chosen-select').chosen({ allow_single_deselect: true }).on("change", function () {
+                refreshConsequent();
+            });
+            var refreshConsequent = function () {
+                var c = $("#selScheme").val();
+                if (c === "") {
+                    $.msg("请选择考核方案");
+                    return;
+                }
+                var filter = '{"groupOp":"AND","rules":[{"field":"ProgramUid","op":"eq","data":"' + c + '"}]}'
+
+                reloadGrid("grid-perfobjectives", { filters: filter })
+            }         
+            ////部门变化事件，加载人员信息
+            //$('#tree-orgdept').on("changed.jstree", function (e, data) {
+            //    if (data && data.selected && data.selected.length) {
+            //        var deptid = data.selected[0];
+            //        //获取所有子Fid
+            //        var childs = data.node.children_d;
+            //        var selids = childs.concat(deptid);
+            //        var treeDept = $('#tree-orgdept').jstree(true);
+            //        var sels = $.grep(selids, function (d, i) {
+            //            return treeDept.get_node(d).data.isDept === 1;
+            //        });
+            //        var opt = $("#selScheme").find("option:selected");
+            //        var c = opt.val();
+            //        if (c === "") {
+            //            $.msg("请选择考核方案");
+            //            return;
+            //        }
+            //        var filter ={ "groupOp": "AND", "rules": [{ "field": "ProgramUid", "op": "eq", "data": c }] };
+            //        if (opt.data("ot") === "Employee") {
+            //            var depts = [];
+            //            $.each(sels, function (i, d) {
+            //                depts.push("'" + d + "'");
+            //            });
+            //            filter.rules.push({ "field": "ObjUid", "op": "in", "data": "(select Fid from Employee where DeptUid in(" + depts+"))" });
+            //        } else {
+            //            filter.rules.push({ "field": "ObjUid", "op": "in", "data": sels.join(', ') });
+            //        }
+            //        reloadGrid("grid-perfobjectives", { filters: JSON.stringify(filter) });
+            //    }
+            //}); 
+        })
+
+    })
+</script>
+
+
+

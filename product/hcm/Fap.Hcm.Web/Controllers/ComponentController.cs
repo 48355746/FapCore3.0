@@ -17,12 +17,11 @@ using Fap.AspNetCore.Controls;
 using Fap.Core.Rbac.Model;
 using Fap.Core.Infrastructure.Query;
 using Dapper;
-using System.Web;
 using Fap.AspNetCore.Controls.DataForm;
 using Fap.Hcm.Web.Models;
 using Ardalis.GuardClauses;
 using Microsoft.Extensions.Logging;
-using NPOI.XWPF.UserModel;
+//using NPOI.SS.Formula.Functions;
 
 namespace Fap.Hcm.Web.Controllers
 {
@@ -52,7 +51,16 @@ namespace Fap.Hcm.Web.Controllers
             }
 
         }
-
+        public IActionResult Guide(string nav)
+        {            
+            var guide= _dbContext.QueryFirstOrDefault<FapGuide>("select * from FapGuide where Navigation=@Nav", new DynamicParameters(new { Nav = nav }));
+            if (guide==null)
+            {
+                guide = new FapGuide { Navigation = nav,Guide="暂无，尽快奉上。" };
+                _dbContext.Insert(guide);
+            }
+            return PartialView(guide);
+        }
 
         //同时表单数据也会传递过来，条件设置参数同Dapper
         //例如：TableName=@Entity,Entity为form传过来的参数

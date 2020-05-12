@@ -7,15 +7,20 @@ using Fap.AspNetCore.ViewModel;
 using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Fap.Core.Utility;
+using Fap.Hcm.Service.Organization;
+using Fap.Hcm.Service.Time;
 
 namespace Fap.Hcm.Web.Areas.Time.Controllers
 {
     [Area("Time")]
     public class ManageController : FapController
     {
+        private readonly IOrganizationService _organizationService;
         public ManageController(IServiceProvider serviceProvider) : base(serviceProvider)
         {
+            _organizationService= serviceProvider.GetService<IOrganizationService>();
         }
         #region 基础设置
         /// <summary>
@@ -169,6 +174,36 @@ namespace Fap.Hcm.Web.Areas.Time.Controllers
                 new Dapper.DynamicParameters(new { EmpUid = _applicationContext.EmpUid }));
             ViewBag.Annual = annualNum;
             return View();
+        }
+        public IActionResult EmpCardRecord(string empUid)
+        {
+            var model = this.GetJqGridModel("TmCardRecord", (q) =>
+            {
+                q.GlobalWhere = $"EmpUid=@EmpUid";
+                q.AddParameter("EmpUid", empUid);
+            });
+            return PartialView(model);
+        }
+        /// <summary>
+        /// 部门考勤结果
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult DeptDayResult()
+        {
+            var currPeriod= _dbContext.QueryFirstOrDefaultWhere<TmPeriod>($"{nameof(TmPeriod.IsPeriod)}=1");
+            var deptUids = _organizationService.GetDominationDepartment().Select(d => $"'{d.Fid}'");
+            var model = GetJqGridModel("TmDayResult", qs =>
+            {
+                qs.GlobalWhere = $"DeptUid in({string.Join(',', deptUids)})";
+                if (currPeriod != null)
+                {
+                    qs.QueryCols = "Id,Fid,EmpUid,DeptUid,ShiftUid,CurrDate,CardStartTime,CardEndTime,CalResult";
+                    qs.GlobalWhere += " and CurrDate>=@StartDate and CurrDate<=@EndDate";
+                    qs.AddParameter("StartDate", currPeriod.StartDate);
+                    qs.AddParameter("EndDate", currPeriod.EndDate);
+                }
+            });
+            return View(model);
         }
     }
 }

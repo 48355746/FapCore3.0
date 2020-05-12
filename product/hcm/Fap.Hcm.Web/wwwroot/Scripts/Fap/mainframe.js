@@ -39,7 +39,25 @@ $(function () {
             }
         });
     });
+    //使用说明
+    $("#sidebar-shortcuts-large #btnHelper").on(ace.click_event, function () {
+        var hash = window.location.hash;
+        if (hash == "#") {
+            return;
+        }
+        hash = hash.replace(/^(\#\!)?\#/, '');
+        bootboxWindow($.lang("guide", "使用指南"), basePath + "/Component/Guide",
+            {
+                edit: {
+                    label: $.lang("edit", "编辑"),
+                    className: "btn-primary btn-link",
+                    callback: function () {
+                        editGuid();
+                    }
+                }
 
+            }, { nav: hash });
+    })
     //setTimeout(function () {
     //    getHandling();
     //    getBadge();
