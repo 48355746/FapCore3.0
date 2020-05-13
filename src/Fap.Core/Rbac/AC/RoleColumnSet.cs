@@ -37,7 +37,7 @@ namespace Fap.Core.Rbac.AC
                 if (_initialized) return;
                 #region 获取所有FapRoleColumn
 
-                _allRoleColumn = _dbSession.Query<FapRoleColumn>("select * from FapRoleColumn");
+                _allRoleColumn = _dbSession.Query<FapRoleColumn>("select * from FapRoleColumn where Dr=0");
 
                 #endregion
                 _initialized = true;

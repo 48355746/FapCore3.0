@@ -295,6 +295,7 @@
         $.post(basePath + '/Core/Api/EChart', { chartViewModel: chartModel, jqGridPostData: jqPostData }, function (rv) {
             fapChart.clear();
             var option = initChartOption();
+            if (rv.data.dataSet.length === 0) { return;}
             option.dataset = {
                 dimensions: Object.keys(rv.data.dataSet[0]),
                 source: rv.data.dataSet
@@ -442,7 +443,7 @@
             $content.find("#subject").val(subject);
         });
     });
-    $('.chosen-select').chosen({ allow_single_deselect: true,width:"300px" }).on("change", function () {
+    $('.chosen-select').chosen({ allow_single_deselect: true, search_contains: true,width:"300px" }).on("change", function () {
         var c = $(this).val();
         if (c === "") {
             return;

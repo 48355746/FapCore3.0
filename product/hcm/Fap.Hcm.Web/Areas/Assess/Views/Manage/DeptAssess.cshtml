@@ -84,7 +84,7 @@
             $(document).one('ajaxloadstart.page', function (e) {
 
             })
-            $('.chosen-select').chosen({ allow_single_deselect: true }).on("change", function () {
+            $('.chosen-select').chosen({ allow_single_deselect: true, search_contains: true }).on("change", function () {
                 refreshConsequent();
             });
             var refreshConsequent = function () {

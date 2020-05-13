@@ -617,6 +617,12 @@ namespace Fap.AspNetCore.Controls.DataForm
                 }
                 #endregion
             }
+            #region Combobox
+            if (formFields.Exists(f => f.CurrentColumn.ComboxSource.IsPresent()))
+            {
+                script.AppendLine(@"$('###formid## .chosen-select').select2({allowClear: true,width:'100%',placeholder: {id: '',text:'请选择'}}); ");
+            }
+            #endregion
             #region 多语公共js
             if (formFields.Exists(f => f.CurrentColumn.IsMultiLang == 1))
             {

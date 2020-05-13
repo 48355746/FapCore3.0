@@ -31,7 +31,7 @@ namespace Fap.Core.Rbac.AC
             lock (Locker)
             {
                 //获取所有按钮
-                _allButtons = _dbSession.Query<FapMenuButton>("select * from FapMenuButton");
+                _allButtons = _dbSession.Query<FapMenuButton>("select * from FapMenuButton where Dr=0");
                 _initialized = true;
             }
         }

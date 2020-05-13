@@ -8,7 +8,7 @@
     column.SetLabel("操作");
     column.SetSortable(false);
     column.SetWidth(110);
-
+    column.SetSearch(false);
     WfBusiness biz = ViewBag.Business;
 }
 <script>
@@ -54,7 +54,7 @@
 
             <div class="widget-body">
                 <div class="widget-main">
-                    <fap-grid id="@Model.JqgridId" attach-column="@column" grid-model="Model" auto-width="true" shrink-fit="false" oper-import="false" on-grid-complete="initOperMenu"></fap-grid>
+                    <fap-grid id="@Model.JqgridId" attach-column="@column" grid-model="Model" auto-width="true" shrink-fit="false" register-authority="false" oper-chart="true" oper-import="false" on-grid-complete="initOperMenu"></fap-grid>
                 </div>
             </div>
         </div>

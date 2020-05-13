@@ -32,7 +32,7 @@ namespace Fap.Core.Rbac.AC
             lock (Locker)
             {
                 //获取所有菜单列
-                _allColumn = _dbSession.Query<FapMenuColumn>("select * from FapMenuColumn");
+                _allColumn = _dbSession.Query<FapMenuColumn>("select * from FapMenuColumn where Dr=0");
                 _initialized = true;
             }
         }

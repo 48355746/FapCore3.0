@@ -61,7 +61,7 @@
             $(document).one('ajaxloadstart.page', function (e) {
 
             })
-            var chosen= $('.chosen-select').chosen({ allow_single_deselect: true }).on("change", function () {
+            var chosen = $('.chosen-select').chosen({ allow_single_deselect: true, search_contains: true }).on("change", function () {
                 var c = $(this).val();
                 if (c === "") {
                     return;
@@ -98,7 +98,6 @@
                                     $.msg($.lang("code_name_required", "编码和名称不能为空！"));
                                     return false;
                                 }
-                                debugger
                                 //chosen.add_option("<option  value='" + code + "' selected>'" + name + "'</option >");
                                 $("#selDictCategory").append("<option  value='" + code + "' selected>" + name + "</option >");
                                 //$("#selDictCategory").val(code);

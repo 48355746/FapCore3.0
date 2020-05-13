@@ -50,7 +50,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             StringBuilder sbCombobox = new StringBuilder();
             if (fapColumn.MultiAble == 0)
             {
-                sbCombobox.AppendFormat(" <select id=\"{0}\" name=\"{0}\" ng-model=\"{1}\" " + editAble + " class=\"form-control \" data-placeholder=\"请选择\" >", ctrlName, ngModel).AppendLine();
+                sbCombobox.AppendFormat(" <select id=\"{0}\" name=\"{0}\" ng-model=\"{1}\" " + editAble + " class=\"form-control chosen-select\" data-placeholder=\"请选择\" >", ctrlName, ngModel).AppendLine();
                 sbCombobox.AppendLine("<option value=''></option>");
                 if (dicList.Any())
                 {

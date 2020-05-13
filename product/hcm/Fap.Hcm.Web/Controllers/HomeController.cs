@@ -227,7 +227,14 @@ namespace Fap.Hcm.Web.Controllers
                     }
                     else
                     {
-                        return LocalRedirect(_configService.GetSysParamValue(HomeUrl));
+                        if (_rbacService.IsCEO(emp.Fid))
+                        {
+                            return LocalRedirect("~/Home/MainFrame#System/Report/CEOChart");
+                        }
+                        else
+                        {
+                            return LocalRedirect(_configService.GetSysParamValue(HomeUrl));
+                        }
                     }
                 }
                 else
@@ -235,7 +242,9 @@ namespace Fap.Hcm.Web.Controllers
                     return LocalRedirect(returnUrl);
                 }
             }
+           
         }
+
         public async Task<IActionResult> SignOut()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme).ConfigureAwait(false);

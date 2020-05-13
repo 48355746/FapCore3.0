@@ -767,6 +767,11 @@ namespace Fap.AspNetCore.Serivce
                             groupBy = $" group by CONVERT(varchar(10) ,{gf.Field}, 120)";
                             colName = $"CONVERT(varchar(10) ,{gf.Field}, 120) as '{gf.Alias}'";
                         }
+                        else
+                        {
+                            groupBy = $" group by {gf.Field}";
+                            colName = $"{gf.Field} as '{gf.Alias}'";
+                        }
                     }
                     else if (_dbContext.DatabaseDialect == Core.DataAccess.DatabaseDialectEnum.MYSQL)
                     {
@@ -785,6 +790,11 @@ namespace Fap.AspNetCore.Serivce
                             groupBy = $" group by DATE_FORMAT({gf.Field},'%Y-%m-%d')";
                             colName = $"DATE_FORMAT({gf.Field},'%Y-%m-%d')  as '{gf.Alias}'";
                         }
+                    }
+                    else
+                    {
+                        groupBy = $" group by {gf.Field}";
+                        colName = $"{gf.Field} as '{gf.Alias}'";
                     }
                 }
                 else
@@ -825,6 +835,7 @@ namespace Fap.AspNetCore.Serivce
             {
                 param.Add(p.ParamKey, p.ParamValue);
             }
+            sql=sql.ReplaceIgnoreCase("query", "select ");
             var dataList = _dbContext.QueryOriSql(sql, param);
             DataProcessed(ccSqlDics, tableName, gf, dataList, agglist);
             return new ChartResult { Aggregates = agglist, DataSet = dataList }; ;

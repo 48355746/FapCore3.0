@@ -106,7 +106,14 @@ var MultiLangHelper = (function () {
       'chart': { 'ZhCn': '图表', 'ZhTW': '', 'En': '', 'Ja': '' },
       'orgdept_index_page_mergedepartment': { 'ZhCn': '合并部门', 'ZhTW': '', 'En': '', 'Ja': '' },
       'edit': { 'ZhCn': '编辑', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'guide': { 'ZhCn': '使用指南', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'guide': { 'ZhCn': '使用指南', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'kpi': { 'ZhCn': '考核指标', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'kpi_type': { 'ZhCn': '考核指标类型', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'score_model': { 'ZhCn': '评分方式', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'examiner': { 'ZhCn': '考核人', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'associate_set': { 'ZhCn': '引用关联设置', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'associate': { 'ZhCn': '关联', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'property_associate_set': { 'ZhCn': '设置属性关联', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

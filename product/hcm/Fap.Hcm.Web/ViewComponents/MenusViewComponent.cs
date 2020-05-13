@@ -19,12 +19,12 @@ namespace Fap.Hcm.Web.ViewComponents
     public class MenusViewComponent : ViewComponent
     {
 
-        protected readonly IDbContext _dataAccessor;
-        protected readonly IFapApplicationContext _applicationContext;
-        protected readonly ILogger<MenusViewComponent> _logger;
-        protected readonly IRbacService _rbacService;
-        protected readonly IFapPlatformDomain _appDomain;
-        protected readonly IMultiLangService _multiLangService;
+        private readonly IDbContext _dataAccessor;
+        private readonly IFapApplicationContext _applicationContext;
+        private readonly ILogger<MenusViewComponent> _logger;
+        private readonly IRbacService _rbacService;
+        private readonly IFapPlatformDomain _appDomain;
+        private readonly IMultiLangService _multiLangService;
         public MenusViewComponent(IFapPlatformDomain appDomain, IDbContext dataAccessor, IFapApplicationContext applicationContext, IRbacService rbacService, IMultiLangService multiLangService, ILogger<MenusViewComponent> logger)
         {
             _appDomain = appDomain;
@@ -42,20 +42,18 @@ namespace Fap.Hcm.Web.ViewComponents
         /// <returns></returns>
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            return await Task.FromResult(View(new MenuViewModel { Menus = BuildMenus().OrderBy(m => m.Target.ToInt()).ToList() }));
+            return await Task.FromResult(View(new MenuViewModel { Menus = BuildMenus().OrderBy(m => m.Target.ToInt()).ToList() })).ConfigureAwait(false);
         }
         private List<MenuItem> BuildMenus()
         {
+            string ceoModuleUid = "f4ce11e59cad54031d2f";
             //经理自主模块Fid
             string mgrModuleUid = "23b611e6b65e40b5abc8";
             List<MenuItem> menus = new List<MenuItem>();
             List<FapMenu> threeLevel = new List<FapMenu>();
             List<FapModule> modules = new List<FapModule>();
-            //判断是否为部门负责人或者经理
-            DynamicParameters param = new DynamicParameters();
-            param.Add("EmpUid", _applicationContext.EmpUid);
-            int mi = _dataAccessor.Count("OrgDept", "Director=@EmpUid or DeptManager=@EmpUid", param);
-
+            bool isDeptManager = _rbacService.IsDeptManager();
+            bool isCEO = _rbacService.IsCEO();
             //获取权限菜单
             IEnumerable<FapRoleMenu> roleMenuUids = _rbacService.GetRoleMenuList(_applicationContext.CurrentRoleUid);
             if (roleMenuUids.Any())
@@ -67,7 +65,11 @@ namespace Fap.Hcm.Web.ViewComponents
                     if (_appDomain.MenuSet.TryGetValue(rm.MenuUid, out fm))
                     {
                         //经理自助菜单权限 只有部门经理或者负责人具有
-                        if (mi == 0 && fm.ModuleUid == mgrModuleUid)
+                        if (!isDeptManager && fm.ModuleUid == mgrModuleUid)
+                        {
+                            continue;
+                        }
+                        if (!isCEO && fm.ModuleUid == ceoModuleUid)
                         {
                             continue;
                         }

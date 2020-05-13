@@ -10,6 +10,7 @@ using Fap.Core.Rbac.Model;
 using Fap.Model.Infrastructure;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
 namespace Fap.Core.Rbac
@@ -30,6 +31,30 @@ namespace Fap.Core.Rbac
             _platformDomain = platformDomain;
             _applicationContext = applicationContext;
             _multiLangService = multiLangService;
+        }
+        /// <summary>
+        /// 取root部门的部门经理
+        /// </summary>
+        /// <returns></returns>
+        public bool IsCEO(string empUid="")
+        {
+            if (empUid.IsMissing())
+            {
+                empUid = _applicationContext.EmpUid;
+            }
+            var dept= _dbContext.QueryFirstOrDefault<OrgDept>($"select {nameof(OrgDept.DeptManager)} from {nameof(OrgDept)} where {nameof(OrgDept.Pid)}=''");
+            if (dept != null && dept.DeptManager ==empUid )
+            {
+                return true;
+            }
+            return false;
+        }
+        public bool IsDeptManager()
+        {
+            DynamicParameters param = new DynamicParameters();
+            param.Add("EmpUid", _applicationContext.EmpUid);
+            int mi = _dbContext.Count("OrgDept", "Director=@EmpUid or DeptManager=@EmpUid", param);
+            return mi > 0 ? true : false;
         }
         /// <summary>
         /// 用户组

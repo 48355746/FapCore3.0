@@ -16883,11 +16883,10 @@ div.dataTables_scrollFoot table {
         content: "\f00d";
         display: inline-block;
         color: #888;
-        font-family: FontAwesome;
-        font-size: 13px;
+        font-family: FontAwesome;        
         position: absolute;
         right: 0;
-        top: -7px;
+        top: -5px;
     }
 
     .chosen-container-single .chosen-single abbr:hover:after {
@@ -16924,8 +16923,8 @@ div.dataTables_scrollFoot table {
     .chosen-container-single .chosen-search input[type="text"] {
         background: none;
         border-radius: 0;
-        line-height: 28px;
-        height: 28px;
+        line-height: 32px;
+        height: 32px;
     }
 
     .chosen-container-single .chosen-search:after {
@@ -16935,7 +16934,7 @@ div.dataTables_scrollFoot table {
         font-family: FontAwesome;
         font-size: 14px;
         position: absolute;
-        top: 8px;
+        top: 4px;
         right: 12px;
     }
 
@@ -17249,9 +17248,9 @@ div.dataTables_scrollFoot table {
     display: inline;
     content: "\f002";
     color: #777;
-    position: relative;
-    top: -26px;
-    left: 4px;
+    position: absolute;
+    top: 8px;
+    left: 8px;
     z-index: 0;
 }
 

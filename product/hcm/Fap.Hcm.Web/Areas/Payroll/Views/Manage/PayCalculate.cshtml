@@ -49,7 +49,7 @@
         jQuery(function ($) {
             $(document).one('ajaxloadstart.page', function (e) {
             })
-            $('.chosen-select').chosen({ allow_single_deselect: true }).on("change", function () {
+            $('#selPayCase').chosen({ allow_single_deselect: true, search_contains: true }).on("change", function () {
                 var c = $(this).val();
                 if (c === "") {
                     return;

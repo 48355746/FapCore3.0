@@ -68,43 +68,43 @@
 
         }
     </div>
-</div>
-
-<table id="approverTb" class="table table-bordered table-striped">
-    <caption>审批列表</caption>
-    <thead class="thin-border-bottom">
-        <tr>
-            <td>流程节点</td>
-            <td>处理信息</td>
-            <td>处理结果</td>
-            <td>到达时间</td>
-            <td>结束时间</td>
-        </tr>
-    </thead>
-    <tbody id="processProgress">
-        @foreach (var ains in activityIns)
-        {
-            string handlerinfo = string.Empty;
-            var ts = tasks.Where(t => t.ActivityInsUid == ains.Fid);
-            if (ts.Any())
-            {
-                handlerinfo += "<ul class=\"list-unstyled\">";
-                foreach (var t in ts)
+    <div class="col-xs-12" id="formdiv">
+        <table id="approverTb" class="table table-bordered table-striped">
+            <thead class="thin-border-bottom">
+                <tr>
+                    <td>流程节点</td>
+                    <td>处理信息</td>
+                    <td>处理结果</td>
+                    <td>到达时间</td>
+                    <td>结束时间</td>
+                </tr>
+            </thead>
+            <tbody id="processProgress">
+                @foreach (var ains in activityIns)
                 {
-                    handlerinfo += $"<li><i class=\"ace-icon fa fa-caret-right blue\"></i>{t.ExecutorEmpName}:[{t.ApproveStateMC}] {t.ExecuteTime}<br/>&nbsp;&nbsp;&nbsp;&nbsp;审批意见: {t.Suggestion}</li>";
+                    string handlerinfo = string.Empty;
+                    var ts = tasks.Where(t => t.ActivityInsUid == ains.Fid);
+                    if (ts.Any())
+                    {
+                        handlerinfo += "<ul class=\"list-unstyled\">";
+                        foreach (var t in ts)
+                        {
+                            handlerinfo += $"<li><i class=\"ace-icon fa fa-caret-right blue\"></i>{t.ExecutorEmpName}:[{t.ApproveStateMC}] {t.ExecuteTime}<br/>&nbsp;&nbsp;&nbsp;&nbsp;审批意见: {t.Suggestion}</li>";
+                        }
+                        handlerinfo += "</ul>";
+                    }
+                    <tr>
+                        <td>@ains.NodeName</td>
+                        <td>@Html.Raw(handlerinfo)</td>
+                        <td>@ains.ApproveStateMC</td>
+                        <td>@ains.StartTime</td>
+                        <td>@ains.EndTime</td>
+                    </tr>
                 }
-                handlerinfo += "</ul>";
-            }
-            <tr>
-                <td>@ains.NodeName</td>
-                <td>@Html.Raw(handlerinfo)</td>
-                <td>@ains.ApproveStateMC</td>
-                <td>@ains.StartTime</td>
-                <td>@ains.EndTime</td>
-            </tr>
-        }
-    </tbody>
-</table>
+            </tbody>
+        </table>
+    </div>
+</div>
 
 
 

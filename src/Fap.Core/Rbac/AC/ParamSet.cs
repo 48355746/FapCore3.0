@@ -32,7 +32,7 @@ namespace Fap.Core.Rbac.AC
             lock (Locker)
             {
                 #region 获取所有FapConfig
-                    _allParams = _dbSession.Query<FapConfig>("select * from FapConfig");
+                    _allParams = _dbSession.Query<FapConfig>("select * from FapConfig where Dr=0");
                 #endregion
                 _initialized = true;
             }

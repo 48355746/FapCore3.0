@@ -6,6 +6,8 @@ namespace Fap.Core.Rbac
 {
     public interface IRbacService
     {
+        bool IsCEO(string empUid = "");
+        bool IsDeptManager();
         #region UserGroup
         IEnumerable<FapUserGroup> GetAllUserGroup();
         long CreateUserGroup(FapUserGroup userGroup);

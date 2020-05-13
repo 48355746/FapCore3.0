@@ -35,7 +35,7 @@ namespace Fap.Core.Rbac.AC
             {
                 #region 获取所有module
 
-                List<FapModule> allModules = _dbSession.Query<FapModule>($"select * from FapModule where ActiveFlag=1 and ProductUid in('FAP','HCM')").ToList();
+                List<FapModule> allModules = _dbSession.Query<FapModule>($"select * from FapModule where ActiveFlag=1 and Dr=0 and ProductUid in('FAP','HCM')").ToList();
                 _allModules = allModules;
                 //根据注册码中的授权模块进行过滤
                 //List<string> authoredModules = _fapPlatformDomain.ServiceRegisterInfo.AuthoredModules;

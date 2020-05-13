@@ -31,7 +31,7 @@ namespace Fap.Core.Rbac.AC
             lock (Locker)
             {
 
-                fapRoleButtons = _dbSession.Query<FapRoleButton>("select * from FapRoleButton");
+                fapRoleButtons = _dbSession.Query<FapRoleButton>("select * from FapRoleButton where Dr=0");
 
                 _initialized = true;
             }

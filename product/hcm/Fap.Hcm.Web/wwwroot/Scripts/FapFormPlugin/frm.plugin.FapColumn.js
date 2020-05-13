@@ -85,8 +85,7 @@ $("#frm-grid-columnmetadata #CtrlType").on("change", function () {
         $("#RefID").val("Fid");
         $("#RefType").closest('.ctrlcontainer').prev('label').addClass("red");
         $("#RefTableMC").closest('.ctrlcontainer').prev('label').addClass("red");
-        $("#RefNameMC").closest('.ctrlcontainer').prev('label').addClass("red");
-
+        $("#RefNameMC").closest('.ctrlcontainer').prev('label').addClass("red");        
         $("#RefType").rules("add", {
             required: true,
             messages: {
@@ -169,6 +168,7 @@ $("#frm-grid-columnmetadata #CtrlType").on("change", function () {
         $("#FileCount").val(10);
         $("#FileSize").val(10240);
     }
+    $("#frm-grid-columnmetadata #ColType").trigger("change");
 });
 
 $("#RefCols").on("focus", function () {
