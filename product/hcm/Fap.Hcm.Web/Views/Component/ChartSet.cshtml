@@ -9,7 +9,7 @@
 
             <div class="widget-body">
                 <div class="widget-main padding-6 scrollable" data-size="500">
-                    <div class="dd" id="nestable">
+                    <div class="dd" id="nestable" data-nestable-id="column" >
                         <ol class="dd-list">
                             @foreach (var column in Model)
                             {
@@ -147,14 +147,14 @@
 
                     <h4 class="header">Y轴(统计项)</h4>
 
-                    <div class="dd dd-draghandle item-aggregate">
+                    <div class="dd dd-draghandle item-aggregate" data-nestable-id="aggregate">
 
                         <div class="dd-empty" data-title="拖拽至此"></div>
 
                     </div>
                     <h4 class="header">X轴(分组项)</h4>
 
-                    <div class="dd dd-draghandle item-group">
+                    <div class="dd dd-draghandle item-group" data-nestable-id="group">
 
                         <div class="dd-empty" data-title="拖拽至此"></div>
 

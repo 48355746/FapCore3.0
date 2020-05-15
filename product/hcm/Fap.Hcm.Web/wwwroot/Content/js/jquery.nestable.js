@@ -456,7 +456,7 @@
                     if (this.dragRootEl.find("." + opt.emptyClass)[0] === undefined) {
                         this.dragRootEl.append('<div class="' + opt.emptyClass + '"/>');
                     }
-                }
+                } 
                 // parent root list has changed
                 if (isNewRoot) {
                     this.dragRootEl = pointElRoot;
@@ -466,19 +466,22 @@
         }
 
     };
-
+    //wfy 备注nestable-id区分不同的拖动区，new Date().getTime()精度不够，可能会产生一样的值
     $.fn.nestable = function(params)
     {
         var lists  = this,
             retval = this;
-
+        var cc = 0;
         lists.each(function()
         {
             var plugin = $(this).data("nestable");
 
             if (!plugin) {
                 $(this).data("nestable", new Plugin(this, params));
-                $(this).data("nestable-id", new Date().getTime());
+                if ($(this).data("nestable-id") === undefined) {
+                    cc++;
+                    $(this).data("nestable-id", new Date().getTime() + cc);
+                }
             } else {
                 if (typeof params === 'string' && typeof plugin[params] === 'function') {
                     retval = plugin[params]();

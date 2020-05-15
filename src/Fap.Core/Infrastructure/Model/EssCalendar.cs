@@ -50,5 +50,7 @@ namespace Fap.Core.Infrastructure.Model
         /// </summary>
         public string Origin { get; set; }
 
+        [Computed]
+        public List<string> EmpUids { get; set; }
     }
 }

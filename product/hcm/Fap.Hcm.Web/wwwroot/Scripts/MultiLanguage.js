@@ -113,7 +113,25 @@ var MultiLangHelper = (function () {
       'examiner': { 'ZhCn': '考核人', 'ZhTW': '', 'En': '', 'Ja': '' },
       'associate_set': { 'ZhCn': '引用关联设置', 'ZhTW': '', 'En': '', 'Ja': '' },
       'associate': { 'ZhCn': '关联', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'property_associate_set': { 'ZhCn': '设置属性关联', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'property_associate_set': { 'ZhCn': '设置属性关联', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'custom': { 'ZhCn': '自定义', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'to': { 'ZhCn': ' 至 ', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'download': { 'ZhCn': '下载', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'download': { 'ZhCn': '下载', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'download': { 'ZhCn': '下载', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'download': { 'ZhCn': '下载', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'download': { 'ZhCn': '下载', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'error': { 'ZhCn': '出现错误了', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'department_employee': { 'ZhCn': '管辖员工', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'select': { 'ZhCn': '选择', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'new_multi_event': { 'ZhCn': '新建多人日历', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'add': { 'ZhCn': '添加', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'select_style': { 'ZhCn': '选择样式', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'event_name': { 'ZhCn': '事件名称', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'event_name': { 'ZhCn': '事件名称', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'this_is_your_event_name': { 'ZhCn': '这是你的事件名称', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'save_error': { 'ZhCn': '存储出现错误', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'please_contact_the_administrator': { 'ZhCn': '请联系管理员', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

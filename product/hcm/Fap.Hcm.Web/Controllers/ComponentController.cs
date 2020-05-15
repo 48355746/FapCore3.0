@@ -373,6 +373,7 @@ namespace Fap.Hcm.Web.Controllers
             treeModel.TempData.Add("refCols", string.Join(",", refCols));
             return View(treeModel);
         }
+        
         public IActionResult DataGrid(GridViewModel gridView)
         {
             JqGridViewModel model = GetJqGridModel(gridView.TableName, qs =>

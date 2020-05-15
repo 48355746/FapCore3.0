@@ -38,7 +38,15 @@ namespace Fap.Hcm.Web.Areas.SelfService.Controllers
             });
             return View(model);
         }
-   
+        public IActionResult DeptEmployeeSelector()
+        {
+            var deptUids = _organizationService.GetDominationDepartment().Select(d => $"'{d.Fid}'");
+            var model = GetJqGridModel("Employee",qs=>
+            {
+                qs.GlobalWhere = deptUids.Any() ? $"DeptUid in({string.Join(',', deptUids)})" : "1=2";
+            });
+            return PartialView(model);
+        }
         /// <summary>
         /// 部门周报日报月报
         /// </summary>
@@ -52,6 +60,15 @@ namespace Fap.Hcm.Web.Areas.SelfService.Controllers
             });
             return PartialView(model);
         }
-       
+        /// <summary>
+        /// 部门日历
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult DeptCalendar()
+        {
+            return View();
+        }
+
+
     }
 }

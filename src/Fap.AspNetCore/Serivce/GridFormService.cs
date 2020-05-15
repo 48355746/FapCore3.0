@@ -27,6 +27,8 @@ using Fap.Core.Rbac.Model;
 using System.Text.RegularExpressions;
 using Fap.Core.MultiLanguage;
 using Fap.Core.Infrastructure.Model;
+using MailKit;
+using Ardalis.GuardClauses;
 
 namespace Fap.AspNetCore.Serivce
 {
@@ -77,7 +79,7 @@ namespace Fap.AspNetCore.Serivce
                     //组装成DataResultView对象
                     PageDataResultView dataResultView = new PageDataResultView();
                     dataResultView.Data = pi.Items.ToFapDynamicObjectList(fapColumns);
-                
+
                     dataResultView.DataJson = JsonConvert.SerializeObject(pi.Items);
                     dataResultView.TotalCount = pi.TotalCount;
                     dataResultView.CurrentPage = pi.CurrentPage;
@@ -716,6 +718,7 @@ namespace Fap.AspNetCore.Serivce
         }
         public ChartResult EChart(ChartViewModel chartViewModel, JqGridPostData jqGridPostData)
         {
+            Guard.Against.NullOrEmpty(chartViewModel.Groups, nameof(chartViewModel.Groups));
             string tableName = jqGridPostData.QuerySet.TableName;
             //页面级条件
             JsonFilterToSql jfs = new JsonFilterToSql(_dbContext);
@@ -743,66 +746,11 @@ namespace Fap.AspNetCore.Serivce
                 where += " and " + string.Join(" and ", lwhere);
             }
 
-            string groupBy = string.Empty;
-            string colName = string.Empty;
-            var gf = chartViewModel.Groups.FirstOrDefault();
-            if (gf != null)
-            {
-                if (gf.Format.IsPresent())
-                {
-                    if (_dbContext.DatabaseDialect == Core.DataAccess.DatabaseDialectEnum.MSSQL)
-                    {
-                        if (gf.Format.EqualsWithIgnoreCase("yyyy"))
-                        {
-                            groupBy = $" group by  CONVERT(varchar(4) ,{gf.Field}, 120) ";
-                            colName = $"CONVERT(varchar(4) ,{gf.Field}, 120) as '{gf.Alias}'";
-                        }
-                        else if (gf.Format.EqualsWithIgnoreCase("yyyymm"))
-                        {
-                            groupBy = $" group by CONVERT(varchar(7) ,{gf.Field}, 120)";
-                            colName = $"CONVERT(varchar(7) ,{gf.Field}, 120) as '{gf.Alias}'";
-                        }
-                        else if (gf.Format.EqualsWithIgnoreCase("yyyymmdd"))
-                        {
-                            groupBy = $" group by CONVERT(varchar(10) ,{gf.Field}, 120)";
-                            colName = $"CONVERT(varchar(10) ,{gf.Field}, 120) as '{gf.Alias}'";
-                        }
-                        else
-                        {
-                            groupBy = $" group by {gf.Field}";
-                            colName = $"{gf.Field} as '{gf.Alias}'";
-                        }
-                    }
-                    else if (_dbContext.DatabaseDialect == Core.DataAccess.DatabaseDialectEnum.MYSQL)
-                    {
-                        if (gf.Format.EqualsWithIgnoreCase("yyyy"))
-                        {
-                            groupBy = $" group by DATE_FORMAT({gf.Field},'%Y')";
-                            colName = $"DATE_FORMAT({gf.Field},'%Y') as '{gf.Alias}'";
-                        }
-                        else if (gf.Format.EqualsWithIgnoreCase("yyyymm"))
-                        {
-                            groupBy = $" group by DATE_FORMAT({gf.Field},'%Y-%m')";
-                            colName = $"DATE_FORMAT({gf.Field},'%Y-%m')  as '{gf.Alias}'";
-                        }
-                        else if (gf.Format.EqualsWithIgnoreCase("yyyymmdd"))
-                        {
-                            groupBy = $" group by DATE_FORMAT({gf.Field},'%Y-%m-%d')";
-                            colName = $"DATE_FORMAT({gf.Field},'%Y-%m-%d')  as '{gf.Alias}'";
-                        }
-                    }
-                    else
-                    {
-                        groupBy = $" group by {gf.Field}";
-                        colName = $"{gf.Field} as '{gf.Alias}'";
-                    }
-                }
-                else
-                {
-                    groupBy = $" group by {gf.Field}";
-                    colName = $"{gf.Field} as '{gf.Alias}'";
-                }
-            }
+            List<string> groupByList = new List<string>();
+            List<string> colNameList = new List<string>();
+            BuildGroupBy(chartViewModel.Groups, groupByList, colNameList);
+            string colName = string.Join(',', colNameList);
+            string groupBy = $" group by {string.Join(',', groupByList)}";
             //统计列
             List<string> aggCols = new List<string>();
             //存放ccount得sql
@@ -835,15 +783,111 @@ namespace Fap.AspNetCore.Serivce
             {
                 param.Add(p.ParamKey, p.ParamValue);
             }
-            sql=sql.ReplaceIgnoreCase("query", "select ");
+            sql = sql.ReplaceIgnoreCase("query", "select ");
             var dataList = _dbContext.QueryOriSql(sql, param);
-            DataProcessed(ccSqlDics, tableName, gf, dataList, agglist);
+            DataProcessed(ccSqlDics, tableName, chartViewModel.Groups, dataList, agglist);
             return new ChartResult { Aggregates = agglist, DataSet = dataList }; ;
         }
 
-        private void DataProcessed(Dictionary<string, string> ccSqlDics, string tableName, GroupBy groupBy, IEnumerable<dynamic> dataList, List<Aggregate> agglist)
+        private void BuildGroupBy(IEnumerable<GroupBy> groupBys, List<string> groupByList, List<string> colNameList)
         {
+            foreach (var gf in groupBys)
+            {
+                if (gf.Format.IsPresent())
+                {
+                    if (_dbContext.DatabaseDialect == Core.DataAccess.DatabaseDialectEnum.MSSQL)
+                    {
+                        if (gf.Format.EqualsWithIgnoreCase("yyyy"))
+                        {
+                            groupByList.Add($"CONVERT(varchar(4) ,{gf.Field}, 120)");
+                            colNameList.Add($"CONVERT(varchar(4) ,{gf.Field}, 120) as '{gf.Alias}'");
+                        }
+                        else if (gf.Format.EqualsWithIgnoreCase("yyyymm"))
+                        {
+                            groupByList.Add($"CONVERT(varchar(7) ,{gf.Field}, 120)");
+                            colNameList.Add($"CONVERT(varchar(7) ,{gf.Field}, 120) as '{gf.Alias}'");
+                        }
+                        else if (gf.Format.EqualsWithIgnoreCase("yyyymmdd"))
+                        {
+                            groupByList.Add($"CONVERT(varchar(10) ,{gf.Field}, 120)");
+                            colNameList.Add($"CONVERT(varchar(10) ,{gf.Field}, 120) as '{gf.Alias}'");
+                        }
+                        else
+                        {
+                            groupByList.Add($"{gf.Field}");
+                            colNameList.Add($"{gf.Field} as '{gf.Alias}'");
+                        }
+                    }
+                    else if (_dbContext.DatabaseDialect == Core.DataAccess.DatabaseDialectEnum.MYSQL)
+                    {
+                        if (gf.Format.EqualsWithIgnoreCase("yyyy"))
+                        {
+                            groupByList.Add($"DATE_FORMAT({gf.Field},'%Y')");
+                            colNameList.Add($"DATE_FORMAT({gf.Field},'%Y') as '{gf.Alias}'");
+                        }
+                        else if (gf.Format.EqualsWithIgnoreCase("yyyymm"))
+                        {
+                            groupByList.Add($"DATE_FORMAT({gf.Field},'%Y-%m')");
+                            colNameList.Add($"DATE_FORMAT({gf.Field},'%Y-%m')  as '{gf.Alias}'");
+                        }
+                        else if (gf.Format.EqualsWithIgnoreCase("yyyymmdd"))
+                        {
+                            groupByList.Add($"DATE_FORMAT({gf.Field},'%Y-%m-%d')");
+                            colNameList.Add($"DATE_FORMAT({gf.Field},'%Y-%m-%d')  as '{gf.Alias}'");
+                        }
+                    }
+                    else
+                    {
+                        groupByList.Add($"{gf.Field}");
+                        colNameList.Add($"{gf.Field} as '{gf.Alias}'");
+                    }
+                }
+                else
+                {
+                    groupByList.Add($"{gf.Field}");
+                    colNameList.Add($"{gf.Field} as '{gf.Alias}'");
+                }
+            }
+        }
+
+        private void DataProcessed(Dictionary<string, string> ccSqlDics, string tableName, IEnumerable<GroupBy> groupBys, IEnumerable<dynamic> dataList, List<Aggregate> agglist)
+        {
+            var groupBy = groupBys.First();
             var dataResult = dataList as IEnumerable<IDictionary<string, object>>;
+            foreach (var ccSqlDic in ccSqlDics)
+            {
+                string colName = ccSqlDic.Key;
+                var dcolumn = _dbContext.Column(tableName, colName);
+                var dics = _dbContext.Dictionarys(dcolumn.ComboxSource);
+                var ca = agglist.First(a => a.Field == colName);
+                foreach (var dic in dics)
+                {
+                    agglist.Add(new Aggregate { Field = dic.Code, AggType = ca.AggType, Alias = dic.Name, ChartType = ca.ChartType });
+                }
+                agglist.Remove(ca);
+                var ccDataList = _dbContext.QueryOriSql(ccSqlDic.Value);
+                dataResult.ToList().ForEach((di) =>
+                {
+                    foreach (var dic in dics)
+                    {
+                        var data = ccDataList.FirstOrDefault(d => ((d as IDictionary<string, object>)[groupBy.Alias]?.ToString()??"").EqualsWithIgnoreCase((di[groupBy.Alias]?.ToString()??""))
+                         && ((d as IDictionary<string, object>)[colName]?.ToString()??"").EqualsWithIgnoreCase(dic.Code));
+                        di[dic.Name] = data?.C ?? 0;
+                    }
+                });
+            }
+            if (groupBys.Count() > 1)
+            {
+                foreach (var gb in groupBys)
+                {
+                    if (gb.Field == groupBy.Field)
+                    {
+                        continue;
+                    }
+                    agglist.Add(new Aggregate { Field = gb.Field, AggType = AggregateEnum.COUNT, Alias = gb.Alias, ChartType ="bar" });
+
+                }
+            }
             var column = _dbContext.Column(tableName, groupBy.Field);
             if (column.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX && column.ComboxSource.IsPresent())
             {
@@ -857,32 +901,10 @@ namespace Fap.AspNetCore.Serivce
             {
                 string refSql = $"select {column.RefID} Code, {column.RefName} Name from {column.RefTable} where {column.RefID} in @Ids";
                 var Ids = dataList.Select(d => (d as IDictionary<string, object>)[groupBy.Alias]);
-                var refs = _dbContext.Query(refSql, new DynamicParameters(new { Ids = Ids }));
+                var refs = _dbContext.Query(refSql, new DynamicParameters(new {Ids }));
                 dataResult.ToList().ForEach((di) =>
                 {
                     di[groupBy.Alias] = refs.FirstOrDefault(d => d.Code == di[groupBy.Alias]?.ToString())?.Name ?? "未知";
-                });
-            }
-            foreach (var ccSqlDic in ccSqlDics)
-            {
-                string colName = ccSqlDic.Key;
-                column = _dbContext.Column(tableName, colName);
-                var dics = _dbContext.Dictionarys(column.ComboxSource);
-                var ca = agglist.First(a => a.Field == colName);
-                foreach (var dic in dics)
-                {
-                    agglist.Add(new Aggregate { Field = dic.Code, AggType = ca.AggType, Alias = dic.Name, ChartType = ca.ChartType });
-                }
-                agglist.Remove(ca);
-                var ccDataList = _dbContext.QueryOriSql(ccSqlDic.Value);
-                dataResult.ToList().ForEach((di) =>
-                {
-                    foreach (var dic in dics)
-                    {
-                        var d = ccDataList.FirstOrDefault(d => (d as IDictionary<string, object>)[groupBy.Alias].ToString().EqualsWithIgnoreCase(di[groupBy.Alias].ToString())
-                         && (d as IDictionary<string, object>)[colName].ToString().EqualsWithIgnoreCase(dic.Code));
-                        di[dic.Name] = d?.C ?? 0;
-                    }
                 });
             }
         }

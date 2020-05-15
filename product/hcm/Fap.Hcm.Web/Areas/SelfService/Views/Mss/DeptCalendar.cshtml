@@ -1,0 +1,239 @@
+﻿
+@model IEnumerable<Fap.Core.Infrastructure.Model.CfgCalendarEvent>
+@{
+    Layout = null;
+}
+<title>
+    <fap-multilang lang-key="work_calendar" default-content="工作日历"></fap-multilang>
+</title>
+
+<link href="~/Content/css/jquery-ui.custom.css" rel="stylesheet" />
+<link href="~/Content/css/fullcalendar.css" rel="stylesheet" />
+<link href="~/Content/css/fullcalendar.print.css" rel="stylesheet" media='print' />
+
+<div class="row">
+    <div class="col-xs-12">
+
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="space"></div>
+                @*<div id='loading'>loading...</div>*@
+                <!-- #section:plugins/data-time.calendar -->
+                <div id="calendar"></div>
+
+                <!-- /section:plugins/data-time.calendar -->
+
+        
+            </div>
+        </div>
+
+    </div>
+</div>
+<!-- page specific plugin scripts -->
+<script type="text/javascript">
+    var scripts = [null, "/Content/js/fullcalendar.js", "/Content/js/language/lang-all.js", null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+
+        jQuery(function ($) {
+            $(document).one('ajaxloadstart.page', function (e) {
+            })
+            var deptEvents = {
+                type: "post",
+                url: basePath + "/SelfService/Api/DeptCalendars",
+                data: {
+                    empUids: []
+                },
+                error: function () {
+                    bootbox.alert($.lang("error", "出现错误了"));
+                }
+            };
+
+
+            var date = new Date();
+            var d = date.getDate();
+            var m = date.getMonth();
+            var y = date.getFullYear();
+            var calendar = $('#calendar').fullCalendar({
+                lang: "zh-cn",
+                buttonHtml: {
+                    prev: '<i class="ace-icon fa fa-chevron-left"></i>',
+                    next: '<i class="ace-icon fa fa-chevron-right"></i>'
+                },
+                header: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'selectemployee,timeMatch'
+                },
+                customButtons: {
+                    selectemployee: {
+                        text: '选择员工查看',
+                        click: function () {
+                            bootboxWindow($.lang("department_employee", "管辖员工"), basePath + "/SelfService/Mss/DeptEmployeeSelector", {
+                                select: {
+                                    label: $.lang("select", "选择"),
+                                    className: "btn-primary btn-link",
+                                    callback: function () {
+                                        var rows = getSelectedRows("grid-Employee");
+                                        if (rows == null) {
+                                            return;
+                                        }
+                                        var fids = $.map(rows, function (d) { return d.Fid });
+                                        var calender = $('#calendar').data('fullCalendar');
+                                        calender.removeEventSource(deptEvents);
+                                        deptEvents.data = { empUids: fids };
+                                        deptEvents.url = basePath + "/SelfService/Api/DeptCalendars",
+                                        calender.addEventSource(deptEvents);
+                                    }
+                                }
+                            })
+                        }
+                    },
+                    timeMatch: {
+                        text: '时间匹配',
+                        click: function () {                            
+                            var calender = $('#calendar').data('fullCalendar');
+                            calender.removeEventSource(deptEvents);
+                            if (deptEvents.data.empUids.length < 1) {
+                                $.msg("请先选择人员再进行匹配");
+                                return;
+                            }
+                            deptEvents.url=basePath + "/SelfService/Api/DeptCalendarMatch",
+                            calender.addEventSource(deptEvents);
+                        }
+                    }
+                },
+                defaultView: 'agendaWeek',
+                selectable: true,
+                selectHelper: true,
+                select: function (start, end) {
+                    bootbox.prompt($.lang("new_multi_event", "新建多人日历") + ":", function (title) {
+                        if (title !== null) {
+                            var res = $('#calendar').fullCalendar('renderEvent',
+                                {
+                                    title: title,
+                                    start: start,
+                                    end: end,
+                                    //allDay: allDay,
+                                    className: 'label-info'
+                                },
+                                false // make the event "stick"
+                            );
+                            //保存res
+                            var event = res[0];
+                            event.id = 0;
+                            saveEvent(event);
+                            $('#calendar').fullCalendar('unselect');
+                        }
+                    });
+                },
+                droppable: true, // this allows things to be dropped onto the calendar
+                drop: function () { // this function is called when something is dropped
+                    // is the "remove after drop" checkbox checked?
+                    if ($('#drop-remove').is(':checked')) {
+                        // if so, remove the element from the "Draggable Events" list
+                        $(this).remove();
+                    }
+                },
+                //外界拖动后激发事件，参数为添加的事件，这里可以写保存
+                eventReceive: function (event) {
+                    event.id = 0;
+                    saveEvent(event);
+                },
+                //改变时间大小
+                eventResize: function (event, delta, revertFunc, jsEvent, ui, view) {
+                    saveEvent(event);
+                },
+                //拖动改变日期
+                eventDrop: function (event, jsEvent, ui, view) {
+                    saveEvent(event);
+                },
+                editable: true,
+                eventLimit: true, // allow "more" link when too many events
+                //events: deptEvents,
+                eventClick: function (calEvent, jsEvent, view) {
+                    //display a modal
+                    var modal =
+                        '<div class="modal fade">\
+			  <div class="modal-dialog">\
+			   <div class="modal-content">\
+				 <div class="modal-body">\
+				   <button type="button" class="close" data-dismiss="modal" style="margin-top:-10px;">&times;</button>\
+				   <form class="no-margin">\
+					  <label>'+ $.lang('event_change', '更改事件') + ' &nbsp;</label>\
+					  <input class="middle" autocomplete="off" type="text" value="' + calEvent.title + '" />\
+					 <button type="submit" class="btn btn-sm btn-success"><i class="ace-icon fa fa-check"></i>'+ $.lang("save", "保存") + '</button>\
+				   </form>\
+				 </div>\
+				 <div class="modal-footer">\
+					<button type="button" class="btn btn-sm btn-danger" data-action="delete"><i class="ace-icon fa fa-trash-o"></i>'+ $.lang("event_delete", "删除事件") + '</button>\
+					<button type="button" class="btn btn-sm" data-dismiss="modal"><i class="ace-icon fa fa-times"></i>'+ $.lang("cancel", "取消") + '</button>\
+				 </div>\
+			  </div>\
+			 </div>\
+			</div>';
+                    var modal = $(modal).appendTo('body');
+                    modal.find('form').on('submit', function (ev) {
+                        ev.preventDefault();
+                        calEvent.title = $(this).find("input[type=text]").val();
+                        calendar.fullCalendar('updateEvent', calEvent);
+                        saveEvent(calEvent);
+                        modal.modal("hide");
+                    });
+                    modal.find('button[data-action=delete]').on('click', function () {
+                        calendar.fullCalendar('removeEvents', function (ev) {
+                            if (ev._id == calEvent._id) {
+                                deleteEvent(ev);
+                            }
+                            return (ev._id == calEvent._id);
+                        })
+                        modal.modal("hide");
+                    });
+
+                    modal.modal('show').on('hidden', function () {
+                        modal.remove();
+                    });
+                }
+            });
+
+            var saveEvent = function (event) {
+                var se = {};
+                se.EmpUids = deptEvents.data.empUids;
+                if (se.EmpUids === undefined || se.EmpUids.length < 1) {
+                    $.msg("当前没有选择人员，请选择人员操作");
+                    return;
+                }
+                se.Id = event.id;
+                se.EventName = event.title;
+                se.StartTime = event.start.format("YYYY-MM-DD HH:mm:ss");
+                se.EndTime = event.end != null ? event.end.format("YYYY-MM-DD HH:mm:ss") : null;
+                se.EventClass = event.className[0];
+                se.IsAllDay = event.allDay == true ? 1 : 0;
+                se.Origin = "dept";
+                $.post("@Url.Content("~/SelfService/Api/DeptCalendar")", se, function (result) {
+                    if (result.id == null) {
+                        bootbox.alert($.lang("save_error", "存储出现错误") + "," + $.lang("please_contact_the_administrator", "请联系管理员"));
+                    } else {
+                        event._id = result.id;
+                        event.id = result.id;
+                    }
+                });
+            }
+            var deleteEvent = function (event) {
+                var se = {};
+                se.Dr = 1;
+                se.Id = event.id;
+                se.EventName = event.title;
+                se.StartTime = event.start.format("YYYY-MM-DD HH:mm:ss");
+                se.EndTime = event.end != null ? event.end.format("YYYY-MM-DD HH:mm:ss") : null;
+                se.EventClass = event.className[0];
+                se.IsAllDay = event.allDay == true ? 1 : 0;
+                $.post("@Url.Content("~/SelfService/Api/DeptCalendar")", se, function (result) {
+                    if (result.success == false) {
+                        bootbox.alert($.lang("delete_error", "移除出现错误") + "，" + $.lang("please_contact_the_administrator", "请联系管理员"));
+                    }
+                });
+            }
+
+        });
+    })
+</script>
