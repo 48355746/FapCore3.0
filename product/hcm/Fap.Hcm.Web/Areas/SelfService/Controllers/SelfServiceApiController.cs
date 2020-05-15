@@ -102,7 +102,22 @@ namespace Fap.Hcm.Web.Areas.SelfService.Controllers
                     }
                 }
             }
-            var list = results.Select(c => new { title =c.EventName, start = c.StartTime, end = c.EndTime, id = c.Id, url = c.EventUrl, allDay =false, className = c.EventClass });
+            List<EssCalendar> terminal = new List<EssCalendar>();
+            //遍历第二遍，解决三个交错并集
+            foreach (var item in results)
+            {
+                var rc = results.Where(c => c.StartTime.ToDateTime() <= item.EndTime.ToDateTime() && c.EndTime.ToDateTime() >= item.StartTime.ToDateTime());
+                if (rc.Any())
+                {
+                    var minTime = rc.Min(c => c.StartTime);
+                    var maxTime = rc.Max(c => c.EndTime);
+                    if (!terminal.Exists(r => r.StartTime == minTime && r.EndTime == maxTime))
+                    {
+                        terminal.Add(new EssCalendar { EventName = "占用时间", EventClass = "label-purple", StartTime = minTime, EndTime = maxTime });
+                    }
+                }
+            }
+            var list = terminal.Select(c => new { title =c.EventName, start = c.StartTime, end = c.EndTime, id = c.Id, url = c.EventUrl, allDay =false, className = c.EventClass });
             return JsonIgnoreNull(list);
         }
         
