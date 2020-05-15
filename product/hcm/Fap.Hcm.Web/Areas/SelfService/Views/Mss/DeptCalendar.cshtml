@@ -13,20 +13,13 @@
 
 <div class="row">
     <div class="col-xs-12">
-
-        <div class="row">
-            <div class="col-xl-12">
-                <div class="space"></div>
-                @*<div id='loading'>loading...</div>*@
-                <!-- #section:plugins/data-time.calendar -->
-                <div id="calendar"></div>
-
-                <!-- /section:plugins/data-time.calendar -->
-
-        
-            </div>
+        <div class="col-xl-12">
+            <div class="space"></div>
+            @*<div id='loading'>loading...</div>*@
+            <!-- #section:plugins/data-time.calendar -->
+            <div id="calendar"></div>
+            <!-- /section:plugins/data-time.calendar -->
         </div>
-
     </div>
 </div>
 <!-- page specific plugin scripts -->
@@ -66,9 +59,9 @@
                 },
                 customButtons: {
                     selectemployee: {
-                        text: '选择员工查看',
+                        text: $.lang("select_employee_view",'选择人员查看'),
                         click: function () {
-                            bootboxWindow($.lang("department_employee", "管辖员工"), basePath + "/SelfService/Mss/DeptEmployeeSelector", {
+                            bootboxWindow($.lang("select_employee", "选择人员"), basePath + "/SelfService/Mss/DeptEmployeeSelector", {
                                 select: {
                                     label: $.lang("select", "选择"),
                                     className: "btn-primary btn-link",
@@ -90,7 +83,7 @@
                     },
                     timeMatch: {
                         text: '时间匹配',
-                        click: function () {                            
+                        click: function () {
                             var calender = $('#calendar').data('fullCalendar');
                             calender.removeEventSource(deptEvents);
                             if (deptEvents.data.empUids.length < 1) {
