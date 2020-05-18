@@ -790,7 +790,7 @@ namespace Fap.Hcm.Service.System
             //获取角色按钮
             var roleButtons = _rbacService.GetRoleButtonList(roleUid);
             //获取角色用户
-            IEnumerable<FapUser> userList = _dbContext.Query<FapUser>("select Fid, UserCode,UserName,UserEmail,UserIdentity from FapUser where fid in(select useruid from FapRoleUser where RoleUid=@RoleUid) order by UserCode", dparam, true);
+            IEnumerable<FapUser> userList =_dbContext.Query<FapUser>($"select Fid, UserCode,UserName,UserEmail,UserIdentity from {nameof(FapUser)} where fid in(select {nameof(FapRoleUser.UserUid)} from {nameof(FapRoleUser)} where RoleUid=@RoleUid) order by UserCode", dparam, true);
             //获取角色报表
             var rpts = _rbacService.GetRoleReportList(roleUid).Select(r => r.RptUid);
             //获取角色实体属性
@@ -900,8 +900,11 @@ namespace Fap.Hcm.Service.System
                 if (users.Count > 0)
                 {
                     _rbacService.AddRoleUser(users);
-                    success = true;
+                    _platformDomain.RoleUserSet.TryGetUserValue(authority.RoleUid, out IEnumerable<string> rus);
+                    IEnumerable<FapUser> userList = _dbContext.Query<FapUser>($"select Fid, UserCode,UserName,UserEmail,UserIdentity from {nameof(FapUser)} where Fid in @Fids  order by UserCode", new DynamicParameters(new { Fids =rus}), true);
+                    return ResponseViewModelUtils.Sueecss(userList);
                 }
+                success = true;
             }
             else if (authority.AType == AuthorityTypeEnum.Rpt)
             {

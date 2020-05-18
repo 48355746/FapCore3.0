@@ -94,15 +94,15 @@
           <script src="/Content/js/excanvas.js"></script>
       <![endif]-->
     <!-- page specific plugin scripts -->
-    <!--多语资源-->
     <script src="/Scripts/MultiLanguage.js" asp-append-version="true"></script>
     <script>
         //全局根路径
         var basePath = window.location.protocol+ "//" + window.location.host;
         var language = '@currLanguage'; //当前语种
         MultiLangHelper.initLang(language);
-        NProgress.configure({ parent:".page-content"})
+        NProgress.configure({ parent: ".page-content" });        
     </script>
+    <!--多语资源-->
 </head>
 
 <body class="no-skin">
@@ -476,6 +476,7 @@
         } else {
             moment.locale('zh-cn');
         }
+        
     </script>
 </body>
 </html>

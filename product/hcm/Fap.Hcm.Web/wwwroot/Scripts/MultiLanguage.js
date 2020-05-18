@@ -131,7 +131,12 @@ var MultiLangHelper = (function () {
       'event_name': { 'ZhCn': '事件名称', 'ZhTW': '', 'En': '', 'Ja': '' },
       'this_is_your_event_name': { 'ZhCn': '这是你的事件名称', 'ZhTW': '', 'En': '', 'Ja': '' },
       'save_error': { 'ZhCn': '存储出现错误', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'please_contact_the_administrator': { 'ZhCn': '请联系管理员', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'please_contact_the_administrator': { 'ZhCn': '请联系管理员', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'add_user': { 'ZhCn': '添加用户', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'select_row': { 'ZhCn': '您没有选中人员', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'login_username_required': { 'ZhCn': '请输入你的用户名', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'login_password_level': { 'ZhCn': '请指定一个安全密码', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'login_password_required': { 'ZhCn': '请输入你的密码', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种
@@ -141,7 +146,7 @@ var MultiLangHelper = (function () {
     //获得资源多语
     Helper.getResName = function (code, defaultName) {
         if (resArray[code] === undefined) {
-            $.post(basePath +'/Core/Api/MultiLanguage',{ langKey: code, langValue: defaultName }, function (rv) {
+            $.post(window.location.protocol+ '//' + window.location.host +'/Core/Api/MultiLanguage',{ langKey: code, langValue: defaultName }, function (rv) {
 
             });
             return defaultName;

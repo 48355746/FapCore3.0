@@ -23,6 +23,7 @@ using Fap.Core.Utility;
 using Fap.Hcm.Web.Models;
 using Fap.Core.Infrastructure.Metadata;
 using Fap.Core.Infrastructure.Cache;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Fap.Hcm.Web.Controllers
 {
@@ -181,6 +182,7 @@ namespace Fap.Hcm.Web.Controllers
             }
             return Json(colCacheList.OrderBy(c => c.ColOrder));
         }
+        [AllowAnonymous]
         [HttpPost("MultiLanguage")]
         public JsonResult RegisterMultiLanguage(string langKey, string langValue)
         {

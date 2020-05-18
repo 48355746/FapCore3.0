@@ -191,5 +191,18 @@ namespace Fap.Hcm.Web.Areas.SelfService.Controllers
             var tree = _organizationService.GetDominationDepartmentTree();
             return Json(tree);
         }
+        [HttpGet("ReadMessage")]
+        public JsonResult ReadMessage(string fid = "")
+        {
+            if (fid.IsPresent())
+            {
+                _dbContext.Execute($"Update {nameof(FapMessage)} set {nameof(FapMessage.HasRead)}=1 where Fid=@Fid", new DynamicParameters(new { Fid = fid }));
+            }
+            else
+            {
+                _dbContext.Execute($"Update {nameof(FapMessage)} set {nameof(FapMessage.HasRead)}=1 where {nameof(FapMessage.REmpUid)}=@EmpUid", new DynamicParameters(new { EmpUid = _applicationContext.EmpUid }));
+            }
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
     }
 }

@@ -172,9 +172,16 @@ namespace Fap.Core.Rbac
             return true;
         }
 
-        public void AddRoleUser(IEnumerable<FapRoleUser> users)
+        public void AddRoleUser(IEnumerable<FapRoleUser> roleUsers)
         {
-            _dbContext.InsertBatch<FapRoleUser>(users);
+            foreach (var ru in roleUsers)
+            {
+                if(!_platformDomain.RoleUserSet.Any(c => c.RoleUid == ru.RoleUid && c.UserUid == ru.UserUid))
+                {
+                    _dbContext.Insert<FapRoleUser>(ru);
+                }
+            }
+            _platformDomain.RoleUserSet.Refresh();
         }
         [Transactional]
         public void AddRoleReport(string roleUid, IEnumerable<FapRoleReport> rpts)
@@ -435,6 +442,7 @@ namespace Fap.Core.Rbac
         public bool DeleteRoleUser(string roleUid, string userUid)
         {
             int c = _dbContext.DeleteExec(nameof(FapRoleUser), "RoleUid=@RoleUid and UserUid=@UserUid", new DynamicParameters(new { RoleUid = roleUid, UserUid = userUid }));
+            _platformDomain.RoleUserSet.Refresh();
             return c > 0 ? true : false;
         }
     }

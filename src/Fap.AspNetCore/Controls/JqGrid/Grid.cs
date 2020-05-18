@@ -1943,7 +1943,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
             // onDblClickRow
             //if (!_onDblClickRow.IsMissing())
             script.AppendLine(@"ondblClickRow: function(rowid, iRow, iCol, e) {var ret = jQuery('###gridid##').jqGrid('getRowData', rowid);
-                        viewFormMessageBox(ret.Fid, '##gridid##', '" + TableName + @"', '" + GetCurrentMenuUid() + "'" + @");},");
+                        viewFormMessageBox(ret.Fid, '##gridid##', '" + TableName + @"', '" + GetCurrentMenuUid() + "'" + @");"+(_onDblClickRow.IsPresent()?_onDblClickRow+ "(ret.Fid);":"")+"},");
 
             // onHeaderClick
             if (!_onHeaderClick.IsMissing())

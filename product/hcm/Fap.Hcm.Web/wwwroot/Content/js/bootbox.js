@@ -699,13 +699,25 @@
             if (!options.footer) {
                 diff -= 60;
             }
-            var maxh = parseInt($(window).innerHeight() - diff);
+            var size = parseInt($(window).innerHeight() - diff);
             dialog.find(".modal-body").each(function () {
                 var $this = $(this);
-                $this.ace_scroll({
-                    size: maxh,
-                    styleClass: 'scroll-right scroll-margin scroll-thin scroll-dark scroll-light no-track scroll-visible'
-                });
+                if (!ace.vars['touch']) {
+                    if (!$this.hasClass('ace-scroll')) {
+                        $this.ace_scroll({
+                            size: size,
+                            reset: true,
+                            mouseWheelLock: true,
+                            'observeContent': true,
+                            'hideOnIdle': !ace.vars['old_ie'],
+                            'hideDelay': 1500
+                        })
+                    }
+                }
+                else {
+                    $this.addClass('overflow-scroll').css('max-height', size + 'px');
+                }
+                
             });
         }
         /**

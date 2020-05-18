@@ -127,6 +127,10 @@ namespace Fap.AspNetCore.Controls.TagHelpers
         /// </summary>
         public string OnSelectRow { get; set; }
         /// <summary>
+        /// 双击行事件
+        /// </summary>
+        public string OnDblclickRow { get; set; }
+        /// <summary>
         /// 标题
         /// </summary>
         public string Caption { get; set; }
@@ -392,6 +396,10 @@ namespace Fap.AspNetCore.Controls.TagHelpers
                 {
                     grid.OnGridComplete($"{OnGridComplete}();");
                 }
+            }
+            if (OnDblclickRow.IsPresent())
+            {
+                grid.OnDblClickRow(OnDblclickRow);
             }
             if (OnFormInitAdd.IsPresent())
             {

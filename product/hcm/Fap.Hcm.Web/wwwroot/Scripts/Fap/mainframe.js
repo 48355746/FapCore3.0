@@ -58,6 +58,15 @@ $(function () {
 
             }, { nav: hash });
     })
+//    bootbox.dialog({
+//        message: `<form class="bootbox-form"><div class="bootbox-prompt-message"><p>Please select an option below:</p></div><div class="bootbox-radiobutton-list"><div class="form-check radio"><label class="form-check-label"><input class="form-check-input bootbox-input bootbox-input-radio" type="radio" name="bootbox-radio" value="1">
+//Choice One</label></div > <div class="form-check radio"><label class="form-check-label"><input class="form-check-input bootbox-input bootbox-input-radio" type="radio" name="bootbox-radio" value="2">
+//            Choice Two</label></div><div class="form-check radio"><label class="form-check-label"><input class="form-check-input bootbox-input bootbox-input-radio" type="radio" name="bootbox-radio" value="3">
+//                Choice Three</label></div></div></form>`,
+//        callback: function (result) {
+//            console.log(result);
+//        }
+//    });
     //setTimeout(function () {
     //    getHandling();
     //    getBadge();

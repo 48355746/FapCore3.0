@@ -345,8 +345,6 @@
                     });
                 });
             }, 0);
-
-            window.users = [];
             var currRoleUid;
             $('#tree-roleandgroup').on("changed.jstree", function (event, data) {
                 if (data && data.selected && data.selected.length) {
@@ -358,9 +356,8 @@
                     var roleUid = data.selected[0];
                     var treeRole = $('#tree-roleandgroup').jstree(true);
                     $.get("@Url.Content("~/System/Api/Manage/Authority/")" + roleUid, function (data) {
-                        //角色人员
-                        window.users = data.Users;
                         $("#profile-feed-user").html("");
+                        //角色人员
                         $("#roleusers").tmpl(data.Users).appendTo("#profile-feed-user");
                         //权限树
                         var treeMenu = $("#tree-moduleandmenu").jstree(true);
@@ -614,45 +611,25 @@
                             callback: function () {
                                 var emp = getSelectedRows("grid-fapuser");
                                 if (emp == null) {
-                                    bootbox.alert($.lang("select_row","您没有选中人员"));
                                     return;
                                 };
-                                var tempUser = [];
-                                if (window.users.length > 0) {
-                                    $.each(emp, function (n, v) {
-                                        var flag = false;
-                                        $.each(window.users, function (n, value) {
-                                            if (v.Fid == value.Fid) {
-                                                flag = true;
-                                            }
-                                        })
-                                        if (!flag) {
-                                            window.users.push(v);
-                                            tempUser.push(v.Fid);
-                                        }
-                                    })
-                                } else {
-                                    window.users = emp;
-                                    $.each(emp, function (n, v) {
-                                        tempUser.push(v.Fid);
-                                    })
+                                var treeRole = $('#tree-roleandgroup').jstree(true);
+                                var selRole = treeRole.get_selected();
+                                if (!selRole.length) {
+                                    $.msg($.lang("selected_role", "请选中角色进行设置"));
+                                    return false;
                                 }
-                                if (tempUser.length > 0) {
-                                    var treeRole = $('#tree-roleandgroup').jstree(true);
-                                    var selRole = treeRole.get_selected();
-                                    if (treeRole.get_icon(selRole[0]) == "icon-folder purple ace-icon fa fa-users") {
-                                        bootbox.alert($.lang("selected_role","请选中角色进行设置"));
-                                        return;
-                                    }
-                                    if (!selRole.length) {
-                                        bootbox.alert($.lang("selected_role","请选中角色进行设置"));
-                                        return;
-                                    }
-                                    saveAuthority({ "RoleUid": selRole[0], "UserUids": tempUser, "AType": 5 }, function (rv) {
-                                        $("#profile-feed-user").html("");
-                                        $("#roleusers").tmpl(window.users).appendTo("#profile-feed-user");
-                                    });
+                                var node = treeRole.get_node(selRole[0]);
+                                if (node.data.isRole == false) {
+                                    $.msg($.lang("selected_role", "请选中角色进行设置"));
+                                    return;
                                 }
+                                var tempUser = $.map(emp, function (d) { return d.Fid; });
+                                saveAuthority({ "RoleUid": selRole[0], "UserUids": tempUser, "AType": 5 }, function (rv) {
+                                    $("#profile-feed-user").html("");
+                                    $("#roleusers").tmpl(rv.data).appendTo("#profile-feed-user");
+                                });
+
                             }
                         },
                         cancel: {

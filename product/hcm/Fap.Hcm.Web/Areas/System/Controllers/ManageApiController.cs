@@ -344,7 +344,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         public JsonResult SetAuthority(AuthorityModel authority)
         {
             var rv = _manageService.SaveAuthority(authority);
-            return Json(rv);
+            return Json(rv,false);
         }
 
         #endregion

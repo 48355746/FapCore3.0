@@ -48,5 +48,15 @@ namespace Fap.Hcm.Web.Areas.SelfService.Controllers
             return View(model);
         }
         #endregion
+        public ActionResult MessageAndNotice()
+        {
+            JqGridViewModel model = this.GetJqGridModel("FapMessage", (qs) =>
+            {
+                qs.GlobalWhere = "REmpUid=@EmpUid";
+                qs.AddParameter("EmpUid", _applicationContext.EmpUid);
+                qs.AddOrderBy("CreateDate", "desc");
+            });
+            return View(model);
+        }
     }
 }

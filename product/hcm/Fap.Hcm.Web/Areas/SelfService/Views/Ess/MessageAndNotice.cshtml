@@ -1,0 +1,65 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+
+<title><fap-multilang lang-key="message_and_notice" default-content="消息通知"></fap-multilang></title>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title"><fap-multilang lang-key="message_and_notice" default-content="消息通知"></fap-multilang></h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+
+                </div>
+                <div class="widget-toolbar no-border">                
+                    <button class="btn btn-sm btn-link" id="btnAllRead">
+                        <i class="ace-icon fa fa-check"></i>
+                        全部标为已读
+                    </button>
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    <fap-grid id="message" grid-model="Model" on-grid-complete="initMessage"  on-dblclick-row="readFlag" register-authority="false" oper-delete="true" oper-search="true" logic-delete="false" multi-box-only="false" multi-select="true" shrink-fit="false" auto-width="true" view-records="true"></fap-grid>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function initMessage() {
+         var ids = jQuery("#grid-message").jqGrid('getDataIDs');
+        for (var i = 0; i < ids.length; i++) {
+            var cl = ids[i];
+            var ret = jQuery('#grid-message').jqGrid('getRowData', cl);
+            if (ret.HasRead === "0") {
+                var stitle = '<span class="text-primary bolder">' + ret.Title + '</span>';
+                var scontent = '<span class="text-primary bolder">' + ret.MsgContent + '</span>';
+                jQuery('#grid-message').jqGrid('setRowData', ids[i], { "Title": stitle });
+                jQuery('#grid-message').jqGrid('setRowData', ids[i], { "MsgContent": scontent });
+            }
+        }
+    }
+    function readFlag(fid) {
+        $.get(basePath + "/SelfService/Api/ReadMessage",{ fid: fid }, function (rv) {
+            if (rv.success) {
+                refreshGrid("grid-message");
+            }
+        })
+    }
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $("#btnAllRead").on(ace.click_event, function () {
+                $.get(basePath + "/SelfService/Api/ReadMessage", function (rv) {
+                    if (rv.success) {
+                        refreshGrid("grid-message");
+                    }
+                })
+            })
+           
+        })
+    })
+</script>

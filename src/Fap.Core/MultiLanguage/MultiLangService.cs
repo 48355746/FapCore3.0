@@ -143,7 +143,7 @@ var MultiLangHelper = (function () {
     //获得资源多语
     Helper.getResName = function (code, defaultName) {
         if (resArray[code] === undefined) {
-            $.post(basePath +'/Core/Api/MultiLanguage',{ langKey: code, langValue: defaultName }, function (rv) {
+            $.post(window.location.protocol+ '//' + window.location.host +'/Core/Api/MultiLanguage',{ langKey: code, langValue: defaultName }, function (rv) {
 
             });
             return defaultName;
