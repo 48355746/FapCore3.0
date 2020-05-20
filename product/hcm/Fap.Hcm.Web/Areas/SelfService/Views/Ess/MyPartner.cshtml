@@ -1,0 +1,37 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+
+<title><fap-multilang lang-key="my_partner" default-content="我的伙伴"></fap-multilang></title>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="widget-box">
+         
+            <div class="widget-body">
+                <div class="widget-main">
+                    <fap-grid id="message" grid-model="Model" on-grid-complete="initMessage"  register-authority="false" oper-delete="true" oper-search="true" logic-delete="false" multi-box-only="false" multi-select="true" shrink-fit="false" auto-width="true" view-records="true"></fap-grid>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function initMessage() {
+        var ids = jQuery("#grid-message").jqGrid('getDataIDs');
+        for (var i = 0; i < ids.length; i++) {
+            var cl = ids[i];
+            var ret = jQuery('#grid-message').jqGrid('getRowData', cl);
+            if (ret.HasRead === "0") {
+                var stitle = '<span class="text-primary bolder">' + ret.Title + '</span>';
+                var scontent = '<span class="text-primary bolder">' + ret.MsgContent + '</span>';
+                jQuery('#grid-message').jqGrid('setRowData', ids[i], { "Title": stitle });
+                jQuery('#grid-message').jqGrid('setRowData', ids[i], { "MsgContent": scontent });
+            }
+        }
+    }
+
+    var scripts = [null, null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+
+        })
+    })
+</script>

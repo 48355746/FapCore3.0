@@ -1,0 +1,47 @@
+﻿@model IEnumerable<Fap.Core.Rbac.Model.FapRole>
+<form class="bootbox-form">
+    <div class="bootbox-prompt-message"><p>请选择要切换的角色:</p></div>
+    <div class="bootbox-radiobutton-list">
+        @foreach (var role in Model)
+        {
+            <div class="form-check radio">
+                <label class="form-check-label">
+                    @if (_applicationContext.CurrentRoleUid == role.Fid)
+                    {
+                        <input class="form-check-input bootbox-input bootbox-input-radio" type="radio" checked="checked" name="role-radio" value="@role.Fid" />
+                    }
+                    else
+                    {
+                        <input class="form-check-input bootbox-input bootbox-input-radio" type="radio" name="role-radio" value="@role.Fid" />
+                    }
+
+                    @role.RoleName
+                    @if (role.IsDefault)
+                    {
+                        <span class="label">Default</span>
+                    }
+                    else
+                    {
+                        <a href="javascript:void(0)" class="btn btn-link" data-roleuid="@role.Fid">默认</a>
+                    }
+                </label>
+            </div>
+        }
+    </div>
+</form>
+<script>
+    $(function(){
+        $("[data-roleuid]").on(ace.click_event, function () {
+            var $this = $(this);
+            var roleUid = $this.data("roleuid");            
+            $.post(basePath + "/Home/UserRole", { roleUid: roleUid }, function (rv) {
+                if (rv.success) {
+                    var url = basePath + '/Home/RoleList';
+                    $.get(url, function (ev) {
+                        $this.closest('.bootbox-body').html(ev);
+                    });
+                }
+            });
+        })
+    })
+</script>

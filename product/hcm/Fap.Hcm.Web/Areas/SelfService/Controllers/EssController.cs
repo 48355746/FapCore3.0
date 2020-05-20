@@ -58,5 +58,16 @@ namespace Fap.Hcm.Web.Areas.SelfService.Controllers
             });
             return View(model);
         }
+        public ActionResult MyPartner()
+        {
+            var model = GetJqGridModel(nameof(EssPartner), qs =>
+            {
+                qs.GlobalWhere = "EmpUid=@EmpUid";
+                qs.AddParameter("EmpUid", _applicationContext.EmpUid);
+                qs.AddDefaultValue("EmpUid", _applicationContext.EmpUid);
+                qs.AddDefaultValue("EmpUidMC", _applicationContext.EmpName);
+            });
+            return View(model);
+        }
     }
 }

@@ -39,6 +39,18 @@ namespace Fap.Core.Rbac
         /// <returns></returns>
         IEnumerable<FapRoleMenu> GetRoleMenus(string roleUid);
         /// <summary>
+        /// 获取用户默认角色
+        /// </summary>
+        /// <param name="userUid"></param>
+        /// <returns></returns>
+        string GetUserDefaultRole(string userUid);
+        /// <summary>
+        /// 更新用户的默认角色
+        /// </summary>
+        /// <param name="roleUid"></param>
+        /// <param name="userUid"></param>
+        void UpdateUserDefaultRole(string roleUid, string userUid);
+        /// <summary>
         /// 登出
         /// </summary>
         void Logout();

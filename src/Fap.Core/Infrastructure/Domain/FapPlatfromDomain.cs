@@ -2,6 +2,7 @@
 using Fap.Core.Infrastructure.Config;
 using Fap.Core.Infrastructure.License;
 using Fap.Core.Rbac.AC;
+using Fap.Core.Rbac.Model;
 using Fap.Core.Utility;
 using Microsoft.Extensions.Logging;
 using System;
@@ -226,7 +227,8 @@ namespace Fap.Core.Infrastructure.Domain
         }
         public void InitPlatformDomain()
         {
-            LoadRegisterInfo();
+            //LoadRegisterInfo();
+            InitOnlineUser();
             //this.ButtonSet = new ButtonSet(this);
             _logger.LogInformation("初始化元数据");
             this.TableSet = new TableSet( _dbSession);
@@ -271,6 +273,12 @@ namespace Fap.Core.Infrastructure.Domain
             this.CfgBillCodeRuleSet = new CfgBillCodeRuleSet(_dbSession);
             _logger.LogInformation("初始化单据编码规则集完成");
         }
+
+        private void InitOnlineUser()
+        {
+            _dbSession.Execute($"update {nameof(FapOnlineUser)} set {nameof(FapOnlineUser.OnlineState)}='{FapOnlineUser.CONST_OFFLINE}' where {nameof(FapOnlineUser.OnlineState)}='{FapOnlineUser.CONST_ONLINE}'");
+        }
+
         /// <summary>
         /// 清空所有权限相关缓存
         /// </summary>

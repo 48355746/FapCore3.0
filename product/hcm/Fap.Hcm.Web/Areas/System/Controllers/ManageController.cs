@@ -135,9 +135,9 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             //30分钟之内状态为登陆
             JqGridViewModel model = this.GetJqGridModel("FapOnlineUser", (queryOption) =>
             {
-                queryOption.GlobalWhere = "OnlineState =@OnlineState and LoginTime>=@LoginTime";
-                queryOption.AddParameter("OnlineState", FapOnlineUser.CONST_LOGON);
-                queryOption.AddParameter("LoginTime", DateTime.Now.AddMinutes(-30).ToString("yyyy-MM-dd HH:mm:ss"));
+                queryOption.GlobalWhere = "OnlineState =@OnlineState";
+                queryOption.AddParameter("OnlineState", FapOnlineUser.CONST_ONLINE);
+                //queryOption.AddParameter("LoginTime", DateTime.Now.AddMinutes(-30).ToString("yyyy-MM-dd HH:mm:ss"));
                 queryOption.OrderByList.Add(new OrderBy { Field = "LoginTime", Direction = "DESC" });
             });
             return View(model);

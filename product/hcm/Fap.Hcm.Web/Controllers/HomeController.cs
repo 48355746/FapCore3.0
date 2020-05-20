@@ -71,7 +71,7 @@ namespace Fap.Hcm.Web.Controllers
             {
                 return errorResult;
             }
-            var onlineUser = LoginLogging();
+            LoginLogging();
             var claimsPrincipal = CreateClaimsPrincipal();
             var authenticationProperties = CreateAuthenticationProperties();
             //设置当前角色为普通员工
@@ -139,27 +139,12 @@ namespace Fap.Hcm.Web.Controllers
                 }
                 return null;
             }
-            FapOnlineUser LoginLogging()
+            void LoginLogging()
             {
                 //更新最近登录时间
                 loginUser.LastLoginTime = DateTimeUtils.CurrentDateTimeStr;
                 loginUser.PasswordTryTimes = 0;
-                _loginService.UpdateLastLoginTime(loginUser);
-                //添加在线用户日志               
-                FapOnlineUser onlineUser = new FapOnlineUser()
-                {
-                    Fid = UUIDUtils.Fid,
-                    UserUid = loginUser.Fid,
-                    ClientIP = _applicationContext.ClientIpAddress,
-                    DeptUid = emp.DeptUid,
-                    EmpUid = emp.Fid,
-                    //RoleUid = currRole.Fid,
-                    LoginName = loginUser.UserName,
-                    LoginTime = loginUser.LastLoginTime,
-                    OnlineState = FapOnlineUser.CONST_LOGON
-                };
-                _onlineUserService.AddOnlineUser(onlineUser);
-                return onlineUser;
+                _loginService.UpdateLastLoginTime(loginUser);                
             }
             ClaimsPrincipal CreateClaimsPrincipal()
             {
@@ -177,13 +162,9 @@ namespace Fap.Hcm.Web.Controllers
                     new Claim(ClaimTypes.DenyOnlyPrimarySid,emp.OrgUid??""),//组织
                     new Claim(ClaimTypes.Sid,currLanguage),//语言
                     new Claim(ClaimTypes.Actor,emp.EmpPhoto),//用户图像
-                    new Claim(ClaimTypes.Role,FapPlatformConstants.CommonUserRoleFid)//角色普通用户
+                    new Claim(ClaimTypes.Role,loginUser.UserRole)//角色普通用户
                 };
-                //var userRoles = _loginService.GetUserRoles(loginUser.Fid);
-                //foreach (var role in userRoles)
-                //{
-                //    claims.Add(new Claim(ClaimTypes.Role, role.Fid));
-                //}
+                
                 //组装身份
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                 return new ClaimsPrincipal(claimsIdentity);
@@ -326,7 +307,23 @@ namespace Fap.Hcm.Web.Controllers
             _applicationContext.CurrentRoleUid = fid;
             return LocalRedirect(_configService.GetSysParamValue(HomeUrl));
         }
-
+        /// <summary>
+        /// 用户角色列表
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult RoleList()
+        {
+            var userRoles = _loginService.GetUserRoles(_applicationContext.UserUid);
+            string defaultRole = _loginService.GetUserDefaultRole(_applicationContext.UserUid);
+            userRoles.FirstOrDefault(r => r.Fid == defaultRole).IsDefault = true;
+            return PartialView(userRoles);
+        }
+        [HttpPost]
+        public JsonResult UserRole(string roleUid)
+        {
+            _loginService.UpdateUserDefaultRole(roleUid, _applicationContext.UserUid);
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
         /// <summary>
         /// ajax主框架
         /// </summary>

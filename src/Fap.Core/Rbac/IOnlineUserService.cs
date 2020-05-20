@@ -5,9 +5,7 @@ namespace Fap.Core.Rbac
 {
     public interface IOnlineUserService
     {
-        FapOnlineUser AddOnlineUser(FapOnlineUser onlineUser);
-        IEnumerable<FapOnlineUser> GetAllOnlineUser();
-        void LogoutOnlineUser(string onlineUserUid);
-        bool UpdateOnlineUser(string onlineUserUid, string roleUid);
+        FapOnlineUser OnlineUser(FapOnlineUser onlineUser);
+        void OfflineUser(string connectionId);
     }
 }

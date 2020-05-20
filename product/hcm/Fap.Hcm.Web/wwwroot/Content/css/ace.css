@@ -5987,7 +5987,7 @@ body.mob-safari .sidebar.sidebar-fixed {
 .nav-search-icon {
     border: none;
     border-radius: 0;
-    right: 1px;
+    left: 1px;
 }
 
 .sidebar > .nav-search {
@@ -10084,11 +10084,11 @@ span.input-icon {
     padding: 0 3px;
     z-index: 2;
     position: absolute;
-    top: 3px;
+    top: 6px;
     /*top: 6px;*/
     /*bottom: 1px;
     left: 3px;*/
-    line-height: 30px;
+    line-height: 24px;
     display: inline-block;
     color: #909090;
     font-size: 16px;

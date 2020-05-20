@@ -21,6 +21,7 @@ using Fap.Hcm.Web.Models;
 using Fap.AspNetCore.Infrastructure.Filter;
 using UEditorNetCore;
 using Microsoft.AspNetCore.HttpOverrides;
+using Fap.Core.SignalR;
 
 namespace Fap.Hcm.Web
 {
@@ -81,6 +82,7 @@ namespace Fap.Hcm.Web
             //    //×Ô¶¯ÉêÇëSSL
             //    services.AddLetsEncrypt();
             //}
+            services.AddSignalR();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -141,6 +143,7 @@ namespace Fap.Hcm.Web
             
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapHub<OnlineUserHub>("/onlineHub");
                 endpoints.MapControllerRoute(
                     name: "areaRoute",
                     pattern: "{area:exists}/{controller}/{action}/{fid?}",

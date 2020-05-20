@@ -58,15 +58,35 @@ $(function () {
 
             }, { nav: hash });
     })
-//    bootbox.dialog({
-//        message: `<form class="bootbox-form"><div class="bootbox-prompt-message"><p>Please select an option below:</p></div><div class="bootbox-radiobutton-list"><div class="form-check radio"><label class="form-check-label"><input class="form-check-input bootbox-input bootbox-input-radio" type="radio" name="bootbox-radio" value="1">
-//Choice One</label></div > <div class="form-check radio"><label class="form-check-label"><input class="form-check-input bootbox-input bootbox-input-radio" type="radio" name="bootbox-radio" value="2">
-//            Choice Two</label></div><div class="form-check radio"><label class="form-check-label"><input class="form-check-input bootbox-input bootbox-input-radio" type="radio" name="bootbox-radio" value="3">
-//                Choice Three</label></div></div></form>`,
-//        callback: function (result) {
-//            console.log(result);
-//        }
-//    });
+    $("#sidebar-shortcuts-large #btnChangeRole").on(ace.click_event, function () {
+        var dialog=bootbox.dialog({
+            message: 'loading',    
+            buttons: {
+                success: {
+                    label: $.lang("ok", "确定"),
+                    className: "btn-primary",
+                    callback: function () {
+                        var roleUid = $('[name = "role-radio"]:checked').val();
+                        window.location.href = basePath + "/Home/ChangeRole/" + roleUid;
+                    }
+                },
+                cancel: {
+                    label: $.lang("cancel", "取消"),
+                    className: "btn-default",
+                    callback: function () {
+                       
+                    }
+                }
+            }
+        });
+        dialog.init(function () {
+            var url = basePath + '/Home/RoleList';           
+            $.get(url, function (ev) {
+                dialog.find('.bootbox-body').html(ev);                
+            });
+        });
+    })
+
     //setTimeout(function () {
     //    getHandling();
     //    getBadge();
@@ -122,3 +142,5 @@ var getBadge = function () {
         }
     });
 };
+
+$("#mypartner").tmpl(obj).appendTo(".profile-online");

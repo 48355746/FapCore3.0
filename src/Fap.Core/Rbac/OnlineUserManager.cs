@@ -27,55 +27,31 @@ namespace Fap.Core.Rbac
         /// <param name="session"></param>
         /// <param name="user"></param>
         [Transactional]
-        public FapOnlineUser AddOnlineUser(FapOnlineUser onlineUser)
+        public FapOnlineUser OnlineUser(FapOnlineUser onlineUser)
         {
-            //开启了事务，所以原始操作要有事务
-            //更新之前的在线用户状态
-            //_dbContext.Execute($"update FapOnlineUser set OnlineState='{FapOnlineUser.CONST_LOGOUT}' where UserUid=@UserUid", new DynamicParameters(new { UserUid = onlineUser.UserUid }) { });
-            //insert 新在线用户
-            _dbContext.Insert<FapOnlineUser>(onlineUser);           
+            var ou= _dbContext.QueryFirstOrDefaultWhere<FapOnlineUser>($"{nameof(FapOnlineUser.UserUid)}=@UserUid and {nameof(FapOnlineUser.RoleUid)}=@RoleUid and {nameof(FapOnlineUser.OnlineState)}='{FapOnlineUser.CONST_ONLINE}' and {nameof(FapOnlineUser.ClientIP)}=@ClientIP",
+                new DynamicParameters(new{ onlineUser.UserUid, onlineUser.RoleUid, onlineUser.ClientIP }));
+            if (ou != null)
+            {
+                _dbContext.Execute($"update {nameof(FapOnlineUser)} set {nameof(FapOnlineUser.ConnectionId)}=@ConnectionId where {nameof(FapOnlineUser.UserUid)}=@UserUid and {nameof(FapOnlineUser.RoleUid)}=@RoleUid and {nameof(FapOnlineUser.OnlineState)}='{FapOnlineUser.CONST_ONLINE}' and {nameof(FapOnlineUser.ClientIP)}=@ClientIP",
+                    new DynamicParameters(new { onlineUser.ConnectionId ,onlineUser.UserUid, onlineUser.RoleUid, onlineUser.ClientIP }));
+            }
+            else
+            {
+                _dbContext.Insert(onlineUser);
+            }
             return onlineUser;
         }
-        public bool UpdateOnlineUser(string onlineUserUid, string roleUid)
-        {
-            FapOnlineUser onlineUser = _dbContext.Get<FapOnlineUser>(onlineUserUid);
-            if (onlineUser != null)
-            {
-                onlineUser.OnlineState = FapOnlineUser.CONST_LOGON;
-                onlineUser.RoleUid = roleUid;
-                _dbContext.Update<FapOnlineUser>(onlineUser);
-            }
-            return true;
-        }
+        
         /// <summary>
         /// 一个在线用户登出
         /// </summary>
         /// <param name="userID"></param>
         /// <returns></returns>
-        public void LogoutOnlineUser(string onlineUserUid)
+        public void OfflineUser(string connectionId)
         {
-            FapOnlineUser onlineUser = _dbContext.Get<FapOnlineUser>(onlineUserUid);
-            if (onlineUser != null)
-            {
-                onlineUser.OnlineState = FapOnlineUser.CONST_LOGOUT;
-                onlineUser.LogoutTime = DateTimeUtils.CurrentDateTimeStr;
-                _dbContext.Update<FapOnlineUser>(onlineUser);
-            }
+            _dbContext.Execute($"update {nameof(FapOnlineUser)} set {nameof(FapOnlineUser.OnlineState)}='{FapOnlineUser.CONST_OFFLINE}',{nameof(FapOnlineUser.LogoutTime)}='{DateTimeUtils.CurrentDateTimeStr}' where {nameof(FapOnlineUser.ConnectionId)}=@ConnectionId",
+                    new DynamicParameters(new { ConnectionId= connectionId }));
         }
-
-        /// <summary>
-        /// 得到所有在线用户表
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerable<FapOnlineUser> GetAllOnlineUser()
-        {
-            DynamicParameters param = new DynamicParameters();
-            param.Add("OnlineState", FapOnlineUser.CONST_LOGON);
-            //30分钟内算登陆
-            param.Add("LoginTime", DateTime.Now.AddMinutes(-30).ToString("yyyy-MM-dd HH:mm:ss"));
-            return _dbContext.Query<FapOnlineUser>("select * from FapOnlineUser where OnlineState =@OnlineState and LoginTime>=@LoginTime", param);
-
-        }
-
     }
 }

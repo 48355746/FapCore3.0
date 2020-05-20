@@ -12,9 +12,9 @@ namespace Fap.Core.Rbac.Model
     [Serializable]
     public class FapOnlineUser : BaseModel
     {
-        public const string CONST_LOGON = "登录";
-        public const string CONST_LOGOUT = "登出";
-        public const string CONST_LOGEXCEPT = "异常";
+        public const string CONST_ONLINE = "Online";
+        public const string CONST_OFFLINE = "Offline";
+        public const string CONST_LOGEXCEPT = "Exception";
         /// <summary>
         /// 用户
         /// </summary>
@@ -71,7 +71,10 @@ namespace Fap.Core.Rbac.Model
         /// </summary>
         [Computed]
         public string RoleUidMC { get; set; }
-
+        /// <summary>
+        /// 连接ID
+        /// </summary>
+        public string ConnectionId { get; set; }
 
     }
 }

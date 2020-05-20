@@ -94,15 +94,43 @@
           <script src="/Content/js/excanvas.js"></script>
       <![endif]-->
     <!-- page specific plugin scripts -->
+    <!--多语资源-->
     <script src="/Scripts/MultiLanguage.js" asp-append-version="true"></script>
     <script>
         //全局根路径
         var basePath = window.location.protocol+ "//" + window.location.host;
         var language = '@currLanguage'; //当前语种
         MultiLangHelper.initLang(language);
-        NProgress.configure({ parent: ".page-content" });        
+        NProgress.configure({ parent: ".page-content" });
     </script>
-    <!--多语资源-->
+    <script id="mypartner" type="text/x-jquery-tmpl">
+        <div class="profile-activity clearfix">
+            <div>
+                <img class="pull-left" alt="头像" src="~/Component/Photo/${EmpPhoto}">
+                <a class="user" href="#">
+                    {#if OnlineState=='Online'}
+                    <span class="user-status status-online"></span>
+                    {#else}
+                    <span class="user-status status-offline"></span>
+                    {#/if}
+                    ${EmpName}
+                </a>
+
+                <div class="time">
+                    ${DeptUidMC}
+                </div>
+            </div>
+            <div class="tools action-buttons">
+                <a href="#" class="blue">
+                    <i class="ace-icon fa fa-comments bigger-125"></i>
+                </a>
+
+                <a href="#" class="red">
+                    <i class="ace-icon fa fa-times bigger-125"></i>
+                </a>
+            </div>
+        </div>
+    </script>
 </head>
 
 <body class="no-skin">
@@ -174,12 +202,12 @@
                         <i class="ace-icon fa fa-lightbulb-o"></i>
                     </button>
 
-                    <button class="btn btn-info">
+                    <button class="btn btn-info" data-target="#right-menu-friends" data-toggle="modal" title="伙伴沟通">
                         <i class="ace-icon fa fa-users"></i>
                     </button>
 
                     <!-- #section:basics/sidebar.layout.shortcuts -->
-                    <button class="btn btn-warning">
+                    <button class="btn btn-warning" id="btnChangeRole" title="切换角色">
                         <i class="ace-icon fa fa-exchange"></i>
                     </button>
 
@@ -311,18 +339,6 @@
                             @*<a href="#">Home</a>*@
                         </li>
                     </ul><!-- /.breadcrumb -->
-                    <!-- /.breadcrumb -->
-                    <!-- #section:basics/content.searchbox -->
-                    @*<div class="nav-search" id="nav-search">
-                            <form class="form-search">
-                                <span class="input-icon">
-                                    <input type="text" placeholder="搜索 ..." class="nav-search-input" id="nav-search-input" autocomplete="off" />
-                                    <i class="ace-icon fa fa-search nav-search-icon"></i>
-                                </span>
-                            </form>
-                        </div>*@<!-- /.nav-search -->
-                    <!-- /section:basics/content.searchbox -->
-
                 </div>
 
                 <!-- /section:basics/content.breadcrumbs -->
@@ -331,6 +347,27 @@
                     <div class="page-content-area" data-ajax-content="true">
                         <!-- ajax content goes here -->
                     </div><!-- /.page-content-area -->
+                    <div id="right-menu-friends" class="modal aside" data-body-scroll="false" data-offset="true" data-placement="right" data-fixed="true" data-backdrop="invisible" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header no-padding">
+                                    <div class="table-header">
+                                        <button type="button" class="close" aria-hidden="true">
+                                            <span class="white"> <i class="ace-icon fa fa-plus-circle bigger-120"></i></span>
+                                        </button>
+
+                                        我的伙伴
+                                    </div>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="profile-online col-xl-12">
+                                        </div>
+                                    </div>
+                                </div><!-- /.modal-content -->
+                            </div><!-- /.modal-dialog -->
+                        </div>
+                    </div>
                 </div><!-- /.page-content -->
             </div>
         </div><!-- /.main-content -->
@@ -434,6 +471,7 @@
         <script src="~/Scripts/FapControl/dataForm.js" asp-append-version="true"></script>
         <script src="~/Content/js/JsTree/jstree.min.js" asp-append-version="true"></script>
         <script src="~/Content/Select2/js/select2.full.min.js" asp-append-version="true"></script>
+        <script src="~/lib/signalr/dist/browser/signalr.js"></script>
     </environment>
     <environment exclude="Development">
         <script src="~/lib/bootstrap/dist/js/bootstrap.min.js" asp-append-version="true"></script>
@@ -443,7 +481,9 @@
         <script src="~/js/fapcommon.min.js" asp-append-version="true"></script>
         <script src="~/js/fapcontrol.min.js" asp-append-version="true"></script>
         <script src="~/Content/js/lodash.min.js" asp-append-version="true"></script>
+        <script src="~/lib/signalr/dist/browser/signalr.min.js"></script>
     </environment>
+    <script src="~/Scripts/Fap/online.js" asp-append-version="true"></script>
     @if (currLanguage == Fap.Core.MultiLanguage.MultiLanguageEnum.En)
     {
         //多语
@@ -476,7 +516,7 @@
         } else {
             moment.locale('zh-cn');
         }
-        
+
     </script>
 </body>
 </html>

@@ -11,7 +11,6 @@ namespace Fap.Core.Rbac.Model
     /// <summary>
     /// 角色表
     /// </summary>
-    [Serializable]
     public class FapRole : BaseModel
     {
         /// <summary>
@@ -33,7 +32,7 @@ namespace Fap.Core.Rbac.Model
         /// <summary>
         /// 所属角色组 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string RoleGroupUidMC { get; set; }
         /// <summary>
         /// 角色类型
@@ -42,12 +41,17 @@ namespace Fap.Core.Rbac.Model
         /// <summary>
         /// 角色类型 的显性字段MC
         /// </summary>
-        [ComputedAttribute]
+        [Computed]
         public string RoleTypeMC { get; set; }
         /// <summary>
         /// 图标
         /// </summary>
         public string Icon { get; set; }
+        /// <summary>
+        /// 是否是默认角色
+        /// </summary>
+        [Computed]
+        public bool IsDefault { get; set; }
 
     }
 

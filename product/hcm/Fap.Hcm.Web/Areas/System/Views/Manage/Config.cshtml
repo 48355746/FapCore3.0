@@ -121,7 +121,7 @@
     {{/each}}
 </script>
 <script>
-    var scripts = [null, "/Content/js/jquery.tmpl.js", null]
+    var scripts = [null, null]
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
             $(document).one('ajaxloadstart.page', function (e) {

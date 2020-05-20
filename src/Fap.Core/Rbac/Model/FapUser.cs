@@ -95,6 +95,15 @@ namespace Fap.Core.Rbac.Model
         [Computed]
         public string UserIdentityMC { get; set; }
         /// <summary>
+        /// 默认角色
+        /// </summary>
+        public string UserRole { get; set; }
+        /// <summary>
+        /// 默认角色 的显性字段MC
+        /// </summary>
+        [Computed]
+        public string UserRoleMC { get; set; }
+        /// <summary>
         /// 主题
         /// </summary>
         public string Theme { get; set; }

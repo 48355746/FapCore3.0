@@ -42,8 +42,11 @@
             }
         }
     }
-    function readFlag(fid) {
-        $.get(basePath + "/SelfService/Api/ReadMessage",{ fid: fid }, function (rv) {
+    function readFlag(rowdata) {
+        if (rowdata.HasRead === "1") {
+            return;
+        }
+        $.get(basePath + "/SelfService/Api/ReadMessage", { fid: rowdata.Fid }, function (rv) {
             if (rv.success) {
                 refreshGrid("grid-message");
             }

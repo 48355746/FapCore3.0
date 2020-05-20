@@ -13,7 +13,10 @@ using Fap.Core.Utility;
 using Fap.Core.Extensions;
 using Dapper;
 using Fap.Hcm.Service.Organization;
-using DocumentFormat.OpenXml.Drawing;
+using Emp = Fap.Core.Rbac.Model.Employee;
+using Fap.Core.Rbac.Model;
+using DocumentFormat.OpenXml.Wordprocessing;
+using Ardalis.GuardClauses;
 
 namespace Fap.Hcm.Web.Areas.SelfService.Controllers
 {
@@ -91,10 +94,10 @@ namespace Fap.Hcm.Web.Areas.SelfService.Controllers
             List<EssCalendar> results = new List<EssCalendar>();
             foreach (var item in clist)
             {
-                var rc= clist.Where(c => c.StartTime.ToDateTime() <= item.EndTime.ToDateTime() && c.EndTime.ToDateTime() >= item.StartTime.ToDateTime());
+                var rc = clist.Where(c => c.StartTime.ToDateTime() <= item.EndTime.ToDateTime() && c.EndTime.ToDateTime() >= item.StartTime.ToDateTime());
                 if (rc.Any())
                 {
-                    var minTime= rc.Min(c => c.StartTime);
+                    var minTime = rc.Min(c => c.StartTime);
                     var maxTime = rc.Max(c => c.EndTime);
                     if (!results.Exists(r => r.StartTime == minTime && r.EndTime == maxTime))
                     {
@@ -117,10 +120,10 @@ namespace Fap.Hcm.Web.Areas.SelfService.Controllers
                     }
                 }
             }
-            var list = terminal.Select(c => new { title =c.EventName, start = c.StartTime, end = c.EndTime, id = c.Id, url = c.EventUrl, allDay =false, className = c.EventClass });
+            var list = terminal.Select(c => new { title = c.EventName, start = c.StartTime, end = c.EndTime, id = c.Id, url = c.EventUrl, allDay = false, className = c.EventClass });
             return JsonIgnoreNull(list);
         }
-        
+
         /// <summary>
         /// 保存员工日历事件
         /// </summary>
@@ -164,7 +167,7 @@ namespace Fap.Hcm.Web.Areas.SelfService.Controllers
                 if (cal != null)
                 {
                     _dbContext.DeleteExec(nameof(EssCalendar), $"{nameof(EssCalendar.EventName)}=@EventName and {nameof(EssCalendar.StartTime)}=@StartTime and {nameof(EssCalendar.EndTime)}=@EndTime and {nameof(EssCalendar.Origin)}='dept'",
-                        new DynamicParameters(new { EventName= cal.EventName, StartTime=cal.StartTime, EndTime=cal.EndTime }));
+                        new DynamicParameters(new { EventName = cal.EventName, StartTime = cal.StartTime, EndTime = cal.EndTime }));
                 }
                 return Json(new { success = true });
             }
@@ -202,6 +205,47 @@ namespace Fap.Hcm.Web.Areas.SelfService.Controllers
             {
                 _dbContext.Execute($"Update {nameof(FapMessage)} set {nameof(FapMessage.HasRead)}=1 where {nameof(FapMessage.REmpUid)}=@EmpUid", new DynamicParameters(new { EmpUid = _applicationContext.EmpUid }));
             }
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+        [HttpGet("Partner")]
+        public JsonResult MyPartner()
+        {
+            string sql = $"select {nameof(EssPartner.PartnerUid)} from {nameof(EssPartner)} where {nameof(EssPartner.EmpUid)} = @EmpUid and {nameof(EssPartner.Agree)}=1";
+            var empUids = _dbContext.Query(sql, new DynamicParameters(new { EmpUid = _applicationContext.EmpUid })).Select(e => e.PartnerUid);
+            if (empUids.Any())
+            {
+                sql = $"select {nameof(Emp.Fid)},{nameof(Emp.DeptUid)},{nameof(Emp.EmpPhoto)},'Offline' as OnlineState from Employee where Fid in @EmpUids";
+                var emps = _dbContext.Query(sql, new DynamicParameters(new { EmpUids = empUids }), true);
+                var onlineEmps = _dbContext.Query($"select {nameof(FapOnlineUser.EmpUid)} from {nameof(FapOnlineUser)} where {nameof(FapOnlineUser.OnlineState)}='{FapOnlineUser.CONST_ONLINE}' and {nameof(FapOnlineUser.EmpUid)} in @EmpUids", new DynamicParameters(new { EmpUids = empUids }))
+                    .Select<dynamic, string>(e => e.EmpUid);
+                foreach (var fid in onlineEmps)
+                {
+                    var emp = emps.FirstOrDefault(e => e.Fid == fid);
+                    if (emp != null)
+                    {
+                        emp.OnlineState = FapOnlineUser.CONST_ONLINE;
+                    }
+                }
+                return Json(ResponseViewModelUtils.Sueecss(emps));
+            }
+            return Json(ResponseViewModelUtils.Sueecss());
+        }
+        [HttpPost("Partner")]
+        public JsonResult AddPartner(List<string> partners)
+        {
+            Guard.Against.Null(partners, nameof(partners));
+            IList<EssPartner> list = new List<EssPartner>();
+            foreach (var partnerUid in partners)
+            {
+                EssPartner p = new EssPartner
+                {
+                    EmpUid = _applicationContext.EmpUid,
+                    PartnerUid = partnerUid,
+                    Agree = 0
+                };
+                list.Add(p);
+            }
+            _dbContext.InsertBatchSql(list);
             return Json(ResponseViewModelUtils.Sueecss());
         }
     }
