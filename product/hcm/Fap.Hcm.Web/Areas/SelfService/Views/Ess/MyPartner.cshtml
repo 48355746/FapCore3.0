@@ -1,37 +1,83 @@
-﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+﻿@model Fap.AspNetCore.ViewModel.MultiJqGridViewModel
+@using Fap.AspNetCore.Controls.JqGrid
+@{
+    var partnerModel = Model.JqGridViewModels["partner"];
+    var requestModel = Model.JqGridViewModels["request"];
+    Column column = new Column("oper");
+    column.SetLabel("操作");
+    column.SetSortable(false);
+    column.SetSearch(false);
+    column.SetWidth(140);
+}
 
 <title><fap-multilang lang-key="my_partner" default-content="我的伙伴"></fap-multilang></title>
 <div class="row">
     <div class="col-xs-12">
-        <div class="widget-box">
-         
-            <div class="widget-body">
-                <div class="widget-main">
-                    <fap-grid id="message" grid-model="Model" on-grid-complete="initMessage"  register-authority="false" oper-delete="true" oper-search="true" logic-delete="false" multi-box-only="false" multi-select="true" shrink-fit="false" auto-width="true" view-records="true"></fap-grid>
+        <div class="tabbable">
+            <ul class="nav nav-tabs" id="myTab">
+                <li class="active">
+                    <a data-toggle="tab" href="#home">
+                        <i class="green ace-icon fa fa-users bigger-120"></i>
+                        <fap-multilang lang-key="my_partner" default-content="我的伙伴"></fap-multilang>
+                    </a>
+                </li>
+
+                <li>
+                    <a data-toggle="tab" href="#messages">
+                        <fap-multilang lang-key="partner_ask" default-content="伙伴申请"></fap-multilang>
+                        <span id="reqCount" class="badge badge-danger">0</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div id="home" class="tab-pane fade in active">
+                    <fap-grid id="partner" grid-model="partnerModel" wrapper="myTab,home" logic-delete="false" register-authority="false" oper-add="true" oper-delete="true" multi-box-only="true" multi-select="true" shrink-fit="false" auto-width="true" view-records="true"></fap-grid>
                 </div>
+
+                <div id="messages" class="tab-pane fade">
+                    <fap-grid id="ask" grid-model="requestModel" attach-column="column" wrapper="myTab,messages" on-grid-complete="initMenu" register-authority="false" oper-search="true" shrink-fit="false" auto-width="true" view-records="true"></fap-grid>
+                </div>
+
             </div>
         </div>
+
     </div>
 </div>
 <script>
-    function initMessage() {
-        var ids = jQuery("#grid-message").jqGrid('getDataIDs');
+    function initMenu() {
+        var ids = jQuery("#grid-ask").jqGrid('getDataIDs');
         for (var i = 0; i < ids.length; i++) {
             var cl = ids[i];
-            var ret = jQuery('#grid-message').jqGrid('getRowData', cl);
-            if (ret.HasRead === "0") {
-                var stitle = '<span class="text-primary bolder">' + ret.Title + '</span>';
-                var scontent = '<span class="text-primary bolder">' + ret.MsgContent + '</span>';
-                jQuery('#grid-message').jqGrid('setRowData', ids[i], { "Title": stitle });
-                jQuery('#grid-message').jqGrid('setRowData', ids[i], { "MsgContent": scontent });
-            }
+            var rw = jQuery('#grid-ask').jqGrid('getRowData', cl);
+            var scontent = "<a  href='javascript:void(0)' onclick='agree(\"" + rw.Fid + "\")'>" + $.lang("agreee", "同意") + "</a>  ";
+            scontent += "<a  href='javascript:void(0)' onclick='disagree(\"" + rw.Fid + "\")'>" + $.lang("disagreee", "不同意") + "</a>  ";
+
+            jQuery('#grid-ask').jqGrid('setRowData', ids[i], { "oper": scontent });
         }
+        $("#reqCount").html(jQuery('#grid-ask').jqGrid('getGridParam', 'records'));
+    }
+    function agree(fid) {
+        handlerRequest(fid, "Agree");
+    }
+    function disagree(fid) {
+        handlerRequest(fid, "Disagree");
+    }
+    function handlerRequest(fid, reqState) {
+        $.post(basePath + "/SelfService/Api/RequestPartner", { fid: fid, reqState: reqState }, function (rv) {
+            if (rv.success) {
+                refreshGrid("grid-ask");
+            } else {
+                bootbox.alert(rv.msg);
+            }
+        })
     }
 
     var scripts = [null, null]
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
-
+            $(document).one('ajaxloadstart.page', function (e) {
+            })
         })
     })
 </script>

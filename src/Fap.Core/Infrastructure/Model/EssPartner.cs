@@ -6,10 +6,11 @@ using System.Text;
 
 namespace Fap.Core.Infrastructure.Model
 {
+
 	/// <summary>
 	/// 业务伙伴
 	/// </summary>
-	public class EssPartner :BaseModel
+	public class EssPartner : BaseModel
 	{
 		/// <summary>
 		/// 员工
@@ -30,8 +31,18 @@ namespace Fap.Core.Infrastructure.Model
 		[Computed]
 		public string PartnerUidMC { get; set; }
 		/// <summary>
-		/// 同意
+		/// 伙伴编码
 		/// </summary>
-		public int Agree { get; set; }
+		public string PartnerCode { get; set; }
+		/// <summary>
+		/// 请求结果
+		/// </summary>
+		public string RequestResult { get; set; }
+		/// <summary>
+		/// 请求结果 的显性字段MC
+		/// </summary>
+		[Computed]
+		public string RequestResultMC { get; set; }
+
 	}
 }

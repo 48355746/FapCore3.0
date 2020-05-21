@@ -19,7 +19,7 @@ namespace Fap.Core.Infrastructure.Domain
         /// <summary>
         /// 员工Fid
         /// </summary>
-        public string EmpUid => _httpContextAccessor?.HttpContext == null ? "~" : _httpContextAccessor?.HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.UserData)?.Value;
+        public string EmpUid => _httpContextAccessor?.HttpContext == null ? "~" : _httpContextAccessor?.HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
         /// <summary>
         /// 员工姓名
         /// </summary>
@@ -31,7 +31,7 @@ namespace Fap.Core.Infrastructure.Domain
         /// <summary>
         /// 用户Fid
         /// </summary>
-        public string UserUid => _httpContextAccessor?.HttpContext == null ? "~" : _httpContextAccessor?.HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        public string UserUid => _httpContextAccessor?.HttpContext == null ? "~" : _httpContextAccessor?.HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.UserData)?.Value;
         /// <summary>
         /// 用户名
         /// </summary>

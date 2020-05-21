@@ -59,8 +59,8 @@ $(function () {
             }, { nav: hash });
     })
     $("#sidebar-shortcuts-large #btnChangeRole").on(ace.click_event, function () {
-        var dialog=bootbox.dialog({
-            message: 'loading',    
+        var dialog = bootbox.dialog({
+            message: 'loading',
             buttons: {
                 success: {
                     label: $.lang("ok", "确定"),
@@ -74,15 +74,15 @@ $(function () {
                     label: $.lang("cancel", "取消"),
                     className: "btn-default",
                     callback: function () {
-                       
+
                     }
                 }
             }
         });
         dialog.init(function () {
-            var url = basePath + '/Home/RoleList';           
+            var url = basePath + '/Home/RoleList';
             $.get(url, function (ev) {
-                dialog.find('.bootbox-body').html(ev);                
+                dialog.find('.bootbox-body').html(ev);
             });
         });
     })
@@ -142,5 +142,15 @@ var getBadge = function () {
         }
     });
 };
-
-$("#mypartner").tmpl(obj).appendTo(".profile-online");
+//加载我的伙伴
+(function () {
+    $.get(basePath + "/SelfService/Api/Partner", function (rv) {
+        if (rv.success) {
+            if (rv.data != null) {
+                $("#mypartner").tmpl(rv.data).appendTo(".profile-partner");
+            }
+        } else {
+            $.msg("加载伙伴出错："+rv.msg);
+        }
+    })
+})();

@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mime;
-using System.Threading.Tasks;
 using Fap.AspNetCore.Infrastructure;
 using Fap.AspNetCore.ViewModel;
 using Fap.Core.Infrastructure.Model;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Fap.Core.Utility;
@@ -15,8 +13,9 @@ using Dapper;
 using Fap.Hcm.Service.Organization;
 using Emp = Fap.Core.Rbac.Model.Employee;
 using Fap.Core.Rbac.Model;
-using DocumentFormat.OpenXml.Wordprocessing;
 using Ardalis.GuardClauses;
+using Microsoft.AspNetCore.SignalR;
+using Fap.Core.SignalR;
 
 namespace Fap.Hcm.Web.Areas.SelfService.Controllers
 {
@@ -26,9 +25,11 @@ namespace Fap.Hcm.Web.Areas.SelfService.Controllers
     public class SelfServiceApiController : FapController
     {
         private readonly IOrganizationService _organizationService;
+        private readonly IHubContext<OnlineUserHub> _hubContext;
         public SelfServiceApiController(IServiceProvider serviceProvider) : base(serviceProvider)
         {
             _organizationService = serviceProvider.GetService<IOrganizationService>();
+            _hubContext = serviceProvider.GetService<IHubContext<OnlineUserHub>>();
         }
         [HttpPost("CalendarEvent")]
         public JsonResult CalendarEvent(CfgCalendarEvent cevent)
@@ -210,11 +211,12 @@ namespace Fap.Hcm.Web.Areas.SelfService.Controllers
         [HttpGet("Partner")]
         public JsonResult MyPartner()
         {
-            string sql = $"select {nameof(EssPartner.PartnerUid)} from {nameof(EssPartner)} where {nameof(EssPartner.EmpUid)} = @EmpUid and {nameof(EssPartner.Agree)}=1";
+            string sql = $"select {nameof(EssPartner.PartnerUid)} from {nameof(EssPartner)} where {nameof(EssPartner.EmpUid)} = @EmpUid and {nameof(EssPartner.RequestResult)}='Agree'";
+            sql += $" union select {nameof(EssPartner.EmpUid)} from {nameof(EssPartner)} where {nameof(EssPartner.PartnerUid)} = @EmpUid and {nameof(EssPartner.RequestResult)}='Agree'";
             var empUids = _dbContext.Query(sql, new DynamicParameters(new { EmpUid = _applicationContext.EmpUid })).Select(e => e.PartnerUid);
             if (empUids.Any())
             {
-                sql = $"select {nameof(Emp.Fid)},{nameof(Emp.DeptUid)},{nameof(Emp.EmpPhoto)},'Offline' as OnlineState from Employee where Fid in @EmpUids";
+                sql = $"select {nameof(Emp.Fid)},{nameof(Emp.EmpName)},{nameof(Emp.DeptUid)},{nameof(Emp.EmpPhoto)},'Offline' as OnlineState from Employee where Fid in @EmpUids";
                 var emps = _dbContext.Query(sql, new DynamicParameters(new { EmpUids = empUids }), true);
                 var onlineEmps = _dbContext.Query($"select {nameof(FapOnlineUser.EmpUid)} from {nameof(FapOnlineUser)} where {nameof(FapOnlineUser.OnlineState)}='{FapOnlineUser.CONST_ONLINE}' and {nameof(FapOnlineUser.EmpUid)} in @EmpUids", new DynamicParameters(new { EmpUids = empUids }))
                     .Select<dynamic, string>(e => e.EmpUid);
@@ -230,22 +232,17 @@ namespace Fap.Hcm.Web.Areas.SelfService.Controllers
             }
             return Json(ResponseViewModelUtils.Sueecss());
         }
-        [HttpPost("Partner")]
-        public JsonResult AddPartner(List<string> partners)
+        [HttpPost("RequestPartner")]
+        public JsonResult RequestPartner(string fid, string reqState)
         {
-            Guard.Against.Null(partners, nameof(partners));
-            IList<EssPartner> list = new List<EssPartner>();
-            foreach (var partnerUid in partners)
-            {
-                EssPartner p = new EssPartner
-                {
-                    EmpUid = _applicationContext.EmpUid,
-                    PartnerUid = partnerUid,
-                    Agree = 0
-                };
-                list.Add(p);
-            }
-            _dbContext.InsertBatchSql(list);
+            Guard.Against.NullOrEmpty(fid, nameof(fid));
+            Guard.Against.NullOrEmpty(reqState, nameof(reqState));
+            var partner= _dbContext.Get<EssPartner>(fid);
+            partner.RequestResult = reqState;
+            _dbContext.Update(partner);
+           //推送审核通知
+            _hubContext.Clients.User(partner.EmpUid).SendAsync("PartnerCheckNotifications",
+                new {ReqState=reqState, Fid=_applicationContext.EmpUid,EmpName=_applicationContext.EmpName,DeptUidMC=_applicationContext.DeptName,EmpPhoto=_applicationContext.EmpPhoto});
             return Json(ResponseViewModelUtils.Sueecss());
         }
     }

@@ -21,7 +21,7 @@ namespace Fap.Core.SignalR
         }
         public async Task SendMessage(string user, string message)
         {
-            await Clients.All.ReceiveMessage(user, message);
+            await Clients.User(user).ReceiveMessage(_applicationContext.EmpName, message);
         }
         public override Task OnConnectedAsync()
         {
@@ -55,7 +55,7 @@ namespace Fap.Core.SignalR
 
         public override Task OnDisconnectedAsync(Exception exception)
         {
-            Clients.Others.Online(new FapOnlineUser
+            Clients.Others.Offline(new FapOnlineUser
             {
                 ConnectionId = Context.ConnectionId,
                 EmpUid = _applicationContext.EmpUid,

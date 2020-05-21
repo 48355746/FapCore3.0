@@ -1,27 +1,24 @@
-﻿@using Fap.Core.Infrastructure.Model
-@using Fap.Core.Infrastructure.Enums
-@model IEnumerable<FapMessage>
-@{ 
-    int todoCount = ViewBag.ToDoCount;
-    int agentCount = ViewBag.AgentCount;
-    int total = todoCount+ agentCount;
+﻿@using Fap.Core.Extensions
+@model AttentionModel
+@{
+    int todoCount = Model.TodoCount;
+    int agentCount = Model.AgentCount;
+    int total = todoCount + agentCount;
     string todoPer = "0%";
     string agentPer = "0%";
-    if(total>0)
+    if (total > 0)
     {
-        if(todoCount>0)
+        if (todoCount > 0)
         {
             todoPer = todoCount * 100 / total + "%";
         }
-        if(agentCount>0)
+        if (agentCount > 0)
         {
             agentPer = agentCount * 100 / total + "%";
         }
 
     }
 }
-
-
 <li class="grey">
     <a data-toggle="dropdown" class="dropdown-toggle" href="#">
         <i class="ace-icon fa fa-tasks"></i>
@@ -35,7 +32,7 @@
         </li>
 
         <li class="dropdown-content">
-            <ul  class="dropdown-menu dropdown-navbar">
+            <ul class="dropdown-menu dropdown-navbar">
                 <li id="todocounter">
                     <a href="@Url.Content("~/Home/MainFrame#Workflow/Business/TodoTask")">
                         <div class="clearfix">
@@ -73,135 +70,93 @@
 </li>
 
 
-@if (Model != null)
-{
-    var notices = Model.Where(m => m.MsgCategory == FapMessageCategory.Notice);
-    var messages = Model.Where(m => m.MsgCategory == FapMessageCategory.Message);
-    if (notices != null)
-    {
+<li class="purple">
 
-        var grpNotice = notices.ToList().OrderByDescending(n => n.CreateDate).Take(10);
+    <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+        <i class="ace-icon fa fa-bell icon-animated-bell"></i>
+        <span class="badge badge-important">@Model.Notifications.Count()</span>
+    </a>
 
-        <li class="purple">
+    <ul class="dropdown-menu-right dropdown-navbar navbar-pink dropdown-menu dropdown-caret dropdown-close">
+        <li class="dropdown-header">
+            <i class="ace-icon fa fa-exclamation-triangle"></i>
+            @Model.Notifications.Count() <fap-multilang lang-key="notifications" default-content="通知"></fap-multilang>
+        </li>
 
-            <a data-toggle="dropdown" class="dropdown-toggle" href="#">
-                <i class="ace-icon fa fa-bell icon-animated-bell"></i>
-                <span class="badge badge-important">@notices.Count()</span>
-            </a>
-
-            <ul class="dropdown-menu-right dropdown-navbar navbar-pink dropdown-menu dropdown-caret dropdown-close">
-                <li class="dropdown-header">
-                    <i class="ace-icon fa fa-exclamation-triangle"></i>
-                    @notices.Count() <fap-multilang lang-key="notification" default-content="通知"></fap-multilang>
-                </li>
-
-                <li class="dropdown-content">
-                    <ul class="dropdown-menu dropdown-navbar navbar-pink">
-                        @foreach (var item in grpNotice)
-                        {
-                            string url = "javascript:void(0)";
-                            string target = "";
-                            if (!string.IsNullOrWhiteSpace(item.URL))
-                            {
-                                Uri uri = new Uri(item.URL);
-                                if (string.IsNullOrEmpty(uri.Query))
-                                {
-                                    url = String.Concat(item.URL, "?source=" + item.Fid);
-
-                                }
-                                else
-                                {
-                                    url = String.Concat(item.URL, "&source=" + item.Fid);
-
-                                }
-                                //target = "target=\"_blank\"";
-                            }
-                            <li>
-                                <a href="@url" @target>
-                                    <div class="clearfix">
-                                        <div class="pull-left">
-                                            <i class="ace-icon fa fa-comments bigger-230 pink"></i>
-                                        </div>
-                                        <span class="msg-body">
-                                            <span class="msg-title">
-                                                <span class="blue">@item.SEmpUidMC:</span>
-                                                @Html.Raw(item.MsgContent)
-
-                                            </span>
-
-                                            <span class="msg-time">
-                                                <i class="ace-icon fa fa-clock-o"></i>
-                                                <span>@item.SendTime</span>
-                                            </span>
-                                        </span>
-
-                                    </div>
-                                </a>
-
-                            </li>
-                        }
-                    </ul>
-                </li>
-                <li class="dropdown-footer">
-                    <a href="@Url.Content("~/Home/MainFrame#SelfService/Ess/MessageAndNotice")">
-                        <fap-multilang lang-key="show_all" default-content="查看所有"></fap-multilang>
-                        <i class="ace-icon fa fa-arrow-right"></i>
-                    </a>
-                </li>
+        <li class="dropdown-content">
+            <ul class="dropdown-menu dropdown-navbar navbar-pink">
+                @foreach (var notification in Model.Notifications)
+                {
+                    <li>
+                        <a href="~/Home/MainFrame#@notification.NavigateUrl">
+                            <div class="clearfix">
+                                <span class="pull-left">
+                                    <i class="btn btn-xs no-hover  fa @notification.Icon"></i>
+                                    @notification.Description
+                                </span>
+                                <span class="pull-right badge badge-yellow">+@notification.NCount</span>
+                            </div>
+                        </a>
+                    </li>
+                }
             </ul>
         </li>
-    }
-    if (messages != null)
-    {
+        <li class="dropdown-footer">
+           
+        </li>
+    </ul>
+</li>
 
+<li class="green">
+    <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+        <i class="ace-icon fa fa-envelope icon-animated-vertical"></i>
+        <span class="badge badge-success">@Model.Messages.Count()</span>
+    </a>
 
-        <li class="green">
-            <a data-toggle="dropdown" class="dropdown-toggle" href="#">
-                <i class="ace-icon fa fa-envelope icon-animated-vertical"></i>
-                <span class="badge badge-success">@messages.Count()</span>
-            </a>
+    <ul class="dropdown-menu-right dropdown-navbar dropdown-menu dropdown-caret dropdown-close">
+        <li class="dropdown-header">
+            <i class="ace-icon fa fa-envelope-o"></i>
+            @Model.Messages.Count()  <fap-multilang lang-key="message" default-content="消息"></fap-multilang>
+        </li>
 
-            <ul class="dropdown-menu-right dropdown-navbar dropdown-menu dropdown-caret dropdown-close">
-                <li class="dropdown-header">
-                    <i class="ace-icon fa fa-envelope-o"></i>
-                    @messages.Count()  <fap-multilang lang-key="message" default-content="消息"></fap-multilang>
-                </li>
+        <li class="dropdown-content">
+            <ul class="dropdown-menu dropdown-navbar">
+                @foreach (var message in Model.Messages)
+                {
+                    <li>
+                        <a href="javascript:void(0)">
+                            <div class="clearfix">
+                                <div class="pull-left">
+                                    <i class="ace-icon fa fa-comments bigger-230 pink"></i>
+                                </div>
+                                <span class="msg-body">
+                                    <span class="msg-title">
+                                        <span class="blue">@(message.SEmpUidMC.IsMissing()?"系统":message.SEmpUidMC):</span>
+                                        @message.MsgContent
 
-                <li class="dropdown-content">
-                    <ul class="dropdown-menu dropdown-navbar">
-                        @foreach (var item in messages)
-                        {
-                            <li>
-                                <a href="#" class="clearfix">
-                                    <img src="@Url.Content("~/Component/Photo/")@item.SEmpUid" class="msg-photo" alt="@item.SEmpUidMC" />
-                                    <span class="msg-body">
-                                        <span class="msg-title">
-                                            <span class="blue">@item.SEmpUidMC:</span>
-                                            @item.MsgContent
-                                        </span>
-
-                                        <span class="msg-time">
-                                            <i class="ace-icon fa fa-clock-o"></i>
-                                            <span>@item.SendTime</span>
-                                        </span>
                                     </span>
-                                </a>
-                            </li>
-                        }
 
+                                    <span class="msg-time">
+                                        <i class="ace-icon fa fa-clock-o"></i>
+                                        <span>@message.SendTime</span>
+                                    </span>
+                                </span>
 
-
-                    </ul>
-                </li>
-
-                <li class="dropdown-footer">
-                    <a href="@Url.Content("~/Home/MainFrame#SelfService/Ess/MessageAndNotice")">
-                        <fap-multilang lang-key="show_all" default-content="查看所有"></fap-multilang>
-                        <i class="ace-icon fa fa-arrow-right"></i>
-                    </a>
-                </li>
+                            </div>
+                        </a>
+                    </li>
+                }
             </ul>
         </li>
 
-    }
-}
+        <li class="dropdown-footer">
+            <a href="@Url.Content("~/Home/MainFrame#SelfService/Ess/MessageAndNotice")">
+                <fap-multilang lang-key="show_all" default-content="查看所有"></fap-multilang>
+                <i class="ace-icon fa fa-arrow-right"></i>
+            </a>
+        </li>
+    </ul>
+</li>
+
+
+

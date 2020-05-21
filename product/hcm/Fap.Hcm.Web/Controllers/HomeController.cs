@@ -152,8 +152,8 @@ namespace Fap.Hcm.Web.Controllers
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, loginUser.UserName),//用户名
-                    new Claim(ClaimTypes.NameIdentifier,loginUser.Fid),//用户Fid
-                    new Claim(ClaimTypes.UserData, loginUser.UserIdentity),//员工Fid
+                    new Claim(ClaimTypes.UserData,loginUser.Fid),//用户Fid
+                    new Claim(ClaimTypes.NameIdentifier, loginUser.UserIdentity),//员工Fid
                     new Claim(ClaimTypes.Surname,emp.EmpName),//员工姓名
                     new Claim(ClaimTypes.PrimarySid,emp.DeptUid??"-"),//员工部门
                     new Claim(ClaimTypes.PrimaryGroupSid,emp.DeptCode??""),//部门编码
@@ -354,8 +354,8 @@ namespace Fap.Hcm.Web.Controllers
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, fid),//用户名
-                    new Claim(ClaimTypes.NameIdentifier,fid),//用户Fid
-                    new Claim(ClaimTypes.UserData,fid),//员工Fid
+                    new Claim(ClaimTypes.NameIdentifier,fid),//员工Fid
+                    new Claim(ClaimTypes.UserData,fid),//用户Fid
                     new Claim(ClaimTypes.Surname,"准员工"),//员工姓名
                     new Claim(ClaimTypes.PrimarySid,"-"),//员工部门
                     new Claim(ClaimTypes.PrimaryGroupSid,"-"),//部门编码

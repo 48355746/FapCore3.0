@@ -9,6 +9,7 @@ namespace Fap.Core.SignalR
     public interface IOnlineUser
     {
         Task Online(FapOnlineUser onlineUser);
+        Task Offline(FapOnlineUser onlineUser);
         Task ReceiveMessage(string user, string message);
         Task ReceiveMessage(string message);
     }

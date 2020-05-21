@@ -138,7 +138,9 @@ var MultiLangHelper = (function () {
       'login_password_level': { 'ZhCn': '请指定一个安全密码', 'ZhTW': '', 'En': '', 'Ja': '' },
       'login_password_required': { 'ZhCn': '请输入你的密码', 'ZhTW': '', 'En': '', 'Ja': '' },
       'select_employee_view': { 'ZhCn': '选择人员查看', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'select_employee': { 'ZhCn': '选择人员', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'select_employee': { 'ZhCn': '选择人员', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'agreee': { 'ZhCn': '同意', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'disagreee': { 'ZhCn': '不同意', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

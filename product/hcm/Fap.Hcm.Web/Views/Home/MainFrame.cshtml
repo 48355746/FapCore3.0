@@ -104,30 +104,28 @@
         NProgress.configure({ parent: ".page-content" });
     </script>
     <script id="mypartner" type="text/x-jquery-tmpl">
-        <div class="profile-activity clearfix">
+        <div class="profile-activity clearfix" data-id="${Fid}">
             <div>
-                <img class="pull-left" alt="头像" src="~/Component/Photo/${EmpPhoto}">
-                <a class="user" href="#">
-                    {#if OnlineState=='Online'}
-                    <span class="user-status status-online"></span>
-                    {#else}
-                    <span class="user-status status-offline"></span>
-                    {#/if}
+                <img class="pull-left" alt="头像" src="@Url.Content("~/Component/Photo/")${EmpPhoto}">
+                <span class="user bolder" href="#">
+                    {{if OnlineState==='Online'}}
+                    <span class="user-status status-online" title="online"></span>
+                    {{else}}
+                    <span class="user-status status-offline" title="offline"></span>
+                    {{/if}}
                     ${EmpName}
-                </a>
+                </span>
 
                 <div class="time">
                     ${DeptUidMC}
                 </div>
             </div>
             <div class="tools action-buttons">
-                <a href="#" class="blue">
+                {{if OnlineState==='Online'}}
+                <a href="javascript:void(0)" data-chat="${Fid}" data-emp="${EmpName}" class="blue">
                     <i class="ace-icon fa fa-comments bigger-125"></i>
                 </a>
-
-                <a href="#" class="red">
-                    <i class="ace-icon fa fa-times bigger-125"></i>
-                </a>
+                {{/if}}
             </div>
         </div>
     </script>
@@ -202,7 +200,7 @@
                         <i class="ace-icon fa fa-lightbulb-o"></i>
                     </button>
 
-                    <button class="btn btn-info" data-target="#right-menu-friends" data-toggle="modal" title="伙伴沟通">
+                    <button class="btn btn-info" data-target="#right-menu-friends" data-toggle="modal" title="我的伙伴">
                         <i class="ace-icon fa fa-users"></i>
                     </button>
 
@@ -352,16 +350,16 @@
                             <div class="modal-content">
                                 <div class="modal-header no-padding">
                                     <div class="table-header">
-                                        <button type="button" class="close" aria-hidden="true">
+                                        <a  class="close" aria-hidden="true" href="~/Home/MainFrame#SelfService/Ess/MyPartner">
                                             <span class="white"> <i class="ace-icon fa fa-plus-circle bigger-120"></i></span>
-                                        </button>
+                                        </a>
 
                                         我的伙伴
                                     </div>
                                 </div>
                                 <div class="modal-body">
                                     <div class="row">
-                                        <div class="profile-online col-xl-12">
+                                        <div class="profile-partner col-xl-12">
                                         </div>
                                     </div>
                                 </div><!-- /.modal-content -->
@@ -435,6 +433,7 @@
         <script src="~/Content/js/jquery.ui.touch-punch.js" asp-append-version="true"></script>
         <script src="~/Content/js/jquery.nestable.js" asp-append-version="true"></script>
         <script src="~/Content/js/bootstrap-tag.js" asp-append-version="true"></script>
+        <script src="~/Content/js/jquery.tmpl.js" asp-append-version="true"></script>
         <script src="~/Scripts/Fap/common.js" asp-append-version="true"></script>
         <script src="~/Scripts/Fap/utils.js" asp-append-version="true"></script>
         <script src="~/Content/js/date-time/bootstrap-datetimepicker.js" asp-append-version="true"></script>

@@ -60,14 +60,22 @@ namespace Fap.Hcm.Web.Areas.SelfService.Controllers
         }
         public ActionResult MyPartner()
         {
-            var model = GetJqGridModel(nameof(EssPartner), qs =>
+            MultiJqGridViewModel multi = new MultiJqGridViewModel();
+            var partner = GetJqGridModel(nameof(EssPartner), qs =>
             {
                 qs.GlobalWhere = "EmpUid=@EmpUid";
                 qs.AddParameter("EmpUid", _applicationContext.EmpUid);
                 qs.AddDefaultValue("EmpUid", _applicationContext.EmpUid);
                 qs.AddDefaultValue("EmpUidMC", _applicationContext.EmpName);
             });
-            return View(model);
+            multi.JqGridViewModels.Add("partner", partner);
+            var partnerRequest = GetJqGridModel(nameof(EssPartner), qs =>
+            {
+                qs.GlobalWhere = $"{nameof(EssPartner.PartnerUid)}=@EmpUid and {nameof(EssPartner.RequestResult)}='None'";
+                qs.AddParameter("EmpUid", _applicationContext.EmpUid);
+            });
+            multi.JqGridViewModels.Add("request", partnerRequest);
+            return View(multi);
         }
     }
 }
