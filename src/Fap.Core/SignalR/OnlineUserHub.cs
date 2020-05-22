@@ -21,18 +21,18 @@ namespace Fap.Core.SignalR
         }
         public async Task SendMessage(string user, string message)
         {
-            await Clients.User(user).ReceiveMessage(_applicationContext.EmpName, message);
+            await Clients.User(user).ReceiveMessage(_applicationContext.EmpName,_applicationContext.EmpUid, message);
         }
         public override Task OnConnectedAsync()
         {
             //添加在线用户日志               
             RegistryOnlineUser();
-            Clients.Others.Online(new FapOnlineUser
+            Clients.Others.Online(new
             {
-                ConnectionId = Context.ConnectionId,
-                EmpUid=_applicationContext.EmpUid,
-                EmpUidMC = _applicationContext.EmpName,
-                OnlineState=FapOnlineUser.CONST_ONLINE
+                Context.ConnectionId,
+                _applicationContext.EmpUid,
+                _applicationContext.EmpName,
+                OnlineState = FapOnlineUser.CONST_ONLINE
             });
             return base.OnConnectedAsync();
         }
@@ -55,11 +55,11 @@ namespace Fap.Core.SignalR
 
         public override Task OnDisconnectedAsync(Exception exception)
         {
-            Clients.Others.Offline(new FapOnlineUser
+            Clients.Others.Offline(new
             {
-                ConnectionId = Context.ConnectionId,
-                EmpUid = _applicationContext.EmpUid,
-                EmpUidMC = _applicationContext.EmpName,
+                Context.ConnectionId,
+                _applicationContext.EmpUid,
+                _applicationContext.EmpName,
                 OnlineState = FapOnlineUser.CONST_OFFLINE
             });
             _onlineUserService.OfflineUser(Context.ConnectionId);
