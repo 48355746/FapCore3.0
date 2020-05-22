@@ -79,28 +79,38 @@ $(".profile-partner").off(ace.click_event, "[data-chat]").on(ace.click_event, "[
                         `+ content + `
 <br/><small>`+ moment().locale('zh-cn').format('YYYY-MM-DD HH:mm:ss') + `</small>
                     </div>`;
-                chatDialog.find(".active-chat").append(chatContent);
+                chatDialog.find(".active-chat .scroll-content").append(chatContent);
                 $chatUser.data("noreader", "");
                 $chatUser.find(".arrowed").html('');
             }
             chatDialog.find("#sendButton").on(ace.click_event, function (event) {                
-                var message = chatDialog.find("#userInputMessage").val();
-                if (message === "") {
-                    return;
-                }
-                connection.invoke("SendMessage", user, message).catch(function (err) {
-                    return console.error(err.toString());
-                });
-                var chatContent = ` <div class="bubble me">
-                        `+ message +`
-<br/><small>`+ moment().locale('zh-cn').format('YYYY-MM-DD HH:mm:ss') +`</small>
-                    </div>`;
-                chatDialog.find(".active-chat").append(chatContent);
-                chatDialog.find("#userInputMessage").val("");
+                sendMessage();
                 event.preventDefault();
             });
+            chatDialog.find("#userInputMessage").keypress(function (event) {
+                if (event.which == 13) {
+                    event.preventDefault();
+                    sendMessage();
+                }
+            })
         });
     });
+    var sendMessage = function () {
+        var message = chatDialog.find("#userInputMessage").val();
+        if (message === "") {
+            return;
+        }
+        connection.invoke("SendMessage", user, message).catch(function (err) {
+            return console.error(err.toString());
+        });
+        var chatContent = ` <div class="bubble me">
+                        `+ message + `
+<br/><small>`+ moment().locale('zh-cn').format('YYYY-MM-DD HH:mm:ss') + `</small>
+                    </div>`;
+        chatDialog.find(".active-chat .scroll-content").append(chatContent);
+        chatDialog.find("#userInputMessage").val("");
+        
+    }
 });
 //userName.
 connection.on("ReceiveMessage", function (fromUserName,fromUserid, message) {
@@ -111,7 +121,7 @@ connection.on("ReceiveMessage", function (fromUserName,fromUserid, message) {
                         `+ msg + `
 <br/><small>`+ moment().locale('zh-cn').format('YYYY-MM-DD HH:mm:ss') + `</small>
                     </div>`;
-        dialogChat.append(chatContent);
+        dialogChat.find(".scroll-content").append(chatContent);
     } else {
         var $chatUser = $(".profile-partner").find("[data-id='" + fromUserid + "']");
         if ($chatUser !== undefined) {
