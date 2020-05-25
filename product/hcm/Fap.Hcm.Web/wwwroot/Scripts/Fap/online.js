@@ -66,22 +66,23 @@ $(".profile-partner").off(ace.click_event, "[data-chat]").on(ace.click_event, "[
         footer: false
     });
     chatDialog.init(function () {
-        $.get(basePath + "/Content/chat/chat.html", function (ev) {
+        $.get(basePath + "/Content/chat/chat.html?v=1", function (ev) {
             chatDialog.find('.bootbox-body').html(ev);
             //标记和谁聊天框
             chatDialog.find(".active-chat.fap-im").data("chatuser", user);
             //更新聊天内容（从数据库读取）
             //临时读取未读内容
             var $chatUser= $this.closest('.profile-activity');
-            var content = $chatUser .data("noreader");
+            var content = $chatUser.data("noreader");
             if (content) {
-                var chatContent = ` <div class="bubble you">
-                        `+ content + `
-<br/><small>`+ moment().locale('zh-cn').format('YYYY-MM-DD HH:mm:ss') + `</small>
-                    </div>`;
-                chatDialog.find(".active-chat .scroll-content").append(chatContent);
+                $.each(content, function (i, chat) {
+                    var chatContent = toYouChatContent(chat);
+                    chatDialog.find(".active-chat .scroll-content").append(chatContent);
+                });
                 $chatUser.data("noreader", "");
                 $chatUser.find(".arrowed").html('');
+                //滚动条始终在底部
+                $('.active-chat').data("ace_scroll").end();
             }
             chatDialog.find("#sendButton").on(ace.click_event, function (event) {                
                 sendMessage();
@@ -103,44 +104,65 @@ $(".profile-partner").off(ace.click_event, "[data-chat]").on(ace.click_event, "[
         connection.invoke("SendMessage", user, message).catch(function (err) {
             return console.error(err.toString());
         });
-        var chatContent = ` <div class="bubble me">
-                        `+ message + `
-<br/><small>`+ moment().locale('zh-cn').format('YYYY-MM-DD HH:mm:ss') + `</small>
-                    </div>`;
+        var chatContent = toMeChatContent({ message: message, tm: moment().locale('zh-cn').format('YYYY-MM-DD HH:mm:ss') }) ;
         chatDialog.find(".active-chat .scroll-content").append(chatContent);
         chatDialog.find("#userInputMessage").val("");
+        //滚动条始终在底部
+        $('.active-chat').data("ace_scroll").end();
         
     }
 });
-//userName.
+function toYouChatContent(chat) {
+    //return ` <div class="bubble you">
+    //                    `+ chat.message + `<br/><small>` + chat.tm + `</small>
+    //                </div>`;
+    return `<div class="bubble you">
+        <div class="small">
+            <i class="ace-icon fa fa-clock-o"></i>
+            <span>`+chat.tm+`</span>
+        </div>
+        <div class="h4">`+ chat.message + `</div></div>`;
+}
+function toMeChatContent(chat) {
+    return   `<div class="bubble me">
+        <div class="small">
+            <i class="ace-icon fa fa-clock-o"></i>
+            <span>`+ chat.tm + `</span>
+        </div>
+        <div class="h4">`+ chat.message + `</div></div>`;
+    //` <div class="bubble me">
+    //                    `+ chat.message + `<br/><small>` + chat.tm + `</small>
+    //                </div>`
+}
+//接收消息
 connection.on("ReceiveMessage", function (fromUserName,fromUserid, message) {
     var msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     var dialogChat = $(".active-chat.fap-im");
     if (dialogChat.data("chatuser") === fromUserid) {
-        var chatContent = ` <div class="bubble you">
-                        `+ msg + `
-<br/><small>`+ moment().locale('zh-cn').format('YYYY-MM-DD HH:mm:ss') + `</small>
-                    </div>`;
+        var chatContent = toYouChatContent({ message: msg, tm: moment().locale('zh-cn').format('YYYY-MM-DD HH:mm:ss')}) ;
         dialogChat.find(".scroll-content").append(chatContent);
+        //滚动条始终在底部
+        $('.active-chat').data("ace_scroll").end();
     } else {
         var $chatUser = $(".profile-partner").find("[data-id='" + fromUserid + "']");
-        if ($chatUser !== undefined) {
-            var $arrowed = $chatUser.find(".arrowed");
-            if ($arrowed.get(0) != undefined) {
-                var c = parseInt($arrowed.html()) + 1;
-                $arrowed.html('+' + c);
-            } else {
-                $chatUser.find(".user").append(' <span class="label label-purple arrowed">1</span>');
-            }            
-        }
+        //消息计数
+        var $arrowed = $(".profile-partner").find("[data-id='" + fromUserid + "']").find(".arrowed");        
+        if ($arrowed.get(0) != undefined) {
+            var c = parseInt($arrowed.html()) + 1;
+            $arrowed.html('+' + c);
+        } else {
+            $chatUser.find(".user").append(' <span class="label label-purple arrowed">1</span>');
+        }          
+       
         //临时存储未读内容
         var content = $chatUser.data("noreader");
-        if (content === undefined) {
-            $chatUser.data("noreader", msg);
+        if (!content) {
+            $chatUser.data("noreader", (content = [{ message: msg, tm: moment().locale('zh-cn').format('YYYY-MM-DD HH:mm:ss') }]));
         } else {
-            $chatUser.data("noreader", content + ">>>" + msg);
+            content.push({ message: msg, tm: moment().locale('zh-cn').format('YYYY-MM-DD HH:mm:ss') });
+            $chatUser.data("noreader", content);
         }
         //存入数据库
-        $.msg(fromUserName + ":" + msg);
+        $.msg("伙伴:["+fromUserName + "]发来即时消息，请抓紧阅读。");
     }
 });

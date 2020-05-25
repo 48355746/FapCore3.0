@@ -54,6 +54,7 @@
         <link rel="stylesheet" href="~/Content/nprogress/nprogress.css" />
         <link rel="stylesheet" href="~/Content/css/ace.css" class="ace-main-stylesheet" id="main-ace-style" asp-append-version="true" />
         <link rel="stylesheet" href="~/Content/Site.css" class="ace-main-stylesheet" id="main-ace-style" asp-append-version="true" />
+        <link href="~/Content/chat/chat.css" rel="stylesheet" asp-append-version="true"/>
     </environment>
     <environment exclude="Development">
         <link rel="stylesheet" href="~/css/ace.min.css" asp-append-version="true" />
@@ -202,6 +203,9 @@
 
                     <button class="btn btn-info" data-target="#right-menu-friends" data-toggle="modal" title="我的伙伴">
                         <i class="ace-icon fa fa-users"></i>
+                        <span   style="position: absolute; top: -8px;">
+                            <i class="fa fa-volume-up icon-animated-bell"></i>
+                        </span>
                     </button>
 
                     <!-- #section:basics/sidebar.layout.shortcuts -->

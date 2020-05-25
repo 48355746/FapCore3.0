@@ -15,7 +15,8 @@
     "inputFiles": [
       "wwwroot/Content/css/ace.css",
       "wwwroot/Content/nprogress/nprogress.css",
-      "wwwroot/Content/Site.css"
+      "wwwroot/Content/Site.css",
+      "wwwroot/Content/chat/chat.css"
     ]
   }, 
   {

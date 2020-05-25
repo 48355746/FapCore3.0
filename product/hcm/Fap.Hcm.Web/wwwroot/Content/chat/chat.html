@@ -1,60 +1,5 @@
 ﻿<style>
-    .active-chat {
-        display: flex;
-        position: relative;
-        overflow: hidden;
-        border-width: 0;
-        padding-right: 20px;
-        height: 400px;
-        justify-content: flex-end;
-        flex-direction: column;
-    }
-        .active-chat .conversation-start {
-            position: relative;
-            width: 100%;
-            margin-bottom: 27px;
-            text-align: center;
-        }
-            .active-chat .conversation-start span {
-                font-size: 14px;
-                display: inline-block;
-                color: grey;
-            }
-        .active-chat .bubble:nth-of-type(6) {
-            -webkit-animation-duration: 0.9s;
-            animation-duration: 0.9s;
-        }
-
-        .active-chat .bubble {
-            transition-timing-function: cubic-bezier(0.4, -0.04, 1, 1);
-        }
-
-            .active-chat .bubble.you {
-                float: left;
-                color: var(--white);
-                background-color: #00b0ff;
-                align-self: flex-start;
-                -webkit-animation-name: slideFromLeft;
-                animation-name: slideFromLeft;
-            }
-        .active-chat .bubble {
-            font-size: 16px;
-            position: relative;
-            display: inline-block;
-            clear: both;
-            margin-bottom: 8px;
-            padding: 13px 14px;
-            vertical-align: top;
-            border-radius: 5px;
-        }
-
-            .active-chat .bubble.me {
-                float: right;
-                background-color: #eceff1;
-                align-self: flex-end;
-                -webkit-animation-name: slideFromRight;
-                animation-name: slideFromRight;
-            }
+    
 </style>
 
 <div class="active-chat fap-im">
@@ -68,10 +13,11 @@
 <div class="form-actions">
     <div class="input-group">
         <input type="text" class="form-control" id="userInputMessage" name="message" />
+     
         <span class="input-group-btn">
             <a class="btn btn-sm btn-info no-radius" id="sendButton">
-                <i class="ace-icon fa fa-share"></i>
-                Send
+                <i class="ace-icon fa fa-paper-plane-o"></i>
+                发送
             </a>
         </span>
     </div>
