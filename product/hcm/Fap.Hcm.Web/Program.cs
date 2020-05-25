@@ -16,7 +16,7 @@ namespace Fap.Hcm.Web
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
-                {
+                {                    
                     webBuilder.UseStartup<Startup>().UseSerilog((context, configuration) =>
                     {
                         configuration
@@ -25,7 +25,7 @@ namespace Fap.Hcm.Web
                             .MinimumLevel.Override("System", LogEventLevel.Warning)
                             .MinimumLevel.Override("Microsoft.AspNetCore.Authentication", LogEventLevel.Information)
                             .Enrich.FromLogContext()
-                            .WriteTo.File(@"fap_hcm_web_log.txt")
+                            .WriteTo.File($"{context.Configuration["Logging:LogPath"]}/fap_hcm_web_log.txt")
                             .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {SourceContext}{NewLine}{Message:lj}{NewLine}{Exception}{NewLine}", theme: AnsiConsoleTheme.Literate);
                     });
                 }).UseDefaultServiceProvider(options => { options.ValidateScopes = false; });
