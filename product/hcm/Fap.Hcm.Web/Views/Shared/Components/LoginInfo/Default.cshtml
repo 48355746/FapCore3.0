@@ -21,7 +21,7 @@
         @foreach (var role in roles)
         {
             <li>
-                <a href="@Url.Content("~/Home/ChangeRole/")@role.Fid">
+                <a  href="javascript:void(0)" onclick="buildMenus('@role.Fid')">
                     @if (role.Fid == cr.Fid)
                     {
                         <i class="ace-icon green fa fa-check"></i>
@@ -32,7 +32,6 @@
                     }
                     @role.RoleName
                 </a>
-
             </li>
         }
 

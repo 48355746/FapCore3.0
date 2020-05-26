@@ -1,6 +1,6 @@
 ﻿//解决bootbox多弹出框focus 死循环问题
 $.fn.modal.Constructor.prototype.enforceFocus = function () { };
-$(function () {   
+$(function () {
     //使用说明
     $("#sidebar-shortcuts-large #btnHelper").on(ace.click_event, function () {
         var hash = window.location.hash;
@@ -29,7 +29,7 @@ $(function () {
                     className: "btn-primary",
                     callback: function () {
                         var roleUid = $('[name = "role-radio"]:checked').val();
-                        window.location.href = basePath + "/Home/ChangeRole/" + roleUid;
+                        buildMenus(roleUid);
                     }
                 },
                 cancel: {
@@ -54,6 +54,7 @@ $(function () {
     //    getBadge();
     //}, 3000);
 });
+
 //获取待处理个数
 var getHandling = function () {
     //获取待办数目
@@ -106,13 +107,22 @@ var getBadge = function () {
 };
 //加载我的伙伴
 (function () {
+    buildPartner();
+    buildMenus('0');
+})();
+function buildPartner() {
     $.get(basePath + "/SelfService/Api/Partner", function (rv) {
         if (rv.success) {
             if (rv.data != null) {
                 $("#mypartner").tmpl(rv.data).appendTo(".profile-partner");
             }
         } else {
-            $.msg("加载伙伴出错："+rv.msg);
+            $.msg("加载伙伴出错：" + rv.msg);
         }
     })
-})();
+}
+function buildMenus(roleUid) {
+    $.get(basePath + "/Home/ChangeRole/" + roleUid, function (rv) {
+        $(".nav.nav-list.menus").html(rv);
+    })
+}

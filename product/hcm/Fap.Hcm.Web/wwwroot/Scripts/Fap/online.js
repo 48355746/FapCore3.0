@@ -2,12 +2,12 @@
 var connection = new signalR.HubConnectionBuilder().withUrl("/onlineHub").build();
 
 //上线通知
-connection.on("Online", function (onlineUser) {    
+connection.on("Online", function (onlineUser) {
     var fid = onlineUser.empUid;
     $(".profile-partner").find("[data-id='" + fid + "']").find(".user-status").removeClass("status-offline").addClass("status-online");
     //添加聊天按钮
     $(".profile-partner").find("[data-id='" + fid + "']").append(`<div class="tools action-buttons">
-            <a href="javascript:void(0)" data-chat="`+ fid + `" data-emp="` + onlineUser.empName +`" class="blue">
+            <a href="javascript:void(0)" data-chat="`+ fid + `" data-emp="` + onlineUser.empName + `" class="blue">
                 <i class="ace-icon fa fa-comments bigger-125"></i>
             </a>
         </div>`);
@@ -26,7 +26,7 @@ connection.on("PartnerApplyNotifications", function (applier) {
 connection.on("PartnerCheckNotifications", function (applier) {
     if (applier.reqState === "Agree") {
         $.msg(applier.empName + "同意了您的伙伴申请");
-        var content = `<div class="profile-activity clearfix" data-id="`+applier.fid+`">
+        var content = `<div class="profile-activity clearfix" data-id="` + applier.fid + `">
         <div>
             <img class="pull-left" alt="头像" src="~/Component/Photo/`+ applier.empPhoto + `">
                 <span class="user bolder" href="#">                
@@ -39,7 +39,7 @@ connection.on("PartnerCheckNotifications", function (applier) {
             </div>
         </div>
         <div class="tools action-buttons">
-            <a href="javascript:void(0)" data-chat="`+ applier.fid + `" data-emp="` + applie.empName +`" class="blue">
+            <a href="javascript:void(0)" data-chat="`+ applier.fid + `" data-emp="` + applie.empName + `" class="blue">
                 <i class="ace-icon fa fa-comments bigger-125"></i>
             </a>
         </div>
@@ -55,6 +55,7 @@ connection.start().then(function () {
     return console.error(err.toString());
 });
 $(".profile-partner").off(ace.click_event, "[data-chat]").on(ace.click_event, "[data-chat]", function () {
+    removePartnerTooltip();
     var $this = $(this);
     //伙伴名称
     var empName = $this.data("emp");
@@ -72,7 +73,7 @@ $(".profile-partner").off(ace.click_event, "[data-chat]").on(ace.click_event, "[
             chatDialog.find(".active-chat.fap-im").data("chatuser", user);
             //更新聊天内容（从数据库读取）
             //临时读取未读内容
-            var $chatUser= $this.closest('.profile-activity');
+            var $chatUser = $this.closest('.profile-activity');
             var content = $chatUser.data("noreader");
             if (content) {
                 $.each(content, function (i, chat) {
@@ -84,7 +85,7 @@ $(".profile-partner").off(ace.click_event, "[data-chat]").on(ace.click_event, "[
                 //滚动条始终在底部
                 $('.active-chat').data("ace_scroll").end();
             }
-            chatDialog.find("#sendButton").on(ace.click_event, function (event) {                
+            chatDialog.find("#sendButton").on(ace.click_event, function (event) {
                 sendMessage();
                 event.preventDefault();
             });
@@ -104,12 +105,12 @@ $(".profile-partner").off(ace.click_event, "[data-chat]").on(ace.click_event, "[
         connection.invoke("SendMessage", user, message).catch(function (err) {
             return console.error(err.toString());
         });
-        var chatContent = toMeChatContent({ message: message, tm: moment().locale('zh-cn').format('YYYY-MM-DD HH:mm:ss') }) ;
+        var chatContent = toMeChatContent({ message: message, tm: moment().locale('zh-cn').format('YYYY-MM-DD HH:mm:ss') });
         chatDialog.find(".active-chat .scroll-content").append(chatContent);
         chatDialog.find("#userInputMessage").val("");
         //滚动条始终在底部
         $('.active-chat').data("ace_scroll").end();
-        
+
     }
 });
 function toYouChatContent(chat) {
@@ -119,12 +120,12 @@ function toYouChatContent(chat) {
     return `<div class="bubble you">
         <div class="small">
             <i class="ace-icon fa fa-clock-o"></i>
-            <span>`+chat.tm+`</span>
+            <span>`+ chat.tm + `</span>
         </div>
         <div class="h4">`+ chat.message + `</div></div>`;
 }
 function toMeChatContent(chat) {
-    return   `<div class="bubble me">
+    return `<div class="bubble me">
         <div class="small">
             <i class="ace-icon fa fa-clock-o"></i>
             <span>`+ chat.tm + `</span>
@@ -135,25 +136,30 @@ function toMeChatContent(chat) {
     //                </div>`
 }
 //接收消息
-connection.on("ReceiveMessage", function (fromUserName,fromUserid, message) {
+connection.on("ReceiveMessage", function (fromUserName, fromUserid, message) {
     var msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     var dialogChat = $(".active-chat.fap-im");
     if (dialogChat.data("chatuser") === fromUserid) {
-        var chatContent = toYouChatContent({ message: msg, tm: moment().locale('zh-cn').format('YYYY-MM-DD HH:mm:ss')}) ;
+        var chatContent = toYouChatContent({ message: msg, tm: moment().locale('zh-cn').format('YYYY-MM-DD HH:mm:ss') });
         dialogChat.find(".scroll-content").append(chatContent);
         //滚动条始终在底部
         $('.active-chat').data("ace_scroll").end();
     } else {
         var $chatUser = $(".profile-partner").find("[data-id='" + fromUserid + "']");
         //消息计数
-        var $arrowed = $(".profile-partner").find("[data-id='" + fromUserid + "']").find(".arrowed");        
+        var $arrowed = $(".profile-partner").find("[data-id='" + fromUserid + "']").find(".arrowed");
         if ($arrowed.get(0) != undefined) {
-            var c = parseInt($arrowed.html()) + 1;
+            var c = 0;
+            if ($arrowed.html().trim() === "") {
+                c = 1;
+            } else {
+                 c =parseInt($arrowed.html()) + 1;
+            }
             $arrowed.html('+' + c);
         } else {
             $chatUser.find(".user").append(' <span class="label label-purple arrowed">1</span>');
-        }          
-       
+        }
+        addPartnerTooltip();
         //临时存储未读内容
         var content = $chatUser.data("noreader");
         if (!content) {
@@ -163,6 +169,20 @@ connection.on("ReceiveMessage", function (fromUserName,fromUserid, message) {
             $chatUser.data("noreader", content);
         }
         //存入数据库
-        $.msg("伙伴:["+fromUserName + "]发来即时消息，请抓紧阅读。");
+        $.msg("伙伴:[" + fromUserName + "]发来即时消息，请抓紧阅读。");
     }
 });
+
+var partnerTooltip = `<span style="position: absolute; top: -8px;color:yellow">
+            <i class="fa fa-volume-up icon-animated-bell"></i>
+        </span>`;
+function addPartnerTooltip() {
+    if ($(".globalset.mypartner").find(".icon-animated-bell").get(0) === undefined) {
+        $(".globalset.mypartner").append(partnerTooltip);
+    }
+}
+function removePartnerTooltip() {
+    if ($(".globalset.mypartner").find(".icon-animated-bell").get(0) !== undefined) {
+        $(".globalset.mypartner").find(".icon-animated-bell").closest("span").remove();
+    }
+}

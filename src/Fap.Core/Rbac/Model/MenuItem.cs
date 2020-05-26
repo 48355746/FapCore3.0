@@ -1,12 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Collections;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
-namespace Fap.AspNetCore.ViewModel
+namespace Fap.Core.Rbac.Model
 {
-    public class MenuViewModel : IViewModel
-    {
-        public List<MenuItem> Menus { get; set; }
-    }
     public class MenuItem
     {
         //
@@ -72,7 +69,7 @@ namespace Fap.AspNetCore.ViewModel
         //
         // 返回结果: 
         //     System.Web.UI.WebControls.MenuItem，表示当前菜单项的父菜单项。
-   
+
         public MenuItem Parent { get; }
         //
         // 摘要: 
@@ -80,7 +77,7 @@ namespace Fap.AspNetCore.ViewModel
         //
         // 返回结果: 
         //     显示在菜单项中的图像的 URL，用于指示菜单项具有动态子菜单。 默认值为空字符串 ("")，表示尚未设置此属性。
-       
+
         public string PopOutImageUrl { get; set; }
         //
         // 摘要: 
@@ -88,7 +85,7 @@ namespace Fap.AspNetCore.ViewModel
         //
         // 返回结果: 
         //     如果菜单项可选，则为 true；否则为 false。
-    
+
         public bool Selectable { get; set; }
         //
         // 摘要: 
@@ -146,11 +143,7 @@ namespace Fap.AspNetCore.ViewModel
         //     由分隔符分隔的菜单项值的列表，它构成了从根菜单项到当前菜单项的路径。
 
         public string ValuePath { get; }
-        public List<MenuItem> ChildItems { get => _childItems; set => _childItems = value; }
-
-        private List<MenuItem> _childItems = new List<MenuItem>();
-        
+        public List<MenuItem> ChildItems { get; set; } = new List<MenuItem>();
     }
 
-  
 }

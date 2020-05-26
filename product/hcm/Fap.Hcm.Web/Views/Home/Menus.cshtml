@@ -1,0 +1,99 @@
+﻿@using Fap.Core.Extensions
+@model List<Fap.Core.Rbac.Model.MenuItem>
+
+@foreach (var menu in Model)
+{
+    <li class="">
+        <a href="#" class="dropdown-toggle">
+            <i class="menu-icon @menu.ImageUrl"></i>
+            <span class="menu-text">
+                @menu.Text
+                @if (menu.ToolTip.IsMissing())
+                {
+                    <span class="badge badge-warning" data-plug="@menu.ToolTip"></span>
+                }
+            </span>
+            <b class="arrow fa fa-angle-down"></b>
+        </a>
+        <b class="arrow"></b>
+        <ul class="submenu">
+            @foreach (var cmenu in menu.ChildItems)
+            {
+
+                <li class="">
+                    @if (cmenu.ChildItems != null && cmenu.ChildItems.Count > 0)
+                    {
+                        if (cmenu.NavigateUrl.Equals("#"))
+                        {
+                            <a href="#" class="dropdown-toggle">
+                                <i class="menu-icon fa fa-caret-right"></i>
+                                @cmenu.Text
+                                @if (cmenu.ToolTip.IsPresent())
+                                {
+                                    <span class="badge badge-warning" data-plug="@cmenu.ToolTip"></span>
+                                }
+                                <b class="arrow fa fa-angle-down"></b>
+                            </a>
+                        }
+                        else
+                        {
+                            <a data-url="@cmenu.NavigateUrl.Substring(2)" href="~/Home/MainFrame#@cmenu.NavigateUrl.Substring(2)" class="dropdown-toggle">
+                                <i class="menu-icon fa fa-caret-right"></i>
+                                @cmenu.Text
+                                @if (cmenu.ToolTip.IsPresent())
+                                {
+                                    <span class="badge badge-warning" data-plug="@cmenu.ToolTip"></span>
+                                }
+                                <b class="arrow fa fa-angle-down"></b>
+                            </a>
+                        }
+                    }
+                    else
+                    {
+                        if (cmenu.NavigateUrl.Equals("#"))
+                        {
+                            <a href="#">
+                                <i class="menu-icon fa fa-caret-right"></i>
+                                @cmenu.Text
+                                @if (cmenu.ToolTip.IsPresent())
+                                {
+                                    <span class="badge badge-warning" data-plug="@cmenu.ToolTip"></span>
+                                }
+                            </a>
+                        }
+                        else
+                        {
+                            <a data-url="@cmenu.NavigateUrl.Substring(2)" href="~/Home/MainFrame#@cmenu.NavigateUrl.Substring(2)">
+                                <i class="menu-icon fa fa-caret-right"></i>
+                                @cmenu.Text
+                                @if (cmenu.ToolTip.IsPresent())
+                                {
+                                    <span class="badge badge-warning" data-plug="@cmenu.ToolTip"></span>
+                                }
+                            </a>
+                        }
+                    }
+                    @if (cmenu.ChildItems != null && cmenu.ChildItems.Count > 0)
+                    {
+                        <b class="arrow"></b>
+                        <ul class="submenu">
+                            @foreach (var ccmenu in cmenu.ChildItems)
+                            {
+                                <li class="">
+                                    <a data-url="@ccmenu.NavigateUrl.Substring(2)" href="~/Home/MainFrame#@ccmenu.NavigateUrl.Substring(2)">
+                                        <i class="menu-icon fa fa-caret-right"></i>
+                                        @ccmenu.Text
+                                        @if (ccmenu.ToolTip.IsPresent())
+                                        {
+                                            <span class="badge badge-warning" data-plug="@ccmenu.ToolTip"></span>
+                                        }
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </li>
+            }
+        </ul>
+    </li>
+}

@@ -39,6 +39,11 @@ namespace Fap.Core.Rbac
         /// <returns></returns>
         IEnumerable<FapRoleMenu> GetRoleMenus(string roleUid);
         /// <summary>
+        /// 构造菜单
+        /// </summary>
+        /// <returns></returns>
+        List<MenuItem> BuildMenus();
+        /// <summary>
         /// 获取用户默认角色
         /// </summary>
         /// <param name="userUid"></param>

@@ -20,6 +20,7 @@ using Fap.Core.Infrastructure.Model;
 using System.IO;
 using Fap.AspNetCore.ViewModel;
 using Fap.Core.MultiLanguage;
+using System.ComponentModel;
 
 namespace Fap.Hcm.Web.Controllers
 {
@@ -301,11 +302,19 @@ namespace Fap.Hcm.Web.Controllers
         /// <param name="fid"></param>
         /// <returns></returns>
         [HttpGet]
-        public ActionResult ChangeRole(string fid)
+        public PartialViewResult ChangeRole(string fid)
         {
-            //设置当前角色
-            _applicationContext.CurrentRoleUid = fid;
-            return LocalRedirect(_configService.GetSysParamValue(HomeUrl));
+            if (!fid.Equals("0", StringComparison.OrdinalIgnoreCase))
+            {
+                //设置当前角色
+                _applicationContext.CurrentRoleUid = fid;
+            }
+            var menuItems= _loginService.BuildMenus().OrderBy(m => m.Target.ToInt()).ToList();
+            return PartialView(nameof(Menus),menuItems);
+        }
+        public PartialViewResult Menus()
+        {
+            return PartialView();
         }
         /// <summary>
         /// 用户角色列表

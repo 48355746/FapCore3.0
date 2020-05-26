@@ -35,7 +35,7 @@ namespace Fap.Hcm.Web.ViewComponents
         }
         public async Task<IViewComponentResult> InvokeAsync(string tn, string gid)
         {
-            string where = " (tablename=@TableName and UseEmployee=@UseEmployee) or IsGlobal=1 ";
+            string where = " (Tablename=@TableName and UseEmployee=@UseEmployee) or IsGlobal=1 ";
             DynamicParameters param = new DynamicParameters();
             param.Add("TableName", tn);
             param.Add("UseEmployee", _applicationContext.EmpUid);

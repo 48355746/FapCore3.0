@@ -54,7 +54,7 @@
         <link rel="stylesheet" href="~/Content/nprogress/nprogress.css" />
         <link rel="stylesheet" href="~/Content/css/ace.css" class="ace-main-stylesheet" id="main-ace-style" asp-append-version="true" />
         <link rel="stylesheet" href="~/Content/Site.css" class="ace-main-stylesheet" id="main-ace-style" asp-append-version="true" />
-        <link href="~/Content/chat/chat.css" rel="stylesheet" asp-append-version="true"/>
+        <link href="~/Content/chat/chat.css" rel="stylesheet" asp-append-version="true" />
     </environment>
     <environment exclude="Development">
         <link rel="stylesheet" href="~/css/ace.min.css" asp-append-version="true" />
@@ -189,7 +189,7 @@
         </script>
 
         <!-- #section:basics/sidebar -->
-        <div id="sidebar" class="sidebar                  responsive">
+        <div id="sidebar" class="sidebar responsive">
             <script type="text/javascript">
                 try { ace.settings.check('sidebar', 'fixed') } catch (e) { }
             </script>
@@ -197,23 +197,20 @@
             <div class="sidebar-shortcuts" id="sidebar-shortcuts">
                 <div class="sidebar-shortcuts-large" id="sidebar-shortcuts-large" style="text-align:left">
 
-                    <button class="btn btn-success" id="btnHelper" title="使用说明">
+                    <button class="btn btn-success globalset" id="btnHelper" title="使用说明">
                         <i class="ace-icon fa fa-lightbulb-o"></i>
                     </button>
 
-                    <button class="btn btn-info" data-target="#right-menu-friends" data-toggle="modal" title="我的伙伴">
-                        <i class="ace-icon fa fa-users"></i>
-                        <span   style="position: absolute; top: -8px;">
-                            <i class="fa fa-volume-up icon-animated-bell"></i>
-                        </span>
+                    <button class="btn btn-info globalset mypartner" data-target="#right-menu-friends" data-toggle="modal" title="我的伙伴">
+                        <i class="ace-icon fa fa-users"></i>                       
                     </button>
 
                     <!-- #section:basics/sidebar.layout.shortcuts -->
-                    <button class="btn btn-warning" id="btnChangeRole" title="切换角色">
+                    <button class="btn btn-warning globalset" id="btnChangeRole" title="切换角色">
                         <i class="ace-icon fa fa-exchange"></i>
                     </button>
 
-                    <button class="btn btn-danger">
+                    <button class="btn btn-danger globalset">
                         <i class="ace-icon fa fa-cogs"></i>
                     </button>
 
@@ -231,7 +228,9 @@
                 </div>
             </div><!-- /.sidebar-shortcuts -->
             <!-- /.nav-list -->
-            @await Component.InvokeAsync("Menus")
+            <ul class="nav nav-list menus">
+                @*菜单*@
+            </ul>
             <!-- /.nav-list -->
             <!-- #section:basics/sidebar.layout.minimize -->
             <div class="sidebar-toggle sidebar-collapse" id="sidebar-collapse">
@@ -354,7 +353,7 @@
                             <div class="modal-content">
                                 <div class="modal-header no-padding">
                                     <div class="table-header">
-                                        <a  class="close" aria-hidden="true" href="~/Home/MainFrame#SelfService/Ess/MyPartner">
+                                        <a class="close" aria-hidden="true" href="~/Home/MainFrame#SelfService/Ess/MyPartner">
                                             <span class="white"> <i class="ace-icon fa fa-plus-circle bigger-120"></i></span>
                                         </a>
 

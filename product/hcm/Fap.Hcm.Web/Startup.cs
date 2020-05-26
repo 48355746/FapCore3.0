@@ -73,7 +73,7 @@ namespace Fap.Hcm.Web
             });
             services.AddControllersWithViews(options =>
             {
-                options.Filters.Add(typeof(FapExceptionFilter));
+                options.Filters.Add<FapExceptionFilter>();
             }).AddNewtonsoftJson().AddRazorRuntimeCompilation();
             //IWebHostEnvironment env = services.BuildServiceProvider()
             //                                  .GetService<IWebHostEnvironment>();
