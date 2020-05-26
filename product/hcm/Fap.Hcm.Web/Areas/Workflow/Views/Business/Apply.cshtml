@@ -47,14 +47,12 @@
                     </li>
                 }
             </ul>
-
         </div>
     </div>
 
     <div class="widget-body">
         <div class="widget-main">
             <fap-grid id="@tableName" attach-column="@column" grid-model="Model" auto-width="true" shrink-fit="false" view-records="true" oper-import="false" on-grid-complete="initWorkflowMenu"></fap-grid>
-
         </div>
     </div>
 </div>
@@ -276,9 +274,6 @@
             }
         });
     }
-
-
-
     jQuery(function ($) {
         $("#btnBillStatus>li").off(ace.click_event).on(ace.click_event, function (e) {
             var tName = $(this).text();

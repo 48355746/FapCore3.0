@@ -52,7 +52,7 @@
     </div>
 </div>
 <script>
-    var scripts = [null, null]
+    var scripts = [null,"/lib/ueditor/ueditor.parse.js", null]
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
             $(document).one('ajaxloadstart.page', function (e) {
