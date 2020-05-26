@@ -21,8 +21,9 @@ namespace Fap.AspNetCore.Infrastructure.Filter
         {
             var type = System.Reflection.MethodBase.GetCurrentMethod().DeclaringType;
             ILogger _logger = _loggerFactory.CreateLogger<FapExceptionFilter>();
-            //_logger.LogError(context.Exception.Message);
-            _logger.LogError(context.Exception.StackTrace);
+            _logger.LogError(type.FullName);
+            _logger.LogError($"{type.FullName}:[{context.ActionDescriptor}][{context.Exception.Source}][{context.Exception.TargetSite}]--{context.Exception.StackTrace}");
+            //_logger.LogError(context.Exception.StackTrace);
             //var result = new ViewResult { ViewName = "CustomError" };
             //result.ViewData.Add("Exception", context.Exception);
             var value = ResponseViewModelUtils.Failure(context.Exception.Message);
