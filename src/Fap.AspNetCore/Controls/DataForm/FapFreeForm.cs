@@ -21,6 +21,7 @@ using static System.String;
 using Fap.Core.Exceptions;
 using Ardalis.GuardClauses;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Fap.AspNetCore.Controls.DataForm
 {
@@ -121,9 +122,19 @@ namespace Fap.AspNetCore.Controls.DataForm
                 }
                 else
                 {
-                    JavaScriptCompressor compressor = new JavaScriptCompressor();
-                    compressor.Encoding = Encoding.UTF8;
-                    script.Append(compressor.Compress(RenderJavascript()));
+                  
+                    try
+                    {
+                        //压缩js
+                        JavaScriptCompressor compressor = new JavaScriptCompressor();
+                        compressor.Encoding = Encoding.UTF8;
+                        script.Append(compressor.Compress(RenderJavascript()));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"压缩表单js出错，请检查注入js文件，不支持ES6语法压缩:{ex.Message}");
+                        throw ex;
+                    }
                 }
                 script.AppendLine("</script>");
 

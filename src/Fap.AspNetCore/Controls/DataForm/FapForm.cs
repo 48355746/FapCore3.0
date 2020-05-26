@@ -1,6 +1,7 @@
 ﻿using Fap.Core.DataAccess;
 using Fap.Core.Infrastructure.Metadata;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Text;
@@ -11,16 +12,16 @@ namespace Fap.AspNetCore.Controls.DataForm
     internal class FapForm : BaseForm
     {
         private int _colCount = 2;
-    
+
 
         public FapForm(IServiceProvider serviceProvider, string id, FormStatus formStatus = FormStatus.Add) : base(serviceProvider, id, formStatus)
         {
-        }      
+        }
         public FapForm SetColCount(int colCount)
         {
             _colCount = colCount;
             return this;
-        } 
+        }
         public override string ToString()
         {
             if (_formStatus == FormStatus.View)
@@ -40,10 +41,18 @@ namespace Fap.AspNetCore.Controls.DataForm
                 }
                 else
                 {
-                    //压缩js
-                    JavaScriptCompressor compressor = new JavaScriptCompressor();
-                    compressor.Encoding = Encoding.UTF8;
-                    script.Append(compressor.Compress(js));
+                    try
+                    {
+                        //压缩js
+                        JavaScriptCompressor compressor = new JavaScriptCompressor();
+                        compressor.Encoding = Encoding.UTF8;
+                        script.Append(compressor.Compress(js));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"压缩表单js出错:{ex.Message}");
+                        throw ex;
+                    }
                 }
                 script.AppendLine("</script>");
                 // Return script + required elements
@@ -67,7 +76,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     //Id,Fid,Ts这三列要隐藏
                     if (column.CurrentColumn.ColName == FapDbConstants.FAPCOLUMN_FIELD_Id || column.CurrentColumn.ColName == FapDbConstants.FAPCOLUMN_FIELD_Fid || column.CurrentColumn.ColName == FapDbConstants.FAPCOLUMN_FIELD_Ts)
                     {
-                      continue;
+                        continue;
                     }
                     else if (!_cutomDefault.ContainsKey(column.CurrentColumn.ColName))
                     {
@@ -143,11 +152,11 @@ namespace Fap.AspNetCore.Controls.DataForm
                 || column.CtrlType == FapColumn.CTRL_TYPE_NATIVE
                 || column.CtrlType == FapColumn.CTRL_TYPE_RANGE;
         }
-   
-       
-       
+
+
+
 
     }
- 
+
 }
 

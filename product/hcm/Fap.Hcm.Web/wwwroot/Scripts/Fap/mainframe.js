@@ -1,44 +1,6 @@
 ﻿//解决bootbox多弹出框focus 死循环问题
 $.fn.modal.Constructor.prototype.enforceFocus = function () { };
-$(function () {
-    //获取注册码
-    $("#btnGetRegistKey").on(ace.click_event, function () {
-        $.ajax({
-            url: basePath + "/Core/Api/requestcode/",
-            type: 'GET', async: false, cache: false,
-            success: function (data) {
-                //bootbox.alert(data);
-                $('#requestCode').val(data).show();
-            },
-            error: function (XMLHttpRequest, textStatus, errorThrown) {
-                bootbox.alert("获取申请码出现异常，其原因如下：" + textStatus);
-            }
-        });
-    });
-    //激活
-    $("#btnActivated").on(ace.click_event, function () {
-        bootbox.prompt("请输入您的产品密钥！", function (result) {
-            if (result === null) {
-                bootbox.alert("请输入您的产品密钥");
-            } else {
-                $.ajax({
-                    url: basePath + "/Core/Api/activate/",
-                    type: 'POST', data: { registerCode: result }, async: false, cache: false, dataType: 'json',
-                    success: function (data) {
-                        if (data && data.success === '1') {
-                            bootbox.alert("激活成功，请重启服务");
-                        } else {
-                            bootbox.alert(data.message);
-                        }
-
-                    },
-                    error: function (XMLHttpRequest, textStatus, errorThrown) {
-                        bootbox.alert("获取申请码出现异常，其原因如下：" + textStatus);
-                    }
-                });
-            }
-        });
-    });
+$(function () {   
     //使用说明
     $("#sidebar-shortcuts-large #btnHelper").on(ace.click_event, function () {
         var hash = window.location.hash;

@@ -24,6 +24,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Fap.AspNetCore.Controls.DataForm
 {
@@ -60,6 +61,7 @@ namespace Fap.AspNetCore.Controls.DataForm
         protected IRbacService _rbacService;
         protected IServiceProvider _serviceProvider;
         protected string _formTemplate = string.Empty;
+        protected readonly ILogger<BaseForm> _logger;
         public BaseForm(IServiceProvider serviceProvider, string id, FormStatus formStatus = FormStatus.Add) : base("")
         {
             _dbContext = serviceProvider.GetService<IDbContext>();
@@ -69,6 +71,7 @@ namespace Fap.AspNetCore.Controls.DataForm
             _applicationContext = serviceProvider.GetService<IFapApplicationContext>();
             _serviceProvider = serviceProvider;
             _env = serviceProvider.GetService<IWebHostEnvironment>();
+            _logger = serviceProvider.GetService<ILogger<BaseForm>>();
             FormId = id;
         }
         /// <summary>
@@ -374,7 +377,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                             }
                         }
                     }
-                    script.AppendLine("loadRefMessageBox('" + dispalyName + "','##formid##','" + column.Fid + "','" + column.ColName + "','" + refUrl + "',extra)");
+                    script.AppendLine("loadRefMessageBox('" + dispalyName + "','##formid##','" + column.Fid + "','" + column.ColName + "','" + refUrl + "',extra);");
                     script.AppendLine("});");
                     script.AppendLine("$(\"###formid## #" + column.ColName + "MC\").on(ace.click_event,function(e){$(this).next().trigger(ace.click_event);e.preventDefault();});");
                 }
@@ -433,7 +436,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                     //    var files =$(this).fileinput('getFileStack');
                     //    $(this).fileinput('uploadSingle',index,files,false);})");
                     script.AppendLine(@".on('fileuploaded', function (event, data, previewId, index) {  if(data.response.success==false){bootbox.alert(data.response.msg);}else{loadFileList('" + FormId + "', '" + column.ColName + "', '" + field.FieldValue.ToString() + "');                } });       ");
-                    script.AppendLine("}");
+                    script.AppendLine("};");
                     if (_formStatus == FormStatus.Edit)
                     {
                         string bid = field.FieldValue.ToString();

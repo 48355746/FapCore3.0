@@ -12,13 +12,12 @@ $("#StartTime,#EndTime,#RestHours").on("change", function () {
     {
         rh = 0;
     }
-    let t1 = moment(startTime);
+    var t1 = moment(startTime);
 
-    let t2 = moment(endTime);
+    var t2 = moment(endTime);
 
     var minute = t2.diff(t1, 'minute');
     var hours = (minute / 60.0).toFixed(2);
-    $("#HoursLength").val(hours);
-    
+    $("#HoursLength").val(hours);   
 
 });
