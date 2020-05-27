@@ -14313,7 +14313,7 @@ td .lbl {
     }
 }
 
-.login-container {
+/*.login-container {
     width: 375px;
     margin: 0 auto;
     position: relative;
@@ -14323,7 +14323,7 @@ td .lbl {
     float: right;
     border-radius: 6px;
     background-color: #fff;
-}
+}*/
 
 
 /*.login-layout {
@@ -14406,29 +14406,103 @@ td .lbl {
     font-size: 14px;
 }
 
-/*.login-box .toolbar > div {
-        width: 50%;
-        display: inline-block;
-        padding: 9px 0 11px;
+.error {
+    border-color: #f2a696;
+    color: #d68273;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+.input-icon {
+    position: relative;
+}
+
+span.input-icon {
+    display: inline-block;
+}
+
+.login-page-bg {
+    top: 0px;
+    left: 0;
+    right: 0;
+    bottom: 0px;
+    position: absolute;
+    background-repeat: no-repeat;
+    background-size: cover;
+    overflow: hidden;
+}
+
+.login-container {
+    width: 375px;
+    position: fixed;
+    top: 30%;
+    /*right: 20%;*/
+    box-shadow: 0 1px 4px 0 rgba(0,0,0,.14);
+    padding: 22px;
+    border-radius: 6px;
+    background-color: #fff;
+}
+@media only screen and (max-width: 540px) {
+    .login-container {
+        width: 375px;
+        position: relative;
+        top: 100px;
+        margin: 0 auto;
+        box-shadow: 0 1px 4px 0 rgba(0,0,0,.14);
+        padding: 22px;
+        border-radius: 6px;
+        background-color: #fff;
+    }
+}
+
+@media (min-width: 540px) and (max-width: 1024px) {
+    .login-container {
+        width: 375px;
+        position: fixed;
+        top: 30%;
+        right: 10%;
+        box-shadow: 0 1px 4px 0 rgba(0,0,0,.14);
+        padding: 22px;
+        border-radius: 6px;
+        background-color: #fff;
+    }
+}
+
+@media (max-width: 1366px) and (min-width: 1024px) {
+    .login-container {
+        width: 375px;
+        position: fixed;
+        top: 30%;
+        right: 10%;
+        box-shadow: 0 1px 4px 0 rgba(0,0,0,.14);
+        padding: 22px;
+        border-radius: 6px;
+        background-color: #fff;
+    }
+}
+
+@media (min-width: 1367px) {
+    .container {
+        width: 1464px;
     }
 
-        .login-box .toolbar > div:first-child {
-            float: left;
-            text-align: left;
-        }
+    .login-container {
+        width: 375px;
+        position: fixed;
+        top: 30%;
+        right: 20%;
+        box-shadow: 0 1px 4px 0 rgba(0,0,0,.14);
+        padding: 22px;
+        border-radius: 6px;
+        background-color: #fff;
+    }
+}
 
-            .login-box .toolbar > div:first-child > a {
-                margin-left: 11px;
-            }
-
-            .login-box .toolbar > div:first-child + div {
-                float: right;
-                text-align: right;
-            }
-
-                .login-box .toolbar > div:first-child + div > a {
-                    margin-right: 11px;
-                }*/
+.login-box .toolbar > div {
+    width: 50%;
+    display: inline-block;
+    padding: 9px 0 11px;
+}
 
 .forgot-box .toolbar {
     background: #C16050;
@@ -14494,64 +14568,6 @@ td .lbl {
         font-size: 24px;
         margin: 0;
     }
-
-@media only screen and (max-width: 540px) {
-    .login-layout .widget-box .widget-main {
-        padding: 16px;
-    }
-
-    .login-container {
-        width: 98%;
-        margin-top: 40px;
-    }
-
-    .login-layout .widget-box {
-        padding: 0;
-    }
-
-    .login-layout .main-content {
-        padding-left: 6px;
-        padding-right: 6px;
-    }
-
-    .login-box .toolbar > div {
-        width: auto;
-    }
-}
-
-.light-login {
-    background: #dfe0e2 url('images/pattern.jpg') repeat;
-}
-
-    .light-login .widget-box {
-        padding: 1px 1px 0;
-        -webkit-box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.12);
-        box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.12);
-        border-bottom: 1px solid rgba(50, 50, 50, 0.33);
-    }
-
-        .light-login .widget-box .toolbar {
-            border-top-width: 1px;
-        }
-
-        .light-login .widget-box.login-box {
-            background-color: #BCC6CF;
-            background-color: rgba(100, 110, 120, 0.4);
-        }
-
-        .light-login .widget-box.signup-box {
-            background-color: #C1CEC4;
-            background-color: rgba(110, 120, 100, 0.4);
-        }
-
-        .light-login .widget-box.forgot-box {
-            background-color: #D2C5C5;
-            background-color: rgba(120, 110, 100, 0.4);
-        }
-
-.blur-login {
-    background: #394557 url('images/meteorshower2.jpg') repeat;
-}
 
 .invoice-info {
     line-height: 24px !important;

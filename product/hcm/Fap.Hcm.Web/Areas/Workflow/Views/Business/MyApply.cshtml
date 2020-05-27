@@ -63,12 +63,12 @@
                 var $this = $(this);
                 var business = $this.data("business");
                 $("#myApplyContent").empty();
-                layer.load();
+                NProgress.start();
                 $.get(basePath + "/Workflow/Business/Apply/" + business, function (content) {
                     $("#myApplyContent").html(content);
                     //完毕重新设置jqgrid宽度
                     $(window).triggerHandler('resize.jqGrid');
-                    layer.closeAll('loading');
+                    NProgress.done();
                 })
 
             })

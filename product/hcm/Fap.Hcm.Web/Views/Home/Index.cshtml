@@ -5,133 +5,35 @@
     {
         bgimg = "/Content/images/hcmbg.jpg";
     }
-   string systemName =_configService.GetSysParamValue("sys.web.name");
-  string currentLang =_applicationContext.Language.ToString(); //当前语种   
+    string systemName = _configService.GetSysParamValue("sys.web.name");
+    string currentLang = _applicationContext.Language.ToString(); //当前语种
 }
 <!DOCTYPE html>
 <html lang="zh-cn">
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta charset="utf-8" />
-    <title><fap-multilang default-content="用户登录" lang-key="login_page_title" ></fap-multilang></title>
-
+    <title><fap-multilang default-content="用户登录" lang-key="login_page_title"></fap-multilang></title>
     <meta name="description" content="User login page" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-
-    <!-- bootstrap & fontawesome -->
-    <link rel="stylesheet" href="../Content/css/bootstrap.css" />
-    <link rel="stylesheet" href="../Content/css/font-awesome.css" />
+    <environment include="Development">
+        <!-- bootstrap & fontawesome -->
+        <link rel="stylesheet" href="../Content/css/bootstrap.css" />
+        <link rel="stylesheet" href="../Content/css/font-awesome.css" />
+        <!-- text fonts -->
+        <link rel="stylesheet" href="../Content/css/ace-fonts.css" />
+        <!-- ace styles -->
+        <link rel="stylesheet" href="../Content/css/ace.css" />
+    </environment>
+    <environment exclude="Development">
+        <link href="~/Content/css/bootstrap.min.css" rel="stylesheet" />
+        <link href="~/Content/css/font-awesome.min.css" rel="stylesheet" />
+        <link href="~/css/acefont.min.css" rel="stylesheet" />
+        <link href="~/css/ace.min.css" rel="stylesheet" />
+    </environment>
     <style>
-        .error {
-            border-color: #f2a696;
-            color: #d68273;
-            -webkit-box-shadow: none;
-            box-shadow: none;
-        }
-
-        .input-icon {
-            position: relative;
-        }
-
-        span.input-icon {
-            display: inline-block;
-        }
-        @@media (max-width: 1024px) {
-            .login-page-bg {
-                top: 45px;
-                left: 0;
-                right: 0;
-                bottom: 0px;
-                position: absolute;
-                background: #dfe0e2 url(/Content/css/images/pattern.jpg) repeat;
-                overflow: hidden;
-            }
-        }
-
-        @@media (max-width: 1366px) and (min-width: 1024px) {
-            .login-container {
-                width: 375px;
-                margin: 0 auto;
-                position: relative;
-                margin-top: 140px;
-                box-shadow: 0 1px 4px 0 rgba(0,0,0,.14);
-                padding: 22px;
-                float: right;
-                border-radius: 6px;
-                background-color: #fff;
-            }
-
-            .login-page-bg {
-                top: 45px;
-                left: 0;
-                right: 0;
-                bottom: 0px;
-                position: absolute;
-                background-image: url(@bgimg);
-                background-repeat: no-repeat;
-                background-size: cover;
-                overflow: hidden;
-            }
-        }
-
-        @@media (min-width: 1367px) {
-
-            .container {
-                width: 1464px;
-            }
-
-            .login-container {
-                width: 375px;
-                margin: 0 auto;
-                position: relative;
-                margin-top: 200px;
-                margin-right: 200px;
-                box-shadow: 0 1px 4px 0 rgba(0,0,0,.14);
-                padding: 22px;
-                float: right;
-                border-radius: 6px;
-                background-color: #fff;
-            }
-
-            .login-page-bg {
-                top: 45px;
-                left: 0;
-                right: 0;
-                bottom: 0px;
-                position: absolute;
-                background-image: url(@bgimg);
-                background-repeat: no-repeat;
-                background-size: cover;
-                overflow: hidden;
-            }
-
-}
-
-.login-box .toolbar > div {
-    width: 50%;
-    display: inline-block;
-    padding: 9px 0 11px;
-}
-
-    </style>
-    <!-- text fonts -->
-    <link rel="stylesheet" href="../Content/css/ace-fonts.css" />
-    @*<link href="~/Content/css/Animate/animate.min.css" rel="stylesheet" />*@
-    <!-- ace styles -->
-    <link rel="stylesheet" href="../Content/css/ace.css" />
-    <style>
-        .login-box .toolbar > div:first-child + div {
-            float: right;
-            text-align: right;
-        }
-
-        .login-layout .widget-box .widget-body .toolbar > div > a {
-            font-size: 15px;
-            font-weight: 400;
-        }
-
-        .login-box .user-signup-link {
-            color: #858585;
+        .login-page-bg {
+            background-image: url(@bgimg);
         }
     </style>
     <!--[if lte IE 9]>
@@ -159,101 +61,12 @@
     </script>
     <script src="~/Scripts/MultiLanguage.js" asp-append-version="true"></script>
     <script src="~/Content/js/jquery.validate.js"></script>
-    <script>
-
-        jQuery(function ($) {
-            MultiLangHelper.initLang("@currentLang");
-            $("#frm-register").validate({
-                rules: {
-                    GrpManager: {
-                        required: true,
-                        email:true
-                    },
-                    GrpPassword: {
-                        required: true,
-                        minlength: 5
-                    },
-                    ConfirmPassword: {
-                        required: true,
-                        minlength: 5,
-                        equalTo: "#GrpPassword"
-                    },
-                    GrpFullName:{
-                        required: true
-                    },
-
-
-                },
-                messages: {
-                    GrpManager: {
-                        required: "请输入您的集团账号",
-                        email:"请检查电子邮件的格式"
-                    },
-                    GrpPassword: {
-                        required: "请输入密码",
-                        minlength: "密码长度不能小于 5 个字符"
-                    },
-                    ConfirmPassword: {
-                        required: "请输入确认密码",
-                        minlength: "密码长度不能小于 5 个字符",
-                        equalTo: "两次密码输入不一致"
-                    }, GrpFullName: {
-                        required: "请输入集团全称"
-                    },
-
-                }, highlight: function (e) {
-                    $(e).closest('.form-control').next().addClass('red');
-                },
-
-                success: function (e) {
-                    $(e).prev().children(".ace-icon").removeClass('red');//.addClass('has-info');
-                    $(e).remove();
-                },
-
-                errorPlacement: function (error, element) {
-                    error.insertAfter(element.parent());
-                },
-                
-
-            });
-            $('#frm-logon').validate({
-                rules: {
-                    username: {
-                        required: true
-                    },
-                    userpwd: {
-                        required: true,
-                        minlength: 1
-                    }
-                },
-
-                messages: {
-                    username: {
-                        required: MultiLangHelper.getResName("login_username_required", "请输入你的用户名"),
-                    },
-                    userpwd: {
-                        required: MultiLangHelper.getResName("login_password_required", "请输入你的密码"),
-                        minlength: MultiLangHelper.getResName("login_password_level", "请指定一个安全密码")
-                    },
-
-                },
-                highlight: function (e) {
-                    $(e).closest('.form-control').next().addClass('red');
-                },
-
-                success: function (e) {
-                    $(e).prev().children(".ace-icon").removeClass('red');//.addClass('has-info');
-                    $(e).remove();
-                },
-
-                errorPlacement: function (error, element) {
-                    error.insertAfter(element.parent());
-                },
-
-            });
-        });
-
-    </script>
+    <environment include="Development">
+        <script src="~/Scripts/Fap/login.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/login.min.js" asp-append-version="true"></script>
+    </environment>
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
     <script src="../Content/js/html5shiv.js"></script>
@@ -263,36 +76,6 @@
 
 <body class="login-layout">
     <div class="login-page-bg"></div>
-    <div id="navbar" class="navbar navbar-default navbar-fixed-top h-navbar">
-        <div class="navbar-container container" id="navbar-container">
-            <div class="navbar-header pull-left ace-navbar-brand">
-                <a href="#" class="navbar-brand">
-                    <small>
-                        @*<img src="~/Content/images/logo32.png" />*@
-                        &nbsp;<i class="fa fa-globe"></i>&nbsp;
-                        <fap-multilang lang-key="system_name" default-content="@systemName"></fap-multilang> <span class="smaller-75">(v1.0.0)</span>
-                    </small>
-                </a><!-- /.brand -->
-            </div>
-            <div class="navbar-header pull-right ace-navbar-buttons">
-                <ul class="nav ace-nav">
-                    <li class="margin-2 no-border">
-                        <a href="~/Home/Index?Lang=ZhCn" data-rel="multilanguage" data-multilang="ZhCn">简体中文</a>
-                    </li>
-                    <li class="margin-2 no-border">
-                        <a href="~/Home/Index?Lang=En" data-rel="multilanguage" data-multilang="En">English</a>
-                    </li>
-                    <li class="margin-2 no-border">
-                        <a href="~/Home/Index?Lang=ZhTW" data-rel="multilanguage" data-multilang="ZhTW">繁體中文</a>
-                    </li>
-                    <li class="margin-2 no-border">
-                        <a href="~/Home/Index?Lang=Ja" data-rel="multilanguage" data-multilang="Ja">日本語</a>
-                    </li>
-                </ul>
-            </div>
-
-        </div>
-    </div>
     <div class="main-container">
         <div class="main-content">
             <div class="row ">
@@ -359,11 +142,11 @@
                                                     </a>*@
                                             </div>
 
-                                            <div>
+                                            @*<div>
                                                 <a href="#" data-target="#signup-box" class="user-signup-link">
                                                     <fap-multilang lang-key="register" default-content="注册"></fap-multilang>
                                                 </a>
-                                            </div>
+                                            </div>*@
                                         </div>
 
                                     </div><!-- /.widget-main -->
@@ -514,7 +297,32 @@
                             </div><!-- /.signup-box -->
                             <!-- /.signup-box -->
                         </div><!-- /.position-relative -->
-
+                        <div class="navbar-fixed-top align-left white">
+                            <h1>
+                                @*<img src="~/Content/images/logo32.png" />*@
+                                &nbsp;<i class="fa fa-globe"></i>&nbsp;
+                                <fap-multilang lang-key="system_name" default-content="@systemName"></fap-multilang>
+                                <span class="blue h4">(v1.0.0)</span>
+                            </h1>
+                        </div>
+                        <div class="navbar-fixed-top align-right">
+                            <br />
+                            &nbsp;
+                            <a href="~/Home/Index?Lang=ZhCn" data-rel="multilanguage" data-multilang="ZhCn">简体中文</a>
+                            &nbsp;
+                            <span class="blue">/</span>
+                            &nbsp;
+                            <a href="~/Home/Index?Lang=ZhTW" data-rel="multilanguage" data-multilang="ZhTW">繁體中文</a>
+                            &nbsp;
+                            <span class="blue">/</span>
+                            &nbsp;
+                            <a href="~/Home/Index?Lang=En" data-rel="multilanguage" data-multilang="En">English</a>
+                            &nbsp;
+                            <span class="blue">/</span>
+                            &nbsp;
+                            <a href="~/Home/Index?Lang=Ja" data-rel="multilanguage" data-multilang="Ja">日本語</a>
+                            &nbsp; &nbsp; &nbsp;
+                        </div>
 
                     </div>
                 </div><!-- /.col -->
@@ -541,61 +349,8 @@
                     </a>
                 </div>
             </div>
-
             <!-- /section:basics/footer -->
         </div>
     </div>
-    <!-- inline scripts related to this page -->
-    <script type="text/javascript">
-        jQuery(function ($) {
-            //找回密码框切换
-            $(document).on('click', '.toolbar a[data-target]', function (e) {
-                e.preventDefault();
-
-                var target = $(this).data('target');
-                $('.widget-box.visible').removeClass('visible');//hide others
-                $(target).addClass('visible');//show target
-            });
-
-            $(document).keydown(function (event) {
-                var e = event || window.event;
-                var k = e.keyCode || e.which;
-                if (k == 13) {
-                    logon();
-                }
-            });
-            //注册集团
-            $("#btnregister").on('click', function (e) {
-                if (!$('#frm-register').valid()) {
-                    e.preventDefault();
-                } else {
-                    $("#frm-register").submit();
-                }
-            })
-            $("#btnLogon").on('click', function (e) {
-                logon();
-            });
-            function logon() {
-                if (!$('#frm-logon').valid()) {
-                    e.preventDefault();
-                } else {
-
-                    $("#frm-logon").submit();
-                }
-            }
-
-            $("#btnRecovery").on("click", function () {
-                var email = $("#txtemail").val();
-                if (email == "") {
-                    bootbox.alert("请输入公司邮箱！");
-                    return;
-                }
-                $.get("/Home/RecoveryPassword?mail=" + email, function (rv) {
-                    $("#pwdmsg").html(rv);
-                })
-            })
-        });
-
-    </script>
 </body>
 </html>

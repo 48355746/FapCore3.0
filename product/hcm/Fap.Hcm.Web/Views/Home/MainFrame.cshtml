@@ -11,17 +11,15 @@
     <title></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
     @*bootstrap css*@
-    <environment include="Development">
-        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
-        <link rel="stylesheet" href="~/Content/css/font-awesome.css" />
-        <link rel="stylesheet" href="~/Content/css/ace-fonts.css" />
-    </environment>
-    <environment exclude="Development">
-        <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css"
-              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
-              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
-        <link rel="stylesheet" href="~/css/acefont.min.css" asp-append-version="true" />
-    </environment>
+<environment include="Development">
+    <link href="~/Content/css/bootstrap.css" rel="stylesheet"  asp-append-version="true"/>
+    <link rel="stylesheet" href="~/Content/css/font-awesome.css" />
+    <link rel="stylesheet" href="~/Content/css/ace-fonts.css" />
+</environment>
+<environment exclude="Development">
+    <link href="~/Content/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/acefont.min.css" asp-append-version="true" />
+</environment>
     @*fap control css*@
     <environment include="Development">
         <link rel="stylesheet" href="~/Content/css/jquery-ui.css" />
@@ -230,6 +228,7 @@
             <!-- /.nav-list -->
             <ul class="nav nav-list menus">
                 @*菜单*@
+                <li> <i class="fa fa-spin fa-spinner"></i></li>
             </ul>
             <!-- /.nav-list -->
             <!-- #section:basics/sidebar.layout.minimize -->

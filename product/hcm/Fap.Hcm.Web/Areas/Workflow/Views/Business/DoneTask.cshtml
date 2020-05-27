@@ -62,12 +62,12 @@
                 var businessUid = $this.data("business");
                 var billTable = $this.data("bill");
                 $("#bizContent").empty();
-                layer.load();
+                NProgress.start();
                 $.get(basePath + "/Workflow/Business/Approvaled?businessUid=" + businessUid + "&billTable=" + billTable, function (content) {
                     $("#bizContent").html(content);
                     //完毕重新设置jqgrid宽度
                     $(window).triggerHandler('resize.jqGrid');
-                    layer.closeAll('loading');
+                    NProgress.done();
                 });
 
             });

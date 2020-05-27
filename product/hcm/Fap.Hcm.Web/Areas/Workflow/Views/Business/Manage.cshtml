@@ -4,9 +4,9 @@
     Layout = null;
     Fap.Workflow.Model.WfBusiness biz = ViewBag.WfBusiness;
     Fap.Workflow.Model.WfProcess wfProcess = ViewBag.WfProcess;
-    string tableName = biz.BillEntity;// ViewData["tableName"].ToString();
-    string bizCode = biz.BizCode; //ViewData["bizTypeCode"].ToString();
-    string businessUid = biz.Fid; //ViewData["bizTypeId"].ToString();
+    string tableName = biz.BillEntity;
+    string bizCode = biz.BizCode; 
+    string businessUid = biz.Fid; 
     string title = biz.BizName;
     IEnumerable<Fap.Core.Infrastructure.Metadata.FapDict> billStatus = _dbContext.Dictionarys("BillStatus");
     //增加操作列
