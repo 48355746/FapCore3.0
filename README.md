@@ -24,12 +24,12 @@ clone https://github.com/48355746/FapCore3.0.git
 ```sql
 CREATE DATABASE FapCore30 COLLATE Chinese_PRC_CI_AS 
 ```
-1. 解压根目录下的MSSQL.zip文件。
-1. sqlcmd执行MSSQL.sql文件。实例：
+3. 解压根目录下的MSSQL.zip文件。
+4. sqlcmd执行MSSQL.sql文件。实例：
 ```sql
 sqlcmd -S localhost -U sa -P 123 -d FapCore30 -i /var/opt/mssql/MSSQL.sql
 ```
-1. 修改Fap.Hcm.Web项目下appsettings.json文件，配置数据库。
+5. 修改Fap.Hcm.Web项目下appsettings.json文件，配置数据库。
 ```json
 "ConnectionString": {
     "sqlconnection": "Data Source=172.17.0.4;Initial Catalog=FapCore30;User ID=sa;Password=123;Enlist=false;Max Pool SIZE=500;Min Pool SIZE=50;MultipleActiveResultSets=True"
@@ -38,7 +38,7 @@ sqlcmd -S localhost -U sa -P 123 -d FapCore30 -i /var/opt/mssql/MSSQL.sql
   }
 ```
 mysql数据库请使用 mysqlconnection 名称。_slaver_1，_slaver_2为从数据库。没有可以不配置。
-1. 启动。
+6. 启动 Fap.Hcm.Web。
 ## docker部署
 根目录已包含Dockerfile文件
 构造镜像
