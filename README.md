@@ -38,14 +38,14 @@ sqlcmd -S localhost -U sa -P 123 -d FapCore30 -i /var/opt/mssql/MSSQL.sql
   }
 ```
 mysql数据库请使用 mysqlconnection 名称。_slaver_1，_slaver_2为从数据库。没有可以不配置。
-6. 启动 Fap.Hcm.Web。
+6.  启动 Fap.Hcm.Web。
 ## docker部署
 根目录已包含Dockerfile文件
-构造镜像
+-  构造镜像
 ```shell
 sudo docker build -t fapcore/hcm .
 ```
-运行容器
+-  运行容器
 数据卷如下：-v 时区,-v logs,-v 附件。说明：设置appsetting.json日志路径为LogPath（/var/fapcore/logs），设置附件路径为（/var/fapcore/annex）
 ```shell
 sudo docker run --name fapcorehcm -d -p 5000:80 -p 5001:443 -v /etc/localtime:/etc/localtime -v /usr/docker/fapcorehcm/logs:/var/fapcore/logs -v /usr/docker/fapcorehcm/annex:/var/fapcore/annex fapcore/hcm
