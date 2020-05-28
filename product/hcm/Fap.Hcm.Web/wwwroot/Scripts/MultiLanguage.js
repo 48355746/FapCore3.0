@@ -141,7 +141,11 @@ var MultiLangHelper = (function () {
       'select_employee': { 'ZhCn': '选择人员', 'ZhTW': '', 'En': '', 'Ja': '' },
       'agreee': { 'ZhCn': '同意', 'ZhTW': '', 'En': '', 'Ja': '' },
       'disagreee': { 'ZhCn': '不同意', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'urge': { 'ZhCn': '催办', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'init': { 'ZhCn': '初始化', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'init_payroll_data': { 'ZhCn': '初始化薪资数据', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'reserved_pay_item': { 'ZhCn': '保留薪资项', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'all_pay_item': { 'ZhCn': '所有薪资项', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

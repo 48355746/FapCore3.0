@@ -2,6 +2,13 @@
 // More info at https://go.microsoft.com/fwlink/?LinkId=808241
 [
   {
+    "outputFileName": "wwwroot/Content/css/bootstrap.min.css",
+    // An array of relative input file paths. Globbing patterns supported
+    "inputFiles": [
+      "wwwroot/Content/css/bootstrap.css"
+    ]
+  },
+  {
     "outputFileName": "wwwroot/css/acefont.min.css",
     // An array of relative input file paths. Globbing patterns supported
     "inputFiles": [
@@ -18,7 +25,7 @@
       "wwwroot/Content/Site.css",
       "wwwroot/Content/chat/chat.css"
     ]
-  }, 
+  },
   {
     "outputFileName": "wwwroot/css/control.min.css",
     // An array of relative input file paths. Globbing patterns supported
@@ -93,10 +100,8 @@
       "wwwroot/Content/js/bootstrap-tag.js",
       "wwwroot/Content/js/jquery.tmpl.js",
       "wwwroot/Scripts/Fap/common.js", //fap常用js
-      "wwwroot/Scripts/Fap/utils.js", //fap常用js
       "wwwroot/Content/js/date-time/bootstrap-datetimepicker.js",
-      "wwwroot/Content/js/jquery.DatePicker.js",
-      "wwwroot/Content/js/date-time/locales/bootstrap-datetimepicker.zh-CN.js",
+      "wwwroot/Content/js/jquery.DatePicker.js",      
       "wwwroot/Content/js/date-time/bootstrap-datepicker.js",
       "wwwroot/Content/js/jquery.validate.js", //表单校验js
       "wwwroot/Content/js/jquery.bootstrap-duallistbox.js", //左右筛选控件
@@ -181,7 +186,7 @@
   },
   {
     "outputFileName": "wwwroot/js/login.min.js",
-    "inputFiles": [      
+    "inputFiles": [
       "wwwroot/Scripts/Fap/login.js"
     ],
     // Optionally specify minification options

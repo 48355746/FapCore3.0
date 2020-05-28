@@ -1,6 +1,5 @@
 ﻿@{
     var currLanguage = _multiLangService.CurrentLanguage; //当前语种
-                                                          //string systemName = _configService.GetSysParamValue("sys.web.name");//系统名称
 }
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -11,16 +10,15 @@
     <title></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
     @*bootstrap css*@
-<environment include="Development">
-    <link href="~/Content/css/bootstrap.css" rel="stylesheet"  asp-append-version="true"/>
-    <link rel="stylesheet" href="~/Content/css/font-awesome.css" />
-    <link rel="stylesheet" href="~/Content/css/ace-fonts.css" />
-</environment>
-<environment exclude="Development">
-    <link href="~/Content/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="~/css/acefont.min.css" asp-append-version="true" />
-</environment>
-    @*fap control css*@
+    <environment include="Development">
+        <link href="~/Content/css/bootstrap.css" rel="stylesheet" asp-append-version="true" />
+        <link rel="stylesheet" href="~/Content/css/font-awesome.css" />
+        <link rel="stylesheet" href="~/Content/css/ace-fonts.css" />
+    </environment>
+    <environment exclude="Development">
+        <link href="~/Content/css/bootstrap.min.css" rel="stylesheet" asp-append-version="true" />
+        <link rel="stylesheet" href="~/css/acefont.min.css" asp-append-version="true" />
+    </environment>
     <environment include="Development">
         <link rel="stylesheet" href="~/Content/css/jquery-ui.css" />
         <link rel="stylesheet" href="~/Content/JqGrid/css/ui.jqgrid.css" asp-append-version="true" />
@@ -46,8 +44,6 @@
     <environment exclude="Development">
         <link rel="stylesheet" href="~/css/control.min.css" asp-append-version="true" />
     </environment>
-
-    @*ace main css*@
     <environment include="Development">
         <link rel="stylesheet" href="~/Content/nprogress/nprogress.css" />
         <link rel="stylesheet" href="~/Content/css/ace.css" class="ace-main-stylesheet" id="main-ace-style" asp-append-version="true" />
@@ -57,7 +53,6 @@
     <environment exclude="Development">
         <link rel="stylesheet" href="~/css/ace.min.css" asp-append-version="true" />
     </environment>
-
     <!--[if lte IE 9]>
         <link rel="stylesheet" href="/Content/css/ace-part2.css" class="ace-main-stylesheet" />
     <![endif]-->
@@ -72,7 +67,6 @@
     <!--[if !IE]> -->
     <script type="text/javascript">
         window.jQuery || document.write("<script src='/Content/js/jquery.js'>" + "<" + "/script>");
-
     </script>
     <script src="~/Content/nprogress/nprogress.js"></script>
     <!-- <![endif]-->
@@ -83,7 +77,6 @@
     <![endif]-->
     <!-- ace settings handler -->
     <script src="/Content/js/ace-extra.js"></script>
-
     <!-- HTML5shiv and Respond.js for IE8 to support HTML5 elements and media queries -->
     <!--[if lte IE 8]>
     <script src="/Content/js/html5shiv.js"></script>
@@ -100,6 +93,15 @@
         var basePath = window.location.protocol+ "//" + window.location.host;
         var language = '@currLanguage'; //当前语种
         MultiLangHelper.initLang(language);
+        if (language === "ZhTW") {
+            language = "zh-TW"
+        } else if (language === "En") {
+            language = "en";
+        } else if (language === "Ja") {
+            language = "ja";
+        } else {
+            language = "zh-CN";
+        }
         NProgress.configure({ parent: ".page-content" });
     </script>
     <script id="mypartner" type="text/x-jquery-tmpl">
@@ -200,7 +202,7 @@
                     </button>
 
                     <button class="btn btn-info globalset mypartner" data-target="#right-menu-friends" data-toggle="modal" title="我的伙伴">
-                        <i class="ace-icon fa fa-users"></i>                       
+                        <i class="ace-icon fa fa-users"></i>
                     </button>
 
                     <!-- #section:basics/sidebar.layout.shortcuts -->
@@ -437,10 +439,8 @@
         <script src="~/Content/js/bootstrap-tag.js" asp-append-version="true"></script>
         <script src="~/Content/js/jquery.tmpl.js" asp-append-version="true"></script>
         <script src="~/Scripts/Fap/common.js" asp-append-version="true"></script>
-        <script src="~/Scripts/Fap/utils.js" asp-append-version="true"></script>
         <script src="~/Content/js/date-time/bootstrap-datetimepicker.js" asp-append-version="true"></script>
         <script src="~/Content/js/jquery.DatePicker.js" asp-append-version="true"></script>
-        <script src="~/Content/js/date-time/locales/bootstrap-datetimepicker.zh-CN.js" asp-append-version="true"></script>
         <script src="~/Content/js/date-time/bootstrap-datepicker.js" asp-append-version="true"></script>
         <script src="~/Content/js/jquery.validate.js" asp-append-version="true"></script>
         <script src="~/Content/js/jquery.bootstrap-duallistbox.js" asp-append-version="true"></script>
@@ -495,29 +495,21 @@
     {
         <script src="~/Content/JqGrid/i18n/grid.locale-cn.js" asp-append-version="true"></script>
         <script src="~/Content/fileinput/locales/zh.js" asp-append-version="true"></script>
+        <script src="~/Content/js/date-time/locales/bootstrap-datetimepicker.zh-CN.js" asp-append-version="true"></script>
     }
     else if (currLanguage == Fap.Core.MultiLanguage.MultiLanguageEnum.ZhTW)
     {
         <script src="~/Content/JqGrid/i18n/grid.locale-tw.js" asp-append-version="true"></script>
         <script src="~/Content/fileinput/locales/zh-TW.js" asp-append-version="true"></script>
+        <script src="~/Content/js/date-time/locales/bootstrap-datetimepicker.zh-TW.js" asp-append-version="true"></script>
     }
     else if (currLanguage == Fap.Core.MultiLanguage.MultiLanguageEnum.Ja)
     {
         <script src="~/Content/JqGrid/i18n/grid.locale-ja.js" asp-append-version="true"></script>
         <script src="~/Content/fileinput/locales/ja.js" asp-append-version="true"></script>
+        <script src="~/Content/js/date-time/locales/bootstrap-datetimepicker.ja.js" asp-append-version="true"></script>
     }
     <script src="~/Content/layer/layer.js"></script>
-    <script>
-        if (language === "ZhTW") {
-            moment.locale("zh-tw");
-        } else if (language === "En") {
-            moment.locale("en");
-        } else if (language === "Ja") {
-            moment.locale("ja");
-        } else {
-            moment.locale('zh-cn');
-        }
 
-    </script>
 </body>
 </html>
