@@ -200,7 +200,7 @@ namespace Fap.AspNetCore.Controls.DataForm
                 grid.SetEditRowModel(EditRowModel.Inline);
                 grid.SetColMenu(false);
                 grid.SetShrinkToFit(false);
-                grid.SetInsideElement("girdcontainer");
+                grid.SetInsideElement("wordpage");
                 ffContent = ffContent.Replace(table.Key, grid.ToString());
                 //ffContent = ffContent.Replace("{{" + table.TableComment + "}}", $"<iframe width='100%' height='400' frameborder='0' scrolling='auto' src='/PublicCtrl/InlineGridPage?tn={table.TableName}&fid={newUid}&primaryKey={primaryKey}'></iframe>");
             }

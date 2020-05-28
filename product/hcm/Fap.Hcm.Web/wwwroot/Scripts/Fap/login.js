@@ -119,7 +119,11 @@
         if (!$('#frm-logon').valid()) {
             e.preventDefault();
         } else {
-
+            var returnUrl = getRequestParameter("ReturnUrl");
+            var hash = window.location.hash;
+            if (returnUrl !== undefined) {
+                $("#frm-logon [name='returnUrl']").val("~"+returnUrl + hash);
+            }
             $("#frm-logon").submit();
         }
     }
@@ -134,3 +138,29 @@
         })
     })
 });
+/**
+ * 获取请求参数
+ * @param key
+ * @returns {*}
+ */
+function getRequestParameter(key) {
+    var params = getRequestParameters();
+    return params[key];
+}
+
+/**
+ * 获取请求参数列表
+ * @returns {{}}
+ */
+function getRequestParameters() {
+    debugger
+    var arr = (location.search || "").replace(/^\?/, '').split("&");
+    var params = {};
+    for (var i = 0; i < arr.length; i++) {
+        var data = arr[i].split("=");
+        if (data.length == 2) {
+            params[data[0]] = data[1];
+        }
+    }
+    return params;
+}

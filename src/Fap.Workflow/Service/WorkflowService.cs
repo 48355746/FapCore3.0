@@ -22,13 +22,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Xml;
+using Fap.Core.Infrastructure.Enums;
 
 namespace Fap.Workflow.Service
 {
     [Service]
     public partial class WorkflowService : IWorkflowService
     {
-        private IDbContext _dataAccessor;
+        private IDbContext _dbContext;
         private ILoggerFactory _loggerFactory;
         private readonly ILogger<WorkflowService> _logger;
         private readonly IFapApplicationContext _applicationContext;
@@ -38,7 +39,7 @@ namespace Fap.Workflow.Service
         public WorkflowService(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
-            _dataAccessor = serviceProvider.GetService<IDbContext>();
+            _dbContext = serviceProvider.GetService<IDbContext>();
             _loggerFactory = serviceProvider.GetService<ILoggerFactory>();
             _applicationContext = serviceProvider.GetService<IFapApplicationContext>();
             _logger =serviceProvider.GetService<ILoggerFactory>().CreateLogger<WorkflowService>();
@@ -53,7 +54,7 @@ namespace Fap.Workflow.Service
         [Transactional]
         public void UpgradeProcessTemplateDirectly(long id)
         {
-            WfProcess wfProcess = _dataAccessor.Get<WfProcess>(id);
+            WfProcess wfProcess = _dbContext.Get<WfProcess>(id);
             if (wfProcess != null)
             {
                 WfProcess newWfProcess = wfProcess.Clone() as WfProcess;
@@ -63,21 +64,21 @@ namespace Fap.Workflow.Service
 
 
                 //升级流程图
-                WfDiagram wfDiagram = _dataAccessor.Get<WfDiagram>(wfProcess.DiagramId);
+                WfDiagram wfDiagram = _dbContext.Get<WfDiagram>(wfProcess.DiagramId);
                 if (wfDiagram != null)
                 {
                     wfDiagram.Version = newWfProcess.Version;
                     wfDiagram.Fid = UUIDUtils.Fid;
                     wfDiagram.ProcessUid = newWfProcess.Fid;
-                    _dataAccessor.Insert<WfDiagram>(wfDiagram);
+                    _dbContext.Insert<WfDiagram>(wfDiagram);
                 }
 
                 //更新升级后的流程模板
                 newWfProcess.DiagramId = wfDiagram.Fid;
-                _dataAccessor.Insert<WfProcess>(newWfProcess);
+                _dbContext.Insert<WfProcess>(newWfProcess);
                 //将原来的流程模板变成历史状态
                 wfProcess.Status = WfProcessState.Historical;
-                _dataAccessor.Update<WfProcess>(wfProcess);
+                _dbContext.Update<WfProcess>(wfProcess);
             }
 
         }
@@ -90,7 +91,7 @@ namespace Fap.Workflow.Service
             Guard.Against.NullOrEmpty(processUids, nameof(processUids));
 
             string[] fids = processUids.Split(',');
-            int count = _dataAccessor.ExecuteScalar<int>("select count(0) from WfBusiness a, WfProcess b where a.WfProcessUid=b.Fid and b.Fid IN @Fids", new DynamicParameters(new { Fids = fids }));
+            int count = _dbContext.ExecuteScalar<int>("select count(0) from WfBusiness a, WfProcess b where a.WfProcessUid=b.Fid and b.Fid IN @Fids", new DynamicParameters(new { Fids = fids }));
             return count == 0;
         }
         /// <summary>
@@ -116,8 +117,8 @@ namespace Fap.Workflow.Service
             string wfMail = XMLHelper.GetXmlAttribute(workflowNode, "wfMail");
             string wfMessage = XMLHelper.GetXmlAttribute(workflowNode, "wfMessage");
             string messageSetting = $"{{'notice':{notice},'suspend':{suspendNotice},'mail':{wfMail},'message':{wfMessage}}}";
-            WfDiagram wfDiagram = _dataAccessor.Get<WfDiagram>(diagramUid);
-            WfProcess wfProcess = _dataAccessor.Get<WfProcess>(processUid);
+            WfDiagram wfDiagram = _dbContext.Get<WfDiagram>(diagramUid);
+            WfProcess wfProcess = _dbContext.Get<WfProcess>(processUid);
             wfProcess.DiagramId = diagramUid;
             wfProcess.ProcessName = diagramName;
             wfProcess.FormType = formType;
@@ -130,8 +131,8 @@ namespace Fap.Workflow.Service
                 wfDiagram = new WfDiagram() { Fid = diagramUid, ProcessName = diagramName, ProcessUid = processUid, XmlContent = xml };
 
                 //保存流程图
-                _dataAccessor.Insert<WfDiagram>(wfDiagram);
-                _dataAccessor.Update<WfProcess>(wfProcess);
+                _dbContext.Insert<WfDiagram>(wfDiagram);
+                _dbContext.Update<WfProcess>(wfProcess);
 
             }
             else //更新
@@ -140,8 +141,8 @@ namespace Fap.Workflow.Service
                 wfDiagram.XmlContent = xml;
 
                 //保存流程图
-                _dataAccessor.Update<WfDiagram>(wfDiagram);
-                _dataAccessor.Update<WfProcess>(wfProcess);
+                _dbContext.Update<WfDiagram>(wfDiagram);
+                _dbContext.Update<WfProcess>(wfProcess);
 
             }
 
@@ -174,7 +175,7 @@ namespace Fap.Workflow.Service
                 if (result.Status != WfExecutedStatus.Exception)
                 {
                     runtimeManager.Execute();
-
+                    WriteBackBillStatus(runner);
                     waitHandler.WaitOne();
 
                 }
@@ -186,9 +187,24 @@ namespace Fap.Workflow.Service
                 result.Status = WfExecutedStatus.Failed;
                 result.Message = string.Format("流程启动发生错误，内部异常:{0}", e.Message);
                 _logger.LogError($"{WorkflowConstants.WF_PROCESS_ERROR}:{e.Message}");
-
+                throw e;
             }
             return result;
+        }
+        /// <summary>
+        /// 回写单据状态
+        /// </summary>
+        /// <param name="runner"></param>
+        private void WriteBackBillStatus(WfAppRunner runner)
+        {
+            //改变单据状态
+            var formData = runner.BillData;
+            string updateSql = $"update {runner.BillTableName} set SubmitTime='{DateTimeUtils.CurrentDateTimeStr}', BillStatus='{BillStatus.PROCESSING}' where id={formData.Id}";
+            if (string.IsNullOrEmpty(formData.BillName))
+            {
+                updateSql = $"update {runner.BillTableName} set BillName=@BillName, SubmitTime='{DateTimeUtils.CurrentDateTimeStr}', BillStatus='{BillStatus.PROCESSING}' where id={formData.Id}";
+            }
+            _dbContext.Execute(updateSql, new DynamicParameters(new { BillName = runner.AppName }));
         }
 
         /// <summary>
@@ -236,9 +252,8 @@ namespace Fap.Workflow.Service
                 var error = e.InnerException != null ? e.InnerException.Message : e.Message;
                 result.Message = string.Format("流程启动发生错误，内部异常:{0}", e.Message);
                 _logger.LogError($"{WorkflowConstants.WF_PROCESS_ERROR}:{e.Message}");
+                throw e;
             }
-
-            return result;
         }
 
 
@@ -820,14 +835,14 @@ namespace Fap.Workflow.Service
         [Transactional]
         public bool DeleteProcess(string processId, string comment)
         {
-            WfProcessInstance process = _dataAccessor.Get<WfProcessInstance>(processId);
+            WfProcessInstance process = _dbContext.Get<WfProcessInstance>(processId);
             if (process != null)
             {
                 process.ProcessState = WfProcessInstanceState.Deleted;
-                _dataAccessor.Update<WfProcessInstance>(process);
+                _dbContext.Update<WfProcessInstance>(process);
 
-                _dataAccessor.Execute("delete from wfTask where ProcessId='" + processId + "'");
-                _dataAccessor.Execute("delete from WfActivityInstance where ProcessId='" + processId + "'");
+                _dbContext.Execute("delete from wfTask where ProcessId='" + processId + "'");
+                _dbContext.Execute("delete from WfActivityInstance where ProcessId='" + processId + "'");
 
                 TaskAdviceManager tam = new TaskAdviceManager(_serviceProvider);
                 tam.RecordWhenDelete(processId, comment);
@@ -844,7 +859,7 @@ namespace Fap.Workflow.Service
         public void BillWriteBack()
         {
             //获取没有回写的流程实例
-            IEnumerable<WfProcessInstance> processes = _dataAccessor.QueryWhere<WfProcessInstance>($"ProcessState='Completed' and ApproveResult='Agree' and (WriteBackState=0 or WriteBackState is null)");
+            IEnumerable<WfProcessInstance> processes = _dbContext.QueryWhere<WfProcessInstance>($"ProcessState='Completed' and ApproveResult='Agree' and (WriteBackState=0 or WriteBackState is null)");
             if (processes != null && processes.Any())
             {               
                 foreach (var process in processes)
@@ -970,7 +985,7 @@ namespace Fap.Workflow.Service
             }
 
             sql += " order by a.Fid desc";
-            IEnumerable<TaskViewModel> model = _dataAccessor.QueryOriSql<TaskViewModel>(sql);
+            IEnumerable<TaskViewModel> model = _dbContext.QueryOriSql<TaskViewModel>(sql);
             return model;
         }
 
@@ -983,7 +998,7 @@ namespace Fap.Workflow.Service
         {
             DynamicParameters parameters = new DynamicParameters();
             parameters.Add("ExecutorName", userId);
-            IEnumerable<WfTask> tasks = _dataAccessor.QueryWhere<WfTask>("ExecutorName=@ExecutorName AND TaskState IN ('Waiting', 'Handling')", parameters);
+            IEnumerable<WfTask> tasks = _dbContext.QueryWhere<WfTask>("ExecutorName=@ExecutorName AND TaskState IN ('Waiting', 'Handling')", parameters);
             return tasks;
         }
         #endregion
@@ -996,7 +1011,7 @@ namespace Fap.Workflow.Service
         /// <returns></returns>
         public WfProcessInstance GetProcessInstance(string processInsId)
         {
-            WfProcessInstance process = _dataAccessor.Get<WfProcessInstance>(processInsId);
+            WfProcessInstance process = _dbContext.Get<WfProcessInstance>(processInsId);
             return process;
         }
 
@@ -1011,7 +1026,7 @@ namespace Fap.Workflow.Service
         /// <returns></returns>
         public string UrgeFlow(string billUid, string businessUid)
         {
-            MessageManager messageManager = new MessageManager(_dataAccessor, _loggerFactory);
+            MessageManager messageManager = new MessageManager(_dbContext, _loggerFactory);
             return messageManager.SendUrgeMessage(billUid, businessUid);
         }
     }

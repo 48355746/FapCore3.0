@@ -21,6 +21,7 @@ using System.IO;
 using Fap.AspNetCore.ViewModel;
 using Fap.Core.MultiLanguage;
 using System.ComponentModel;
+using System.Web;
 
 namespace Fap.Hcm.Web.Controllers
 {
@@ -38,18 +39,14 @@ namespace Fap.Hcm.Web.Controllers
             _onlineUserService = onlineUserService;
         }
         [AllowAnonymous]
-        public IActionResult Index(string Lang, string ReturnUrl, string msg)
+        public IActionResult Index(string Lang,string msg)
         {
             string language = "ZhCn";
             if (Lang.IsPresent())
             {
                 language = Lang;
             }
-            HttpContext.Items["language"] = language;
-            if (ReturnUrl.IsPresent())
-            {
-                ViewBag.ReturnUrl = ReturnUrl;
-            }
+            HttpContext.Items["language"] = language;          
             if (msg.IsPresent())
             {
                 ViewBag.ErrorMsg = msg;
@@ -221,7 +218,7 @@ namespace Fap.Hcm.Web.Controllers
                 }
                 else
                 {
-                    return LocalRedirect(returnUrl);
+                    return LocalRedirect(HttpUtility.UrlDecode(returnUrl));
                 }
             }
            

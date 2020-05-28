@@ -38,10 +38,7 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
         public JsonResult SubmitProcess(WfViewModel wfvm)
         {
             Guard.Against.Null(wfvm, nameof(WfViewModel));
-            var formData = _dbContext.Get(wfvm.BillTable,wfvm.BillUid,true);
-            //改变单据状态
-            string updateSql = $"update {wfvm.BillTable} set SubmitTime='{DateTimeUtils.CurrentDateTimeStr}', BillStatus='{BillStatus.PROCESSING}' where id={formData.Id}";
-            _dbContext.Execute(updateSql);
+            var formData = _dbContext.Get(wfvm.BillTable,wfvm.BillUid,true);          
             string appEmpUid = formData.AppEmpUid;
             string appEmpName = formData.AppEmpUidMC;
             WfAppRunner runner = new WfAppRunner();
@@ -65,7 +62,6 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
         {
             Guard.Against.Null(wfvm, nameof(WfViewModel));
             var formData = _dbContext.Get(wfvm.BillTable, wfvm.BillUid, true);
-
             WfAppRunner runner = new WfAppRunner();
             runner.BillTableName = wfvm.BillTable;
             runner.ProcessUid = wfvm.ProcessUid;
