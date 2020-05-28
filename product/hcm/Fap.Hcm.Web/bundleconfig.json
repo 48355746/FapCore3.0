@@ -100,10 +100,8 @@
       "wwwroot/Content/js/bootstrap-tag.js",
       "wwwroot/Content/js/jquery.tmpl.js",
       "wwwroot/Scripts/Fap/common.js", //fap常用js
-      "wwwroot/Scripts/Fap/utils.js", //fap常用js
       "wwwroot/Content/js/date-time/bootstrap-datetimepicker.js",
-      "wwwroot/Content/js/jquery.DatePicker.js",
-      "wwwroot/Content/js/date-time/locales/bootstrap-datetimepicker.zh-CN.js",
+      "wwwroot/Content/js/jquery.DatePicker.js",      
       "wwwroot/Content/js/date-time/bootstrap-datepicker.js",
       "wwwroot/Content/js/jquery.validate.js", //表单校验js
       "wwwroot/Content/js/jquery.bootstrap-duallistbox.js", //左右筛选控件

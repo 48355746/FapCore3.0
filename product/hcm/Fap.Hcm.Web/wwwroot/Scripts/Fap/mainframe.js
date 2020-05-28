@@ -48,7 +48,15 @@ $(function () {
             });
         });
     })
-
+    $("#btnClearCache").on(ace.click_event, function () {
+        $.post(basePath + "/System/Api/Manage/Setting/ClearCache", function (rv) {
+            if (rv.success) {
+                $.msg(rv.msg);
+            } else {
+                bootbox.alert(rv.msg);
+            }
+        })
+    })
     //setTimeout(function () {
     //    getHandling();
     //    getBadge();
@@ -105,10 +113,11 @@ var getBadge = function () {
         }
     });
 };
-//加载我的伙伴
+//加载我的伙伴,菜单，多语言日期控件
 (function () {
     buildPartner();
     buildMenus('0');
+    moment.locale(language.toLowerCase());
 })();
 function buildPartner() {
     $.get(basePath + "/SelfService/Api/Partner", function (rv) {

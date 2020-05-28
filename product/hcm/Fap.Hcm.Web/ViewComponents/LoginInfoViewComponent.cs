@@ -10,7 +10,7 @@ namespace Fap.Hcm.Web.ViewComponents
     {
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            return await Task.FromResult(View());
+            return await Task.FromResult(View()).ConfigureAwait(false);
         }
     }
 }
