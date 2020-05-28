@@ -14,8 +14,42 @@
 - 流程引擎
 - 报表引擎
 - 任务调度
-
-
+## 搭建环境
+开发工具vs2019，.netcore30框架，支持mssql，mysql数据库。
+1. clone代码到本地。
+```shell
+clone https://github.com/48355746/FapCore3.0.git
+```
+2. 新建一个数据库
+```sql
+CREATE DATABASE FapCore30 COLLATE Chinese_PRC_CI_AS 
+```
+3. 解压根目录下的MSSQL.zip文件。
+4. sqlcmd执行MSSQL.sql文件。实例：
+```sql
+sqlcmd -S localhost -U sa -P 123 -d FapCore30 -i /var/opt/mssql/MSSQL.sql
+```
+5. 修改Fap.Hcm.Web项目下appsettings.json文件，配置数据库。
+```json
+"ConnectionString": {
+    "sqlconnection": "Data Source=172.17.0.4;Initial Catalog=FapCore30;User ID=sa;Password=123;Enlist=false;Max Pool SIZE=500;Min Pool SIZE=50;MultipleActiveResultSets=True"
+    "sqlconnection_slaver_1": "Data Source=172.17.0.5;Initial Catalog=FapCore30;User ID=sa;Password=123;Enlist=false;Max Pool SIZE=500;Min Pool SIZE=50;MultipleActiveResultSets=True",
+    "sqlconnection_slaver_2": "Data Source=172.17.0.5;Initial Catalog=FapCore30;User ID=sa;Password=123;Enlist=false;Max Pool SIZE=500;Min Pool SIZE=50;MultipleActiveResultSets=True"
+  }
+```
+mysql数据库请使用 mysqlconnection 名称。_slaver_1，_slaver_2为从数据库。没有可以不配置。
+6.  启动 Fap.Hcm.Web。
+## docker部署
+根目录已包含Dockerfile文件
+-  构造镜像
+```shell
+sudo docker build -t fapcore/hcm .
+```
+-  运行容器
+数据卷如下：-v 时区,-v logs,-v 附件。说明：设置appsetting.json日志路径为LogPath（/var/fapcore/logs），设置附件路径为（/var/fapcore/annex）
+```shell
+sudo docker run --name fapcorehcm -d -p 5000:80 -p 5001:443 -v /etc/localtime:/etc/localtime -v /usr/docker/fapcorehcm/logs:/var/fapcore/logs -v /usr/docker/fapcorehcm/annex:/var/fapcore/annex fapcore/hcm
+```
 ## 公共组件
 
 ### 1、表格组件
