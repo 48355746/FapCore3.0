@@ -31,12 +31,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		Dockerfile = Dockerfile
-		Fap部署.docx = Fap部署.docx
 		metadata.sql = metadata.sql
 		MSSQL.zip = MSSQL.zip
-		MYSQL.zip = MYSQL.zip
 		start_faphcm.sh = start_faphcm.sh
-		update1.sql = update1.sql
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UEditorNetCore", "thirdparty\UEditorNetCore\UEditorNetCore.csproj", "{01A60121-72CC-4893-8754-8E5DBD589B2F}"
