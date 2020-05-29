@@ -1,13 +1,7 @@
 ﻿@model IEnumerable<Fap.Workflow.Model.WfBusiness>
 
 <title>已办任务</title>
-<link href="~/Content/bootstrap-layer.css" rel="stylesheet" />
-<style>
-    .billskin .layui-layer-btn0 {
-        background-color: #d15b47 !important;
-        border-color: #428bca;
-    }
-</style>
+
 <div class="row">
     <div class="col-xs-12">
         @foreach (var bizGrp in Model.GroupBy(b => b.BizTypeUidMC))
@@ -51,7 +45,7 @@
     </div>
 </div>
 <script>
-    var scripts = [null, null];
+    var scripts = [null, "/Scripts/Workflow/workflow.js", null];
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
             $(document).one('ajaxloadstart.page', function (e) {

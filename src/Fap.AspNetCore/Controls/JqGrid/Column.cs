@@ -91,7 +91,7 @@ namespace Fap.AspNetCore.Controls.JqGrid
                 throw new ArgumentException("Columnname '" + colname + "' is reserved");
             }
             _fapColumn = null; ;
-
+            _search = false;
             // Set index equal to columnname by default, can be overriden by setter
             _index = colname;
         }

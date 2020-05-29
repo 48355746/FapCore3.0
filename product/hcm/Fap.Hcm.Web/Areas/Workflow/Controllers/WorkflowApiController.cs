@@ -207,6 +207,83 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
             }
             return Json(vm);
         }
+        #region 流程监控
+        /// <summary>
+        /// 挂起流程（管理员）
+        /// </summary>
+        /// <param name="formObj"></param>
+        /// <returns></returns>
+        [HttpPost("SuspendProcess")]
+        public JsonResult SuspendProcess(string processInsUid, string comment)
+        {
+            bool success = _workflowService.SuspendProcess(processInsUid, comment);
+            if (success)
+            {
+                return Json(ResponseViewModelUtils.Sueecss());
+            }
+            else
+            {
+                return Json(ResponseViewModelUtils.Failure("该流程不能挂起"));
+            }
+        }
 
+        /// <summary>
+        /// 恢复流程（管理员）
+        /// </summary>
+        /// <param name="formObj"></param>
+        /// <returns></returns>
+        [HttpPost("ResumeProcess")]
+        public JsonResult ResumeProcess(string processInsUid, string comment)
+        {
+            bool success = _workflowService.ResumeProcess(processInsUid, comment);
+            if (success)
+            {
+                return Json(ResponseViewModelUtils.Sueecss());
+            }
+            else
+            {
+                return Json(ResponseViewModelUtils.Failure("该流程不能恢复"));
+            }
+        }
+
+        /// <summary>
+        ///  终止流程（管理员）
+        /// </summary>
+        /// <param name="formObj"></param>
+        /// <returns></returns>
+        [HttpPost("EndProcess")]
+        public JsonResult EndProcess(string processInsUid, string comment)
+        {
+            bool success = _workflowService.EndProcess(processInsUid, comment);
+            if (success)
+            {
+                return Json(ResponseViewModelUtils.Sueecss());
+            }
+            else
+            {
+                return Json(ResponseViewModelUtils.Failure("该流程不能终止"));
+            }
+        }
+
+        /// <summary>
+        ///  删除流程（管理员）
+        /// </summary>
+        /// <param name="formObj"></param>
+        /// <returns></returns>
+        [HttpPost("DeleteProcess")]
+        public JsonResult DeleteProcess(string processInsUid, string comment)
+        {
+            bool success = _workflowService.DeleteProcess(processInsUid, comment);
+            if (success)
+            {
+                return Json(ResponseViewModelUtils.Sueecss());
+            }
+            else
+            {
+                return Json(ResponseViewModelUtils.Failure("该流程不能删除"));
+            }
+        }
+
+        #endregion
     }
 }

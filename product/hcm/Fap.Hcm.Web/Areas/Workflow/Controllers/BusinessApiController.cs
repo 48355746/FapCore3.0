@@ -96,11 +96,11 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("Invalid/{tablename}/{fid}")]
-        public OkResult GetInvalidBill(string tableName, string fid)
+        public JsonResult GetInvalidBill(string tableName, string fid)
         {
             string sql = $"update {tableName} set BillStatus='{BillStatus.CANCELED}' where Fid=@Fid";
             _dbContext.Execute(sql, new DynamicParameters(new { Fid = fid }));
-            return Ok();
+            return Json(ResponseViewModelUtils.Sueecss());
         }
         /// <summary>
         /// 撤回
@@ -114,10 +114,9 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
         {
             string sql = $"select * from WfProcessInstance where ProcessUid=@ProcessUid and BillUid=@BillUid and ProcessState='{WfProcessInstanceState.Running}'";
             var wpins = _dbContext.QueryFirstOrDefault<WfProcessInstance>(sql, new DynamicParameters(new { ProcessUid = processUid, BillUid = billUid }));
-            WfExecutedResult result = null;
             if (wpins == null)
             {
-                result = new WfExecutedResult() { Status = WfExecutedStatus.Exception, Message = "不存在流程实例，不需要撤回" };
+                return Json(ResponseViewModelUtils.Failure("撤回失败，实例不存在或已完成。"));
             }
             else
             {
@@ -125,9 +124,9 @@ namespace Fap.Hcm.Web.Areas.Workflow.Controllers
                 runner.CurrProcessInsUid = wpins.Fid;
                 runner.BillTableName = wpins.BillTable;
                 runner.BillUid = wpins.BillUid;
-                result = _workflowService.WithdrawProcess(runner);
+                _workflowService.WithdrawProcess(runner);
             }
-            return Json(result);
+            return Json(ResponseViewModelUtils.Sueecss());
         }
         /// <summary>
         /// 回退单据（驳回）

@@ -72,24 +72,24 @@
             var status = ret.BillStatus;
             if (status === 'DRAFT') {
                 //草稿
-                de += "<a  href='javascript:void(0)' onclick='submitDraft(\"" + fid + "\")'>"+$.lang("submit","提交")+"</a>  ";
+                de += "<a  href='javascript:void(0)' onclick='submitDraft(\"@businessUid\",\"" + fid + "\")'>"+$.lang("submit","提交")+"</a>  ";
                 de += "<a  href='javascript:void(0)' onclick='invalidBill(\"" + fid + "\")'>"+$.lang("invalid","作废")+"</a>";
             } else if (status === 'REVOKED') {
                 //驳回
-                de += "<a  href='javascript:void(0)' onclick='submitDraft(\"" + fid + "\")'>"+$.lang("submit","提交")+"</a>  ";
-                de += "<a  href='javascript:void(0)' onclick='workflowChart(\"" + fid + "\")'>"+$.lang("flow_diagram","流程图")+"</a>  ";
+                de += "<a  href='javascript:void(0)' onclick='submitDraft(\"@businessUid\",\"" + fid + "\")'>"+$.lang("submit","提交")+"</a>  ";
+                de += "<a  href='javascript:void(0)' onclick='workflowChart(\"@wfProcess.Fid\",\"" + fid + "\")'>"+$.lang("flow_diagram","流程图")+"</a>  ";
             } else if (status === 'PROCESSING') {
                 //流程中
-                de += "<a  href='javascript:void(0)' onclick='viewBill(\"" + fid + "\")'>"+$.lang("view","查看")+"</a>  ";
+                de += "<a  href='javascript:void(0)' onclick='viewBill(\"@wfProcess.Fid\",\"@businessUid\",\"" + fid + "\")'>"+$.lang("view","查看")+"</a>  ";
                 de += "<a  href='javascript:void(0)' onclick='recallBill(\"" + fid + "\")'>"+$.lang("recall","撤回")+"</a>  ";
-                de += "<a  href='javascript:void(0)' onclick='workflowChart(\"" + fid + "\")'>"+$.lang("flow_diagram","流程图")+"</a>  ";
+                de += "<a  href='javascript:void(0)' onclick='workflowChart(\"@wfProcess.Fid\",\"" + fid + "\")'>"+$.lang("flow_diagram","流程图")+"</a>  ";
 
             } else if (status !== 'CANCELED') {
                 //其他不为作废的单子
-                de += "<a  href='javascript:void(0)' onclick='viewBill(\"" + fid + "\",\"" + name + "\")'>"+$.lang("view","查看")+"</a> ";
-                de += "<a  href='javascript:void(0)' onclick='workflowChart(\"" + fid + "\")'>"+$.lang("flow_diagram","流程图")+"</a>  ";
+                de += "<a  href='javascript:void(0)' onclick='viewBill(\"@wfProcess.Fid\",\"@businessUid\",\"" + fid + "\")'>"+$.lang("view","查看")+"</a> ";
+                de += "<a  href='javascript:void(0)' onclick='workflowChart(\"@wfProcess.Fid\",\"" + fid + "\")'>"+$.lang("flow_diagram","流程图")+"</a>  ";
             } else {
-                de += "<a  href='javascript:void(0)' onclick='viewBill(\"" + fid + "\",\"" + name + "\")'>"+$.lang("view","查看")+"</a> ";
+                de += "<a  href='javascript:void(0)' onclick='viewBill(\"@wfProcess.Fid\",\"@businessUid\",\"" + fid + "\")'>"+$.lang("view","查看")+"</a> ";
 
             }
             jQuery('#grid-@tableName').jqGrid('setRowData', ids[i], { oper: de });
@@ -114,16 +114,12 @@
      * 提交草稿态单据
      * @@param fid
      */
-    function submitDraft(fid)
+    function submitDraft(businessUid,fid)
     {
-        openBillForm(fid);
+        openBillForm(businessUid,fid);
     }
-    function openBillForm(billUid)
+    function openBillForm(businessUid,billUid)
     {
-         var processUid = '@wfProcess.Fid';//流程
-         var frmType = '@wfProcess.FormType';//表单类型
-         var businessUid = '@businessUid';//业务Uid
-
         var openUrl = $.randomUrl('@Url.Content("~/Workflow/Business/ApplyBill")?businessUid=' + businessUid + '&billUid=' + billUid);
 
         var dialog = bootbox.dialog({
@@ -172,11 +168,11 @@
         bootbox.confirm($.lang("confirm_invalid","确认作废单据吗？"), function (result) {
             if (result) {
                 $.get(basePath + "/Workflow/Api/Business/Invalid/@tableName/" + fid, function (rv) {
-                    if (rv.status === 3) {
-                        bootbox.alert(rv.message);
-
-                    } else {
+                    if (rv.success) {
+                        $.msg(rv.msg);
                         refreshList();
+                    } else {
+                        bootbox.alert(rv.msg);
                     }
                 })
             }
@@ -192,88 +188,17 @@
                 var processUid = '@wfProcess.Fid';//流程
 
                 $.get(basePath + "/Workflow/Api/Business/Withdrawn/" + processUid + "/" + fid, function (rv) {
-                    if (rv.status === 3) {
-                        bootbox.alert(rv.message);
-                    } else {
+                    if (rv.success) {
+                        $.msg(rv.msg);
                         refreshList();
+                    } else {
+                        bootbox.alert(rv.msg);
                     }
                 })
             }
         })
     }
-    /**
-     * 流程图
-     * */
-    function workflowChart(fid) {
-        var processUid = '@wfProcess.Fid';//流程
-        var openUrl = $.randomUrl(basePath + "/Workflow/Business/FlowChart?processUid=" + processUid + "&billUid=" + fid);
-        var width = parseInt($(window).innerWidth() * 0.8) + 'px';
-        var height = parseInt($(window).innerHeight() - 60) + 'px';
-        var index = layer.open({
-            type: 2,
-            title: '@title',
-            shadeClose: true,
-            shade: 0.8,
-            maxmin: true, //开启最大化最小化按钮
-            skin: 'billskin',
-            btnAlign: 'c',
-            area: width,//[width, 'auto'],
-            offset: '100px',
-            content: openUrl,
-            btn: [$.lang("close",'关闭')],
-            success: function (layero, index) {
-                layer.iframeAuto(index);
-            },
-            yes: function (index, layero) {
-                layer.close(index);
-            }
-            , cancel: function () {
-                //右上角关闭回调
 
-                //return false 开启该代码可禁止点击该按钮关闭
-            }
-        });
-    }
-    function viewBill(fid) {
-        var processUid = '@wfProcess.Fid';//流程
-        var frmType = '@wfProcess.FormType';//表单类型
-        var businessUid = '@businessUid';//业务Uid
-        
-        var openUrl = $.randomUrl('@Url.Content("~/Workflow/Business/ApplyViewBill")?processUid=' + processUid + '&businessUid=' + businessUid + '&billUid=' + fid);
-
-
-        var width = parseInt($(window).innerWidth() * 0.8) + 'px';
-        var height = parseInt($(window).innerHeight() - 60) + 'px';
-        var index = layer.open({
-            type: 2,
-            title: '@title',
-            shadeClose: true,
-            shade: 0.8,
-            maxmin: true, //开启最大化最小化按钮
-            skin: 'billskin',
-            btnAlign: 'c',
-            area: [width, height],
-            content: openUrl,
-            btn: [$.lang('print','打印'),$.lang('close','关闭')]
-            , yes: function (index, layero) {
-                //按钮【暂存】的回调
-                var iframeWin = layero.find('iframe')[0];
-                iframeWin.contentWindow.printBill();
-
-                return false;
-            }
-            , btn2: function (index, layero) {
-                //按钮【提交流程】的回调
-                layer.close(index);
-            }
-
-            , cancel: function () {
-                //右上角关闭回调
-
-                //return false 开启该代码可禁止点击该按钮关闭
-            }
-        });
-    }
     jQuery(function ($) {
         $("#btnBillStatus>li").off(ace.click_event).on(ace.click_event, function (e) {
             var tName = $(this).text();
@@ -288,7 +213,8 @@
         //新申请
         $("#btnAddApply").on(ace.click_event, function () {
             //流程模板
-            openBillForm('');
+            var businessUid = '@businessUid';//业务Uid
+            openBillForm(businessUid,'');
         });
     });
 
