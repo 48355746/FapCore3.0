@@ -153,7 +153,6 @@ function getRequestParameter(key) {
  * @returns {{}}
  */
 function getRequestParameters() {
-    debugger
     var arr = (location.search || "").replace(/^\?/, '').split("&");
     var params = {};
     for (var i = 0; i < arr.length; i++) {
