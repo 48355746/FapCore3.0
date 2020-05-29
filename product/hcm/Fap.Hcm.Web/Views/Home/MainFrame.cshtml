@@ -11,12 +11,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
     @*bootstrap css*@
     <environment include="Development">
-        <link href="~/Content/css/bootstrap.css" rel="stylesheet" asp-append-version="true" />
+        <link rel="stylesheet" href="~/Content/css/bootstrap.css" asp-append-version="true" />
         <link rel="stylesheet" href="~/Content/css/font-awesome.css" />
         <link rel="stylesheet" href="~/Content/css/ace-fonts.css" />
     </environment>
     <environment exclude="Development">
-        <link href="~/Content/css/bootstrap.min.css" rel="stylesheet" asp-append-version="true" />
+        <link rel="stylesheet" href="~/Content/css/bootstrap.min.css" asp-append-version="true" />
         <link rel="stylesheet" href="~/css/acefont.min.css" asp-append-version="true" />
     </environment>
     <environment include="Development">
@@ -510,6 +510,8 @@
         <script src="~/Content/js/date-time/locales/bootstrap-datetimepicker.ja.js" asp-append-version="true"></script>
     }
     <script src="~/Content/layer/layer.js"></script>
-
+    <script>
+        moment.locale(language.toLowerCase());
+    </script>
 </body>
 </html>

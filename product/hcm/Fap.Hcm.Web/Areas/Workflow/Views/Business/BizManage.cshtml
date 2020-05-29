@@ -1,16 +1,7 @@
 ﻿@model IEnumerable<Fap.Workflow.Model.WfBusiness>
 
 <title><fap-multilang lang-key="business_management" default-content="业务管理"></fap-multilang></title>
-<link href="~/Content/bootstrap-layer.css" rel="stylesheet" />
-<link href="~/Content/css/bootstrap-timeline.css" rel="stylesheet" />
-<link href="~/Content/bootstrap-layer.css" rel="stylesheet" />
 
-<style>
-    .billskin .layui-layer-btn0 {
-        background-color: #d15b47 !important;
-        border-color: #428bca;
-    }
-</style>
 <div class="row">
     <div class="col-xs-12">
         @foreach (var bizGrp in Model.GroupBy(b => b.BizTypeUidMC))
@@ -38,7 +29,7 @@
     </div>
 </div>
 <script>
-    var scripts = [null, null]
+    var scripts = [null, "/lib/ueditor/ueditor.parse.js", "/Scripts/Workflow/workflow.js", "/Content/js/printThis.js", null]
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
             $(document).one('ajaxloadstart.page', function (e) {
@@ -47,7 +38,7 @@
             $(".bizprocess li>a").on(ace.click_event, function () {
                 var $this = $(this);
                 var businessUid = $this.data("business");
-                var billTable = $this.data("bill");
+                //var billTable = $this.data("bill");
                 $("#myApplyContent").empty();
                 NProgress.start();
                 $.get(basePath + "/Workflow/Business/Manage/" + businessUid, function (content) {

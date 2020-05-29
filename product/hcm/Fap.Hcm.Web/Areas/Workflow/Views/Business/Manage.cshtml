@@ -5,8 +5,8 @@
     Fap.Workflow.Model.WfBusiness biz = ViewBag.WfBusiness;
     Fap.Workflow.Model.WfProcess wfProcess = ViewBag.WfProcess;
     string tableName = biz.BillEntity;
-    string bizCode = biz.BizCode; 
-    string businessUid = biz.Fid; 
+    string bizCode = biz.BizCode;
+    string businessUid = biz.Fid;
     string title = biz.BizName;
     IEnumerable<Fap.Core.Infrastructure.Metadata.FapDict> billStatus = _dbContext.Dictionarys("BillStatus");
     //增加操作列
@@ -33,7 +33,7 @@
 </script>
 <div class="widget-box">
     <div class="widget-header widget-header-flat">
-        <h4 class="widget-title smaller">@biz.BizName</h4>     
+        <h4 class="widget-title smaller">@biz.BizName</h4>
 
         <div class="widget-toolbar">
             <label>
@@ -81,12 +81,12 @@
             var status = ret.BillStatus;
 
             //其他不为作废的单子
-            de += "<a  href='javascript:void(0)' onclick='viewBill(\"" + fid + "\",\"" + name + "\")'>"+$.lang("view","查看")+"</a>  ";
+            de += "<a  href='javascript:void(0)' onclick='viewBill(\"@wfProcess.Fid\",\"@businessUid\",\"" + fid + "\")'>"+$.lang("view","查看")+"</a>  ";
             if (status === 'PROCESSING') {
                 //流程中
                 de += "<a  href='javascript:void(0)' onclick='urgeBill(\"" + fid + "\")'>"+$.lang("urge","催办")+"</a>  ";
             }
-            de += "<a  href='javascript:void(0)' onclick='workflowChart(\"" + fid + "\")'>"+$.lang("flow_diagram","流程图")+"</a>  ";
+            de += "<a  href='javascript:void(0)' onclick='workflowChart(\"@wfProcess.Fid\",\"" + fid + "\")'>"+$.lang("flow_diagram","流程图")+"</a>  ";
 
             jQuery('#grid-@tableName').jqGrid('setRowData', ids[i], { oper: de });
         }
@@ -102,103 +102,30 @@
                 var url = $.randomUrl(basePath + "/Workflow/Api/Business/UrgeBill?billUid=" + fid + "&businnessUid=" + businessUid);
                 $.get(url, function (rv) {
                     $.msg(rv.msg);
-
                 })
             }
         })
     }
-    /**
-     * 流程图
-     * */
-    function workflowChart(fid) {
-        var processUid = '@wfProcess.Fid';//流程
-        var openUrl = $.randomUrl(basePath + "/Workflow/Business/FlowChart?processUid=" + processUid + "&billUid=" + fid);
-        var index = layer.open({
-            type: 2,
-            title: '"@title"申请单',
-            shadeClose: true,
-            shade: 0.8,
-            maxmin: true, //开启最大化最小化按钮
-            skin: 'billskin',
-            btnAlign: 'c',
-            area: ['893px', '600px'],
-            content: openUrl,
-            btn: ['关闭'],
-            yes: function (index, layero) {
-                layer.close(index);
-            }
-            , cancel: function () {
-                //右上角关闭回调
 
-                //return false 开启该代码可禁止点击该按钮关闭
-            }
+    jQuery(function ($) {
+        $("#btnBillStatus>li").off(ace.click_event).on(ace.click_event, function (e) {
+            var tName = $(this).text();
+            var tValue = $(this).data("billstatus");
+            $("#filterStatus").data("billstatus", tValue);
+            $("#filterStatus").html(tName + "<i class=\"ace-icon fa fa-angle-down icon-on-right\"></i>");
+            refreshList();
         });
-        layer.full(index);
-    }
-    function viewBill(fid) {
-        var processUid = '@wfProcess.Fid';//流程
-        var frmType = '@wfProcess.FormType';//表单类型
-        var business = '@biz.Fid';//业务Uid
-
-        if (processUid == '') {
-            bootbox.alert("此业务没关联流程或关联的流程已失效,请设置关联！");
-            return;
-        }
-        var openUrl = $.randomUrl('@Url.Content("~/Workflow/Business/ApplyViewBill")?processUid=' + processUid + '&businessUid=' + business + '&billUid=' + fid);
-
-        var index = layer.open({
-            type: 2,
-            title: '"@title"申请单查看',
-            shadeClose: true,
-            shade: 0.8,
-            maxmin: true, //开启最大化最小化按钮
-            skin: 'billskin',
-            btnAlign: 'c',
-            area: ['893px', '600px'],
-            content: openUrl,
-            btn: ['打印', '关闭']
-            , yes: function (index, layero) {
-                //按钮【暂存】的回调
-                var iframeWin = layero.find('iframe')[0];
-                iframeWin.contentWindow.printBill();
-
-                return false;
-            }
-            , btn2: function (index, layero) {
-                //按钮【提交流程】的回调
-                layer.close(index);
-            }
-
-            , cancel: function () {
-                //右上角关闭回调
-
-                //return false 开启该代码可禁止点击该按钮关闭
-            }
-        });
-        if (frmType != 'Internal') {
-            layer.full(index);
-        }
-    }
-
-        jQuery(function ($) {        
-            $("#btnBillStatus>li").off(ace.click_event).on(ace.click_event, function (e) {
-                var tName = $(this).text();
-                var tValue = $(this).data("billstatus");
-                $("#filterStatus").data("billstatus", tValue);
-                $("#filterStatus").html(tName + "<i class=\"ace-icon fa fa-angle-down icon-on-right\"></i>");
-                refreshList();
-            });
-            $(document).one('ajaxloadstart.page', function (e) {
-                //$(document).off(ace.click_event, '.dropdown-menu>li');
-            })
-            //新申请
-            $("#btnAddApply").on(ace.click_event, function () {
-                //流程模板
-                openBillForm('');
-            });
-
-
+        $(document).one('ajaxloadstart.page', function (e) {
+            //$(document).off(ace.click_event, '.dropdown-menu>li');
         })
+        //新申请
+        $("#btnAddApply").on(ace.click_event, function () {
+            //流程模板
+            openBillForm('');
+        });
+
+
+    })
 
 
 </script>

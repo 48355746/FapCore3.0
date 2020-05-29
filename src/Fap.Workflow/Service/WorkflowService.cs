@@ -163,6 +163,7 @@ namespace Fap.Workflow.Service
         [Transactional]
         public WfExecutedResult StartProcess(WfAppRunner runner)
         {
+            WriteBackBillStatus(runner);
             WfExecutedResult result = new WfExecutedResult();
             try
             {
@@ -174,8 +175,7 @@ namespace Fap.Workflow.Service
                };
                 if (result.Status != WfExecutedStatus.Exception)
                 {
-                    runtimeManager.Execute();
-                    WriteBackBillStatus(runner);
+                    runtimeManager.Execute();                    
                     waitHandler.WaitOne();
 
                 }
@@ -199,10 +199,10 @@ namespace Fap.Workflow.Service
         {
             //改变单据状态
             var formData = runner.BillData;
-            string updateSql = $"update {runner.BillTableName} set SubmitTime='{DateTimeUtils.CurrentDateTimeStr}', BillStatus='{BillStatus.PROCESSING}' where id={formData.Id}";
+            string updateSql = $"update {runner.BillTableName} set SubmitTime='{DateTimeUtils.CurrentDateTimeStr}', BillStatus='{BillStatus.PROCESSING}' where Id={formData.Id}";
             if (string.IsNullOrEmpty(formData.BillName))
             {
-                updateSql = $"update {runner.BillTableName} set BillName=@BillName, SubmitTime='{DateTimeUtils.CurrentDateTimeStr}', BillStatus='{BillStatus.PROCESSING}' where id={formData.Id}";
+                updateSql = $"update {runner.BillTableName} set BillName=@BillName, SubmitTime='{DateTimeUtils.CurrentDateTimeStr}', BillStatus='{BillStatus.PROCESSING}' where Id={formData.Id}";
             }
             _dbContext.Execute(updateSql, new DynamicParameters(new { BillName = runner.AppName }));
         }
@@ -600,8 +600,8 @@ namespace Fap.Workflow.Service
                 _withdrawedResult.Status = WfExecutedStatus.Failed;
                 _withdrawedResult.Message = string.Format("流程撤销发生异常！，详细错误：{0}", e.Message);
                 _logger.LogError(_withdrawedResult.Message);
+                throw e;
             }
-            return _withdrawedResult;
         }
         /// <summary>
         /// 回退

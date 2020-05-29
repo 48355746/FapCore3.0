@@ -116,8 +116,7 @@ var getBadge = function () {
 //加载我的伙伴,菜单，多语言日期控件
 (function () {
     buildPartner();
-    buildMenus('0');
-    moment.locale(language.toLowerCase());
+    buildMenus('0');    
 })();
 function buildPartner() {
     $.get(basePath + "/SelfService/Api/Partner", function (rv) {
