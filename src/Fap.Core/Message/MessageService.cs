@@ -264,6 +264,16 @@ namespace Fap.Core.Message
                 }
             }
         }
+
+        public void SendMailList(IEnumerable<FapMail> mailList)
+        {
+            _dataAccessor.InsertBatchSql(mailList);
+        }
+
+        public void SendMessageList(IEnumerable<FapMessage> messageList)
+        {
+            _dataAccessor.InsertBatchSql(messageList);
+        }
     }
 }
 

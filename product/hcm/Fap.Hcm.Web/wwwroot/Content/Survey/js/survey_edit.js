@@ -16,9 +16,9 @@ function checkUploadImgItem() {
 }
 
 //预览
-function previewSurvey() {
+function previewSurvey(fid) {
     edit.saveSurvey().then(function () {
-        var e = basePath + "/Survey/Survey/PreviewSurvey?survey_id=" + survey_init.survey_id + "&from=" + previewFrom;
+        var e = basePath + "/System/Survey/Preview/"+fid;
         $("body").append('<a href="" id="goto_preview" target="_blank"></a>'),
         $("#goto_preview").attr("href", e),
         $("#goto_preview").get(0).click()
@@ -33,11 +33,7 @@ function popSuggestionSelector(e, t) {
         })
     })
 }
-//下一步到收集
-function nextToCollect(fid)
-{
-    location.href = basePath + "/Survey/Survey/SurveyFilter/" + fid;
-}
+
 //发布
 //function publishSurvey(fid) {
 //    $.get(basePath + "api/Survey/SubmitSurvey/" + fid, function (rv) {

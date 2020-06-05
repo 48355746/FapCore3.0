@@ -12,7 +12,7 @@
 (function ($) {
     "use strict";
 
-    $.fn.fileinputLocales['ZhCn'] = {
+    $.fn.fileinputLocales['zh-CN'] = {
         fileSingle: '文件',
         filePlural: '个文件',
         browseLabel: '选择 &hellip;',

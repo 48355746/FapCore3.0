@@ -21,6 +21,7 @@ using Fap.AspNetCore.Controls.DataForm;
 using Fap.Hcm.Web.Models;
 using Ardalis.GuardClauses;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authorization;
 //using NPOI.SS.Formula.Functions;
 
 namespace Fap.Hcm.Web.Controllers
@@ -34,6 +35,7 @@ namespace Fap.Hcm.Web.Controllers
             _fapFileService = fapFileService;
             _logger = _loggerFactory.CreateLogger<ComponentController>();
         }
+        [AllowAnonymous]
         public FileResult Photo(string fid)
         {
             if (fid.IsMissing())

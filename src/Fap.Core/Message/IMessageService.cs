@@ -1,5 +1,6 @@
 ﻿using Fap.Core.Infrastructure.Model;
 using Fap.Model.Infrastructure;
+using System.Collections.Generic;
 
 namespace Fap.Core.Message
 {
@@ -15,13 +16,14 @@ namespace Fap.Core.Message
         /// </summary>
         /// <param name="mail"></param>
         void SendMail(FapMail mail);
-
+        void SendMailList(IEnumerable<FapMail> mailList);
         void AutoSendMail();
         /// <summary>
         /// 站内信
         /// </summary>
         /// <param name="message"></param>
         void SendMessage(FapMessage message);
+        void SendMessageList(IEnumerable<FapMessage> messageList);
         /// <summary>
         /// 短信
         /// </summary>

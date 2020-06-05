@@ -15,7 +15,7 @@
     }
     function savePaycaseCondition(caseUid) {
         var jqPostData = $('#grid-paycaseEmployee').jqGrid("getGridParam", "postData");
-        let filters = jqPostData.filters;
+        var filters = jqPostData.filters;
         if (filters === undefined) {
             bootbox.alert($("please_set_paycase_employee_condition", "请设置薪资套员工条件"));
             return;

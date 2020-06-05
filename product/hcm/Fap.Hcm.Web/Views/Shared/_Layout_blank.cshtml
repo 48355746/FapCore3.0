@@ -1,0 +1,33 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>@ViewBag.Title</title>
+    <link href="~/Content/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+       
+        .main-container {
+            padding-top: 12px;
+        }
+    </style>
+    <!--[if !IE]> -->
+    <script type="text/javascript">
+        window.jQuery || document.write("<script src='@Url.Content("~/Content/js/jquery.js")'>" + "<" + "/script>");
+    </script>
+    <script>
+        var basePath = window.location.protocol + "//" + window.location.host;        
+    </script>
+</head>
+<body>
+ 
+    <div class="container main-container">
+
+        @RenderBody()
+
+    </div>
+</body>
+</html>

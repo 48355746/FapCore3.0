@@ -2398,7 +2398,14 @@ namespace Fap.AspNetCore.Controls.JqGrid
             {
                 foreach (var dv in _defaultValues)
                 {
-                    script.AppendLine("$('#frm-##gridid## #" + dv.Field + "').val('" + dv.Value + "')");
+                    if (_fapColumns.FirstOrDefault(f => f.ColName == dv.Field)?.CtrlType == FapColumn.CTRL_TYPE_COMBOBOX)
+                    {
+                        script.AppendLine("$('#frm-##gridid## #" + dv.Field + "').val('" + dv.Value + "').trigger('change')");
+                    }
+                    else
+                    {
+                        script.AppendLine("$('#frm-##gridid## #" + dv.Field + "').val('" + dv.Value + "')");
+                    }
                 }
             }
             script.AppendLine(@" 

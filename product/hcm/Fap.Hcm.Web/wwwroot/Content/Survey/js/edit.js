@@ -34,13 +34,15 @@ function selectQuestion(e) {
             i += '<div class="question-title" type="9" name="radio-matrix-question"><span class="question-id" order="1" page="1" index="1" absolute_id=' + t + ' question-required="Y" has_other="N" title-quote="N">1</span><div class="position-relative"><div class="qs-content edit-area edit-title" contenteditable="true" content-default="1">矩阵单选题</div></div></div><ul class="question-choice" style="float:left;width: 700px;"><li class="auto-height"><table style="border-collapse: collapse;"><tbody><tr><td>&nbsp</td><td name=radio-matrix-choice><div class="position-relative" style="width:100%"><li class="choice edit-area matrix-choice" has_other="N" contenteditable="true" content-default="1">选项1</li></div></td><td name=radio-matrix-choice><div class="position-relative" style="width:100%"><li class="choice edit-area matrix-choice" has_other="N" contenteditable="true" content-default="1">选项2</li></div></td></tr><tr><td class="radio_array_title" name="radio-matrix" ><div class="position-relative" style="width:100%"><div class="edit-area edit-child-element" contenteditable="true" content-default="1">矩阵行1</div></div></td><td><input type="radio"/></td><td><input type="radio"/></td></tr><tr><td class="radio_array_title" name="radio-matrix"><div class="position-relative" style="width:100%"><div class="edit-area edit-child-element" contenteditable="true" content-default="1">矩阵行2</div></div></td><td><input type="radio"/></td><td><input type="radio"/></td></tr></tbody></table></li></ul>',
             i += '<div class="add-area visible-hide" style="width: 34px; margin: 0px 0 0 46px;" choice="Y"><ul><li class="add-choice" onclick="edit.addQuestion(this)"></li><li class="batch-add-choice" style="margin-top: 14px;" onclick="edit.batchAddChoice(this)"></li></ul></div>',
             i += '<div class="add-area visible-hide" choice="N"><ul><li class="add-choice" onclick="edit.addQuestion(this)"></li><li class="batch-add-choice" onclick="edit.batchAddChoice(this)"></li></ul></div>',
-            i += '<div class="operate visible-hide" style="width: 240px;"><ul><li class="drag-area" title="移动"></li><li class="set-logic" title="逻辑设置" onclick="setLogic(this)"></li><li class="question-copy" title="复制" onclick="edit.questionCopy(this)"></li><li class="question-handle" title="操作" onclick="edit.questionHandle(this)"></li><li class="question-delete" title="删除" onclick="edit.questionDelete(this)"></li></ul></div>';
+            //i += '<div class="operate visible-hide" style="width: 240px;"><ul><li class="drag-area" title="移动"></li><li class="set-logic" title="逻辑设置" onclick="setLogic(this)"></li><li class="question-copy" title="复制" onclick="edit.questionCopy(this)"></li><li class="question-handle" title="操作" onclick="edit.questionHandle(this)"></li><li class="question-delete" title="删除" onclick="edit.questionDelete(this)"></li></ul></div>';
+            i += '<div class="operate visible-hide" style="width: 240px;"><ul><li class="drag-area" title="移动"></li><li class="question-copy" title="复制" onclick="edit.questionCopy(this)"></li><li class="question-handle" title="操作" onclick="edit.questionHandle(this)"></li><li class="question-delete" title="删除" onclick="edit.questionDelete(this)"></li></ul></div>';
             break;
         case "checkbox-matrix":
             i += '<div class="question-title" type="13" name="checkbox-matrix-question"><span class="question-id" order="1" page="1" index="1" absolute_id=' + t + ' question-required="Y" has_other="N" title-quote="N">1</span><div class="position-relative"><div class="qs-content edit-area edit-title" contenteditable="true" content-default="1">矩阵多选题</div></div></div><ul class="question-choice" style="float:left;width: 700px;"><li class="auto-height"><table style="border-collapse: collapse;"><tbody><tr><td>&nbsp</td><td name=checkbox-matrix-choice><div class="position-relative" style="width:100%"><li class="choice edit-area matrix-choice" has_other="N" contenteditable="true" content-default="1">选项1</li></div></td><td name=checkbox-matrix-choice><div class="position-relative" style="width:100%"><li class="choice edit-area matrix-choice" has_other="N" contenteditable="true" content-default="1">选项2</li></div></td></tr><tr><td class="checkbox_array_title" name="checkbox-matrix" ><div class="position-relative" style="width:100%"><div class="edit-area edit-child-element" contenteditable="true" content-default="1">矩阵行1</div></div></td><td><input type="checkbox"/></td><td><input type="checkbox"/></td></tr><tr><td class="checkbox_array_title" name="checkbox-matrix"><div class="position-relative" style="width:100%"><div class="edit-area edit-child-element" contenteditable="true" content-default="1">矩阵行2</div></div></td><td><input type="checkbox"/></td><td><input type="checkbox"/></td></tr></tbody></table></li></ul>',
             i += '<div class="add-area visible-hide" style="width: 34px; margin: 0px 0 0 46px;" choice="Y"><ul><li class="add-choice" onclick="edit.addQuestion(this)"></li><li class="batch-add-choice" style="margin-top: 14px;" onclick="edit.batchAddChoice(this)"></li></ul></div>',
             i += '<div class="add-area visible-hide" choice="N"><ul><li class="add-choice" onclick="edit.addQuestion(this)"></li><li class="batch-add-choice" onclick="edit.batchAddChoice(this)"></li></ul></div>',
-            i += '<div class="operate visible-hide" style="width: 240px;"><ul><li class="drag-area" title="移动"></li><li class="set-logic" title="逻辑设置" onclick="setLogic(this)"></li><li class="question-copy" title="复制" onclick="edit.questionCopy(this)"></li><li class="question-handle" title="操作" onclick="edit.questionHandle(this)"></li><li class="question-delete" title="删除" onclick="edit.questionDelete(this)"></li></ul></div>';
+            //i += '<div class="operate visible-hide" style="width: 240px;"><ul><li class="drag-area" title="移动"></li><li class="set-logic" title="逻辑设置" onclick="setLogic(this)"></li><li class="question-copy" title="复制" onclick="edit.questionCopy(this)"></li><li class="question-handle" title="操作" onclick="edit.questionHandle(this)"></li><li class="question-delete" title="删除" onclick="edit.questionDelete(this)"></li></ul></div>';
+            i += '<div class="operate visible-hide" style="width: 240px;"><ul><li class="drag-area" title="移动"></li><li class="question-copy" title="复制" onclick="edit.questionCopy(this)"></li><li class="question-handle" title="操作" onclick="edit.questionHandle(this)"></li><li class="question-delete" title="删除" onclick="edit.questionDelete(this)"></li></ul></div>';
             break;
         case "desc":
             i = '<div class="topic-type-content topic-type-question after-clear"><div class="question-title" type="10" name="description"><span class="question-id" order="1" page="1" index="1" absolute_id=' + t + ' question-required="N" has_other="N"></span><div class="position-relative"><div class="qs-content qs-high-content edit-area edit-title" contenteditable="true" content-default="1">描述说明</div></div></div>',
@@ -168,7 +170,8 @@ function selectEditedQuestion(e) {
             }
             s += '</tbody></table></li></ul><div class="add-area visible-hide" style="width: 34px; margin: 0px 0 0 46px;" choice="Y"><ul><li class="add-choice" onclick="edit.addQuestion(this)"></li><li class="batch-add-choice" style="margin-top: 14px;" onclick="edit.batchAddChoice(this)"></li></ul></div>',
             s += '<div class="add-area visible-hide" choice="N"><ul><li class="add-choice" onclick="edit.addQuestion(this)"></li><li class="batch-add-choice" onclick="edit.batchAddChoice(this)"></li></ul></div>',
-            s += '<div class="operate visible-hide" style="width: 240px;"><ul><li class="drag-area" title="移动"></li><li class="set-logic" title="逻辑设置" onclick="setLogic(this)"></li><li class="question-copy" title="复制" onclick="edit.questionCopy(this)"></li><li class="question-handle" title="操作" onclick="edit.questionHandle(this)"></li><li class="question-delete" title="删除" onclick="edit.questionDelete(this)"></li></ul></div>';
+            //s += '<div class="operate visible-hide" style="width: 240px;"><ul><li class="drag-area" title="移动"></li><li class="set-logic" title="逻辑设置" onclick="setLogic(this)"></li><li class="question-copy" title="复制" onclick="edit.questionCopy(this)"></li><li class="question-handle" title="操作" onclick="edit.questionHandle(this)"></li><li class="question-delete" title="删除" onclick="edit.questionDelete(this)"></li></ul></div>';
+            s += '<div class="operate visible-hide" style="width: 240px;"><ul><li class="drag-area" title="移动"></li><li class="question-copy" title="复制" onclick="edit.questionCopy(this)"></li><li class="question-handle" title="操作" onclick="edit.questionHandle(this)"></li><li class="question-delete" title="删除" onclick="edit.questionDelete(this)"></li></ul></div>';
             break;
         case "13":
             s += '<div class="question-title" type="13" name="checkbox-matrix-question"><span class="question-id" order="1" page="1" index="1" title-quote="' + i.title_quote + '" absolute_id=' + a + ' question-required="' + i.required + '" has_other="' + i.has_other + '">1</span><div class="position-relative"><div class="qs-content edit-area edit-title" contenteditable="true">' + i.content + '</div></div></div><ul class="question-choice" style="float:left;width: 700px;"><li class="auto-height"><table style="border-collapse: collapse;"><tbody><tr><td>&nbsp</td>';
@@ -185,7 +188,8 @@ function selectEditedQuestion(e) {
             }
             s += '</tbody></table></li></ul><div class="add-area visible-hide" style="width: 34px; margin: 0px 0 0 46px;" choice="Y"><ul><li class="add-choice" onclick="edit.addQuestion(this)"></li><li class="batch-add-choice" style="margin-top: 14px;" onclick="edit.batchAddChoice(this)"></li></ul></div>',
             s += '<div class="add-area visible-hide" choice="N"><ul><li class="add-choice" onclick="edit.addQuestion(this)"></li><li class="batch-add-choice" onclick="edit.batchAddChoice(this)"></li></ul></div>',
-            s += '<div class="operate visible-hide" style="width: 240px;"><ul><li class="drag-area" title="移动"></li><li class="set-logic" title="逻辑设置" onclick="setLogic(this)"></li><li class="question-copy" title="复制" onclick="edit.questionCopy(this)"></li><li class="question-handle" title="操作" onclick="edit.questionHandle(this)"></li><li class="question-delete" title="删除" onclick="edit.questionDelete(this)"></li></ul></div>';
+            //s += '<div class="operate visible-hide" style="width: 240px;"><ul><li class="drag-area" title="移动"></li><li class="set-logic" title="逻辑设置" onclick="setLogic(this)"></li><li class="question-copy" title="复制" onclick="edit.questionCopy(this)"></li><li class="question-handle" title="操作" onclick="edit.questionHandle(this)"></li><li class="question-delete" title="删除" onclick="edit.questionDelete(this)"></li></ul></div>';
+            s += '<div class="operate visible-hide" style="width: 240px;"><ul><li class="drag-area" title="移动"></li><li class="question-copy" title="复制" onclick="edit.questionCopy(this)"></li><li class="question-handle" title="操作" onclick="edit.questionHandle(this)"></li><li class="question-delete" title="删除" onclick="edit.questionDelete(this)"></li></ul></div>';
             break;
         case "10":
             s = '<div class="topic-type-content topic-type-question after-clear"> <div class="question-title" type="10" name="description"><span class="question-id" order="1" page="1" index="1" title-quote="' + i.title_quote + '" absolute_id=' + a + ' question-required="' + i.required + '" has_other="' + i.has_other + '"></span><div class="position-relative"><div class="qs-content qs-high-content edit-area edit-title" contenteditable="true">' + i.content + "</div></div></div>",
@@ -524,7 +528,7 @@ var edit = function () {
                 N(c.siblings(".add-area"))
             }
         });
-        var e = basePath + "/api/Survey/uploadfile/";
+        var e = basePath + "/System/Api/Survey/UploadFile/0";
         $(".survey-question-upload-img-file").each(function () {
             $(this).fileupload({
                 url: e,
@@ -686,30 +690,34 @@ var edit = function () {
             }
                 s.content.push(e)
             }), 0 == c) return !1;
-            var n = basePath + "api/Survey/CreateSurveyQuestion";
-            $.ajax({
-                type: "post",
-                url: n,
-                data: JSON.stringify(s),
-                contentType: "application/json",
-                traditional: !0,
-                success: function (s) {
-                    //var a = $.parseJSON(s);
-                    //0 === i && 0 === a.error_code ? $(".time-save").css({
-                    //    top: $(window).scrollTop(),
-                    //    left: $(window).width() / 2
-                    //}).fadeIn(300).fadeOut(2e3) : 1 === i && 0 === a.error_code && (location.href = t ? CA.baseUrlModule + "home/createSurveyTemplate?survey_id=" + survey_init.survey_id : CA.baseUrlModule + "home/surveyFilter?survey_id=" + survey_init.survey_id),
-                    if (s.success) {
-                        $(".time-save").css({
-                            top: $(window).scrollTop(),
-                            left: $(window).width() / 2
-                        }).fadeIn(300).fadeOut(2e3)
-                    }
-                    e.resolve()
+            var n = basePath + "/System/Api/Survey/Design";
+            $.post(n, { content: JSON.stringify(s) }, function (rv) {
+                if (rv.success) {
+                    $(".time-save").css({
+                        top: $(window).scrollTop(),
+                        left: $(window).width() / 2
+                    }).fadeIn(300).fadeOut(2e3)
                 }
+                e.resolve();
             })
+            //$.ajax({
+            //    type: "post",
+            //    url: n,
+            //    data: { content: JSON.stringify(s) },
+            //    contentType: "application/json",
+            //    traditional: !0,
+            //    success: function (s) {
+            //           if (s.success) {
+            //            $(".time-save").css({
+            //                top: $(window).scrollTop(),
+            //                left: $(window).width() / 2
+            //            }).fadeIn(300).fadeOut(2e3)
+            //        }
+            //        e.resolve()
+            //    }
+            //})
         }
-        return e.promise()
+        return e.promise();
     }
     function l(e, i) {
         var t = [],
@@ -1011,12 +1019,13 @@ var edit = function () {
             success: function (e) {
                 var i = $(".edit-area-active").html();
                 i += '<img src="' + e.img_url + '" name="' + e.img_id + '"  style="width:' + e.width + "px; height:" + e.height + 'px;"/>',
-                $(".edit-area-active").html(i),
-                $(".edit-area").find("img").each(function () {
-                    new ImgEditSize($(this))
-                }),
-                $(".upload-img").val(""),
-                setUpdateStatus()
+                    $(".edit-area-active").html(i),
+                    $(".edit-area").find("img").each(function () {
+                        new ImgEditSize($(this))
+                    }),
+                    $(".upload-img").val(""),
+                    setUpdateStatus();
+                return false;
             }
         })
     }

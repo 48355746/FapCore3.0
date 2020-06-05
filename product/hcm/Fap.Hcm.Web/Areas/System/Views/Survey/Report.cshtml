@@ -1,0 +1,258 @@
+﻿@model Fap.Core.Infrastructure.Model.Survey
+@{
+    ViewBag.Title = "问卷报表";
+    Layout = "~/Views/Shared/_Layout_blank.cshtml";
+
+}
+
+    <link href="~/Content/Survey/css/select.min.css" rel="stylesheet" />
+    <link href="~/Content/Survey/css/common.css" rel="stylesheet" />
+    <link href="~/Content/Survey/css/layout_eddaccc.css" rel="stylesheet" />
+    <link href="~/Content/Survey/css/global.css" rel="stylesheet" />
+    <link href="~/Content/Survey/css/survey_report.css" rel="stylesheet" />
+    <link href="~/Content/Survey/css/survey_filter.css" rel="stylesheet" />
+    <link href="~/Content/Survey/css/sidebar.css" rel="stylesheet" />
+
+    <style>
+        a, a:visited, a:hover, a:active {
+            text-decoration: none;
+            color: #3291da;
+        }
+    </style>
+
+
+<script>
+    var FAP = {
+        isLogin: true,
+        surveyToken: "@Model.Fid"
+    };
+    var project =@Html.Raw(ViewBag.Project);
+    var survey_questions = @Html.Raw(ViewBag.SurveyQuestion);
+    var report_filter = @Html.Raw(ViewBag.ReportFilter);
+    var invalid_info = { "invalidUnsubmit": "0", "invalidQualification": "0", "invalidTime": "0", "invalidFilter": "0" };
+</script>
+
+<script src="~/js/survey.min.js" asp-append-version="true"></script>
+ 
+<script src="~/js/survey_report.min.js" asp-append-version="true"></script>
+
+<input type="hidden" id="project-platform" value="1"/>
+
+
+<div id="bce-main">
+    <div class="main" style="position: relative">
+        <div class="content common-task-content">
+            <div class="edit-survey-wrap" style="margin-left: 0;" ng-controller="surveyReportController" ng-app="surveyReport" ng-cloak>
+                <div class="survey-response-header">
+                    <div class="survey-response-header-left">
+                        <span>@Model.SurName</span>
+                    </div>
+                    <div class="survey-response-header-right">
+                        <div class="survey-status-area">
+                            <span>当前状态：{{statusName}}</span>&nbsp;&nbsp;&nbsp;
+                            <span>问卷在线时长：{{online_time}}</span>&nbsp;&nbsp;&nbsp;
+                            <span>已收集有效问卷：{{volid_count}}</span>&nbsp;&nbsp;&nbsp;
+                        </div>
+                    </div>
+                </div>
+                <div class="survey-manage-warp" style="margin-top: 20px; border: 1px solid #eee">
+                    <div class="survey-manage-content">
+                        <div class="survey-manage-head">
+                            <ul>
+                                <li class="response-tab active">数据统计</li>
+                                <li class="response-tab "><a href="~/System/Survey/Result/@Model.Fid">原始数据</a></li>
+                            </ul>
+                        </div>
+
+                        <div class="survey-response-operate">
+                            <div class="filter-area">
+                                <input type="button" class="common-input-button" value="筛选数据" style="width: 94px;line-height: 25px;" ng-click="setFilter()"/>
+
+                            </div>
+                            <div class="export-data-area">
+                                <input type="button" class="common-input-button" value="导出统计报告" id='export-data' style="width: 94px;" ng-click="exportData()"/>
+                                <!-- <input type="button" class="common-input-button"  value="导出统计表" id='export-all-data' style="width: 94px;" ng-click="exportAllData()"> -->
+                            </div>
+                        </div>
+                        <div style="margin: 20px;" ng-if="filterAreaOnOff">设置筛选条件后，统计图中可展示符合要求的数据</div>
+                        <div id="filter-box" class="survey-report-filter-area" ng-if="filterAreaOnOff">
+                            <div ng-if="filterListLength>0">
+                                <div class="filter-rule" ng-repeat="filter in reportFilter">
+                                    <div class="rule-title">
+                                        <span class="rule-title">筛选条件<span ng-bind="$index+1"></span> </span>
+                                        <span class="rule-remove"><img src="/Content/Survey/images/rule_delete.png" alt="删除筛选条件" title="删除筛选条件" ng-click="deleteReportFilter(filter)"></span>
+                                    </div>
+                                    <div class="rule">
+                                        <div class="rule-content">
+                                            <select class="question" ng-model="filter.question_id" ng-options="question.id as question.content for question in surveyQuestions" ng-change="choseFilterQuestion(filter)"></select>
+                                            <select class="condition" ng-model="filter.condition_id" ng-options="condition.id as condition.content for condition in conditions"></select>
+                                            <select class="choice-list" ng-if="filter.question_id != 0" ng-options="choice.id as choice.content for choice in choices[filter.question_id]" ng-model="filter.choice_id"></select>
+                                            <select class="choice-list" ng-if="filter.question_id == 0"><option>请选择选项</option></select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="filter-operate">
+                                <div class="add-filter">
+                                    <span class="add-rule" ng-click="addFilter()"></span>
+                                    <span ng-if="filterListLength==0" style="margin: 20px;">请点击左边按钮，添加筛选条件</span>
+                                    <span class="error" ng-bind-html="filterError|unsafe"></span>
+                                </div>
+                                <div class="filter-save-cancel">
+                                    <input type="button" class="common-input-button" value="取消" ng-click="filterCancel()" style="width: 60px;"/>
+                                    <input type="button" class="common-input-button" value="保存" ng-click="filterSave()" style="width: 60px;"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="survey-report-filter-area-complete" ng-if="!filterAreaOnOff" ng-show="reportFilter.length > 0">
+                            <table>
+                                <tbody>
+                                    <tr ng-repeat="filter in reportFilter">
+                                        <td>筛选条件<span ng-bind="$index+1"></span></td>
+                                        <td ng-repeat="question in surveyQuestions" ng-if="question.id==filter.question_id">{{question.content}}</td>
+                                        <td ng-repeat="condition in conditions" ng-if="condition.id==filter.condition_id">{{condition.content}}</td>
+                                        <td ng-repeat="question in surveyQuestions" ng-if="question.id==filter.question_id">
+                                            <div ng-repeat="choice in question.choice" ng-if="choice.id==filter.choice_id">{{choice.content}}</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="survey_report_area" infinite-scroll='getReportData()' infinite-scroll-distance="1" infinite-scroll-disabled="report_list_busy">
+                            <div class="report-card" ng-repeat="report in  report_list" ng-if="report.id">
+                                <div class="report-card-header">
+                                    <div class="report-card-title" title="{{report.content}}">{{report.content}}</div>
+                                    <div class="report-card-operate">
+                                        <select class="chart-select selected-condition" ng-change="chartChange(report, selectedChartArray)" ng-model="selectedChartArray" ng-options="c.id as c.title for c in chartArray" ng-if="report.type_id==6 || report.type_id==7 || report.type_id==14"></select>
+                                        <select class="sort-select selected-condition" ng-change="sortChange(report, selectedSortArray)" ng-model="selectedSortArray" ng-options="s.id as s.title for s in sortArray" ng-if="report.type_id==6 || report.type_id==7 || report.type_id==8 || report.type_id==14 || report.type_id==15"></select>
+                                    </div>
+                                </div>
+
+                                <div ng-if="report.type_id==6 || report.type_id==7 || report.type_id==14" class="report-card-div">
+                                    <div id="data-chart-radio{{report.id[0]}}" class="data-chart-radio"></div>
+                                    <div class="data-form">
+                                        <table class="table report-table">
+                                            <thead>
+                                                <tr>
+                                                    <th style="border-right: 1px solid #dbdbdb;">选项</th>
+                                                    <th style="border-right: 1px solid #dbdbdb;">计数</th>
+                                                    <th>占比</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr ng-repeat="choice in report.response_single.choice">
+                                                    <td ng-bind-html="choice.content|removeHtml"></td>
+                                                    <td>{{choice.selected}}</td>
+                                                    <td>{{choice.selected_percent}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>总计</td>
+                                                    <td>{{report.response_single.total_selected}}</td>
+                                                    <td></td>
+                                                </tr>
+                                                <tr><td colspan="3">答题人数：{{report.response_single.answered}}</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div ng-if="report.type_id==8 || report.type_id==15" class="report-card-div">
+                                    <div id="data-chart-radio{{report.id[0]}} " class="data-chart-radio"></div>
+                                    <div class="data-form">
+                                        <table class="table report-table">
+                                            <thead>
+                                                <tr>
+                                                    <th style="border-right: 1px solid #dbdbdb;">选项</th>
+                                                    <th style="border-right: 1px solid #dbdbdb;">计数</th>
+                                                    <th>占比</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr ng-repeat="choice in report.response_multiple.choice">
+                                                    <td ng-bind-html="choice.content|removeHtml"></td>
+                                                    <td>{{choice.selected}}</td>
+                                                    <td>{{choice.selected_percent}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>总计</td>
+                                                    <td>{{report.response_multiple.total_selected}}</td>
+                                                    <td></td>
+                                                </tr>
+                                                <tr><td colspan="3">答题人数：{{report.response_multiple.answered}}</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div ng-if="report.type_id==9" class="report-card-div">
+                                    <div id="data-chart-radio{{report.id[0]}}" class="data-chart-radio"></div>
+                                    <div class="data-form">
+                                        <table class="table report-table">
+                                            <tbody>
+                                                <tr>
+                                                    <td></td>
+                                                    <td ng-repeat="choice in report.choice">{{choice.content}}</td>
+                                                </tr>
+                                                <tr ng-repeat="radio_title in report.response_radio_array">
+                                                    <td>{{radio_title.content}}</td>
+                                                    <td ng-repeat="selected_choice in radio_title.choice">{{selected_choice.selected_percent}}</td>
+                                                </tr>
+                                                <tr><td colspan="{{report.choice_length}}">答题人数：{{report.response_radio_array[0].answered}}</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div ng-if="report.type_id==13" class="report-card-div">
+                                    <div id="data-chart-radio{{report.id[0]}}" class="data-chart-radio"></div>
+                                    <div class="data-form">
+                                        <table class="table report-table">
+                                            <tbody>
+                                                <tr>
+                                                    <td></td>
+                                                    <td ng-repeat="choice in report.choice">{{choice.content}}</td>
+                                                </tr>
+                                                <tr ng-repeat="checkbox_title in report.response_checkbox_array">
+                                                    <td>{{checkbox_title.content}}</td>
+                                                    <td ng-repeat="selected_choice in checkbox_title.choice">{{selected_choice.selected_percent}}</td>
+                                                </tr>
+                                                <tr><td colspan="{{report.choice.length + 1}}">答题人数：{{report.response_checkbox_array[0].answered}}</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div ng-if="report.type_id==1 || report.type_id==2 || report.type_id==12">
+                                    <div class="data-form" style="padding:20px">
+                                        <table class="table report-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>回复情况</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr ng-repeat="response in report.response_text.response_list | offset: currentPage*itemsPerPage | limitTo: itemsPerPage">
+                                                    <td ng-if="report.type_id!=12">{{response.content}}</td>
+                                                    <td ng-if="report.type_id==12">
+                                                        <div ng-repeat="file in response.content" class="survey-upload-item">
+                                                            <img ng-src="{{file.value}}">
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <span>答题人数：{{report.response_text.answered}}</span>
+                                                        <survey-pagination class="survey-manage-pagination"></survey-pagination>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div ng-show='report_list_busy' style="  margin: 20px;">Loading data...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
