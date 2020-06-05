@@ -112,32 +112,26 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
                     string empCode = names[0];
                     DynamicParameters param = new DynamicParameters();
                     param.Add("EmpCode", empCode);
-                    Fap.Core.Rbac.Model.Employee employee = _dbContext.QueryFirstOrDefaultWhere<Fap.Core.Rbac.Model.Employee>("EmpCode=@EmpCode", param);
+                    Core.Rbac.Model.Employee employee = _dbContext.QueryFirstOrDefault<Core.Rbac.Model.Employee>($"select Id, EmpPhoto from Employee where EmpCode=@EmpCode", param);
                     if (employee == null)
                     {
                         return "0";
                     }
-
-                    if (string.IsNullOrWhiteSpace(employee.EmpPhoto))
+                    if (employee.EmpPhoto.IsMissing())
                     {
                         employee.EmpPhoto = UUIDUtils.Fid;
-                        string sql = "update Employee set EmpPhoto=@EmpPhoto where id=@Id";
-                        _dbContext.Execute(sql, new DynamicParameters(new { EmpPhoto = employee.EmpPhoto, Id = employee.Id }));
+                        string sql = "update Employee set EmpPhoto=@EmpPhoto where Id=@Id";
+                        _dbContext.Execute(sql, new DynamicParameters(new { employee.EmpPhoto, employee.Id }));
                     }
                     FapAttachment attachment = new FapAttachment();
-
                     attachment.Bid = employee.EmpPhoto;
                     attachment.FileName = files[0].FileName;
                     attachment.FileType = files[0].ContentType;
-                    string path = SysIO.Path.Combine(Environment.CurrentDirectory, "temp", Guid.NewGuid().ToString());
-                    using SysIO.FileStream fs = SysIO.File.Create(path);
-
-                    files[0].CopyTo(fs);
-                    string attFid = _fileService.UploadFile(fs, attachment);
+                    string attFid = _fileService.UploadFile(files[0].OpenReadStream(), attachment);
                 }
             }
             catch (Exception ex)
-            {
+            {                
                 return ex.Message;
             }
 

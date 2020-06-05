@@ -1,0 +1,187 @@
+﻿@model Fap.Core.Infrastructure.Model.Survey
+@{
+    ViewBag.Title = "问卷报表";
+    Layout = "~/Views/Shared/_Layout_blank.cshtml";
+}
+
+
+<link href="~/Content/Survey/css/select.min.css" rel="stylesheet" />
+<link href="~/Content/Survey/css/common.css" rel="stylesheet" />
+<link href="~/Content/Survey/css/layout_eddaccc.css" rel="stylesheet" />
+<link href="~/Content/Survey/css/global.css" rel="stylesheet" />
+<link href="~/Content/Survey/css/manage_survey.css" rel="stylesheet" />
+<link href="~/Content/Survey/css/sidebar.css" rel="stylesheet" />
+<link href="~/Content/Survey/css/survey_bread_crumbs.css" rel="stylesheet" />
+<link href="~/Content/Survey/css/response_list.css" rel="stylesheet" />
+
+<style>
+    .mtc-pagination {
+        margin: 20px 0;
+    }
+
+    .mtc-pagination-wrap {
+        text-align: center;
+        float: right;
+        height: 30px;
+        line-height: 30px;
+        font-size: 12px;
+        border-radius: 3px;
+        margin-right: 0;
+    }
+
+        .mtc-pagination-wrap li {
+            display: inline-block;
+            height: 30px;
+            vertical-align: middle;
+            background: #f1f5fd;
+            box-sizing: border-box;
+        }
+
+        .mtc-pagination-wrap .pagination-nav-btn {
+            font-family: cursive;
+            height: 30px;
+            line-height: 30px;
+            font-size: 18px;
+            color: #2e4c93;
+        }
+
+        .mtc-pagination-wrap .last-pagination-nav-btn {
+            border-right: 1px solid #b0c0e7;
+        }
+
+        .mtc-pagination-wrap .disabled .last-pagination-nav-btn {
+            border-right: 1px solid #e3e8f7;
+        }
+
+        .mtc-pagination-wrap li.disabled {
+            background: #f1f5fd;
+            border-color: #e3e8f7;
+            cursor: not-allowed;
+        }
+
+        .mtc-pagination-wrap .disabled a {
+            cursor: not-allowed;
+            border: 1px #e3e3f7 solid;
+            background-color: #f1f5fd;
+            color: #e3e3f7;
+        }
+
+        .mtc-pagination-wrap li a {
+            text-decoration: none;
+            color: #2e4c93;
+            width: 30px;
+            height: 30px;
+            display: inline-block;
+            vertical-align: top;
+            padding: 0;
+            line-height: 30px;
+            text-align: center;
+            font-size: 12px;
+            background-color: #f1f5fd;
+            border: 1px solid #b0c0e7;
+            border-right: 0;
+        }
+
+        .mtc-pagination-wrap .active a {
+            background: #6583cc;
+            color: #fff;
+            border-color: #6583cc;
+        }
+
+        .mtc-pagination-wrap li a:hover {
+            border-color: #6583cc;
+        }
+
+        .mtc-pagination-wrap .disabled a:hover {
+            border-color: #e3e3f7;
+        }
+
+    a, a:visited, a:hover, a:active {
+        text-decoration: none;
+        color: #3291da;
+    }
+
+    .survey-manage-head .active {
+        background: #fff;
+        border-bottom: 1px solid #fff;
+        color: #2c4a93;
+        margin-left: -4px;
+    }
+</style>
+
+<script>
+
+    var header = @Html.Raw(ViewBag.Header);
+</script>
+
+
+<script src="~/Content/Survey/js/angular.min.js"></script>
+
+<script src="~/Content/Survey/js/response_list.js"></script>
+
+
+<input type="hidden" id="project-platform" value="1" />
+
+<div id="bce-main">
+    <div class="main" style="position: relative">
+        <div class="content common-task-content">
+
+            <div ng-app="survey" ng-controller="SurveyResponse" style="margin-left:0" ng-cloak>
+                <div class="survey-response-header">
+                    <div class="survey-response-header-left">
+                        <span>{{surveyName}}</span>
+                    </div>
+                    <div class="survey-response-header-right">
+                        <span>当前状态：{{statusName}}</span>&nbsp;&nbsp;&nbsp;
+                        <span>问卷在线时长：{{onlineTime}}</span>&nbsp;&nbsp;&nbsp;
+                        <span>已收集有效问卷数：{{count}}</span>&nbsp;&nbsp;&nbsp;
+                    </div>
+                </div>
+                <div class="survey-manage-warp">
+                    <div class="survey-manage-content">
+                        <div class="survey-manage-head">
+                            <ul>
+                                <li class="response-tab">
+                                    <a href="~/System/Survey/Report/@Model.Fid">
+                                        数据统计
+                                    </a>
+                                </li>
+                                <li class="response-tab active">原始数据</li>
+                            </ul>
+                        </div>
+                        <div class="survey-response-operate">
+                            <input type="button" class="button" id="export-data" value="导出原始数据" ng-click="exportData()" />
+                            <input type="button" class="button" value="导出spss编码数据" ng-click="exportSpssData()" />
+                        </div>
+                        <div class="survey-manage-empty" ng-show="emptyList">
+                            <p><span style="color: #0886e9;line-height: 200px">正在努力加载数据，请耐心等待~</span></p>
+                        </div>
+                        <div class="survey-manage-list" ng-hide="emptyList" style="overflow: hidden;">
+                            <div class="survey-manage-table-warp">
+                                <table class="survey-manage-table">
+                                    <tr class="survey-manage-table-head" style="font-size: 14px;height: 47px;text-align: left">
+                                        <th style="width: 20%">序号</th>
+                                        <th style="width: 20%">答卷者</th>
+                                        <th style="width: 20%">提交时间</th>
+                                        <th style="width: 20%">答题时长</th>
+                                        <th>操作</th>
+                                    </tr>
+                                    <tr ng-repeat="response in responseList | offset: currentPage*itemsPerPage | limitTo: itemsPerPage">
+                                        <td ng-bind="response.index"></td>
+                                        <td ng-bind="response.name"></td>
+                                        <td ng-bind="response.submit_time"></td>
+                                        <td ng-bind="response.answer_time + '秒'"></td>
+                                        <td class="survey-operation">
+                                            <a href="{{response.openUrl}}" target="_blank">查看&nbsp;</a>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <survey-pagination></survey-pagination>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

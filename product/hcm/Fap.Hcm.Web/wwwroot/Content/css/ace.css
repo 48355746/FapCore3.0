@@ -5323,7 +5323,7 @@ body.mob-safari .sidebar.sidebar-fixed {
     right: auto;
 }
 .modal-lg {
-    width: 900px;
+    max-width: 900px;
 }
 .modal-full{
     width:95%

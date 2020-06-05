@@ -49,27 +49,32 @@ function (a, b, c, d, e, f, g, h, i, j) {
     function p(b) {
         a.isDisabled = !0;
         var d = H();
+        debugger
         d.is_mobile = m(),
         d.save_type = 1,
         d.token = a.project.token,
         d.referer = a.project.referer,
         d.time = a.startTime,
         "object" == typeof b && "telephone" in b && (d.telephone = b.telephone);
-        var e = base_url_module + "api/Survey/SaveSelfCollectionSurveyResponse";
-        c.post(e, d).success(function (b) {
-            if (b.success) {
-                window.location.href = basePath + "Survey/Survey/FinishSelfCollectionSurvey";
+        var e = base_url_module + "/System/Api/Survey/FillIn";
+        $.post(e, { content: JSON.stringify(d) }, function (rv) {
+            if (rv.success) {
+                window.location.href = basePath + "/System/Survey/Finish";
             } else {
-                (seajs.use("popups/survey/operate_popup",
-            function (a) {
-                a.show("提交失败！", "确定", null).then(function () { })
-            }), a.isDisabled = !1)
+                alert("提交失败");               
             }
-            //0 === b.error_code ? 1 == a.project.vote_type && 1 == a.project.viewResult ? window.location.href = base_url_module + "survey/doSelfcollectionSurvey/sur_id/" + a.surveyId + "/token/" + a.project.token + "/isClosed/1" : window.location.href = base_url_module + "Survey/Survey/FinishSelfCollectionSurvey" : 1 === b.error_code || 2 === b.error_code ? window.location.href = base_url_module + "survey/finishSelfCollectionSurvey/sur_id/" + a.surveyId + "/token/" + a.project.token : 3 === b.error_code && (seajs.use("popups/survey/operate_popup",
-            //function (a) {
-            //    a.show("提交失败！", "确定", null).then(function () { })
-            //}), a.isDisabled = !1)
         })
+        //c.post(e, d).success(function (b) {
+        //    if (b.success) {
+        //        window.location.href = basePath + "Survey/Survey/FinishSelfCollectionSurvey";
+        //    } else {
+        //        (seajs.use("popups/survey/operate_popup",
+        //    function (a) {
+        //        a.show("提交失败！", "确定", null).then(function () { })
+        //    }), a.isDisabled = !1)
+        //    }
+        
+        //})
     }
     function q(a) {
         a.targetTime = 0,
@@ -681,48 +686,7 @@ function (a, b, c, d, e, f, g, h, i, j) {
         }),
         b
     };
-    a.submit = function (b) {
-        var d = $.Deferred(),
-        e = G(b);
-        return e === !0 && (a.project.notLoginPassed ? seajs.use("popups/survey/phone",
-        function (b) {
-            b.init({
-                color: "#e93630"
-            }).promise.then(function (b) {
-                var e = base_url_module + "n/survey/isTelephoneUnique",
-                f = {
-                    survey_id: a.project.id,
-                    telephone: b.telephone
-                };
-                c.post(e, f).success(function (b) {
-                    if (0 === parseInt(b.status, 10)) {
-                        var c = {
-                            time: a.startTime,
-                            telephone: f.telephone
-                        };
-                        o(c).promise.then(function () {
-                            d.resolve()
-                        })
-                    } else window.location.href = base_url_module + "survey/closeProjectAgent/sur_id/" + a.surveyId + "/type/20"
-                })
-            })
-        }) : seajs.use("popups/survey/vcodePop",
-        function (a) {
-            a.show(base_url_module).promise.then(function (a) {
-                o({
-                    verify_code: a
-                }).promise.then(function () {
-                    d.resolve()
-                })
-            },
-            function (a) {
-                d.resolve()
-            })
-        })),
-        {
-            promise: d.promise()
-        }
-    },
+   
     a.submitSelf = function (b) {
         var d = G(b);
         d === !0 && (4 == a.project.status ? 1 == a.project.telephone_filter ? seajs.use("popups/survey/phone",

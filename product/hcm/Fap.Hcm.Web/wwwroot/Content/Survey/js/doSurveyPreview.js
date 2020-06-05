@@ -167,7 +167,7 @@ function (e, i, t, n, a, o, r, c) {
         e.stopPropagation()
     },
     e.fileUploader = new c({
-        url: basePath + "/api/Survey/uploadfile/",
+        url: basePath + "/System/Api/Survey/UploadFile/0",
         autoUpload: !0,
         removeAfterUpload: !0,
         alias: "upload_img",

@@ -62,7 +62,7 @@ function (e, t, r, i) {
     t.choices = [],
     t.filterError = "",
     t.allQuestionsCount = 1,
-    t.exportUrl = basePath + "api/Survey/downloadSurveyReport/" + project.id, //+ "/filter/1",
+    t.exportUrl = basePath + "/System/Api/Survey/ExportReport/" + project.id, //+ "/filter/1",
     t.downloadUrl = basePath + "api/Survey/getSurveyReportDataDownload/survey_id/" + project.id,
     t.exportStatus = 0;
     var s = function () {
@@ -113,10 +113,13 @@ function (e, t, r, i) {
         require.async(["home:static/js/survey/widget/operate_popup.js"],
         function (i) {
             i.show("删除规则后将不可恢复，是否继续？", "确定", "取消").then(function () {
-                var i = basePath + "api/Survey/deleteSurveyReportFilter/" + project.id;
-                e.post(i, r).success(function () {
+                var url = basePath + "/System/Api/Survey/DeleteReportFilter";
+                $.post(url, r, function () {
                     for (var e = 0; e < t.reportFilter.length; e++) t.reportFilter[e].id == r.id && (t.reportFilter.splice(e, 1), t.filterListLength = t.reportFilter.length)
                 })
+                //e.post(i, r).success(function () {
+                //    for (var e = 0; e < t.reportFilter.length; e++) t.reportFilter[e].id == r.id && (t.reportFilter.splice(e, 1), t.filterListLength = t.reportFilter.length)
+                //})
             })
         })
     },
@@ -124,7 +127,7 @@ function (e, t, r, i) {
         1 == t.filterAreaOnOff ? t.filterCancel() : (0 === t.filterListLength && t.addFilter(), t.filterAreaOnOff = !0)
     },
     t.filterCancel = function () {
-        var r = basePath + "api/Survey/getSurveyReportFilter/" + project.id;
+        var r = basePath + "/System/Api/Survey/ReportFilter/" + project.id;
         e.get(r).success(function (e) {
             t.reportFilter = e,
             t.filterAreaOnOff = !1,
@@ -134,14 +137,17 @@ function (e, t, r, i) {
     t.filterSave = function () {
         var r = t.filterComplete();
         if (1 == r) {
-            var i = basePath + "api/Survey/setSurveyReportFilter/" + project.id,
+            var url = basePath + "/System/Api/Survey/ReportFilter",
             n = {};
             n.survey_id = project.id,
-            n.filters = t.reportFilter,
-            n.YII_CSRF_TOKEN = FAP.surveyToken,
-            e.post(i, n).success(function (e) {
+                n.filters = JSON.stringify(t.reportFilter),
+                n.YII_CSRF_TOKEN = FAP.surveyToken;
+            $.post(url, n, function (e) {
                 1 == e.error && (t.report_list = [], t.order = 0, t.filterAreaOnOff = !1, t.reportFilter = e.filters, t.filterListLength = t.reportFilter.length)
             })
+            //    e.post(i, n).success(function (e) {
+            //    1 == e.error && (t.report_list = [], t.order = 0, t.filterAreaOnOff = !1, t.reportFilter = e.filters, t.filterListLength = t.reportFilter.length)
+            //})
         }
         $body = $(window.opera ? "CSS1Compat" == document.compatMode ? "html" : "body" : "html,body"),
         $body.animate({
@@ -194,7 +200,7 @@ function (e, t, r, i) {
                 e.get(t.exportUrl).success(function (e) {
                     $("#export-data").val("正在导出").attr("disabled", "disabled").addClass("disabled"),
                     t.exportStatus = 0,
-                    0 === e.error_code ? (t.exportStatus = 1, $("#export-data").val("导出统计报告").removeAttr("disabled").removeClass("disabled"), location.href = basePath + "UploadFiles/" + e.fn) : require.async(["home:static/js/survey/widget/operate_popup.js"],
+                    0 === e.error_code ? (t.exportStatus = 1, $("#export-data").val("导出统计报告").removeAttr("disabled").removeClass("disabled"), location.href = basePath + "/" + e.fn) : require.async(["home:static/js/survey/widget/operate_popup.js"],
                     function (e) {
                         e.show("导出数据请求失败，请重新导出！", "确定", null)
                     })
@@ -206,7 +212,7 @@ function (e, t, r, i) {
         if (t.allQuestionsCount > t.report_list.length) {
             t.report_list_busy = !0;
             //var r = basePath + "api/Survey/getSurveyReportData?survey_id=" + project.id + "&order=" + t.order;
-            var r = basePath + "api/Survey/getSurveyReportData/" + project.id + "/" + t.order;
+            var r = basePath + "/System/Api/Survey/Report/" + project.id + "/" + t.order;
             e.get(r).success(function (e) {
                 e.question && e.question[0] && (9 == e.question[0].type_id && (e.question[0].choice_length = e.question[0].choice.length + 1), 14 == e.question[0].type_id && angular.forEach(e.question[0].response_single.choice,
                 function (e) {

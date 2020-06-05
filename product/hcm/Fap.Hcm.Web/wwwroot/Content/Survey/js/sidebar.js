@@ -34,14 +34,6 @@ function(e, i) {
                 scrollTop: 0
             },
             "normal", "swing")
-        })//,
-        //"mtc" === window.siteChannelCode && $.getJSON("getfun.php?op=getUnreadCount",
-        //function(e) {
-        //    e={"status":0,"unread":0};
-        //    e && e.unread && ($("#feedback").append('<div id="cornerIcon"><div>' + e.unread + "<div></div>"), $("#feedback").off("click.noUnread").on("click.hasUnread",
-        //    function() {
-        //        //window.open("http://f3.baidu.com/index.php/feedback/f/index")
-        //    }))
-        //})
+        })
     })
 });

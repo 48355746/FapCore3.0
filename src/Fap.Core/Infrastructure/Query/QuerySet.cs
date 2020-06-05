@@ -59,7 +59,7 @@ namespace Fap.Core.Infrastructure.Query
             }
             if (!QueryCols.EqualsWithIgnoreCase("*"))
             {
-                var queryColList =QueryCols.Split(',').AsList();
+                var queryColList =QueryCols.SplitComma();
                 //id,fid,ts 必选
                 if (!queryColList.Contains(FapDbConstants.FAPCOLUMN_FIELD_Id))
                 {

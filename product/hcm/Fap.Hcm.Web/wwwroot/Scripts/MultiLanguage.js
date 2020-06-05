@@ -146,7 +146,13 @@ var MultiLangHelper = (function () {
       'init_payroll_data': { 'ZhCn': '初始化薪资数据', 'ZhTW': '', 'En': '', 'Ja': '' },
       'reserved_pay_item': { 'ZhCn': '保留薪资项', 'ZhTW': '', 'En': '', 'Ja': '' },
       'all_pay_item': { 'ZhCn': '所有薪资项', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'confirm_recall': { 'ZhCn': '确认撤销单据吗？', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'confirm_recall': { 'ZhCn': '确认撤销单据吗？', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'richtext_required': { 'ZhCn': '富文本内容不能为空！', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'paycase_condition': { 'ZhCn': '设置薪资套员工条件', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'init_payset': { 'ZhCn': '初始化薪资套员工', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'save_employee_condition': { 'ZhCn': '保存员工条件', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'publish': { 'ZhCn': '发布', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'publish_survey': { 'ZhCn': '发布调查问卷', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种

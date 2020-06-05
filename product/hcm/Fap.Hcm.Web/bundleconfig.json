@@ -57,6 +57,35 @@
     }
   },
   {
+    "outputFileName": "wwwroot/css/survey.min.css",
+    // An array of relative input file paths. Globbing patterns supported
+    "inputFiles": [
+      "wwwroot/Content/Survey/css/survey_global.css",
+      "wwwroot/Content/Survey/css/select.min.css",
+      "wwwroot/Content/Survey/css/common.css",
+      "wwwroot/Content/Survey/css/sidebar.css",
+      "wwwroot/Content/Survey/css/edit.css",
+      "wwwroot/Content/Survey/css/upload.css",
+      "wwwroot/Content/Survey/css/upload_img.css",
+      "wwwroot/Content/Survey/css/view.css",
+      "wwwroot/Content/Survey/css/detail.css",
+      "wwwroot/Content/Survey/css/self.css"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/css/survey_details.min.css",
+    // An array of relative input file paths. Globbing patterns supported
+    "inputFiles": [
+      "wwwroot/Content/Survey/css/global.css",
+      "wwwroot/Content/Survey/css/select.min.css",
+      "wwwroot/Content/Survey/css/layout_eddaccc.css",
+      "wwwroot/Content/Survey/css/upload.css",
+      "wwwroot/Content/Survey/css/upload_img.css",
+      "wwwroot/Content/Survey/css/view.css",
+      "wwwroot/Content/Survey/css/survey_view.css"
+    ]
+  },
+  {
     "outputFileName": "wwwroot/js/ace.min.js",
     "inputFiles": [
       "wwwroot/Content/js/ace/elements.scroller.js",
@@ -101,7 +130,7 @@
       "wwwroot/Content/js/jquery.tmpl.js",
       "wwwroot/Scripts/Fap/common.js", //fap常用js
       "wwwroot/Content/js/date-time/bootstrap-datetimepicker.js",
-      "wwwroot/Content/js/jquery.DatePicker.js",      
+      "wwwroot/Content/js/jquery.DatePicker.js",
       "wwwroot/Content/js/date-time/bootstrap-datepicker.js",
       "wwwroot/Content/js/jquery.validate.js", //表单校验js
       "wwwroot/Content/js/jquery.bootstrap-duallistbox.js", //左右筛选控件
@@ -175,6 +204,107 @@
       "wwwroot/Scripts/Workflow/Designer/Menus.js",
       "wwwroot/Scripts/Workflow/Designer/Toolbar.js",
       "wwwroot/Scripts/Workflow/Designer/Dialogs.js"
+    ],
+    // Optionally specify minification options
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
+    // Optionally generate .map file
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/js/survey.min.js",
+    "inputFiles": [
+      "wwwroot/Content/Survey/js/angular.min.js",
+      "wwwroot/Content/Survey/js/angular-ueditor.js",
+      "wwwroot/Content/Survey/js/angular-file-upload.min.js",
+      "wwwroot/Content/Survey/js/angular-sanitize.min.js",
+      "wwwroot/Content/Survey/js/jquery-ui.min.js",
+      "wwwroot/Content/Survey/js/jquery.limitTextarea.js",
+      "wwwroot/Content/Survey/js/jquery.form.js",
+      "wwwroot/Content/Survey/js/mod.js",
+      "wwwroot/Content/Survey/js/sidebar.js",
+      "wwwroot/Content/Survey/js/jquery.fileupload.js",
+      "wwwroot/Content/Survey/js/ueditor.all.js",
+      "wwwroot/Content/Survey/js/select.min.js",
+      "wwwroot/Content/Survey/js/common.js"
+    ],
+    // Optionally specify minification options
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
+    // Optionally generate .map file
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/js/survey_design.min.js",
+    "inputFiles": [
+      "wwwroot/Content/Survey/js/common.js",
+      "wwwroot/Content/Survey/js/batchAddChoice.js",
+      "wwwroot/Content/Survey/js/edit.js",
+      "wwwroot/Content/Survey/js/edit_logic_pop.js",
+      "wwwroot/Content/Survey/js/choice_operate_dialog.js",
+      "wwwroot/Content/Survey/js/operate_popup.js",
+      "wwwroot/Content/Survey/js/html2canvas.js",
+      "wwwroot/Content/Survey/js/question_handle.js",
+      "wwwroot/Content/Survey/js/surveyTool.js"
+
+    ],
+    // Optionally specify minification options
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
+    // Optionally generate .map file
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/js/survey_preview.min.js",
+    "inputFiles": [
+      "wwwroot/Content/Survey/js/survey_module.js",
+      "wwwroot/Content/Survey/js/surveyTip.js",
+      "wwwroot/Content/Survey/js/doSurveyPreview.js"
+    ],
+    // Optionally specify minification options
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
+    // Optionally generate .map file
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/js/survey_fillin.min.js",
+    "inputFiles": [
+      "wwwroot/Content/Survey/js/angular.min.js",
+      "wwwroot/Content/Survey/js/angular-filter.min.js",
+      "wwwroot/Content/Survey/js/angular-file-upload.min.js",
+      "wwwroot/Content/Survey/js/ui-bootstrap-tpls-0.12.0.min.js",
+      "wwwroot/Content/Survey/js/mod.js",
+      "wwwroot/Content/Survey/js/sidebar.js",
+      "wwwroot/Content/Survey/js/select.min.js",
+      "wwwroot/Content/Survey/js/common.js"
+    ],
+    // Optionally specify minification options
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
+    // Optionally generate .map file
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/js/survey_report.min.js",
+    "inputFiles": [
+      "wwwroot/Content/Survey/js/trace_util.js",
+      "wwwroot/Content/Survey/js/ZeroClipboard.js",
+      "wwwroot/Content/Survey/js/echarts-all.js",
+      "wwwroot/Content/Survey/js/ng-infinite-scroll.js",
+      "wwwroot/Content/Survey/js/operate_popup.js",
+      "wwwroot/Content/Survey/js/surveyTool.js",
+      "wwwroot/Content/Survey/js/survey_report.js"
     ],
     // Optionally specify minification options
     "minify": {

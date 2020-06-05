@@ -1,0 +1,249 @@
+﻿@using Fap.AspNetCore.Model
+@using Fap.Core.Infrastructure.Model
+@using Fap.Core.Extensions 
+@model Fap.Core.Infrastructure.Model.Survey
+@{
+    ViewBag.Title = "问卷详情";
+    Layout = "~/Views/Shared/_Layout_blank.cshtml";
+    SurFilter surFilter = ViewBag.SurFilter;
+    var ts = DateTime.Now.Subtract(Convert.ToDateTime(surFilter.PublishTime));
+    string hourLength = $"{ts.Days}天{ts.Hours}小时";
+    IEnumerable<FilterDescModel> filterDesc = ViewBag.Filters;
+}
+
+<link href="~/css/survey_details.min.css" rel="stylesheet" asp-append-version="true" />
+<script src="~/js/survey.min.js" asp-append-version="true"></script>
+<script src="~/js/survey_design.min.js" asp-append-version="true"></script>
+<script src="~/Content/Survey/js/surveyView.js" asp-append-version="true"></script>
+<script type="text/javascript">
+    //var project = { "id": "131590", "accept_standard": "survey", "end_date": "2016-10-19", "manager_id": null, "pro_name": "\u554a\u54c8\u54c8", "pro_type": "2", "eva_type": "0", "test_type": "100", "publisher_id": "14492219", "source_url": null, "start_date": "2016-10-12", "status": "4", "eva_show_status": "1", "poster": null, "test_content": "\u6b22\u8fce\u53c2\u52a0\u8c03\u67e5\uff01\u7b54\u5377\u6570\u636e\u4ec5\u7528\u4e8e\u7edf\u8ba1\u5206\u6790\uff0c\u8bf7\u653e\u5fc3\u586b\u5199\u3002\u9898\u76ee\u9009\u9879\u65e0\u5bf9\u9519\u4e4b\u5206\uff0c\u6309\u7167\u5b9e\u9645\u60c5\u51b5\u9009\u62e9\u5373\u53ef\u3002\u611f\u8c22\u60a8\u7684\u5e2e\u52a9\uff01", "test_guide": null, "test_env": null, "is_alltester": "1", "tester_count": "0", "tester_max_count": null, "tester_min_count": null, "agree_rate": null, "score_que_num": null, "score_detail_rate": null, "score_detail_score": null, "score_detail_cash": null, "additional_info": null, "browser": null, "firewall": null, "manufacture": null, "network": null, "network_provider": null, "phone_type": null, "sys_type": null, "wareless": null, "created": "2016-10-12 16:07:12", "updated": "2016-10-12 16:07:12", "need_review": "0", "score": "0", "bonus_score": "0", "shidi_score": null, "shidi_award": null, "survey_url": null, "survey_tag": null, "survey_id": null, "survey_import": "0", "region": null, "bug_tpl_id": "131590", "bug_permission": "1", "gift_score": "0", "productline_id": "0", "reject_user_id": null, "reject_reason": null, "reject_time": null, "submit_user_id": "319943", "submit_time": "2016-10-12 19:29:56", "publish_user_id": "319943", "publish_time": "2016-10-12 19:29:56", "close_user_id": null, "close_time": null, "delete_user_id": "0", "delete_time": "0000-00-00 00:00:00", "filter_type": "3", "invited_condition_text": null, "invited_condition": null, "invited_count": "0", "rank": "131590", "eva_status": "0", "exam": "0", "internal": "0", "enable_forum": "1", "group_id": "7", "auto_update": "0", "test_step": null, "recommend_type": "0", "recommend_groupid": null, "recommend_count": null, "auto_recommend": null, "show_normal": "0", "type": "3", "zone_type": "0", "pre_publish": "0", "export": "0", "agree_rate_small": "0", "tip": "0", "eva_team": "-1", "epiboly": "0", "ensure_gold": "0", "valid": "1", "interface_user": "Mr Wang", "interface_department": "\u65e0", "user_filter": null, "version": null, "project_url": null, "test_url": null, "app_group_id": "0", "mobile_hide": "0", "associate_status": "0", "zhongce_user": "chengmin02", "online_time": "0\u592914\u5c0f\u65f627\u5206\u949f" }
+    var project = { status: 5 };
+    //获取Template
+    var surveyJson= @Html.Raw(Model.JSONContent);
+    var template = surveyJson.content;//[{ "survey_id": 131590, "content": "\u56fe\u7247\u591a\u9009\u9898", "type_id": "15", "order": "1", "has_other": "N", "title_quote": "N", "required": "Y", "page": "1", "index": "1", "absolute_id": "3", "last_absolute_id": 5, "last_choice_absolute_id": { "1": 3, "2": 2, "3": 4, "4": 4, "5": 3 }, "logic_hide": 0, "min": "", "max": "", "exclusive_options": "", "choice": [{ "order": 1, "choice_absolute_id": "2", "content": "\u9009\u98791#**#http:\/\/bj.bcebos.com\/mtcapp\/\/\/ba45c8f60456a672e003a875e469d0eb.", "is_other": "N", "required": "0" }, { "order": 2, "choice_absolute_id": "3", "content": "\u5934\u5929\u8eba#**#http:\/\/bj.bcebos.com\/mtcapp\/\/\/bdf3bf1da3405725be763540d6601144.", "is_other": "N", "required": "0" }, { "order": 3, "choice_absolute_id": "4", "content": "\u9009\u98793#**#http:\/\/bj.bcebos.com\/mtcapp\/\/\/5a44c7ba5bbe4ec867233d67e4806848.", "is_other": "N", "required": "0" }], "choice_quote": "0" }, { "survey_id": 131590, "content": "\u56fe\u7247\u5355\u9009\u9898", "type_id": "14", "order": "2", "has_other": "N", "title_quote": "N", "required": "Y", "page": "1", "index": "2", "absolute_id": "4", "last_absolute_id": 5, "last_choice_absolute_id": { "1": 3, "2": 2, "3": 4, "4": 4, "5": 3 }, "logic_hide": 0, "choice": [{ "order": 1, "choice_absolute_id": "2", "content": "\u9009\u98791#**#http:\/\/bj.bcebos.com\/mtcapp\/\/\/ba45c8f60456a672e003a875e469d0eb.", "is_other": "N", "required": "0" }, { "order": 2, "choice_absolute_id": "3", "content": "\u9009\u98792#**#http:\/\/bj.bcebos.com\/mtcapp\/\/\/bdf3bf1da3405725be763540d6601144.", "is_other": "N", "required": "0" }, { "order": 3, "choice_absolute_id": "4", "content": "\u9009\u98793#**#http:\/\/bj.bcebos.com\/mtcapp\/\/\/5a44c7ba5bbe4ec867233d67e4806848.", "is_other": "N", "required": "0" }], "choice_quote": "0" }, { "survey_id": 131590, "content": "\u77e9\u9635\u591a\u9009\u9898", "type_id": "13", "order": "3", "has_other": "N", "title_quote": "N", "required": "Y", "page": "1", "index": "3", "absolute_id": "5", "last_absolute_id": 5, "last_choice_absolute_id": { "1": 3, "2": 2, "3": 4, "4": 4, "5": 3 }, "logic_hide": 0, "choice": [{ "order": 1, "choice_absolute_id": 1, "content": "\u9009\u98791", "is_other": "N" }, { "order": 2, "choice_absolute_id": 2, "content": "\u9009\u98792", "is_other": "N" }, { "order": 3, "choice_absolute_id": 3, "content": "\u9009\u98793", "is_other": "N" }], "checkbox_array_title": [{ "order": 1, "content": "\u77e9\u9635\u884c1" }, { "order": 2, "content": "\u77e9\u9635\u884c2" }, { "order": 3, "content": "\u77e9\u9635\u884c3" }, { "order": 4, "content": "\u77e9\u9635\u884c4" }] }]
+   //已不再使用
+    var filter ={ "id": "@surFilter.Id", "survey_id": "@Model.Fid", "filter_content": { "survey_id": '@Model.Fid', "scene": 2, "tag_image_show": 0, "spss_show": 0, "filter_user_type": 0, "status": 1, "content": { "collection_target": 50, "filter": [] }, "ip_filter": 0, "telephone_filter": "0", "productline_id": "0", "project_background": "", "other_productline": "", "is_share": "1" }, "status": "0", "created_time": "2016-10-12 19:29:56", "updated_time": "2016-10-12 19:29:56" }
+    var logic_condition = []
+    var redirect_relation = []
+    //var collection_target = 50
+    //var base_questions = [{ "question_content": "\u60a8\u7684\u6027\u522b\u662f\uff1f", "content": "\u6027\u522b", "type_id": "7", "choice": [{ "choice_id": "0", "content": "\u4e0d\u9650\u5236", "selected": 0 }, { "choice_id": "1", "content": "\u7537", "selected": 0 }, { "choice_id": "2", "content": "\u5973", "selected": 0 }], "id": "1" }, { "question_content": "\u60a8\u7684\u51fa\u751f\u65e5\u671f\u662f\uff1f", "content": "\u5e74\u9f84", "type_id": "12", "min_choice": [{ "choice_id": "0", "content": "\u4e0d\u9650\u5236", "selected": 0 }, { "choice_id": "1", "content": 26, "selected": 0 }, { "choice_id": "2", "content": 36, "selected": 0 }], "max_choice": [{ "choice_id": "0", "content": "\u4e0d\u9650\u5236", "selected": 0 }, { "choice_id": "1", "content": 26, "selected": 0 }, { "choice_id": "2", "content": 36, "selected": 0 }, { "choice_id": "3", "content": 46, "selected": 0 }], "id": "2" }]
+    var additional_questions = []
+    var valid_survey_count = 1
+    var scene = "2";
+    var survey_id = '@Model.Fid';
+    //答题链接
+    var surveyLink = "";
+    var surveyType = 0;
+    var tabIndex = 0;
+    var filterUserType = 0;
+</script>
+<div class="content" id="edit-survey-wrap" ng-app="surveyView" ng-controller="surveyViewController" ng-cloak>
+    <div id="survey-brief">
+        <div id="survey-title">
+            @Model.SurName
+        </div>
+        <div id="survey-status-valid-survey-count">
+
+            <span>
+                <span>当前状态：@Model.SurStatusMC</span>
+            </span>
+
+            <span>问卷在线时长：@hourLength</span>
+            <span id="valid-survey-count">已收集有效问卷：@Model.CollectionAmount</span>
+
+        </div>
+    </div>
+
+    <div class="edit-survey-content">
+        <div class="navigation after-clear" style="height:60px">
+            <ul class="navigation-tab">
+                <li class="first-tab tab tab_active" ng-click="selectTab(1)">问卷信息</li>
+                <li class="tab" ng-click="selectTab(2)">收集设置</li>
+            </ul>
+        </div>
+
+        <div class="second-tab-content" ng-show="tab==1">
+            <div class="edit-survey-name">@Model.SurContent</div>
+            <div ng-repeat="question in template">
+                <div class="question-box">
+                    <div class="survey-question-title" ng-bind-html="question.content" ng-show="question.type_id!=11 "></div>
+                    <div class="survey-question-title" ng-bind-html="question.content" ng-show="question.type_id==11 " style="text-align: right;"></div>
+                    <div class="title-logic-tip" ng-show="question.logic_show" ng-bind-html="question.logic_show|unsafe"></div>
+                    <div class="survey-question-content" ng-hide="question.type_id==10 || question.type_id==11 || question.choice_quote > 0">
+                        <ul ng-show="question.type_id==6 && surveyType==3">
+                            <div class="survey-question-radio" ng-class="questionTypeClass(question)" ng-show="loaded">
+                                <div class="survey-question-radio-choice" ng-repeat="choice in question.choice">
+                                    <div class="question-choice">
+                                        <div class="choice-content">
+                                            <label class="survey-show-as-html" ng-bind-html="choice.content|unsafe"></label>
+                                        </div>
+                                    </div>
+                                    <div ng-if="$index==0" class="compare-symbol">VS</div>
+                                </div>
+                            </div>
+                        </ul>
+
+                        <ul ng-show="question.type_id==6 && surveyType!=3">
+                            <li class="choice" ng-repeat="choice in question.choice">
+                                <input type="radio" class="survey-radio" />
+                                <div ng-bind-html="choice.content|unsafe" class="choice-model"></div>
+                                <input type="text" ng-show="choice.is_other=='Y'" class="is-other" />
+                                <span ng-if="choice.is_other=='Y' && choice.required == 1">(必填)</span>
+                                <span class="logic_show" ng-bind-html="choice.logic_show|unsafe"></span>
+                            </li>
+                        </ul>
+                        <ul ng-show="question.type_id==8">
+                            <li class="choice" ng-repeat="choice in question.choice">
+                                <input type="checkbox" class="survey-checkbox" />
+                                <div ng-bind-html="choice.content|unsafe" class="choice-model"></div>
+                                <input type="text" ng-show="choice.is_other=='Y'" class="is-other" />
+                                <span ng-if="choice.is_other=='Y' && choice.required == 1">(必填)</span>
+                                <span class="logic_show" ng-if="choice.logic_show" ng-bind-html="choice.logic_show|unsafe"></span>
+                                <span class="exclusive_show" ng-if="checkExclusive(question, choice)">与其他选项互斥</span>
+                            </li>
+                        </ul>
+                        <ul ng-show="question.type_id==1">
+                            <li><input type="text" class="input" /></li>
+                        </ul>
+                        <ul ng-show="question.type_id==2">
+                            <li><textarea class="muti-input"></textarea></li>
+                        </ul>
+                        <ul ng-show="question.type_id==9">
+                            <li>
+                                <table>
+                                    <tr>
+                                        <td>&nbsp</td>
+                                        <td ng-repeat="choice in question.choice"><div ng-bind-html="choice.content|unsafe" class="choice-model"></div></td>
+                                    </tr>
+                                    <tr ng-repeat="title in question.radio_array_title">
+                                        <td><div ng-bind-html="title.content|unsafe" class="choice-model"></div></td>
+                                        <td ng-repeat="choice in question.choice">
+                                            <input type="radio" />
+                                            <input type="text" ng-show="choice.is_other=='Y'" class="is-other" />
+                                            <span ng-if="choice.is_other=='Y' && choice.required == 1">(必填)</span>
+                                        </td>
+
+                                    </tr>
+                                </table>
+                            </li>
+                        </ul>
+                        <ul ng-show="question.type_id==13">
+                            <li>
+                                <table>
+                                    <tr>
+                                        <td>&nbsp</td>
+                                        <td ng-repeat="choice in question.choice"><div ng-bind-html="choice.content|unsafe" class="choice-model"></div></td>
+                                    </tr>
+                                    <tr ng-repeat="title in question.checkbox_array_title">
+                                        <td><div ng-bind-html="title.content|unsafe" class="choice-model"></div></td>
+                                        <td ng-repeat="choice in question.choice">
+                                            <input type="checkbox" />
+                                            <input type="text" ng-show="choice.is_other=='Y'" class="is-other" />
+                                            <span ng-if="choice.is_other=='Y' && choice.required == 1">(必填)</span>
+                                        </td>
+
+                                    </tr>
+                                </table>
+                            </li>
+                        </ul>
+                        <div ng-show="question.type_id==7">
+                            <select class="question-select">
+                                <option ng-repeat="choice in question.choice" ng-model="choice.id" ng-bind-html="choice.content|unsafe"></option>
+                            </select>
+                        </div>
+                        <div ng-show="question.type_id==12">
+                            <div class="survey-question-upload-btn">
+                                <div class="survey-question-upload-inner">
+                                    <img src="/Content/Survey/images/upload-icon.png">
+                                    <div class="survey-question-upload-inner-desc">选择图片20M以内 </div>
+                                </div>
+                                <input type="file" class="survey-question-upload-file" multiple />
+                            </div>
+                        </div>
+                        <div class="survey-question-radio-img" ng-if="question.type_id==14">
+                            <div class="survey-question-radio-choice" ng-repeat="choice in question.choice" ng-class="{'survey-question-choice-check':question.value==$index}">
+                                <div class="survey-question-radio-choice-img"><img ng-src="{{choice.contentArr[1]}}"></div>
+                                <div class="survey-question-radio-choice-text">
+                                    <input type="radio" class="survey-radio" />
+                                    <label class="survey-show-as-html" ng-bind-html="trustAsHtml(choice.contentArr[0])" title="{{choice.contentArr[0]}}"></label>
+                                    <span class="logic_show" ng-bind-html="choice.logic_show|unsafe"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="survey-question-checkbox-img" ng-if="question.type_id==15">
+                            <div class="survey-question-checkbox-choice" ng-repeat="choice in question.choice" ng-class="{'survey-question-choice-check':question.value[$index]==true}">
+                                <div class="survey-question-checkbox-choice-img"><img ng-src="{{choice.contentArr[1]}}"></div>
+                                <div class="survey-question-checkbox-choice-text">
+                                    <input type="checkbox" class="survey-checkbox" />
+                                    <label class="survey-show-as-html" ng-bind-html="trustAsHtml(choice.contentArr[0])" title="{{choice.contentArr[0]}}"></label>
+                                    <span class="logic_show" ng-bind-html="choice.logic_show|unsafe"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="survey-choice-quote-tip" ng-bind-html="getQuoteTip(question)|unsafe"></div>
+                </div>
+            </div>
+            <div>
+                <div class="question-box">
+                    <div class="survey-question-title" style="text-align: right;">页码：<span ng-bind="pageCount"></span>/<span ng-bind="pageCount"></span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="third-tab-content" ng-show="tab==2">
+
+            <div class="module">
+                <label>
+                    <span class="title">目标收集量：</span>
+                    <span>@surFilter.Amounted</span>
+                </label>
+            </div>
+            <div class="module">
+                <label>
+                    <span class="title">收集方式：</span>
+                    <span>@(surFilter.FilterModel.IsMissing()?"实名":"匿名")</span>
+                </label>
+            </div>
+            <div class="module">
+                <label>
+                    <span class="title">收集时间段：</span>
+                    <span>@surFilter.SurStartDate -- @surFilter.SurEndDate</span>
+                </label>
+            </div>
+            <div class="module">
+                <label>
+                    @*<span class="title">用户筛选：</span>*@
+                    <div class="base_condition">
+                        <table class="table" style="width:700px;">
+                            <thead>
+                                <tr>
+                                    <th style="border-right: 1px solid #dbdbdb;width: 320px;">基本属性</th>
+                                    <th>通过条件<span style="font-weight: normal;">（满足以下要求才可继续答题）</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                @foreach (var item in filterDesc)
+                                {
+                                    <tr>
+                                        <td>
+                                            <span>@item.FilterDesc</span>
+                                        </td>
+                                        <td>
+
+                                            <span>@item.FilterOper</span>
+                                            <span>@item.FilterResult</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </label>
+            </div>
+        </div>
+    </div>
+
+</div>

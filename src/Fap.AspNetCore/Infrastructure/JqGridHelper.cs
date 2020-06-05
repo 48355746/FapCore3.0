@@ -19,27 +19,22 @@ namespace Fap.AspNetCore.Infrastructure
         /// <param name="tableName"></param>
         /// <param name="filter"></param>
         /// <returns></returns>
-        public static List<JqGridFilterDescViewModel> BuilderFilterDesc(string tableName, string filter,IDbContext dbContext)
+        public static IEnumerable<JqGridFilterDescViewModel> BuilderFilterDesc(string tableName, string filter, IDbContext dbContext)
         {
-            if (string.IsNullOrWhiteSpace(filter))
+            if (filter.IsPresent())
             {
-                return null;
-            }
-            JsonFilterToSql jfs = new JsonFilterToSql(dbContext);
-            var filterDescModel = jfs.BuilderFilterDesc(tableName, filter);
-            //Dictionary<string, List<JqGridFilterDescViewModel>> dicList = new Dictionary<string, List<JqGridFilterDescViewModel>>();
-            List<JqGridFilterDescViewModel> sqlBuilder = new List<JqGridFilterDescViewModel>();
+                JsonFilterToSql jfs = new JsonFilterToSql(dbContext);
+                var filterDescModel = jfs.BuilderFilterDesc(tableName, filter);
+                //Dictionary<string, List<JqGridFilterDescViewModel>> dicList = new Dictionary<string, List<JqGridFilterDescViewModel>>();
+                List<JqGridFilterDescViewModel> sqlBuilder = new List<JqGridFilterDescViewModel>();
 
-            if (filterDescModel != null)
-            {
-                filterDescModel.ForEach((m) =>
+                foreach (var m in filterDescModel)
                 {
-                    sqlBuilder.Add(new JqGridFilterDescViewModel { FilterDesc = m.FilterDesc, FilterOper = m.FilterOper, FilterResult = m.FilterResult, Group = m.Group });
-                });
+                    yield return new JqGridFilterDescViewModel { FilterDesc = m.FilterDesc, FilterOper = m.FilterOper, FilterResult = m.FilterResult, Group = m.Group };
+                }
             }
-            return sqlBuilder;
         }
 
-    
+
     }
 }

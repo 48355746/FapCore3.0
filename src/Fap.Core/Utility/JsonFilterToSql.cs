@@ -144,7 +144,7 @@ namespace Fap.AspNetCore.Model
                         {
                             continue;
                         }
-                        var fcol = _dbContext.Column(tableName, colName);                     
+                        var fcol = _dbContext.Column(tableName, colName);
                         string field = tableName + "." + colName;
                         if (!string.IsNullOrEmpty(op))// && !string.IsNullOrEmpty(data))
                         {
@@ -189,11 +189,11 @@ namespace Fap.AspNetCore.Model
         /// <param name="tableName"></param>
         /// <param name="filter"></param>
         /// <returns></returns>
-        public List<FilterDescModel> BuilderFilterDesc(string tableName, string filter)
+        public IEnumerable<FilterDescModel> BuilderFilterDesc(string tableName, string filter)
         {
-            if (string.IsNullOrWhiteSpace(filter))
+            if (filter.IsMissing())
             {
-                return null;
+                return Enumerable.Empty<FilterDescModel>(); 
             }
             //Dictionary<string, List<JqGridFilterDescViewModel>> dicList = new Dictionary<string, List<JqGridFilterDescViewModel>>();
             List<FilterDescModel> sqlBuilder = new List<FilterDescModel>();
@@ -209,7 +209,10 @@ namespace Fap.AspNetCore.Model
                 root.Add(jsono);
                 RecurseFilterDesc(parentGroup, tableName, root, cols, sqlBuilder);
             }
-
+            if (!sqlBuilder.Any())
+            {
+                return Enumerable.Empty<FilterDescModel>();
+            }
 
             return sqlBuilder;
         }

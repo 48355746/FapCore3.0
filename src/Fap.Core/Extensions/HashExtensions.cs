@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NPOI.SS.Formula.Functions;
+using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
@@ -79,6 +80,15 @@ namespace Fap.Core.Extensions
 
                 return Convert.ToBase64String(hash);
             }
+        }
+
+        public static string ToBase64String(this string input)
+        {
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes(input));
+        }
+        public static string FromBase64String(this string input)
+        {
+            return Encoding.UTF8.GetString(Convert.FromBase64String(input));
         }
     }
 }
