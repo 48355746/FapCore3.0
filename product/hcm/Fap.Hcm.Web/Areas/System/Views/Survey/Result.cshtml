@@ -3,125 +3,24 @@
     ViewBag.Title = "问卷报表";
     Layout = "~/Views/Shared/_Layout_blank.cshtml";
 }
-
-
-<link href="~/Content/Survey/css/select.min.css" rel="stylesheet" />
-<link href="~/Content/Survey/css/common.css" rel="stylesheet" />
-<link href="~/Content/Survey/css/layout_eddaccc.css" rel="stylesheet" />
-<link href="~/Content/Survey/css/global.css" rel="stylesheet" />
 <link href="~/Content/Survey/css/manage_survey.css" rel="stylesheet" />
-<link href="~/Content/Survey/css/sidebar.css" rel="stylesheet" />
-<link href="~/Content/Survey/css/survey_bread_crumbs.css" rel="stylesheet" />
 <link href="~/Content/Survey/css/response_list.css" rel="stylesheet" />
-
-<style>
-    .mtc-pagination {
-        margin: 20px 0;
-    }
-
-    .mtc-pagination-wrap {
-        text-align: center;
-        float: right;
-        height: 30px;
-        line-height: 30px;
-        font-size: 12px;
-        border-radius: 3px;
-        margin-right: 0;
-    }
-
-        .mtc-pagination-wrap li {
-            display: inline-block;
-            height: 30px;
-            vertical-align: middle;
-            background: #f1f5fd;
-            box-sizing: border-box;
-        }
-
-        .mtc-pagination-wrap .pagination-nav-btn {
-            font-family: cursive;
-            height: 30px;
-            line-height: 30px;
-            font-size: 18px;
-            color: #2e4c93;
-        }
-
-        .mtc-pagination-wrap .last-pagination-nav-btn {
-            border-right: 1px solid #b0c0e7;
-        }
-
-        .mtc-pagination-wrap .disabled .last-pagination-nav-btn {
-            border-right: 1px solid #e3e8f7;
-        }
-
-        .mtc-pagination-wrap li.disabled {
-            background: #f1f5fd;
-            border-color: #e3e8f7;
-            cursor: not-allowed;
-        }
-
-        .mtc-pagination-wrap .disabled a {
-            cursor: not-allowed;
-            border: 1px #e3e3f7 solid;
-            background-color: #f1f5fd;
-            color: #e3e3f7;
-        }
-
-        .mtc-pagination-wrap li a {
-            text-decoration: none;
-            color: #2e4c93;
-            width: 30px;
-            height: 30px;
-            display: inline-block;
-            vertical-align: top;
-            padding: 0;
-            line-height: 30px;
-            text-align: center;
-            font-size: 12px;
-            background-color: #f1f5fd;
-            border: 1px solid #b0c0e7;
-            border-right: 0;
-        }
-
-        .mtc-pagination-wrap .active a {
-            background: #6583cc;
-            color: #fff;
-            border-color: #6583cc;
-        }
-
-        .mtc-pagination-wrap li a:hover {
-            border-color: #6583cc;
-        }
-
-        .mtc-pagination-wrap .disabled a:hover {
-            border-color: #e3e3f7;
-        }
-
-    a, a:visited, a:hover, a:active {
-        text-decoration: none;
-        color: #3291da;
-    }
-
-    .survey-manage-head .active {
-        background: #fff;
-        border-bottom: 1px solid #fff;
-        color: #2c4a93;
-        margin-left: -4px;
-    }
-</style>
-
 <script>
-
     var header = @Html.Raw(ViewBag.Header);
 </script>
-
-
-<script src="~/Content/Survey/js/angular.min.js"></script>
-
-<script src="~/Content/Survey/js/response_list.js"></script>
-
-
+<environment include="Development">
+    <script src="~/Content/Survey/js/mod.js"></script>
+    <script src="~/Content/Survey/js/angular.min.js"></script>
+    <script src="~/Content/Survey/js/sidebar.js"></script>
+    <script src="~/Content/Survey/js/common.js"></script>
+    <script src="~/Content/Survey/js/operate_popup.js"></script>
+    <script src="~/Content/Survey/js/surveyTool.js"></script>
+    <script src="~/Content/Survey/js/response_list.js"></script>
+</environment>
+<environment exclude="Development">
+    <script src="~/Content/Survey/survey_result.min.js"></script>
+</environment>
 <input type="hidden" id="project-platform" value="1" />
-
 <div id="bce-main">
     <div class="main" style="position: relative">
         <div class="content common-task-content">
@@ -134,7 +33,7 @@
                     <div class="survey-response-header-right">
                         <span>当前状态：{{statusName}}</span>&nbsp;&nbsp;&nbsp;
                         <span>问卷在线时长：{{onlineTime}}</span>&nbsp;&nbsp;&nbsp;
-                        <span>已收集有效问卷数：{{count}}</span>&nbsp;&nbsp;&nbsp;
+                        <span>已收集有效问卷数：{{count}}/{{target}}</span>&nbsp;&nbsp;&nbsp;
                     </div>
                 </div>
                 <div class="survey-manage-warp">

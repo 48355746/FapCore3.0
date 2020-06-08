@@ -1428,6 +1428,7 @@ namespace Fap.Core.Infrastructure
             var users = _dbContext.QueryWhere<SurResponseList>(where, param, true);
             if (users.Any())
             {
+                //jUser["target"] = filter.Amounted;
                 jUser["count"] = users.Count();
                 JArray jList = new JArray();
                 jUser["list"] = jList;

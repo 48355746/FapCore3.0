@@ -8,18 +8,17 @@
 }
 
 .survey-response-header>div {
-	display: inline-block;
 	line-height: 40px
 }
 
 .survey-response-header-left {
-	font-size: 12px;
-	margin-left: 20px
+	font-size: 16px;
+	margin-left: 10px;
+	
 }
 
 .survey-response-header-right {
-	float: right;
-	margin-right: 20px;
+	margin-left: 20px;
 	font-size: 12px
 }
 
