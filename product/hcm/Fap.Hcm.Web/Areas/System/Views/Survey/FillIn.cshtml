@@ -5,8 +5,8 @@
     //已经做过调查
     int exist = ViewBag.Exists;
 }
-<link href="~/css/survey.min.css" rel="stylesheet" asp-append-version="true" />
-<script src="~/js/survey_fillin.min.js"></script>
+<link href="~/Content/Survey/survey.min.css" rel="stylesheet" asp-append-version="true" />
+<script src="~/Content/Survey/survey_fillin.min.js"></script>
 
 <script>angular.module('ie7support', []).config(function ($sceProvider) { $sceProvider.enabled(false); }); var crowdtestModule = angular.module('crowdtest', ['ui.bootstrap', 'angular.filter', 'angularFileUpload']); crowdtestModule.config(['$httpProvider', function ($httpProvider) { $httpProvider.defaults.xsrfCookieName = 'YII_CSRF_TOKEN'; $httpProvider.defaults.xsrfHeaderName = 'X-YII-CSRF-TOKEN'; $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'; }]); crowdtestModule.config(['$compileProvider', function ($compileProvider) { $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|baidu):/); }]);</script>
 <script src="~/Content/Survey/js/layout.js"></script>

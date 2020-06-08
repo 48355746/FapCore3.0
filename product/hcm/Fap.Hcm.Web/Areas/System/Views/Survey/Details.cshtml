@@ -1,6 +1,6 @@
 ﻿@using Fap.AspNetCore.Model
 @using Fap.Core.Infrastructure.Model
-@using Fap.Core.Extensions 
+@using Fap.Core.Extensions
 @model Fap.Core.Infrastructure.Model.Survey
 @{
     ViewBag.Title = "问卷详情";
@@ -10,10 +10,9 @@
     string hourLength = $"{ts.Days}天{ts.Hours}小时";
     IEnumerable<FilterDescModel> filterDesc = ViewBag.Filters;
 }
-
-<link href="~/css/survey_details.min.css" rel="stylesheet" asp-append-version="true" />
-<script src="~/js/survey.min.js" asp-append-version="true"></script>
-<script src="~/js/survey_design.min.js" asp-append-version="true"></script>
+<link href="~/Content/Survey/survey_details.min.css" rel="stylesheet" asp-append-version="true" />
+<script src="~/Content/Survey/survey.min.js" asp-append-version="true"></script>
+<script src="~/Content/Survey/survey_design.min.js" asp-append-version="true"></script>
 <script src="~/Content/Survey/js/surveyView.js" asp-append-version="true"></script>
 <script type="text/javascript">
     //var project = { "id": "131590", "accept_standard": "survey", "end_date": "2016-10-19", "manager_id": null, "pro_name": "\u554a\u54c8\u54c8", "pro_type": "2", "eva_type": "0", "test_type": "100", "publisher_id": "14492219", "source_url": null, "start_date": "2016-10-12", "status": "4", "eva_show_status": "1", "poster": null, "test_content": "\u6b22\u8fce\u53c2\u52a0\u8c03\u67e5\uff01\u7b54\u5377\u6570\u636e\u4ec5\u7528\u4e8e\u7edf\u8ba1\u5206\u6790\uff0c\u8bf7\u653e\u5fc3\u586b\u5199\u3002\u9898\u76ee\u9009\u9879\u65e0\u5bf9\u9519\u4e4b\u5206\uff0c\u6309\u7167\u5b9e\u9645\u60c5\u51b5\u9009\u62e9\u5373\u53ef\u3002\u611f\u8c22\u60a8\u7684\u5e2e\u52a9\uff01", "test_guide": null, "test_env": null, "is_alltester": "1", "tester_count": "0", "tester_max_count": null, "tester_min_count": null, "agree_rate": null, "score_que_num": null, "score_detail_rate": null, "score_detail_score": null, "score_detail_cash": null, "additional_info": null, "browser": null, "firewall": null, "manufacture": null, "network": null, "network_provider": null, "phone_type": null, "sys_type": null, "wareless": null, "created": "2016-10-12 16:07:12", "updated": "2016-10-12 16:07:12", "need_review": "0", "score": "0", "bonus_score": "0", "shidi_score": null, "shidi_award": null, "survey_url": null, "survey_tag": null, "survey_id": null, "survey_import": "0", "region": null, "bug_tpl_id": "131590", "bug_permission": "1", "gift_score": "0", "productline_id": "0", "reject_user_id": null, "reject_reason": null, "reject_time": null, "submit_user_id": "319943", "submit_time": "2016-10-12 19:29:56", "publish_user_id": "319943", "publish_time": "2016-10-12 19:29:56", "close_user_id": null, "close_time": null, "delete_user_id": "0", "delete_time": "0000-00-00 00:00:00", "filter_type": "3", "invited_condition_text": null, "invited_condition": null, "invited_count": "0", "rank": "131590", "eva_status": "0", "exam": "0", "internal": "0", "enable_forum": "1", "group_id": "7", "auto_update": "0", "test_step": null, "recommend_type": "0", "recommend_groupid": null, "recommend_count": null, "auto_recommend": null, "show_normal": "0", "type": "3", "zone_type": "0", "pre_publish": "0", "export": "0", "agree_rate_small": "0", "tip": "0", "eva_team": "-1", "epiboly": "0", "ensure_gold": "0", "valid": "1", "interface_user": "Mr Wang", "interface_department": "\u65e0", "user_filter": null, "version": null, "project_url": null, "test_url": null, "app_group_id": "0", "mobile_hide": "0", "associate_status": "0", "zhongce_user": "chengmin02", "online_time": "0\u592914\u5c0f\u65f627\u5206\u949f" }
@@ -39,7 +38,7 @@
 </script>
 <div class="content" id="edit-survey-wrap" ng-app="surveyView" ng-controller="surveyViewController" ng-cloak>
     <div id="survey-brief">
-        <div id="survey-title">
+        <div id="survey-title" class="h3">
             @Model.SurName
         </div>
         <div id="survey-status-valid-survey-count">
@@ -216,10 +215,10 @@
                 <label>
                     @*<span class="title">用户筛选：</span>*@
                     <div class="base_condition">
-                        <table class="table" style="width:700px;">
+                        <table class="table">
                             <thead>
                                 <tr>
-                                    <th style="border-right: 1px solid #dbdbdb;width: 320px;">基本属性</th>
+                                    <th style="border-right: 1px solid #dbdbdb;">基本属性</th>
                                     <th>通过条件<span style="font-weight: normal;">（满足以下要求才可继续答题）</span></th>
                                 </tr>
                             </thead>

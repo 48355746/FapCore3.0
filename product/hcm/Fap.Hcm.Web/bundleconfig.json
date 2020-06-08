@@ -57,7 +57,7 @@
     }
   },
   {
-    "outputFileName": "wwwroot/css/survey.min.css",
+    "outputFileName": "wwwroot/Content/Survey/survey.min.css",
     // An array of relative input file paths. Globbing patterns supported
     "inputFiles": [
       "wwwroot/Content/Survey/css/survey_global.css",
@@ -73,7 +73,7 @@
     ]
   },
   {
-    "outputFileName": "wwwroot/css/survey_details.min.css",
+    "outputFileName": "wwwroot/Content/Survey/survey_details.min.css",
     // An array of relative input file paths. Globbing patterns supported
     "inputFiles": [
       "wwwroot/Content/Survey/css/global.css",
@@ -214,7 +214,7 @@
     "sourceMap": false
   },
   {
-    "outputFileName": "wwwroot/js/survey.min.js",
+    "outputFileName": "wwwroot/Content/Survey/survey.min.js",
     "inputFiles": [
       "wwwroot/Content/Survey/js/angular.min.js",
       "wwwroot/Content/Survey/js/angular-ueditor.js",
@@ -239,7 +239,7 @@
     "sourceMap": false
   },
   {
-    "outputFileName": "wwwroot/js/survey_design.min.js",
+    "outputFileName": "wwwroot/Content/Survey/survey_design.min.js",
     "inputFiles": [
       "wwwroot/Content/Survey/js/common.js",
       "wwwroot/Content/Survey/js/batchAddChoice.js",
@@ -247,6 +247,7 @@
       "wwwroot/Content/Survey/js/edit_logic_pop.js",
       "wwwroot/Content/Survey/js/choice_operate_dialog.js",
       "wwwroot/Content/Survey/js/operate_popup.js",
+      "wwwroot/Content/Survey/js/sortable_popup.js",
       "wwwroot/Content/Survey/js/html2canvas.js",
       "wwwroot/Content/Survey/js/question_handle.js",
       "wwwroot/Content/Survey/js/surveyTool.js"
@@ -261,7 +262,7 @@
     "sourceMap": false
   },
   {
-    "outputFileName": "wwwroot/js/survey_preview.min.js",
+    "outputFileName": "wwwroot/Content/Survey/survey_preview.min.js",
     "inputFiles": [
       "wwwroot/Content/Survey/js/survey_module.js",
       "wwwroot/Content/Survey/js/surveyTip.js",
@@ -276,7 +277,7 @@
     "sourceMap": false
   },
   {
-    "outputFileName": "wwwroot/js/survey_fillin.min.js",
+    "outputFileName": "wwwroot/Content/Survey/survey_fillin.min.js",
     "inputFiles": [
       "wwwroot/Content/Survey/js/angular.min.js",
       "wwwroot/Content/Survey/js/angular-filter.min.js",
@@ -296,7 +297,7 @@
     "sourceMap": false
   },
   {
-    "outputFileName": "wwwroot/js/survey_report.min.js",
+    "outputFileName": "wwwroot/Content/Survey/survey_report.min.js",
     "inputFiles": [
       "wwwroot/Content/Survey/js/trace_util.js",
       "wwwroot/Content/Survey/js/ZeroClipboard.js",
@@ -305,6 +306,25 @@
       "wwwroot/Content/Survey/js/operate_popup.js",
       "wwwroot/Content/Survey/js/surveyTool.js",
       "wwwroot/Content/Survey/js/survey_report.js"
+    ],
+    // Optionally specify minification options
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
+    // Optionally generate .map file
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/Content/Survey/survey_result.min.js",
+    "inputFiles": [
+      "wwwroot/Content/Survey/js/mod.js",
+      "wwwroot/Content/Survey/js/angular.min.js",
+      "wwwroot/Content/Survey/js/sidebar.js",
+      "wwwroot/Content/Survey/js/common.js",
+      "wwwroot/Content/Survey/js/operate_popup.js",
+      "wwwroot/Content/Survey/js/surveyTool.js",
+      "wwwroot/Content/Survey/js/response_list.js"
     ],
     // Optionally specify minification options
     "minify": {

@@ -167,12 +167,12 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         }
         public IActionResult Result(string fid)
         {
-            Survey survey = _dbContext.Get<Survey>(fid);
+            Survey survey = _dbContext.Get<Survey>(fid,true);
             JObject jHead = new JObject();
             jHead["survey_id"] = survey.Fid;
             jHead["status"] = survey.SurStatus;
             jHead["surveyName"] = survey.SurName;
-            jHead["target"] = survey.CollectionAmount;
+            jHead["target"] = survey.Amounted;
             var ts = DateTime.Now.Subtract(DateTimeUtils.ToDateTime(survey.PublishTime)).Duration();
             jHead["onlineTime"] =ts.Days.ToString() + "天" + ts.Hours.ToString() + "小时" + ts.Minutes.ToString() + "分钟" + ts.Seconds.ToString() + "秒";
             jHead["type"] = 0;

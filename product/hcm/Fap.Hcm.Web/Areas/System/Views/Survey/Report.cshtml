@@ -5,20 +5,20 @@
 
 }
 
-    <link href="~/Content/Survey/css/select.min.css" rel="stylesheet" />
-    <link href="~/Content/Survey/css/common.css" rel="stylesheet" />
-    <link href="~/Content/Survey/css/layout_eddaccc.css" rel="stylesheet" />
-    <link href="~/Content/Survey/css/global.css" rel="stylesheet" />
-    <link href="~/Content/Survey/css/survey_report.css" rel="stylesheet" />
-    <link href="~/Content/Survey/css/survey_filter.css" rel="stylesheet" />
-    <link href="~/Content/Survey/css/sidebar.css" rel="stylesheet" />
+<link href="~/Content/Survey/css/select.min.css" rel="stylesheet" />
+<link href="~/Content/Survey/css/common.css" rel="stylesheet" />
+<link href="~/Content/Survey/css/layout_eddaccc.css" rel="stylesheet" />
+<link href="~/Content/Survey/css/global.css" rel="stylesheet" />
+<link href="~/Content/Survey/css/survey_report.css" rel="stylesheet" />
+<link href="~/Content/Survey/css/survey_filter.css" rel="stylesheet" />
+<link href="~/Content/Survey/css/sidebar.css" rel="stylesheet" />
 
-    <style>
-        a, a:visited, a:hover, a:active {
-            text-decoration: none;
-            color: #3291da;
-        }
-    </style>
+<style>
+    a, a:visited, a:hover, a:active {
+        text-decoration: none;
+        color: #3291da;
+    }
+</style>
 
 
 <script>
@@ -32,11 +32,11 @@
     var invalid_info = { "invalidUnsubmit": "0", "invalidQualification": "0", "invalidTime": "0", "invalidFilter": "0" };
 </script>
 
-<script src="~/js/survey.min.js" asp-append-version="true"></script>
- 
-<script src="~/js/survey_report.min.js" asp-append-version="true"></script>
 
-<input type="hidden" id="project-platform" value="1"/>
+<script src="~/Content/Survey/survey.min.js" asp-append-version="true"></script>
+<script src="~/Content/Survey/survey_report.min.js" asp-append-version="true"></script>
+
+<input type="hidden" id="project-platform" value="1" />
 
 
 <div id="bce-main">
@@ -55,6 +55,7 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="survey-manage-warp" style="margin-top: 20px; border: 1px solid #eee">
                     <div class="survey-manage-content">
                         <div class="survey-manage-head">
@@ -66,11 +67,11 @@
 
                         <div class="survey-response-operate">
                             <div class="filter-area">
-                                <input type="button" class="common-input-button" value="筛选数据" style="width: 94px;line-height: 25px;" ng-click="setFilter()"/>
+                                <input type="button" class="common-input-button" value="筛选数据" style="width: 94px;line-height: 25px;" ng-click="setFilter()" />
 
                             </div>
                             <div class="export-data-area">
-                                <input type="button" class="common-input-button" value="导出统计报告" id='export-data' style="width: 94px;" ng-click="exportData()"/>
+                                <input type="button" class="common-input-button" value="导出统计报告" id='export-data' style="width: 94px;" ng-click="exportData()" />
                                 <!-- <input type="button" class="common-input-button"  value="导出统计表" id='export-all-data' style="width: 94px;" ng-click="exportAllData()"> -->
                             </div>
                         </div>
@@ -99,8 +100,8 @@
                                     <span class="error" ng-bind-html="filterError|unsafe"></span>
                                 </div>
                                 <div class="filter-save-cancel">
-                                    <input type="button" class="common-input-button" value="取消" ng-click="filterCancel()" style="width: 60px;"/>
-                                    <input type="button" class="common-input-button" value="保存" ng-click="filterSave()" style="width: 60px;"/>
+                                    <input type="button" class="common-input-button" value="取消" ng-click="filterCancel()" style="width: 60px;" />
+                                    <input type="button" class="common-input-button" value="保存" ng-click="filterSave()" style="width: 60px;" />
                                 </div>
                             </div>
                         </div>
