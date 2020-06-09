@@ -9,14 +9,15 @@ function (e, t, i) {
     }
     var n = function (t) {
         e.tab = t,
-        $(".tab").removeClass("tab_active"),
-        $(".navigation-tab li:eq(" + (t - 1) + ")").addClass("tab_active"),
-        project.status >= 4 ? (e.survey_url = surveyLink, $("#survey_qr_code").empty(), $("#survey_qr_code").qrcode({
-            render: "canvas",
-            width: 120,
-            height: 120,
-            text: surveyLink
-        })) : (e.survey_url = "问卷发布后显示地址", $("#survey-url").addClass("survey-url-disabled"))
+            $(".tab").removeClass("tab_active"),
+            $(".navigation-tab li:eq(" + (t - 1) + ")").addClass("tab_active"),
+            project.status >= 4 ?           
+                (e.survey_url = surveyLink, $("#survey-url").val(surveyLink), $("#survey_qr_code").empty(), $("#survey_qr_code").qrcode({
+                render: "canvas",
+                width: 120,
+                height: 120,
+                text: surveyLink
+            })) : (e.survey_url = "问卷发布后显示地址", $("#survey-url").addClass("survey-url-disabled"))
     };
     //e.validSurveyCount = "已收集有效问卷：" + valid_survey_count + "份",
     //e.valid_survey_count = valid_survey_count,

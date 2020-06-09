@@ -16,7 +16,7 @@ namespace Fap.Core.Infrastructure.Interceptor
         public SurveyDataInterceptor(IServiceProvider provider, IDbContext dbContext) : base(provider, dbContext)
         {
         }
-        public override void AfterDynamicObjectInsert(FapDynamicObject fapDynamicData)
+        public override void BeforeDynamicObjectInsert(FapDynamicObject fapDynamicData)
         {
             fapDynamicData.SetValue("UserUid", _applicationContext.UserUid);
             fapDynamicData.SetValue("EmpUid", _applicationContext.EmpUid);

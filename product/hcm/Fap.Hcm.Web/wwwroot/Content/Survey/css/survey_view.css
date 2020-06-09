@@ -13,14 +13,6 @@
     box-sizing: border-box
 }
 
-#survey-url {
-    width: 245px;
-    height: 30px;
-    border: 1px solid #249cfa;
-    border-radius: 3px;
-    vertical-align: middle
-}
-
 #survey-brief span {
     margin: 0 15px;
     font-size: 12px
@@ -166,11 +158,6 @@ td p {
     .third-tab-content .module span {
         font-size: 12px
     }
-
-#survey-url {
-    width: 316px;
-    margin: 0
-}
 
 .copy-tip {
     color: #999

@@ -80,13 +80,15 @@
                     collectionSurvey(surveyUid, function () {
                         refreshGrid("grid-survey");
                     });
-                    return false;
+                    return true;
                 }
             },
 
         }, { surveyUid: surveyUid }, function () {
-                initEmployee();
-                initQrCode(surveyUid);
+                setTimeout(function () {
+                    initEmployee();
+                    initQrCode(surveyUid);
+                }, 0);                
         })
     }
 

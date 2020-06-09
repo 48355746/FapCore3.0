@@ -189,6 +189,7 @@ namespace Fap.Core.Infrastructure
         {
             string fid = surFilter.SurveyUid;
             Survey survey = _dbContext.Get<Survey>(fid);
+            _dbContext.DeleteExec(nameof(SurFilter), "SurveyUid=@SurveyUid", new DynamicParameters(new { SurveyUid = survey.Fid }));
             JObject surveyJObj = JObject.Parse(survey.JSONContent);
             JArray arryContent = surveyJObj.GetValue("content") as JArray;
             List<SurQuestion> qsfList = new List<SurQuestion>();
@@ -230,7 +231,7 @@ namespace Fap.Core.Infrastructure
             {
                 if (emp.Mailbox.IsPresent())
                 {
-                    string href = _applicationContext.BaseUrl + "/System/Survey/FillIn/" + (surFilter.SurveyUid + "," + emp.Fid).ToBase64String();
+                    string href =$"{_applicationContext.BaseUrl}/System/Survey/FillIn/{surFilter.SurveyUid}";
                     var mailContent = @$"<div class='row'>
     < div class='col-sm-12'>
 	 <h1 class='blue'>Hi,{emp.EmpName}</h1>
@@ -379,24 +380,25 @@ namespace Fap.Core.Infrastructure
                                     {
                                         orr["choice_id"] = sqc.Fid;
                                         //rrs +="\""+ sqc.Fid + "\",";
-                                    }
-                                    IEnumerable<JProperty> tq = JObjectToDic(t.Value as JObject);
-                                    if (tq != null && tq.Any())
-                                    {
-                                        //目标问题
-                                        SurQuestion tarQuestion = qsfList.First(q => q.AbsoluteId == tq.First().Name.ToInt());
-                                        if (tarQuestion != null)
+
+                                        IEnumerable<JProperty> tq = JObjectToDic(t.Value as JObject);
+                                        if (tq != null && tq.Any())
                                         {
-                                            orr["question_id"] = tarQuestion.Fid;
-                                            //rrs += "\"question_id\":" + "\"" + tarQuestion.Fid+"\"";
+                                            //目标问题
+                                            SurQuestion tarQuestion = qsfList.FirstOrDefault(q => q.AbsoluteId == tq.FirstOrDefault()?.Name.ToInt());
+                                            if (tarQuestion != null)
+                                            {
+                                                orr["question_id"] = tarQuestion.Fid;
+                                                //rrs += "\"question_id\":" + "\"" + tarQuestion.Fid+"\"";
+                                            }
+                                            JObject jtargt = new JObject();
+                                            jtargt[tarQuestion.Fid] = 1;
+
+                                            jChoice[sqc.Fid] = jtargt;
+
                                         }
-                                        JObject jtargt = new JObject();
-                                        jtargt[tarQuestion.Fid] = 1;
-
-                                        jChoice[sqc.Fid] = jtargt;
-
+                                        jarryRR.Add(orr);
                                     }
-                                    jarryRR.Add(orr);
                                     // rrs += "},";
                                 }
                                 publishRRObj[question.Fid] = jChoice;
@@ -616,7 +618,9 @@ namespace Fap.Core.Infrastructure
         public bool SaveSelfCollectionSurvey(JObject jobj)
         {
             string surveyUid = jobj.GetStringValue("survey_id");
-            string empUid = jobj.GetStringValue("referer");
+            //var referer= jobj.GetStringValue("referer");
+            string empUid = _applicationContext.EmpUid;
+            string userUid = _applicationContext.UserUid;
             //获取所有问题
             DynamicParameters param = new DynamicParameters();
             param.Add("SurveyUid", surveyUid);
@@ -650,7 +654,7 @@ namespace Fap.Core.Infrastructure
                                     sr.Answer = qoption.Value.ToString();
                                 }
                                 sr.Answers = "\"" + sr.Answer + "\"";
-                                sr.UserUid = empUid;
+                                sr.UserUid = userUid;
                                 sr.EmpUid = empUid;
                                 sr.FillDate = DateTimeUtils.CurrentDateTimeStr;
                                 results.Add(sr);
@@ -676,7 +680,7 @@ namespace Fap.Core.Infrastructure
                                         sr.QuestionUid = q.Fid;
                                         sr.TitleUid = t.Fid;
                                         sr.Answer = item.ToString();
-                                        sr.UserUid = empUid;
+                                        sr.UserUid = userUid;
                                         sr.EmpUid = empUid;
                                         sr.FillDate = DateTimeUtils.CurrentDateTimeStr;
                                         sr.Answers = qoption.Value.ToString();
@@ -709,7 +713,7 @@ namespace Fap.Core.Infrastructure
                                         sr.AnswerOther = qov.Value.ToString();
                                     }
                                     sr.Answers = qc.ToString();
-                                    sr.UserUid = empUid;
+                                    sr.UserUid = userUid;
                                     sr.EmpUid = empUid;
                                     sr.FillDate = DateTimeUtils.CurrentDateTimeStr;
                                     results.Add(sr);
@@ -740,7 +744,7 @@ namespace Fap.Core.Infrastructure
                                 sr.AnswerOther = qother.Value.ToString();
                             }
                         }
-                        sr.UserUid = empUid;
+                        sr.UserUid = userUid;
                         sr.EmpUid = empUid;
                         sr.FillDate = DateTimeUtils.CurrentDateTimeStr;
                         results.Add(sr);
@@ -750,8 +754,8 @@ namespace Fap.Core.Infrastructure
                 DateTime startTime = DateTimeUtils.ToDateTime(jobj.GetStringValue("time"));
                 SurResponseList sul = new SurResponseList();
                 sul.SurveyUid = surveyUid;
+                sul.UserUid = userUid;
                 sul.EmpUid = empUid;
-                sul.UserUid = empUid;
                 sul.SubmitTime = DateTimeUtils.CurrentDateTimeStr;
                 TimeSpan tspsn = DateTime.Now.Subtract(startTime);
                 sul.TimeLength = tspsn.Duration().TotalSeconds;
