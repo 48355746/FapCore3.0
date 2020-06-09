@@ -92,7 +92,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             string surveyUid = fid;
             var survey = _dbContext.Get<Survey>(surveyUid);
             //超期
-            if (survey.SurEndDate.IsPresent() && DateTimeUtils.ToDateTime(survey.SurEndDate) < DateTime.Now)
+            if (survey==null||(survey.SurEndDate.IsPresent() && DateTimeUtils.ToDateTime(survey.SurEndDate) < DateTime.Now))
             {
                 return NotFound();
             }
