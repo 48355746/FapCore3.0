@@ -28,6 +28,7 @@ namespace Fap.Core.Infrastructure
     [Service]
     public class SurveyService : ISurveyService
     {
+        private const string FAP_SURVEY_RESPONSELIST = "fap_survey_responselist";
         private readonly IDbContext _dbContext;
         private readonly IFapApplicationContext _applicationContext;
         private readonly IMessageService _messageService;
@@ -797,6 +798,8 @@ namespace Fap.Core.Infrastructure
                     r.ResponseUid = sul.Fid;
                 });
                 _dbContext.InsertBatchSql(results);
+                //移除报表缓存
+                _cacheService.Remove(FAP_SURVEY_RESPONSELIST + survey.Fid);
                 return true;
             }
             else
@@ -1490,7 +1493,7 @@ namespace Fap.Core.Infrastructure
             string where = "SurveyUid=@SurveyUid";
             DynamicParameters param = new DynamicParameters();
             param.Add("SurveyUid", surveyUid);
-            string key = "fap_survey_responselist";
+            string key = FAP_SURVEY_RESPONSELIST+survey.Fid;
             List<SurResponseList> responseList = _cacheService.Get<List<SurResponseList>>(key);
             if (responseList == null)
             {
