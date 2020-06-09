@@ -22,6 +22,7 @@ using Fap.AspNetCore.ViewModel;
 using Fap.Core.MultiLanguage;
 using System.ComponentModel;
 using System.Web;
+using Microsoft.AspNetCore.Diagnostics;
 
 namespace Fap.Hcm.Web.Controllers
 {
@@ -39,14 +40,14 @@ namespace Fap.Hcm.Web.Controllers
             _onlineUserService = onlineUserService;
         }
         [AllowAnonymous]
-        public IActionResult Index(string Lang,string msg)
+        public IActionResult Index(string Lang, string msg)
         {
             string language = "ZhCn";
             if (Lang.IsPresent())
             {
                 language = Lang;
             }
-            HttpContext.Items["language"] = language;          
+            HttpContext.Items["language"] = language;
             if (msg.IsPresent())
             {
                 ViewBag.ErrorMsg = msg;
@@ -142,7 +143,7 @@ namespace Fap.Hcm.Web.Controllers
                 //更新最近登录时间
                 loginUser.LastLoginTime = DateTimeUtils.CurrentDateTimeStr;
                 loginUser.PasswordTryTimes = 0;
-                _loginService.UpdateLastLoginTime(loginUser);                
+                _loginService.UpdateLastLoginTime(loginUser);
             }
             ClaimsPrincipal CreateClaimsPrincipal()
             {
@@ -162,7 +163,7 @@ namespace Fap.Hcm.Web.Controllers
                     new Claim(ClaimTypes.Actor,emp.EmpPhoto),//用户图像
                     new Claim(ClaimTypes.Role,loginUser.UserRole)//角色普通用户
                 };
-                
+
                 //组装身份
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                 return new ClaimsPrincipal(claimsIdentity);
@@ -221,7 +222,7 @@ namespace Fap.Hcm.Web.Controllers
                     return LocalRedirect(HttpUtility.UrlDecode(returnUrl));
                 }
             }
-           
+
         }
 
         public async Task<IActionResult> SignOut()
@@ -306,8 +307,8 @@ namespace Fap.Hcm.Web.Controllers
                 //设置当前角色
                 _applicationContext.CurrentRoleUid = fid;
             }
-            var menuItems= _loginService.BuildMenus().OrderBy(m => m.Target.ToInt()).ToList();
-            return PartialView(nameof(Menus),menuItems);
+            var menuItems = _loginService.BuildMenus().OrderBy(m => m.Target.ToInt()).ToList();
+            return PartialView(nameof(Menus), menuItems);
         }
         public PartialViewResult Menus()
         {
@@ -342,11 +343,25 @@ namespace Fap.Hcm.Web.Controllers
         {
             return View();
         }
-
+        [AllowAnonymous]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        public IActionResult StatusCode(string code)
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            var exceptionHandlerPathFeature = HttpContext.Features.Get<IExceptionHandlerPathFeature>();
+            _logger.LogError(exceptionHandlerPathFeature?.Error.StackTrace);
+
+            #region snippet_StatusCodeReExecute
+            string originalUrl = string.Empty;
+            var statusCodeReExecuteFeature = HttpContext.Features.Get<IStatusCodeReExecuteFeature>();
+            if (statusCodeReExecuteFeature != null)
+            {
+                originalUrl =
+                    statusCodeReExecuteFeature.OriginalPathBase
+                    + statusCodeReExecuteFeature.OriginalPath
+                    + statusCodeReExecuteFeature.OriginalQueryString;
+            }
+            #endregion
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier, ErrorStatusCode=code, OriginalURL= originalUrl });
         }
         #region 游客
         [AllowAnonymous]

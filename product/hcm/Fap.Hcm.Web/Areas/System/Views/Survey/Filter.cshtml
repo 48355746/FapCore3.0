@@ -22,7 +22,7 @@
     <div class="widget-body">
         <div class="widget-main">
 
-            <label for="collectionEndTime">问卷收集截至时间（可以不设置）</label>
+            <label for="collectionEndTime">问卷收集截至时间<small>(可以不设置)</small></label>
             <div class="input-group col-xs-6">
                 <input id="collectionEndTime" type="text" class="form-control" />
                 <span class="input-group-addon">
@@ -36,13 +36,18 @@
                     <span class="lbl"></span>
                 </label>
             </div>
-            <label for="survey-url">调查问卷地址</label>
+            <label for="survey-url">调查问卷地址<small>(可复制问卷地址给他人填写)</small></label><span class="copy-tip"></span>
             <div class="input-group col-xs-8">
                 <input id="survey-url" type="text" class="form-control" />
-                <span class="input-group-addon">
-                    <i class="fa fa-copy bigger-110"></i>
+
+                <span class="input-group-btn">
+                    <button class="btn btn-sm btn-default" id="copy-survey-url-button" data-clipboard-target="#survey-url" type="button">
+                        <i class="ace-icon fa fa-copy bigger-110"></i>
+                        Copy!
+                    </button>
                 </span>
             </div>
+                
             <label for="form-field-mask-3">
                 <small class="text-error">用手机微信扫一扫二维码分享给你的朋友</small>
             </label>
@@ -58,6 +63,18 @@
     $('#collectionEndTime').datetimepicker({ format: "yyyy-mm-dd hh:ii" }).next().on(ace.click_event, function () {
         $(this).prev().focus();
     });
+    var clipboard = new Clipboard("#copy-survey-url-button");
+    clipboard.on("success",
+        function (e) {
+            jQuery("#clipboardmsg").remove();
+            jQuery("<span id='clipboardmsg' style='margin-left: 10px;color: #FF9900;'/>").insertBefore(jQuery(".copy-tip")).text("复制成功");
+            e.clearSelection();
+        });
+    clipboard.on("error",
+        function () {
+            jQuery("#clipboardmsg").remove();
+            jQuery("<span id='clipboardmsg' style='margin-left: 10px;color: #FF9900;'/>").insertBefore(jQuery(".copy-tip")).text("复制失败");
+        });
     function initEmployee() {
         var filter = '@Html.Raw(filter)';
         if (filter === null || filter=== "") {
@@ -69,14 +86,16 @@
         reloadGrid("grid-employee", { filters: filter });
     }
     function initQrCode(surveyUid) {
-        var surveyLink = basePath + "Survey/Survey/SurveyFillIn/" + surveyUid;
-            //二维码
-            jQuery('#qrcodeCanvas').qrcode({
-                render: "canvas",
-                width: 120,
-                height: 120,
-                text: surveyLink
-            });
+        var surveyLink = basePath + "/System/Survey/FillIn/" + surveyUid;
+        $("#survey-url").val(surveyLink);
+        //二维码
+        jQuery('#qrcodeCanvas').qrcode({
+            render: "canvas",
+            width: 120,
+            height: 120,
+            text: surveyLink
+        });
+       
     }
     function collectionSurvey(surveyUid,callback) {
         var jqPostData = $('#grid-employee').jqGrid("getGridParam", "postData");
