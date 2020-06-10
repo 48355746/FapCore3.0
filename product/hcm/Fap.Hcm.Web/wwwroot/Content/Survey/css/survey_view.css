@@ -304,3 +304,30 @@ td p {
     height: 20px;
     font-size: 12px
 }
+.btn, .btn-default, .btn:focus, .btn-default:focus {
+    background-color: #abbac3 !important;
+    border-color: #abbac3;
+}
+
+.btn-sm {
+    border-width: 4px;
+    font-size: 13px;
+    padding: 4px 9px;
+    line-height: 1.39;
+}
+
+.btn {
+    display: inline-block;
+    color: #fff !important;
+    text-shadow: 0 -1px 0 rgba(0,0,0,.25) !important;
+    background-image: none !important;
+    border-radius: 0;
+    box-shadow: none !important;
+    -webkit-transition: background-color .15s,border-color .15s,opacity .15s;
+    -o-transition: background-color .15s,border-color .15s,opacity .15s;
+    transition: background-color .15s,border-color .15s,opacity .15s;
+    cursor: pointer;
+    vertical-align: middle;
+    margin: 0;
+    position: relative;
+}

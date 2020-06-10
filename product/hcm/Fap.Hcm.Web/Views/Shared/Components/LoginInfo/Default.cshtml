@@ -15,11 +15,11 @@
         <i class="ace-icon fa fa-caret-down"></i>
     </a>
 
-    <ul class="user-menu dropdown-menu-right dropdown-menu dropdown-yellow dropdown-caret dropdown-close">
+    <ul class="user-sysmenu dropdown-menu-right dropdown-menu dropdown-yellow dropdown-caret dropdown-close">
         @foreach (var role in roles)
         {
             <li>
-                <a  href="javascript:void(0)" onclick="buildMenus('@role.Fid')">
+                <a  href="javascript:void(0)" data-role="@role.Fid" onclick="buildMenus('@role.Fid')">
                     @if (role.Fid == cr.Fid)
                     {
                         <i class="ace-icon green fa fa-check"></i>

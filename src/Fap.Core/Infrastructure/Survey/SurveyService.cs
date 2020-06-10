@@ -634,14 +634,22 @@ namespace Fap.Core.Infrastructure
         {
             string surveyUid = jobj.GetStringValue("survey_id");
             //var referer= jobj.GetStringValue("referer");
-            string empUid = _applicationContext.EmpUid;
-            string userUid = _applicationContext.UserUid;
-            //获取所有问题
+            string where = "SurveyUid=@SurveyUid";
             DynamicParameters param = new DynamicParameters();
             param.Add("SurveyUid", surveyUid);
+            param.Add("EmpUid", _applicationContext.EmpUid);
+            string empUid = _applicationContext.EmpUid;
+            string userUid = _applicationContext.UserUid;
+            //检查是否已经填写过
+            int rc= _dbContext.Count(nameof(SurResponseList), $"{where} and {nameof(SurResponseList.EmpUid)}=@EmpUid", param);
+            if (rc > 0)
+            {
+                return false;
+            }
+            //获取所有问题
             Survey survey = _dbContext.Get<Survey>(surveyUid);
-            var questions = _dbContext.QueryWhere<SurQuestion>("SurveyUid=@SurveyUid", param).OrderBy(c => c.AbsoluteId);
-            var titles = _dbContext.QueryWhere<SurArrayTitle>("SurveyUid=@SurveyUid", param);
+            var questions = _dbContext.QueryWhere<SurQuestion>(where, param).OrderBy(c => c.AbsoluteId);
+            var titles = _dbContext.QueryWhere<SurArrayTitle>(where, param);
             IEnumerable<JProperty> dicResponse = jobj.Properties();
             if (dicResponse != null && dicResponse.Any() && questions != null && questions.Any())
             {
