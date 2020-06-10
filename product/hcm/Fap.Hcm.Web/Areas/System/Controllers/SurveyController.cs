@@ -29,8 +29,7 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
         {
             var model = GetJqGridModel("Survey", qs =>
             {
-                qs.QueryCols = "Id,Fid,SurName,IsShare,FilterModel,CreateTime,Completed,SurStatus";
-                qs.AddDefaultValue("FilterModel", "Self");
+                qs.QueryCols = "Id,Fid,SurName,IsShare,CreateTime,Completed,SurStatus";
                 qs.AddDefaultValue("CreateTime", Fap.Core.Utility.DateTimeUtils.CurrentDateTimeStr);
                 qs.AddDefaultValue("SurStatus", "0");
             });

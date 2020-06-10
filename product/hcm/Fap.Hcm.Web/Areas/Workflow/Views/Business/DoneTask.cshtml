@@ -1,46 +1,49 @@
 ﻿@model IEnumerable<Fap.Workflow.Model.WfBusiness>
 
 <title>已办任务</title>
-
 <div class="row">
     <div class="col-xs-12">
-        @foreach (var bizGrp in Model.GroupBy(b => b.BizTypeUidMC))
-        {
-            <h4 class="smaller lighter green">@bizGrp.Key</h4>
-
-            <ul class="list-inline bizprocess nav nav-pills">
-                @foreach (var biz in bizGrp.AsEnumerable())
+        <div class="row">
+            <div class="col-xs-12">
+                @foreach (var bizGrp in Model.GroupBy(b => b.BizTypeUidMC))
                 {
-                    <li>
-                        <a href="javascript:void(0)" data-business="@biz.Fid" data-bill="@biz.BillEntity">
-                            <i class="ace-icon fa fa-suitcase green bigger-110"></i>
-                            @biz.BizName
+                    <h4 class="smaller lighter green">@bizGrp.Key</h4>
 
-                        </a>
-                    </li>
+                    <ul class="list-inline bizprocess nav nav-pills">
+                        @foreach (var biz in bizGrp.AsEnumerable())
+                        {
+                            <li>
+                                <a href="javascript:void(0)" data-business="@biz.Fid" data-bill="@biz.BillEntity">
+                                    <i class="ace-icon fa fa-suitcase green bigger-110"></i>
+                                    @biz.BizName
+
+                                </a>
+                            </li>
+                        }
+                    </ul>
                 }
-            </ul>
-        }
 
-    </div>
-</div>
-<hr />
-<div class="row">
-    <div class="col-xs-12" id="bizContent">
-        @*动态加载待处理列表*@
-        <div class="col-xs-1"></div>
-        <div class="col-xs-11">
-            <h3>操作说明</h3>
-            <p>
-                1.这里显示你已经审批过的任务列表。
-            </p>
-            <p>
-                2.点击需要处理的业务，进入列表。
-            </p>
-            <p>
-                3.你可以在此查看业务详情以及流程状态。
-            </p>
+            </div>
+        </div>
+        <hr />
+        <div class="row">
+            <div class="col-xs-12" id="bizContent">
+                @*动态加载待处理列表*@
+                <div class="col-xs-1"></div>
+                <div class="col-xs-11">
+                    <h3>操作说明</h3>
+                    <p>
+                        1.这里显示你已经审批过的任务列表。
+                    </p>
+                    <p>
+                        2.点击需要处理的业务，进入列表。
+                    </p>
+                    <p>
+                        3.你可以在此查看业务详情以及流程状态。
+                    </p>
 
+                </div>
+            </div>
         </div>
     </div>
 </div>

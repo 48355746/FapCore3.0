@@ -1,46 +1,49 @@
 ﻿@model IEnumerable<Fap.Workflow.Model.WfBusiness>
 
 <title><fap-multilang lang-key="todo_task" default-content="待办任务"></fap-multilang></title>
-
 <div class="row">
     <div class="col-xs-12">
-        @foreach (var bizGrp in Model.GroupBy(b => b.BizTypeUidMC))
-        {
-            <h4 class="smaller lighter green">@bizGrp.Key</h4>
-
-            <ul class="list-inline bizprocess nav nav-pills">
-                @foreach (var biz in bizGrp.AsEnumerable())
+        <div class="row">
+            <div class="col-xs-12">
+                @foreach (var bizGrp in Model.GroupBy(b => b.BizTypeUidMC))
                 {
-                    <li>
-                        <a href="javascript:void(0)" data-business="@biz.Fid" data-bill="@biz.BillEntity">
-                            <i class="ace-icon fa fa-suitcase green bigger-110"></i>
-                            @biz.BizName <i class="text-danger">@(biz.Exp.ToString() == "0" ? "" : $"+{biz.Exp}")</i>
+                    <h4 class="smaller lighter green">@bizGrp.Key</h4>
 
-                        </a>
-                    </li>
+                    <ul class="list-inline bizprocess nav nav-pills">
+                        @foreach (var biz in bizGrp.AsEnumerable())
+                        {
+                            <li>
+                                <a href="javascript:void(0)" data-business="@biz.Fid" data-bill="@biz.BillEntity">
+                                    <i class="ace-icon fa fa-suitcase green bigger-110"></i>
+                                    @biz.BizName <i class="text-danger">@(biz.Exp.ToString() == "0" ? "" : $"+{biz.Exp}")</i>
+
+                                </a>
+                            </li>
+                        }
+                    </ul>
                 }
-            </ul>
-        }
 
-    </div>
-</div>
-<hr />
-<div class="row">
-    <div class="col-xs-12" id="bizContent">
-        @*动态加载待处理列表*@
-        <div class="col-xs-1"></div>
-        <div class="col-xs-11">
-            <h3>操作说明</h3>
-            <p>
-                1.业务上标注徽章的，说明你有此业务的待办。
-            </p>
-            <p>
-                2.点击需要处理的业务，进入待处理列表。
-            </p>
-            <p>
-                3.对相应的业务进行审批操作。
-            </p>
-           
+            </div>
+        </div>
+        <hr />
+        <div class="row">
+            <div class="col-xs-12" id="bizContent">
+                @*动态加载待处理列表*@
+                <div class="col-xs-1"></div>
+                <div class="col-xs-11">
+                    <h3>操作说明</h3>
+                    <p>
+                        1.业务上标注徽章的，说明你有此业务的待办。
+                    </p>
+                    <p>
+                        2.点击需要处理的业务，进入待处理列表。
+                    </p>
+                    <p>
+                        3.对相应的业务进行审批操作。
+                    </p>
+
+                </div>
+            </div>
         </div>
     </div>
 </div>

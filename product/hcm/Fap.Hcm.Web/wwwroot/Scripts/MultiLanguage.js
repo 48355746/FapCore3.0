@@ -152,7 +152,8 @@ var MultiLangHelper = (function () {
       'init_payset': { 'ZhCn': '初始化薪资套员工', 'ZhTW': '', 'En': '', 'Ja': '' },
       'save_employee_condition': { 'ZhCn': '保存员工条件', 'ZhTW': '', 'En': '', 'Ja': '' },
       'publish': { 'ZhCn': '发布', 'ZhTW': '', 'En': '', 'Ja': '' },
-      'publish_survey': { 'ZhCn': '发布调查问卷', 'ZhTW': '', 'En': '', 'Ja': '' }
+      'publish_survey': { 'ZhCn': '发布调查问卷', 'ZhTW': '', 'En': '', 'Ja': '' },
+      'please input your survey title!': { 'ZhCn': '请输入调查问卷的标题', 'ZhTW': '', 'En': '', 'Ja': '' }
     };
     var Helper = {};
     //初始化语种
