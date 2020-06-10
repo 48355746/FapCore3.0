@@ -111,7 +111,7 @@ namespace Fap.Core.Infrastructure.Domain
         public HttpContext HttpContext => _httpContextAccessor?.HttpContext;
         public string ClientIpAddress => Request.Headers["X-Forwarded-For"].FirstOrDefault().IsMissing() ? HttpContext.Connection.RemoteIpAddress.ToString() : Request.Headers["X-Forwarded-For"].FirstOrDefault();
         public string Broswer => Request.Headers["User-Agent"].ToString();
-        public string BaseUrl =>(Request.Headers["X-Forwarded-Proto"].FirstOrDefault().IsMissing()? $"{Request.Scheme}": Request.Headers["X-Forwarded-Proto"].FirstOrDefault()) +$"://{Request.Host.Host}:{Request.Host.Port}";
+        public string BaseUrl =>(Request.Headers["X-Forwarded-Proto"].FirstOrDefault().IsMissing()? $"{Request.Scheme}": Request.Headers["X-Forwarded-Proto"].FirstOrDefault()) +$"://{Request.Host.Host}{(Request.Host.Port.HasValue?":"+ Request.Host.Port:"")}";
         /// <summary>
         /// 是否为管理员
         /// </summary>
