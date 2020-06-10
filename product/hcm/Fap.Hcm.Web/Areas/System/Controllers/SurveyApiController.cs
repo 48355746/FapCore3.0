@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Net.Mime;
 using Ardalis.GuardClauses;
 using Dapper;
@@ -95,6 +96,12 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
             _surveyService.PreviewSurvey(survey);
             _dbContext.Update(survey);
             return Json(ResponseViewModelUtils.Sueecss());
+        }
+        [HttpPost("Copy")]
+        public JsonResult CopySurvey(string fid,string surName)
+        {
+            bool success= _surveyService.CopySurvey(fid,surName);
+            return Json(new ResponseViewModel { success = success });
         }
         [HttpPost("Publish")]
         public JsonResult PublishSurvey(SurFilter surFilter)

@@ -102,7 +102,7 @@
             </ul>
         </li>
         <li class="dropdown-footer">
-           
+
         </li>
     </ul>
 </li>
@@ -123,17 +123,27 @@
             <ul class="dropdown-menu dropdown-navbar">
                 @foreach (var message in Model.Messages)
                 {
+                    string target = string.Empty;
+                    string href = "javascript:void(0)";
+                    if (message.URL.IsPresent())
+                    {
+                        target = "target=_blank";
+                        href = message.URL;
+                    }
                     <li>
-                        <a href="javascript:void(0)">
+                        <a @target href="@href">
                             <div class="clearfix">
                                 <div class="pull-left">
-                                    <i class="ace-icon fa fa-comments bigger-230 pink"></i>
+                                    <i class="ace-icon fa fa-volume-up  bigger-200 text-muted"></i>
                                 </div>
                                 <span class="msg-body">
                                     <span class="msg-title">
-                                        <span class="blue">@(message.SEmpUidMC.IsMissing()?"系统":message.SEmpUidMC):</span>
+                                        <span class="blue">@message.Title:</span>
                                         @message.MsgContent
-
+                                        @if (message.URL.IsPresent())
+                                        {
+                                            <i class="ace-icon fa fa-hand-o-right green bigger-120"></i>
+                                        }
                                     </span>
 
                                     <span class="msg-time">

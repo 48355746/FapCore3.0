@@ -66,7 +66,7 @@
             var nodeId = '@wfTask.NodeId';
             var wfTaskUid = '@wfTask.Fid';
             var billTable = '@formName';
-            var appName = '@appName';
+            var appName = '@Html.Raw(appName)';
             var currProcessInsUid = '@wfTask.ProcessInsUid';
             var currActivityInsUid = '@wfTask.ActivityInsUid';
             var wfvm = { AppName: appName, ProcessUid: processUid, ApproveState: appState, ApproveComment: appComment, BusinessUid: businessUid, BillUid: billUid, CurrentNodeId: nodeId, CurrentActivityInsUid: currActivityInsUid, CurrentProcessInsUid: currProcessInsUid, CurrentWfTaskUid: wfTaskUid, BillTable: billTable };

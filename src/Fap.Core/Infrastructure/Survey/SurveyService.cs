@@ -206,14 +206,14 @@ namespace Fap.Core.Infrastructure
             {
                 return false;
             }
-            CollectionSet(surFilter);
+            CollectionSet(survey,surFilter);
 
             PublishJson(surFilter, survey, qsfList, choiceList, titleList, publishRRObj);
 
             return true;
         }
 
-        private void CollectionSet(SurFilter surFilter)
+        private void CollectionSet(Survey survey, SurFilter surFilter)
         {
             string empWhere = string.Empty;
             if (surFilter.FilterCondition.IsPresent())
@@ -228,6 +228,7 @@ namespace Fap.Core.Infrastructure
             //收集设置
             _dbContext.Insert(surFilter);
             List<FapMail> mailList = new List<FapMail>();
+            List<FapMessage> messageList = new List<FapMessage>();
             foreach (var emp in employees)
             {
                 if (emp.Mailbox.IsPresent())
@@ -236,7 +237,7 @@ namespace Fap.Core.Infrastructure
                     var mailContent = @$"<div class='row'>
     < div class='col-sm-12'>
 	 <h1 class='blue'>Hi,{emp.EmpName}</h1>
-	 <div>这里有一个调查问卷需要你填写，点击下面链接进入。谢谢！</div>
+	 <div>这里有一个调查问卷[{ survey.SurName}]需要你填写，点击下面链接进入。谢谢！</div>
    </div>
 </div>
 <div class='space-12 '></div>
@@ -259,10 +260,23 @@ namespace Fap.Core.Infrastructure
                         SendStatus = 0
                     };
                     mailList.Add(mail);
+                    FapMessage message = new FapMessage
+                    {
+                        REmpUid=emp.Fid,
+                        Title="调查问卷",
+                        MsgContent=survey.SurName,
+                        SendTime=DateTimeUtils.CurrentDateTimeStr,
+                        IsGlobal=0,
+                        HasRead=0,
+                        URL=href,
+                        MsgCategory="Notice",
+                    };
+                    messageList.Add(message);
                 }
             }
             //发邮件
             _messageService.SendMailList(mailList);
+            _messageService.SendMessageList(messageList);
 
         }
 
@@ -2275,6 +2289,39 @@ namespace Fap.Core.Infrastructure
             }
             return null;
 
+        }
+        [Transactional]
+        public bool CopySurvey(string fid,string surName)
+        {
+            var survey = _dbContext.Get<Survey>(fid);
+            if (survey != null)
+            {
+                Survey newSurvey = new Survey
+                {
+                    SurName = surName,
+                    SurContent = survey.SurContent,
+                    SurStatus = SurveyStatus.Creating,
+                    CreateTime = DateTimeUtils.CurrentDateTimeStr,
+                    UserUid = _applicationContext.UserUid,
+                    EmpUid = _applicationContext.EmpUid
+                };
+                long id = _dbContext.Insert(newSurvey);
+                JObject jContent = JObject.Parse(survey.JSONContent);
+                jContent["survey_id"] = id;
+                jContent["survey_name"] = surName;
+                JArray arrContent = jContent["content"] as JArray;
+                if (arrContent != null && arrContent.Any())
+                {
+                    foreach (JObject jc in arrContent)
+                    {
+                        jc["survey_id"] = id;
+                    }
+                }
+                newSurvey.JSONContent = jContent.ToString();
+                _dbContext.Update(newSurvey);
+                return true;
+            }
+            return false;
         }
     }
 

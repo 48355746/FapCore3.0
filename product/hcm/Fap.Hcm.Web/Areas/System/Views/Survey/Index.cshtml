@@ -19,10 +19,10 @@
                         <i class="ace-icon fa fa-expand"></i>
                     </a>
                 </div>
-                @*<div class="widget-toolbar">
-                        <fap-button btn-tag="link" id="btnAddSurvey" content="新增" icon-before="fa fa-plus"></fap-button>
+                <div class="widget-toolbar">
+                    <fap-button btn-tag="link" id="btnCopySurvey" content="复制" icon-before="fa fa-copy"></fap-button>
 
-                    </div>*@
+                </div>
             </div>
             <div class="widget-body">
                 <div class="widget-main">
@@ -37,12 +37,27 @@
     var scripts = [null,"/Content/Survey/js/clipboard.min.js","/Content/js/qrcode/jquery.qrcode.js","/Content/js/qrcode/qrcode.js",null]
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
-            $("#btnAddSurvey").on(ace.click_event, function () {
+            $("#btnCopySurvey").on(ace.click_event, function () {
                 var rw = getSelectedRow("grid-survey");
-                var url = basePath + "/System/Survey/Design/" + rw.Fid;
-
-                layerWindow(url);
-                //bootboxWindow("问卷", );
+                if (rw === null) {
+                    return;
+                }
+                bootbox.prompt({
+                    title: $.lang("please input your survey title!", "请输入调查问卷的标题"),
+                    inputType: 'text',
+                    value:rw.SurName,
+                    callback: function (result) {
+                        if (result !== null && result !== "") {
+                            $.post(basePath + "/System/Api/Survey/Copy", { fid: rw.Fid, surName: result }, function (rv) {
+                                if (rv.success) {
+                                    refreshGrid("grid-survey");
+                                } else {
+                                    $.msg("未找到此问卷");
+                                }
+                            })
+                        }
+                    }
+                });
             });
         })
     })
@@ -88,7 +103,7 @@
                 setTimeout(function () {
                     initEmployee();
                     initQrCode(surveyUid);
-                }, 0);                
+                }, 0);
         })
     }
 

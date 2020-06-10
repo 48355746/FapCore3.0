@@ -6,6 +6,7 @@ namespace Fap.Core.Infrastructure
 {
     public interface ISurveyService
     {
+        bool CopySurvey(string fid,string surName);
         bool ExportSurveyStat(string fileName, string surveyUid);
         bool ExportSurveyUserDataStat(string fileName, string surveyUid, string category);
         JObject GetProject(Survey survey);

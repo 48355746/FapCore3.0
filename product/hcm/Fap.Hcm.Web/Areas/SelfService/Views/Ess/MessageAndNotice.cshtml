@@ -40,6 +40,9 @@
                 jQuery('#grid-message').jqGrid('setRowData', ids[i], { "Title": stitle });
                 jQuery('#grid-message').jqGrid('setRowData', ids[i], { "MsgContent": scontent });
             }
+            if (ret.URL !== '') {
+                jQuery('#grid-message').jqGrid('setRowData', ids[i], { "URL": '<a target="_blank" href='+ret.URL+'>点击访问</a>' });
+            }
         }
     }
     function readFlag(rowdata) {
