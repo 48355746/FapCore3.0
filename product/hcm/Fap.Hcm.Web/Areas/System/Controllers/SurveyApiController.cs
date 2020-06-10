@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
@@ -54,21 +52,22 @@ namespace Fap.Hcm.Web.Areas.System.Controllers
                     attachment.Bid = fid;
                     attachment.FileName = file.FileName;
                     attachment.FileType = file.ContentType;
-                    using Image myImage = Image.FromStream(file.OpenReadStream());
-                    //获得图片宽和高 
-                    int widths = myImage.Width;
-                    int heights = myImage.Height;
-                    using var stream = new MemoryStream();
-                    myImage.Save(stream, ImageFormat.Png);
-                    stream.Position = 0;
-                    string attFid = _fapFileService.UploadFile(stream, attachment);
+                    //using Image myImage = Image.FromStream(file.OpenReadStream());
+                    ////获得图片宽和高 
+                    //int widths = myImage.Width;
+                    //int heights = myImage.Height;
+                    //using var stream = new MemoryStream();
+                    //myImage.Save(stream, ImageFormat.Png);
+                    //stream.Position = 0;
+                    //string attFid = _fapFileService.UploadFile(stream, attachment);
+                    string attFid = _fapFileService.UploadFile(file.OpenReadStream(), attachment);
                     return Json(new
                     {
                         status = 0,
                         img_url = _applicationContext.BaseUrl + "/Component/Photo/" + fid,
                         img_id = attFid,
-                        width = widths,
-                        height = heights
+                        width = 0,
+                        height = 0
                     });
                 }
             }
