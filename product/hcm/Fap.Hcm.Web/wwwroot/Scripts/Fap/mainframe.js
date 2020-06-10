@@ -130,6 +130,10 @@ function buildPartner() {
     })
 }
 function buildMenus(roleUid) {
+    if (roleUid !== "0") {
+        $(".user-sysmenu a[data-role!=" + roleUid + "]>i").removeClass("fa-check").addClass("fa-circle");
+        $(".user-sysmenu a[data-role=" + roleUid + "]>i").removeClass("fa-circle").addClass("fa-check");
+    }
     $.get(basePath + "/Home/ChangeRole/" + roleUid, function (rv) {
         $(".nav.nav-list.menus").html(rv);
     })
