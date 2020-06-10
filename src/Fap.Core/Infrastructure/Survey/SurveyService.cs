@@ -233,7 +233,7 @@ namespace Fap.Core.Infrastructure
             {
                 if (emp.Mailbox.IsPresent())
                 {
-                    string href =$"{_applicationContext.BaseUrl}/System/Survey/FillIn/{surFilter.SurveyUid}";
+                    string href =$"/System/Survey/FillIn/{surFilter.SurveyUid}";
                     var mailContent = @$"<div class='row'>
     < div class='col-sm-12'>
 	 <h1 class='blue'>Hi,{emp.EmpName}</h1>
@@ -246,7 +246,7 @@ namespace Fap.Core.Infrastructure
 <div class='break-12'></div>
 <div class='row' style='height: 45px; background-color: transparent'>
  <div class='col text-center'>
-  <span class='light-grey'><a href ='{href}'> click here to unsubscribe</a></span>
+  <span class='light-grey'><a href ='{_applicationContext.BaseUrl}{href}'> click here to unsubscribe</a></span>
   </div>
 </div>";
                     FapMail mail = new FapMail
