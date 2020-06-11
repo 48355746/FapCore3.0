@@ -16,9 +16,9 @@ function checkUploadImgItem() {
 }
 
 //预览
-function previewSurvey() {
+function previewSurvey(fid) {
     edit.saveSurvey().then(function () {
-        var e = basePath + "/Survey/Survey/PreviewSurvey?survey_id=" + survey_init.survey_id + "&from=" + previewFrom;
+        var e = basePath + "/System/Survey/Preview/"+fid;
         $("body").append('<a href="" id="goto_preview" target="_blank"></a>'),
         $("#goto_preview").attr("href", e),
         $("#goto_preview").get(0).click()
@@ -33,11 +33,7 @@ function popSuggestionSelector(e, t) {
         })
     })
 }
-//下一步到收集
-function nextToCollect(fid)
-{
-    location.href = basePath + "/Survey/Survey/SurveyFilter/" + fid;
-}
+
 //发布
 //function publishSurvey(fid) {
 //    $.get(basePath + "api/Survey/SubmitSurvey/" + fid, function (rv) {
@@ -119,8 +115,8 @@ $(document).ready(function () {
         handle: ".drag-area",
         start: function (e, t) {
             var i = t.item,
-            o = i.find(".question-id").attr("absolute_id");
-            edit.checkQuestionLogic(o) ? require.async(["home:static/js/survey/widget/sortable_popup.js"],
+                o = i.find(".question-id").attr("absolute_id");
+            (edit.checkQuestionLogic(o) && edit.checkQuestionLogic(o).length>0) ? require.async(["home:static/js/survey/widget/sortable_popup.js"],
             function (e) {
                 e.show("该题有关联的逻辑规则，移动题目会导致规则失效，确认移动？", "确定", "取消").then(function () {
                     edit.sortQuestions(),

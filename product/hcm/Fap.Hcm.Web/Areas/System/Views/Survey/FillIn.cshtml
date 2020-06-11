@@ -1,0 +1,355 @@
+﻿@model Fap.Core.Infrastructure.Model.Survey
+@{
+    ViewBag.Title = "问卷调查";
+    Layout = "~/Views/Shared/_Layout_blank.cshtml";
+    //已经做过调查
+    int exist = ViewBag.Exists;
+}
+<link href="~/Content/Survey/survey.min.css" rel="stylesheet" asp-append-version="true" />
+<script src="~/Content/Survey/survey_fillin.min.js"></script>
+
+<script>angular.module('ie7support', []).config(function ($sceProvider) { $sceProvider.enabled(false); }); var crowdtestModule = angular.module('crowdtest', ['ui.bootstrap', 'angular.filter', 'angularFileUpload']); crowdtestModule.config(['$httpProvider', function ($httpProvider) { $httpProvider.defaults.xsrfCookieName = 'YII_CSRF_TOKEN'; $httpProvider.defaults.xsrfHeaderName = 'X-YII-CSRF-TOKEN'; $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'; }]); crowdtestModule.config(['$compileProvider', function ($compileProvider) { $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|baidu):/); }]);</script>
+<script src="~/Content/Survey/js/layout.js"></script>
+<script>
+    crowdtestModule.run(['User', function (User) {
+        User.setCurrentUser(null);
+    }]);
+</script>
+
+<script>
+        var base_url_module = basePath;
+        $(document).ready(function () {
+
+            if ('@exist' == '1')
+            {
+                window.location.href = basePath + "/System/Survey/Finish";
+            }
+
+            // 添加数组的删除方法
+            Array.prototype.indexOf = function (val) {
+                for (var i = 0; i < this.length; i++) {
+                    if (this[i] == val) return i;
+                }
+                return -1;
+            };
+            Array.prototype.remove = function (val) {
+                var index = this.indexOf(val);
+                if (index > -1) {
+                    this.splice(index, 1);
+                }
+            };
+            $('body').css('background-color', '#e3e8f7');
+        });
+
+</script>
+<script src="~/Content/Survey/js/doSurvey.js" asp-append-version="true"></script>
+
+<div class="container" id="ng-app" ng-app="crowdtest">
+    <div class="" style="width: 980px; margin: 0 auto; margin-bottom: 20px">
+       
+    </div>
+    <div class="survey-self-wrap">
+        <div class="survey-theme-blue">
+            <div class="survey-outer-wrap clearfix" ng-class="{'survey-vote-outer-wrap': type==1}" ng-controller="SurveyDetailController" ng-init="init(@Model.JSONPublish.Replace("\r","").Replace("\n",""))" ng-cloak>
+                @*<div class="survey-outer-wrap clearfix" ng-class="{'survey-vote-outer-wrap': type==1}" ng-controller="SurveyDetailController" ng-init="init({&quot;survey_id&quot;:129981,&quot;pages&quot;:[{&quot;index&quot;:1,&quot;list&quot;:[{&quot;id&quot;:&quot;242187&quot;,&quot;survey_id&quot;:&quot;129981&quot;,&quot;content&quot;:&quot;1. \u591a\u9009\u9898&quot;,&quot;type_id&quot;:8,&quot;order&quot;:&quot;1&quot;,&quot;has_other&quot;:&quot;N&quot;,&quot;required&quot;:&quot;Y&quot;,&quot;title_quote&quot;:&quot;N&quot;,&quot;choice_quote&quot;:&quot;0&quot;,&quot;page&quot;:&quot;1&quot;,&quot;max&quot;:&quot;0&quot;,&quot;min&quot;:&quot;0&quot;,&quot;exclusive_options&quot;:&quot;&quot;,&quot;logic_condition&quot;:null,&quot;redirect_relation&quot;:[{&quot;question_id&quot;:242189,&quot;choice_id&quot;:925468}],&quot;is_logic_show_question&quot;:&quot;0&quot;,&quot;vote_type_id&quot;:&quot;0&quot;,&quot;type&quot;:&quot;\u590d\u9009\u6846&quot;,&quot;choice&quot;:[{&quot;id&quot;:&quot;925468&quot;,&quot;question_id&quot;:&quot;242187&quot;,&quot;order&quot;:&quot;1&quot;,&quot;real_choice_id&quot;:&quot;0&quot;,&quot;content&quot;:&quot;\u9009\u98791 &quot;,&quot;value&quot;:&quot;0&quot;,&quot;is_other&quot;:&quot;N&quot;,&quot;required&quot;:&quot;0&quot;},{&quot;id&quot;:&quot;925469&quot;,&quot;question_id&quot;:&quot;242187&quot;,&quot;order&quot;:&quot;2&quot;,&quot;real_choice_id&quot;:&quot;0&quot;,&quot;content&quot;:&quot;\u9009\u98792 &quot;,&quot;value&quot;:&quot;0&quot;,&quot;is_other&quot;:&quot;N&quot;,&quot;required&quot;:&quot;0&quot;},{&quot;id&quot;:&quot;925470&quot;,&quot;question_id&quot;:&quot;242187&quot;,&quot;order&quot;:&quot;3&quot;,&quot;real_choice_id&quot;:&quot;0&quot;,&quot;content&quot;:&quot;\u9009\u98793&quot;,&quot;value&quot;:&quot;0&quot;,&quot;is_other&quot;:&quot;N&quot;,&quot;required&quot;:&quot;0&quot;},{&quot;id&quot;:&quot;925471&quot;,&quot;question_id&quot;:&quot;242187&quot;,&quot;order&quot;:&quot;4&quot;,&quot;real_choice_id&quot;:&quot;0&quot;,&quot;content&quot;:&quot;\u9009\u98794&quot;,&quot;value&quot;:&quot;0&quot;,&quot;is_other&quot;:&quot;N&quot;,&quot;required&quot;:&quot;0&quot;}],&quot;logic_hide&quot;:0,&quot;value&quot;:[false,false,false,false]},{&quot;id&quot;:&quot;242188&quot;,&quot;survey_id&quot;:&quot;129981&quot;,&quot;content&quot;:&quot;2. \u5355\u884c\u586b\u7a7a\u9898&quot;,&quot;type_id&quot;:1,&quot;order&quot;:&quot;2&quot;,&quot;has_other&quot;:&quot;N&quot;,&quot;required&quot;:&quot;Y&quot;,&quot;title_quote&quot;:&quot;N&quot;,&quot;choice_quote&quot;:&quot;0&quot;,&quot;page&quot;:&quot;1&quot;,&quot;max&quot;:&quot;0&quot;,&quot;min&quot;:&quot;0&quot;,&quot;exclusive_options&quot;:&quot;&quot;,&quot;logic_condition&quot;:null,&quot;redirect_relation&quot;:null,&quot;is_logic_show_question&quot;:&quot;0&quot;,&quot;vote_type_id&quot;:&quot;0&quot;,&quot;type&quot;:&quot;\u6587\u672c\u6846&quot;,&quot;choice&quot;:false,&quot;logic_hide&quot;:0,&quot;value&quot;:null},{&quot;id&quot;:&quot;242189&quot;,&quot;survey_id&quot;:&quot;129981&quot;,&quot;content&quot;:&quot;3. \u591a\u884c\u586b\u7a7a\u9898&quot;,&quot;type_id&quot;:2,&quot;order&quot;:&quot;3&quot;,&quot;has_other&quot;:&quot;N&quot;,&quot;required&quot;:&quot;Y&quot;,&quot;title_quote&quot;:&quot;N&quot;,&quot;choice_quote&quot;:&quot;0&quot;,&quot;page&quot;:&quot;1&quot;,&quot;max&quot;:&quot;0&quot;,&quot;min&quot;:&quot;0&quot;,&quot;exclusive_options&quot;:&quot;&quot;,&quot;logic_condition&quot;:null,&quot;redirect_relation&quot;:null,&quot;is_logic_show_question&quot;:&quot;0&quot;,&quot;vote_type_id&quot;:&quot;0&quot;,&quot;type&quot;:&quot;\u5927\u6587\u672c\u6846&quot;,&quot;choice&quot;:false,&quot;logic_hide&quot;:0,&quot;value&quot;:null},{&quot;id&quot;:&quot;242190&quot;,&quot;survey_id&quot;:&quot;129981&quot;,&quot;content&quot;:&quot;4. \u9009\u62e9\u5217\u8868&quot;,&quot;type_id&quot;:7,&quot;order&quot;:&quot;4&quot;,&quot;has_other&quot;:&quot;N&quot;,&quot;required&quot;:&quot;Y&quot;,&quot;title_quote&quot;:&quot;N&quot;,&quot;choice_quote&quot;:&quot;0&quot;,&quot;page&quot;:&quot;1&quot;,&quot;max&quot;:&quot;0&quot;,&quot;min&quot;:&quot;0&quot;,&quot;exclusive_options&quot;:&quot;&quot;,&quot;logic_condition&quot;:null,&quot;redirect_relation&quot;:null,&quot;is_logic_show_question&quot;:&quot;0&quot;,&quot;vote_type_id&quot;:&quot;0&quot;,&quot;type&quot;:&quot;\u4e0b\u62c9\u6846&quot;,&quot;choice&quot;:[{&quot;id&quot;:&quot;925472&quot;,&quot;question_id&quot;:&quot;242190&quot;,&quot;order&quot;:&quot;1&quot;,&quot;real_choice_id&quot;:&quot;0&quot;,&quot;content&quot;:&quot;\u9009\u98791&quot;,&quot;value&quot;:&quot;0&quot;,&quot;is_other&quot;:&quot;N&quot;,&quot;required&quot;:&quot;0&quot;},{&quot;id&quot;:&quot;925473&quot;,&quot;question_id&quot;:&quot;242190&quot;,&quot;order&quot;:&quot;2&quot;,&quot;real_choice_id&quot;:&quot;0&quot;,&quot;content&quot;:&quot;\u9009\u98792&quot;,&quot;value&quot;:&quot;0&quot;,&quot;is_other&quot;:&quot;N&quot;,&quot;required&quot;:&quot;0&quot;},{&quot;id&quot;:&quot;925474&quot;,&quot;question_id&quot;:&quot;242190&quot;,&quot;order&quot;:&quot;3&quot;,&quot;real_choice_id&quot;:&quot;0&quot;,&quot;content&quot;:&quot;\u9009\u98793&quot;,&quot;value&quot;:&quot;0&quot;,&quot;is_other&quot;:&quot;N&quot;,&quot;required&quot;:&quot;0&quot;}],&quot;logic_hide&quot;:0,&quot;value&quot;:null},{&quot;id&quot;:&quot;242191&quot;,&quot;survey_id&quot;:&quot;129981&quot;,&quot;content&quot;:&quot;5. \u591a\u9009\u9898&quot;,&quot;type_id&quot;:8,&quot;order&quot;:&quot;5&quot;,&quot;has_other&quot;:&quot;N&quot;,&quot;required&quot;:&quot;Y&quot;,&quot;title_quote&quot;:&quot;N&quot;,&quot;choice_quote&quot;:&quot;0&quot;,&quot;page&quot;:&quot;1&quot;,&quot;max&quot;:&quot;0&quot;,&quot;min&quot;:&quot;0&quot;,&quot;exclusive_options&quot;:&quot;&quot;,&quot;logic_condition&quot;:null,&quot;redirect_relation&quot;:null,&quot;is_logic_show_question&quot;:&quot;0&quot;,&quot;vote_type_id&quot;:&quot;0&quot;,&quot;type&quot;:&quot;\u590d\u9009\u6846&quot;,&quot;choice&quot;:[{&quot;id&quot;:&quot;925475&quot;,&quot;question_id&quot;:&quot;242191&quot;,&quot;order&quot;:&quot;1&quot;,&quot;real_choice_id&quot;:&quot;0&quot;,&quot;content&quot;:&quot;\u9009\u98791 &quot;,&quot;value&quot;:&quot;0&quot;,&quot;is_other&quot;:&quot;N&quot;,&quot;required&quot;:&quot;0&quot;},{&quot;id&quot;:&quot;925476&quot;,&quot;question_id&quot;:&quot;242191&quot;,&quot;order&quot;:&quot;2&quot;,&quot;real_choice_id&quot;:&quot;0&quot;,&quot;content&quot;:&quot;\u9009\u98792 &quot;,&quot;value&quot;:&quot;0&quot;,&quot;is_other&quot;:&quot;N&quot;,&quot;required&quot;:&quot;0&quot;},{&quot;id&quot;:&quot;925477&quot;,&quot;question_id&quot;:&quot;242191&quot;,&quot;order&quot;:&quot;3&quot;,&quot;real_choice_id&quot;:&quot;0&quot;,&quot;content&quot;:&quot;\u9009\u98793&quot;,&quot;value&quot;:&quot;0&quot;,&quot;is_other&quot;:&quot;N&quot;,&quot;required&quot;:&quot;0&quot;}],&quot;logic_hide&quot;:0,&quot;value&quot;:[false,false,false]},{&quot;id&quot;:&quot;242192&quot;,&quot;survey_id&quot;:&quot;129981&quot;,&quot;content&quot;:&quot;6. \u5355\u884c\u586b\u7a7a\u9898&quot;,&quot;type_id&quot;:1,&quot;order&quot;:&quot;6&quot;,&quot;has_other&quot;:&quot;N&quot;,&quot;required&quot;:&quot;Y&quot;,&quot;title_quote&quot;:&quot;N&quot;,&quot;choice_quote&quot;:&quot;0&quot;,&quot;page&quot;:&quot;1&quot;,&quot;max&quot;:&quot;0&quot;,&quot;min&quot;:&quot;0&quot;,&quot;exclusive_options&quot;:&quot;&quot;,&quot;logic_condition&quot;:null,&quot;redirect_relation&quot;:null,&quot;is_logic_show_question&quot;:&quot;0&quot;,&quot;vote_type_id&quot;:&quot;0&quot;,&quot;type&quot;:&quot;\u6587\u672c\u6846&quot;,&quot;choice&quot;:false,&quot;logic_hide&quot;:0,&quot;value&quot;:null},{&quot;id&quot;:&quot;242193&quot;,&quot;survey_id&quot;:&quot;129981&quot;,&quot;content&quot;:&quot;7. \u77e9\u9635\u5355\u9009\u9898&quot;,&quot;type_id&quot;:9,&quot;order&quot;:&quot;7&quot;,&quot;has_other&quot;:&quot;N&quot;,&quot;required&quot;:&quot;Y&quot;,&quot;title_quote&quot;:&quot;N&quot;,&quot;choice_quote&quot;:&quot;0&quot;,&quot;page&quot;:&quot;1&quot;,&quot;max&quot;:&quot;0&quot;,&quot;min&quot;:&quot;0&quot;,&quot;exclusive_options&quot;:&quot;&quot;,&quot;logic_condition&quot;:null,&quot;redirect_relation&quot;:null,&quot;is_logic_show_question&quot;:&quot;0&quot;,&quot;vote_type_id&quot;:&quot;0&quot;,&quot;type&quot;:&quot;\u5355\u9009\u77e9\u9635&quot;,&quot;choice&quot;:[{&quot;id&quot;:&quot;925478&quot;,&quot;question_id&quot;:&quot;242193&quot;,&quot;order&quot;:&quot;1&quot;,&quot;real_choice_id&quot;:&quot;0&quot;,&quot;content&quot;:&quot;\u9009\u98791&quot;,&quot;value&quot;:&quot;0&quot;,&quot;is_other&quot;:&quot;N&quot;,&quot;required&quot;:&quot;0&quot;},{&quot;id&quot;:&quot;925479&quot;,&quot;question_id&quot;:&quot;242193&quot;,&quot;order&quot;:&quot;2&quot;,&quot;real_choice_id&quot;:&quot;0&quot;,&quot;content&quot;:&quot;\u9009\u98792&quot;,&quot;value&quot;:&quot;0&quot;,&quot;is_other&quot;:&quot;N&quot;,&quot;required&quot;:&quot;0&quot;}],&quot;radio_array_title&quot;:[{&quot;id&quot;:&quot;66424&quot;,&quot;question_id&quot;:&quot;242193&quot;,&quot;content&quot;:&quot;\u77e9\u9635\u884c1&quot;,&quot;order&quot;:&quot;1&quot;,&quot;other_content&quot;:[]},{&quot;id&quot;:&quot;66425&quot;,&quot;question_id&quot;:&quot;242193&quot;,&quot;content&quot;:&quot;\u77e9\u9635\u884c2&quot;,&quot;order&quot;:&quot;2&quot;,&quot;other_content&quot;:[]}],&quot;logic_hide&quot;:0,&quot;value&quot;:[null,null]},{&quot;id&quot;:&quot;242194&quot;,&quot;survey_id&quot;:&quot;129981&quot;,&quot;content&quot;:&quot;8. \u77e9\u9635\u591a\u9009\u9898&quot;,&quot;type_id&quot;:13,&quot;order&quot;:&quot;8&quot;,&quot;has_other&quot;:&quot;N&quot;,&quot;required&quot;:&quot;Y&quot;,&quot;title_quote&quot;:&quot;N&quot;,&quot;choice_quote&quot;:&quot;0&quot;,&quot;page&quot;:&quot;1&quot;,&quot;max&quot;:&quot;0&quot;,&quot;min&quot;:&quot;0&quot;,&quot;exclusive_options&quot;:&quot;&quot;,&quot;logic_condition&quot;:null,&quot;redirect_relation&quot;:null,&quot;is_logic_show_question&quot;:&quot;0&quot;,&quot;vote_type_id&quot;:&quot;0&quot;,&quot;type&quot;:null,&quot;choice&quot;:[{&quot;id&quot;:&quot;925480&quot;,&quot;question_id&quot;:&quot;242194&quot;,&quot;order&quot;:&quot;1&quot;,&quot;real_choice_id&quot;:&quot;0&quot;,&quot;content&quot;:&quot;\u9009\u98791&quot;,&quot;value&quot;:&quot;0&quot;,&quot;is_other&quot;:&quot;N&quot;,&quot;required&quot;:&quot;0&quot;},{&quot;id&quot;:&quot;925481&quot;,&quot;question_id&quot;:&quot;242194&quot;,&quot;order&quot;:&quot;2&quot;,&quot;real_choice_id&quot;:&quot;0&quot;,&quot;content&quot;:&quot;\u9009\u98792&quot;,&quot;value&quot;:&quot;0&quot;,&quot;is_other&quot;:&quot;N&quot;,&quot;required&quot;:&quot;0&quot;}],&quot;checkbox_array_title&quot;:[{&quot;id&quot;:&quot;66426&quot;,&quot;question_id&quot;:&quot;242194&quot;,&quot;content&quot;:&quot;\u77e9\u9635\u884c1&quot;,&quot;order&quot;:&quot;1&quot;,&quot;other_content&quot;:[]},{&quot;id&quot;:&quot;66427&quot;,&quot;question_id&quot;:&quot;242194&quot;,&quot;content&quot;:&quot;\u77e9\u9635\u884c2&quot;,&quot;order&quot;:&quot;2&quot;,&quot;other_content&quot;:[]}],&quot;logic_hide&quot;:0,&quot;value&quot;:[[false,false],[false,false]]},{&quot;id&quot;:&quot;242195&quot;,&quot;survey_id&quot;:&quot;129981&quot;,&quot;content&quot;:&quot;fffff&quot;,&quot;type_id&quot;:10,&quot;order&quot;:&quot;9&quot;,&quot;has_other&quot;:&quot;N&quot;,&quot;required&quot;:&quot;N&quot;,&quot;title_quote&quot;:&quot;N&quot;,&quot;choice_quote&quot;:&quot;0&quot;,&quot;page&quot;:&quot;1&quot;,&quot;max&quot;:&quot;0&quot;,&quot;min&quot;:&quot;0&quot;,&quot;exclusive_options&quot;:&quot;&quot;,&quot;logic_condition&quot;:null,&quot;redirect_relation&quot;:null,&quot;is_logic_show_question&quot;:&quot;0&quot;,&quot;vote_type_id&quot;:&quot;0&quot;,&quot;type&quot;:&quot;\u7ae0\u8282\u5206\u9694\u6807\u9898&quot;,&quot;choice&quot;:false,&quot;logic_hide&quot;:0,&quot;value&quot;:null}]}],&quot;page_count&quot;:1,&quot;logic_condition&quot;:{&quot;logic_condition_relation&quot;:[],&quot;logic_show_relation&quot;:[]},&quot;redirect_relation&quot;:{&quot;242187&quot;:{&quot;925468&quot;:{&quot;242189&quot;:1}}},&quot;type&quot;:0,&quot;scene&quot;:2}, 0, {&quot;id&quot;:&quot;129981&quot;,&quot;pro_name&quot;:&quot;\u65b9\u65b9\u6cd5&quot;,&quot;status&quot;:&quot;4&quot;,&quot;score&quot;:&quot;0&quot;,&quot;bonus_score&quot;:&quot;0&quot;,&quot;start_date&quot;:&quot;2016-10-08&quot;,&quot;end_date&quot;:&quot;2016-10-15&quot;,&quot;vote_type&quot;:0,&quot;test_content&quot;:&quot;\u6b22\u8fce\u53c2\u52a0\u8c03\u67e5\uff01\u7b54\u5377\u6570\u636e\u4ec5\u7528\u4e8e\u7edf\u8ba1\u5206\u6790\uff0c\u8bf7\u653e\u5fc3\u586b\u5199\u3002\u9898\u76ee\u9009\u9879\u65e0\u5bf9\u9519\u4e4b\u5206\uff0c\u6309\u7167\u5b9e\u9645\u60c5\u51b5\u9009\u62e9\u5373\u53ef\u3002\u611f\u8c22\u60a8\u7684\u5e2e\u52a9\uff01&quot;,&quot;viewResult&quot;:0,&quot;isClosed&quot;:0,&quot;isUnlocked&quot;:true,&quot;isOnline&quot;:true,&quot;publish_time&quot;:&quot;2016-10-09 15:47:01&quot;,&quot;type&quot;:0,&quot;telephone_filter&quot;:0,&quot;tester_count&quot;:&quot;0&quot;,&quot;tester_status&quot;:1,&quot;token&quot;:&quot;d08e&quot;,&quot;referer&quot;:null,&quot;platform&quot;:&quot;1&quot;})" ng-cloak>*@
+                <a class="survey-paper-clip"></a>
+                <div ng-if="type != 1">
+                    <div class="survey-progress-bar" ng-if="process.total > 0">
+                        <div class="survey-progress-activebar" ng-style="{width: process.percent + '%'}">
+                            <span ng-if="process.percent > 15" ng-bind="process.percent + '%'"></span>
+                        </div>
+                    </div>
+                </div>
+                <div ng-switch="type">
+                    <div ng-switch-when="1">
+                        <div class="survey-wrap">
+                            <div class="survey-title" ng-bind="project.pro_name"></div>
+                            <div class="survey-desciption-tip clearfix">
+                                <div class="fl">参与人数：<span ng-bind="project.tester_count"></span>人</div>
+                                <div class="fr" ng-if="project.status >= 4">发布时间：<span ng-bind="formatDate(project.publish_time)"></span></div>
+                            </div>
+                            <div class="survey-desciption mt20">
+                                <div ng-bind-html="trustAsHtml(project.test_content)"></div>
+                            </div>
+                            <div class="survey-vote-wrap">
+                                <div class="survey-vote-question-wrap" ng-class="{'disabled': project.isClosed,'view-result': project.isClosed && project.viewResult}">
+                                    <div class="survey-page" ng-repeat="page in pages" ng-show="page.index==selectedPage">
+                                        <div class="survey-question" ng-repeat="question in page.list" ng-hide="question.logic_hide>0">
+                                            <div class="survey-question-tip" ng-if="question.type_id == 8 && question.tip" ng-bind="question.tip"></div>
+                                            <div class="must-do" ng-show="question.passed==false">请按要求作答</div>
+                                            <div class="survey-question-content" ng-if="question.type_id!=10">
+
+                                                <div class="survey-question-radio" ng-if="question.vote_type_id == 1">
+                                                    <div class="survey-question-radio-choice" ng-repeat="choice in question.choice" ng-click="radioSelect(question, $index, choice)">
+                                                        <div ng-class="{false: 'radio-image', true: 'radio-image-check'}[question.value==$index]"></div>
+                                                        <label class="survey-show-as-html" ng-bind-html="trustAsHtml(choice.content)"></label>
+                                                        <div class="survey-question-progress-wrap" ng-class="{'survey-question-progress-vote-wrap': question.vote_type_id==3 || question.vote_type_id==4}" ng-if="project.isClosed && project.viewResult">
+                                                            <div class="survey-question-progress-bar">
+                                                                <div class="survey-question-progress-activebar" ng-style="{width: choice.userPercent + '%'}"></div>
+                                                            </div>
+                                                            <div class="survey-question-progress-detail">
+                                                                <span class="survey-question-proccess-percent"><span ng-bind="choice.userPercent"></span>%</span>
+                                                                <span>(<span ng-bind="choice.userCount"></span>)</span>
+                                                                <div class="survey-question-proccess-desc" ng-if="isChoiceSelect(question, $index, choice)">
+                                                                    <img src="~/Content/Survey/images/check.png">
+                                                                    <span>您的选项</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="survey-question-checkbox" ng-if="question.vote_type_id == 2">
+                                                    <div></div>
+                                                    <div class="survey-question-checkbox-choice" ng-repeat="choice in question.choice" ng-click="checkboxSelect(question, $index, choice)">
+                                                        <div ng-class="{false: 'checkbox-image', true: 'checkbox-image-check'}[question.value[$index]==true]"></div>
+                                                        <label class="survey-show-as-html" ng-bind-html="trustAsHtml(choice.content)"></label>
+                                                        <div class="survey-question-progress-wrap" ng-class="{'survey-question-progress-vote-wrap': question.vote_type_id==3 || question.vote_type_id==4}" ng-if="project.isClosed && project.viewResult">
+                                                            <div class="survey-question-progress-bar">
+                                                                <div class="survey-question-progress-activebar" ng-style="{width: choice.userPercent + '%'}"></div>
+                                                            </div>
+                                                            <div class="survey-question-progress-detail">
+                                                                <span class="survey-question-proccess-percent"><span ng-bind="choice.userPercent"></span>%</span>
+                                                                <span>(<span ng-bind="choice.userCount"></span>)</span>
+                                                                <div class="survey-question-proccess-desc" ng-if="isChoiceSelect(question, $index, choice)">
+                                                                    <img src="~/Content/Survey/images/check.png">
+                                                                    <span>您的选项</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="survey-question-radio-vote" ng-if="question.vote_type_id == 3">
+                                                    <div class="survey-question-radio-choice" ng-repeat="choice in question.choice" ng-class="{'survey-question-choice-check':question.value==$index}">
+                                                        <div class="survey-question-radio-choice-img"><img ng-src="{{choice.contentArr[1]}}"></div>
+                                                        <div class="survey-question-radio-choice-text" ng-click="radioSelect(question, $index, choice)">
+                                                            <div ng-class="{false: 'radio-image', true: 'radio-image-check'}[question.value==$index]"></div>
+                                                            <label class="survey-show-as-html" ng-bind-html="trustAsHtml(choice.contentArr[0])" title="{{choice.contentArr[0]}}"></label>
+                                                        </div>
+                                                        <div class="survey-question-progress-wrap" ng-class="{'survey-question-progress-vote-wrap': question.vote_type_id==3 || question.vote_type_id==4}" ng-if="project.isClosed && project.viewResult">
+                                                            <div class="survey-question-progress-bar">
+                                                                <div class="survey-question-progress-activebar" ng-style="{width: choice.userPercent + '%'}"></div>
+                                                            </div>
+                                                            <div class="survey-question-progress-detail">
+                                                                <span class="survey-question-proccess-percent"><span ng-bind="choice.userPercent"></span>%</span>
+                                                                <span>(<span ng-bind="choice.userCount"></span>)</span>
+                                                                <div class="survey-question-proccess-desc" ng-if="isChoiceSelect(question, $index, choice)">
+                                                                    <img src="~/Content/Survey/images/check.png">
+                                                                    <span>您的选项</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="survey-question-checkbox-vote" ng-if="question.vote_type_id == 4">
+                                                    <div class="survey-question-checkbox-choice" ng-repeat="choice in question.choice" ng-class="{'survey-question-choice-check':question.value[$index]==true}">
+                                                        <div class="survey-question-checkbox-choice-img"><img ng-src="{{choice.contentArr[1]}}"></div>
+                                                        <div class="survey-question-checkbox-choice-text" ng-click="checkboxSelect(question, $index, choice)">
+                                                            <div ng-class="{false: 'checkbox-image', true: 'checkbox-image-check'}[question.value[$index]==true]"></div>
+                                                            <label class="survey-show-as-html" ng-bind-html="trustAsHtml(choice.contentArr[0])" title="{{choice.contentArr[0]}}"></label>
+                                                        </div>
+                                                        <div class="survey-question-progress-wrap" ng-class="{'survey-question-progress-vote-wrap': question.vote_type_id==3 || question.vote_type_id==4}" ng-if="project.isClosed && project.viewResult">
+                                                            <div class="survey-question-progress-bar">
+                                                                <div class="survey-question-progress-activebar" ng-style="{width: choice.userPercent + '%'}"></div>
+                                                            </div>
+                                                            <div class="survey-question-progress-detail">
+                                                                <span class="survey-question-proccess-percent"><span ng-bind="choice.userPercent"></span>%</span>
+                                                                <span>(<span ng-bind="choice.userCount"></span>)</span>
+                                                                <div class="survey-question-proccess-desc" ng-if="isChoiceSelect(question, $index, choice)">
+                                                                    <img src="~/Content/Survey/images/check.png">
+                                                                    <span>您的选项</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div ng-switch="scene">
+                                            <div ng-switch-when="1">
+                                                <div class="survey-page-bottom" ng-if="project.tester_status == 1 && project.surveyDisabled.status == 0">
+                                                    <div class="survey-timer" ng-show="page.restTime>0">投票（<span ng-bind="page.restTime"></span>s）</div>
+                                                    <div class="survey-submit-page" ng-show="(page.index==pageCount)&&(!isClosed)&&page.restTime==0" ng-click="startSurvey(page.list)">投票</div>
+                                                </div>
+                                                <div ng-if="project.tester_status !=1 || project.surveyDisabled.status != 0">
+                                                    <div class="survey-index-btn-wrap">
+                                                        <a class="survey-index-btn" ng-click="startSurvey()" ng-bind="startBtn.name" ng-class="startBtn.status"></a>
+                                                        <div class="survey-tip-icon-outer-wrap survey-info-btn-cheat" ng-if="project.tester_status < 2 && project.surveyDisabled.status != 0" ng-bind="project.surveyDisabled.msg"></div>
+                                                    </div>
+                                                </div>
+                                                <div class="survey-vote-btn-wrap" ng-if="!isSelfcollection && project.isClosed && project.goNext">
+                                                    <a class="survey-finish-btn" ng-href="{{nextProUrl}}">填写下一份问卷（<span ng-bind="seconds"></span>s）</a>
+                                                </div>
+                                            </div>
+                                            <div ng-switch-when="2">
+                                                <div class="survey-page-bottom">
+                                                    <div class="survey-submit-page" ng-show="(page.index==pageCount)&&(!isClosed)&&(!isDisabled)" ng-click="submitSelf(page.list)" ng-class="{'survey-btn-disabled': project.status!=4}">投票</div>
+                                                    <div class="survey-index-btn-wrap" ng-if="isClosed">
+                                                        <a class="survey-index-btn disabled">已完成投票</a>
+                                                        <div class="survey-index-share">
+                                                            <span>分享到：</span>
+                                                            <div class="bdsharebuttonbox bdshare-button-style0-16">
+                                                                <a href="#" class="bds_more" data-cmd="more"></a>
+                                                                <a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+                                                                <a href="#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博"></a>
+                                                                <a href="#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+                                                                <a href="#" class="bds_renren" data-cmd="renren" title="分享到人人网"></a>
+                                                                <a href="#" class="bds_douban" data-cmd="douban" title="分享到豆瓣网"></a>
+                                                                <a href="#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div ng-switch-default>
+                        <div class="survey-wrap">
+                            <div class="survey-title" ng-bind="project.pro_name"></div>
+                            <div class="survey-desciption mt20">
+                                <div ng-bind-html="trustAsHtml(project.test_content)"></div>
+                                <div></div>
+                            </div>
+                            <div class="survey-question-wrap">
+                                <div class="survey-page" ng-repeat="page in pages" ng-show="page.index==selectedPage">
+                                    <div class="survey-question" id="survey-question-{{question.page}}-{{question.order}}" ng-repeat="question in page.list" ng-hide="question.logic_hide>0">
+                                        <div class="survey-question-title" ng-class="{'survey-question-paragraph-title': question.type_id == 10, 'active': currentQuestion != null && currentQuestion.id == question.id}">
+                                            <div class="survey-show-as-html" ng-bind-html="trustAsHtml(question.content)" ng-if="question.title_quote != 'Y'"></div>
+                                            <div class="survey-show-as-html" ng-bind-html="trustAsHtml(replaceTitleQuote(question.content))" ng-if="question.title_quote == 'Y'"></div>
+                                            <span class="must-do" ng-bind="question.tip"></span>
+                                        </div>
+                                        <div class="must-do" ng-show="question.passed==false && question.type_id!=9 && question.type_id!=13" ">请按要求作答</div>
+                                        <div class="survey-question-content" ng-if="question.type_id!=10 && question.content_show==1">
+                                            <div class="survey-question-text" ng-if="question.type_id==1">
+                                                <input type="text" ng-model="question.value" ng-disabled="isClosed" ng-blur="answerQuestion(question)" ng-focus="changeQuestion(question);">
+                                            </div>
+                                            <div class="survey-question-textarea" ng-if="question.type_id==2">
+                                                <textarea ng-model="question.value" ng-disabled="isClosed" ng-blur="answerQuestion(question)" ng-focus="changeQuestion(question);"></textarea>
+                                            </div>
+                                            <div class="survey-question-radio" ng-if="question.type_id==6">
+                                                <div class="survey-question-radio-choice" ng-class="{'survey-question-radio-choice-other': choice.is_other=='Y'}" ng-repeat="choice in question.choice" ng-hide="choice.hide === 1" ng-click="answerQuestion(question, $index, choice)">
+                                                    <div ng-class="{false: 'radio-image', true: 'radio-image-check'}[question.value==$index]"></div>
+                                                    <label class="survey-show-as-html" ng-bind-html="trustAsHtml(choice.content)"></label>
+                                                    <input data-role="none" type="text" ng-if="choice.is_other=='Y'" class="survey-question-other" ng-value="choice.other_content" ng-model="choice.other_content">
+                                                    <span ng-if="choice.is_other=='Y' && choice.required == 1">(必填)</span>
+                                                </div>
+                                            </div>
+                                            <div class="survey-question-select" ng-if="question.type_id==7">
+                                                <select style="width: 200px" ng-model="question.value" ng-options="choice.content for choice in filterHide(question.choice)" ng-change="answerQuestion(question, 0, choice)" ng-disabled="isClosed"></select>
+                                            </div>
+                                            <div class="survey-question-checkbox" ng-if="question.type_id==8">
+                                                <div class="survey-question-checkbox-choice" ng-class="{'survey-question-checkbox-choice-other': choice.is_other=='Y'}" ng-hide="choice.hide === 1" ng-repeat="choice in question.choice" ng-click="answerQuestion(question, $index, choice)">
+                                                    <div ng-class="{false: 'checkbox-image', true: 'checkbox-image-check'}[question.value[$index]==true]"></div>
+                                                    <label class="survey-show-as-html" ng-bind-html="trustAsHtml(choice.content)"></label>
+                                                    <input data-role="none" type="text" ng-if="choice.is_other=='Y'" class="survey-question-other" ng-value="choice.other_content" ng-model="choice.other_content" ng-click="stopPropagation($event)">
+                                                    <span ng-if="choice.is_other=='Y' && choice.required == 1">(必填)</span>
+                                                </div>
+                                            </div>
+                                            <div class="survey-question-matrix" ng-if="question.type_id==9">
+                                                <table style="font-size: 14px; width: 100%;">
+                                                    <tr>
+                                                        <td></td>
+                                                        <td ng-repeat="choice in question.choice" ng-bind-html="trustAsHtml(choice.content)"></td>
+                                                    </tr>
+                                                    <tr ng-repeat="(row,subQuestion) in question.radio_array_title" class="survey-question-matrix-choice">
+                                                        <td>
+                                                            <span ng-bind-html="trustAsHtml(subQuestion.content)" class="survey-question-matrix-title"></span>
+                                                            <div class="must-do" ng-show="subQuestion.passed==false" style="padding-left: 40px">请按要求作答</div>
+                                                        </td>
+                                                        <td ng-repeat="choice in question.choice" ng-click="answerQuestion(question, $index, row)">
+                                                            <div ng-class="{false: 'radio-image', true: 'radio-image-check'}[question.value[row]==$index]"></div>
+                                                            <input type="text" ng-if="choice.is_other=='Y'" class="survey-question-other" ng-value="subQuestion.other_content[$index]" ng-model="subQuestion.other_content[$index]" ng-disabled="isClosed" ng-click="stopPropagation($event)">
+                                                            <span ng-if="choice.is_other=='Y' && choice.required == 1">(必填)</span>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+
+                                            </div>
+                                            <div class="survey-question-matrix" ng-if="question.type_id==13">
+                                                <table style="font-size: 14px; width: 100%;">
+                                                    <tr>
+                                                        <td></td>
+                                                        <td ng-repeat="choice in question.choice" ng-bind-html="trustAsHtml(choice.content)"></td>
+                                                    </tr>
+                                                    <tr ng-repeat="(row,subQuestion) in question.checkbox_array_title" class="survey-question-matrix-choice">
+                                                        <td>
+                                                            <span ng-bind-html="trustAsHtml(subQuestion.content)" class="survey-question-matrix-title"></span>
+                                                            <div class="must-do" ng-show="subQuestion.passed==false" style="padding-left: 40px">请按要求作答</div>
+                                                        </td>
+                                                        <td ng-repeat="choice in question.choice" ng-click="answerQuestion(question, $index, row)">
+                                                            <div ng-class="{false: 'checkbox-image', true: 'checkbox-image-check'}[question.value[row][$index]==true]"></div>
+                                                            <input type="text" ng-if="choice.is_other=='Y'" class="survey-question-other" ng-value="subQuestion.other_content[$index]" ng-model="subQuestion.other_content[$index]" ng-disabled="isClosed" ng-click="stopPropagation($event)">
+                                                            <span ng-if="choice.is_other=='Y' && choice.required == 1">(必填)</span>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div class="survey-question-upload" ng-if="question.type_id==12">
+                                                <div class="survey-question-upload-item" ng-repeat="item in question.value">
+                                                    <div ng-mouseenter="item.active=true" ng-mouseleave="item.active=false">
+                                                        <img ng-src="{{item.value}}" class="survey-question-upload-img">
+                                                        <a class="survey-question-upload-img-close" ng-show="item.active" ng-click="deleteQuestionItem(question, question.value, $index)"></a>
+                                                    </div>
+                                                </div>
+                                                <div class="survey-question-upload-item" ng-if="question.value.length < question.max">
+                                                    <div class="survey-question-upload-btn">
+                                                        <div class="survey-question-upload-inner">
+                                                            <img src="~/Content/Survey/images/add.png">
+                                                        </div>
+                                                        <input type="file" class="survey-question-upload-file" nv-file-select uploader="fileUploader" options="{question:question}" multiple ng-click="answerQuestion(question)" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="survey-question-radio-img" ng-if="question.type_id==14">
+                                                <div class="survey-question-radio-choice" ng-repeat="choice in question.choice" ng-class="{'survey-question-choice-check':question.value==$index}">
+                                                    <div class="survey-question-radio-choice-img"><img ng-src="{{choice.contentArr[1]}}"></div>
+                                                    <div class="survey-question-radio-choice-text" ng-click="answerQuestion(question, $index, choice)">
+                                                        <div ng-class="{false: 'radio-image', true: 'radio-image-check'}[question.value==$index]"></div>
+                                                        <label class="survey-show-as-html" ng-bind-html="trustAsHtml(choice.contentArr[0])" title="{{choice.contentArr[0]}}"></label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="survey-question-checkbox-img" ng-if="question.type_id==15">
+                                                <div class="survey-question-checkbox-choice" ng-repeat="choice in question.choice" ng-class="{'survey-question-choice-check':question.value[$index]==true}">
+                                                    <div class="survey-question-checkbox-choice-img"><img ng-src="{{choice.contentArr[1]}}"></div>
+                                                    <div class="survey-question-checkbox-choice-text" ng-click="answerQuestion(question, $index, choice)">
+                                                        <div ng-class="{false: 'checkbox-image', true: 'checkbox-image-check'}[question.value[$index]==true]"></div>
+                                                        <label class="survey-show-as-html" ng-bind-html="trustAsHtml(choice.contentArr[0])" title="{{choice.contentArr[0]}}"></label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="survey-choice-quote-tip" ng-if="question.content_show==0" ng-bind-html="trustAsHtml(getQuoteTip(question))"></div>
+                                    </div>
+                                    <div class="survey-page-bottom" ng-switch="scene">
+                                        <div ng-switch-when="1">
+                                            <div class="survey-last-page" ng-click="selectPage(selectedPage-1)" ng-show="selectedPage>1">上一页</div>
+                                            <div class="survey-timer" ng-show="page.restTime>0"><span ng-bind="page.restTime"></span>s</div>
+                                            <div class="survey-next-page" ng-click="checkNextPage(page.list)" ng-hide="page.index==pageCount||page.restTime!=0">下一页</div>
+                                            <div class="survey-submit-page" ng-show="(page.index==pageCount)&&(!isClosed)&&page.restTime==0" ng-click="submit(page.list)">提交</div>
+                                            <div class="survey-page-index"><span ng-bind="selectedPage"></span>/<span ng-bind="pageCount"></span>页</div>
+                                        </div>
+                                        <div ng-switch-when="2">
+                                            <div class="survey-last-page" ng-click="selectPage(selectedPage-1)" ng-show="selectedPage>1 && (!isDisabled)">上一页</div>
+                                            <div class="survey-next-page" ng-click="checkNextPage(page.list)" ng-hide="page.index==pageCount">下一页</div>
+                                            <div class="survey-submit-page" ng-show="(page.index==pageCount)&&(!isDisabled)" ng-click="submitSelf(page.list)">提交</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+

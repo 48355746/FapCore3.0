@@ -1,0 +1,153 @@
+﻿@{
+    ViewBag.Title = "问卷报表";
+    Layout = "~/Views/Shared/_Layout_blank.cshtml";
+}
+
+<link href="~/Content/Survey/css/select.min.css" rel="stylesheet" />
+<link href="~/Content/Survey/css/common.css" rel="stylesheet" />
+<link href="~/Content/Survey/css/layout_eddaccc.css" rel="stylesheet" />
+<link href="~/Content/Survey/css/global.css" rel="stylesheet" />
+<link href="~/Content/Survey/css/sidebar.css" rel="stylesheet" />
+<link href="~/Content/Survey/css/review_tester_response.css" rel="stylesheet" />
+<link href="~/Content/Survey/css/loading-bar.css" rel="stylesheet" />
+<link href="~/Content/Survey/css/upload.css" rel="stylesheet" />
+<link href="~/Content/Survey/css/upload_img.css" rel="stylesheet" />
+<link href="~/Content/Survey/css/survey_bread_crumbs.css" rel="stylesheet" />
+
+<script>
+    var response_survey = @Html.Raw(ViewBag.Response);
+</script>
+<script src="~/Content/Survey/js/angular.min.js"></script>
+<script src="~/Content/Survey/js/loading-bar.js"></script>
+<script src="~/Content/Survey/js/review_tester.js"></script>
+
+<!-- Content================================================== -->
+<div id="bce-main">
+    <div class="main">
+        <div id="survey-content">
+            <div class="edit-survey-wrap" id="edit-survey-wrap" ng-app="response_survey" ng-controller="response_survey_controller" ng-cloak>
+                <div class="response-survey-header">
+                    <label>
+                        <span>序号：</span>
+                        <span ng-bind="res_survey.info.res_order" class="res-survey-header-info"></span>
+                        <span ng-bind="info_user" class="res-survey-header-info"></span>
+                        <span ng-bind="info_time" class="res-survey-header-info"></span>
+                    </label>
+                </div>
+                <div class="response-survey-content">
+                    <div class="module" ng-hide="question.type_id==11" ng-repeat="question in res_survey.question">
+                        <label class="question-title"><span ng-if="question.required == 'Y'" class="important_spns">*</span><span ng-bind-html="question.content|unsafe"></span></label>
+                        <div ng-hide="question.type_id==10">
+                            <ul ng-show="question.type_id==6">
+                                <li ng-repeat="choice in question.choice" ng-hide="choice.hide === 1">
+                                    <label class="question-choice" ng-if="choice.selected==true">
+                                        <span ng-bind-html="choice.content|unsafe" class="radio-seclected"></span>
+                                        <span class="other_content" ng-show="choice.is_other=='Y'" ng-bind-html="choice.other_content|unsafe"></span>
+                                    </label>
+                                    <label class="question-choice" ng-if="choice.selected==false">
+                                        <span ng-bind-html="choice.content|unsafe" class="radio"></span>
+                                        <span class="other_content" ng-show="choice.is_other=='Y'" ng-bind-html="choice.other_content|unsafe"></span>
+                                    </label>
+                                </li>
+                            </ul>
+                            <select ng-show="question.type_id==7" class="question-choice" disabled="disabled" style="width:254px">
+                                <option ng-show="choice.selected==true" ng-repeat="choice in question.choice" ng-model="choice.id" ng-selected="choice.selected==true" ng-bind-html="choice.content|unsafe"></option>
+                                <option ng-show="!choice.selected"></option>
+                            </select>
+                            <!--  <select class="question-choice" disabled="disabled" style="width:254px" ng-show="question.type_id==7" ng-model="choice.id" ng-options="choice.content for choice in question.choice" ng-selected="choice.selected==true"> </select>
+                            -->
+                            <ul ng-show="question.type_id==8">
+                                <li ng-repeat="choice in question.choice" ng-hide="choice.hide === 1">
+                                    <label class="question-choice" ng-if="choice.selected==true">
+                                        <span ng-bind-html="choice.content|unsafe" class="checbox-seclected"></span>
+                                        <span ng-show="choice.is_other=='Y'" class="other_content" ng-bind-html="choice.other_content|unsafe"></span>
+                                    </label>
+                                    <label class="question-choice" ng-if="choice.selected!=true">
+                                        <span ng-bind-html="choice.content|unsafe" class="checbox"></span>
+                                        <span ng-show="choice.is_other=='Y'" class="other_content" ng-bind="choice.other_content"></span>
+                                    </label>
+                                </li>
+                            </ul>
+                            <label ng-show="question.type_id==1" class="question-choice">
+                                <input type="text" class="single-input" ng-model="question.response_text" disabled="disabled" />
+                            </label>
+                            <label ng-show="question.type_id==2" class="question-choice">
+                                <textarea class="multi-input" ng-bind="question.response_text" disabled="disabled"></textarea>
+                            </label>
+                            <ul ng-show="question.type_id==9">
+                                <li class="question-choice">
+                                    <table style="border-collapse: collapse;">
+                                        <tr>
+                                            <td style="width:237px">&nbsp</td>
+                                            <td ng-repeat="choice in question.choice" ng-bind-html="choice.content|unsafe"></td>
+                                        </tr>
+                                        <tr ng-repeat="(row,subQuestion) in question.radio_array_title">
+                                            <td ng-bind-html="subQuestion.content|unsafe" style="width:237px"></td>
+                                            <td ng-repeat="choice in question.choice">
+                                                <img src="/Content/Survey/images/radio_checked.png" ng-show="subQuestion.selected==choice.id" style="  margin: 5px;">
+                                                <img src="/Content/Survey/images/radio.png" ng-show="subQuestion.selected!=choice.id" style="  margin: 5px;">
+                                                <span ng-show="choice.is_other=='Y'" class="other_content" ng-bind-html="subQuestion.other_content[choice.id]|unsafe"></span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </li>
+                            </ul>
+                            <ul ng-show="question.type_id==13">
+                                <li class="question-choice">
+                                    <table style="border-collapse: collapse;">
+                                        <tr>
+                                            <td style="width:237px">&nbsp</td>
+                                            <td ng-repeat="choice in question.choice" ng-bind-html="choice.content|unsafe"></td>
+                                        </tr>
+                                        <tr ng-repeat="(row,subQuestion) in question.checkbox_array_title">
+                                            <td ng-bind-html="subQuestion.content|unsafe" style="width:237px"></td>
+                                            <td ng-repeat="choice in question.choice">
+                                                <img src="/Content/Survey/images/checkbox_checked.png" ng-show="subQuestion.selected.indexOf(choice.id) > -1" style="  margin: 5px;">
+                                                <img src="/Content/Survey/images/checkbox.png" ng-show="subQuestion.selected.indexOf(choice.id) == -1" style="  margin: 5px;">
+                                                <span ng-show="choice.is_other=='Y'" class="other_content" ng-bind-html="subQuestion.other_content[choice.id]|unsafe"></span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </li>
+                            </ul>
+                            <div class="survey-question-upload survey-question-upload-view" ng-if="question.type_id==12">
+                                <div class="survey-question-upload-item" ng-repeat="item in question.response_text">
+                                    <div>
+                                        <img ng-src="{{item.value}}" class="survey-question-upload-img">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="survey-question-radio-img" ng-if="question.type_id==14">
+                                <div class="survey-question-radio-choice" ng-repeat="choice in question.choice">
+                                    <div class="survey-question-radio-choice-img"><img ng-src="{{choice.contentArr[1]}}"></div>
+                                    <div class="survey-question-radio-choice-text">
+                                        <span ng-class="{false: 'survey-radio', true: 'radio-seclected'}[choice.selected==true]"></span>
+                                        <label class="survey-show-as-html" ng-bind-html="trustAsHtml(choice.contentArr[0])" title="{{choice.contentArr[0]}}"></label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="survey-question-checkbox-img" ng-if="question.type_id==15">
+                                <div class="survey-question-checkbox-choice" ng-repeat="choice in question.choice">
+                                    <div class="survey-question-checkbox-choice-img"><img ng-src="{{choice.contentArr[1]}}"></div>
+                                    <div class="survey-question-checkbox-choice-text">
+                                        <span ng-class="{false: 'checbox', true: 'checbox-seclected'}[choice.selected==true]"></span>
+                                        <label class="survey-show-as-html" ng-bind-html="trustAsHtml(choice.contentArr[0])" title="{{choice.contentArr[0]}}"></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div id="res-prev" ng-hide="res_survey.info.res_order<=1">
+                    <img src="~/Content/Survey/images/survey_response_prev.png" alt="上一套问卷详情" ng-click="prevResponse()" />
+                </div>
+                <div id="res-next" ng-hide="res_survey.info.res_order>=res_survey.info.valid_survey_response">
+                    <img src="~/Content/Survey/images/survey_response_next.png" alt="下一套问卷详情" ng-click="nextResponse()">
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

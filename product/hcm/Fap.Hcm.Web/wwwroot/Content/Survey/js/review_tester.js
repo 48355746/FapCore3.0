@@ -27,8 +27,8 @@ function (e, s, r) {
     s.info_user = "答卷人：" + response_survey.info.user,
     s.info_time = "提交时间：" + response_survey.info.time,
     s.prevResponse = function () {
-        var r = basePath + "api/Survey/getSurveyResponsePrev?res_id=" + response_survey.info.id + "&survey_id=" + response_survey.info.survey_id + "&status=2&res_order=" + response_survey.info.res_order;
-        e.get(r).success(function (e) {
+        var url = basePath + "/System/Api/Survey/TesterPrev?res_id=" + response_survey.info.id + "&survey_id=" + response_survey.info.survey_id + "&status=2&res_order=" + response_survey.info.res_order;
+        e.get(url).success(function (e) {
             e && e.info && e.question && (response_survey = e, s.res_survey = e, angular.forEach(s.res_survey.question,
     function (e, r) {
         e.type_id = parseInt(e.type_id, 10),
@@ -53,8 +53,8 @@ function (e, s, r) {
         })
     },
     s.nextResponse = function () {
-        var r = basePath + "api/Survey/getSurveyResponseNext?res_id=" + response_survey.info.id + "&survey_id=" + response_survey.info.survey_id + "&status=2&res_order=" + response_survey.info.res_order;
-        e.get(r).success(function (e) {
+        var url = basePath + "/System/Api/Survey/TesterNext?res_id=" + response_survey.info.id + "&survey_id=" + response_survey.info.survey_id + "&status=2&res_order=" + response_survey.info.res_order;
+        e.get(url).success(function (e) {
             e && e.info && e.question && (response_survey = e, s.res_survey = e, angular.forEach(s.res_survey.question,
     function (e, r) {
         e.type_id = parseInt(e.type_id, 10),

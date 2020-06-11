@@ -20,12 +20,11 @@
             var ret = jQuery('#grid-@tableName').jqGrid('getRowData', cl);
             var fid = ret.Fid;
             de += "<a  href='javascript:void(0)' onclick='approvalBill(\"" + fid + "\")'>" + $.lang("handler", "办理") + "</a>  ";
-            de += "<a  href='javascript:void(0)' onclick='workflowChart(\"" + fid + "\")'>" + $.lang("flow_diagram", "流程图") + "</a>";
+            de += "<a  href='javascript:void(0)' onclick='workflowChart(\"@biz.WfProcessUid\",\"" + fid + "\")'>" + $.lang("flow_diagram", "流程图") + "</a>";
             jQuery('#grid-@tableName').jqGrid('setRowData', ids[i], { oper: de });
         }
         //总记录数
         var total = jQuery("#grid-@tableName").jqGrid('getGridParam', 'records');
-        debugger
         //更新显示条数
         //处理待审批计数
         counter(total);
@@ -61,35 +60,7 @@
     </div>
 </div>
 <script>
-     /**
-     * 流程图
-     * */
-    function workflowChart(fid) {
-        var processUid = '@biz.WfProcessUid';//流程
-        var openUrl = $.randomUrl(basePath + "/Workflow/Business/FlowChart?processUid=" + processUid + "&billUid=" + fid);
-        var width = parseInt($(window).innerWidth() * 0.8) + 'px';
-        var height = parseInt($(window).innerHeight() - 60) + 'px';
-        var index = layer.open({
-            type: 2,
-            title: '@biz.BizName',
-            shadeClose: true,
-            shade: 0.8,
-            maxmin: true, //开启最大化最小化按钮
-            skin: 'billskin',
-            btnAlign: 'c',
-            area: [width, height],
-            content: openUrl,
-            btn: ['关闭'],
-            yes: function (index, layero) {
-                layer.close(index);
-            }
-            , cancel: function () {
-                //右上角关闭回调
-
-                //return false 开启该代码可禁止点击该按钮关闭
-            }
-        });
-    }
+   
     function approvalBill(fid)
     {
         var agent = '@ViewBag.Agent';

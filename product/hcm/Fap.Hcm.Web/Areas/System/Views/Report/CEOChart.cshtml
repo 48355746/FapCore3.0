@@ -1,4 +1,5 @@
 ﻿@model IEnumerable<Fap.Core.Infrastructure.Model.RptChart>
+
 <div class="row">
     <div class="col-xs-12">
         <!-- PAGE CONTENT BEGINS -->
@@ -43,12 +44,26 @@
     </div>
 </div>
 <script>
-
     var scripts = [null, null]
     $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
         jQuery(function ($) {
+            //可视化加载
+            var observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        var $el = $(entry.target).find("div[name=fapChart]");
+                        loadChart($el);
+                        //移除监控
+                        observer.unobserve(entry.target);
+                    }
+                });
+            });
+            Array.from(document.querySelectorAll(".widget-container-col")).forEach(el => {
+                observer.observe(el);
+            });
+            //single page exist event
             $(document).one('ajaxloadstart.page', function (e) {
-
+                observer.disconnect();
             })
             $('.widget-container-col').sortable({
                 connectWith: '.widget-container-col',
@@ -97,7 +112,7 @@
                         }
                     })
                     option.series = series;
-                    fapChart.setOption(option);          
+                    fapChart.setOption(option);
 
                 });
             }
@@ -116,10 +131,24 @@
                 };
                 return option;
             }
-            $("div[name=fapChart]").each(function (i) {
-                let fid = $(this).data("fid");
-                let fchart = $(this).get(0);
-                let $widget= $(this).closest(".widget-box");
+            //$("div[name=fapChart]").each(function (i) {
+            //    let fid = $(this).data("fid");
+            //    let fchart = $(this).get(0);
+            //    let $widget= $(this).closest(".widget-box");
+            //    $.get(basePath + "/Core/Api/Echart/" + fid, function (rv) {
+            //        if (rv.success) {
+            //            var chart = echarts.init(fchart);
+            //            reSize($widget, chart);
+            //            DrawChart(JSON.parse(rv.data.chartModel), JSON.parse(rv.data.entityModel), chart);
+            //        } else {
+            //            boobox.alert(rv.msg);
+            //        }
+            //    });
+            //});
+            function loadChart($el) {
+                let fid = $el.data("fid");
+                let fchart = $el.get(0);
+                let $widget = $el.closest(".widget-box");
                 $.get(basePath + "/Core/Api/Echart/" + fid, function (rv) {
                     if (rv.success) {
                         var chart = echarts.init(fchart);
@@ -129,13 +158,13 @@
                         boobox.alert(rv.msg);
                     }
                 });
-            });
-            function reSize($widgetbox,fapChart) {
-                $widgetbox.on('fullscreen.ace.widget', function (e) {                
+            }
+            function reSize($widgetbox, fapChart) {
+                $widgetbox.on('fullscreen.ace.widget', function (e) {
                     fapChart.resize();
                 });
             }
-         
+
         })
     })
 </script>

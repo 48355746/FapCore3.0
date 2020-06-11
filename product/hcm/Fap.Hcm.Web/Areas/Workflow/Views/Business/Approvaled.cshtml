@@ -8,6 +8,7 @@
     Column column = new Column("oper");
     column.SetLabel("操作");
     column.SetSortable(false);
+    column.SetSearch(false);
     column.SetWidth(110);
     WfBusiness biz = ViewBag.Business;
 }
@@ -37,69 +38,11 @@
             var ret = jQuery('#grid-@tableName').jqGrid('getRowData', cl);
             var fid = ret.Fid;
 
-            de += "<a  href='javascript:void(0)' onclick='viewBill(\"" + fid + "\")'>"+$.lang("view","查看")+"</a>  ";
-            de += "<a  href='javascript:void(0)' onclick='workflowChart(\"" + fid + "\")'>"+$.lang("flow_diagram","流程图")+"</a>";
+            de += "<a  href='javascript:void(0)' onclick='viewApprovalBill(\"@biz.Fid\",\"" + fid + "\")'>"+$.lang("view","查看")+"</a>  ";
+            de += "<a  href='javascript:void(0)' onclick='workflowChart(\"@biz.WfProcessUid\",\"" + fid + "\")'>"+$.lang("flow_diagram","流程图")+"</a>";
 
             jQuery('#grid-@tableName').jqGrid('setRowData', ids[i], { oper: de });
         }
-    }
-     /**
-     * 流程图
-     * */
-    function workflowChart(fid) {
-        var processUid = '@biz.WfProcessUid';//流程
-        var openUrl = $.randomUrl(basePath + "/Workflow/Business/FlowChart?processUid=" + processUid + "&billUid=" + fid);
-        var width = parseInt($(window).innerWidth() * 0.8) + 'px';
-        var height = parseInt($(window).innerHeight() - 60) + 'px';
-        var index = layer.open({
-            type: 2,
-            title: '@biz.BizName',
-            shadeClose: true,
-            shade: 0.8,
-            maxmin: true, //开启最大化最小化按钮
-            skin: 'billskin',
-            btnAlign: 'c',
-            area: [width, height],
-            content: openUrl,
-            btn: [$.lang("close",'关闭')],
-            yes: function (index, layero) {
-                layer.close(index);
-            }
-            , cancel: function () {
-                //右上角关闭回调
-
-                //return false 开启该代码可禁止点击该按钮关闭
-            }
-        });
-    }
-
-    function viewBill(fid)
-    {
-        var agent = '@ViewBag.Agent';
-        var businessUid = '@biz.Fid';
-        var openUrl = basePath + "/Workflow/Business/ApprovalViewBill?billUid=" + fid + "&businessUid=" + businessUid + "&agent=" + agent;
-        var width = parseInt($(window).innerWidth() * 0.8) + 'px';
-        var height = parseInt($(window).innerHeight() - 60) + 'px';
-        var index = layer.open({
-            type: 2,
-            title: '@biz.BizName',
-            shadeClose: true,
-            shade: 0.8,
-            maxmin: true, //开启最大化最小化按钮
-            skin: 'billskin',
-            btnAlign: 'c',
-            area: [width, height],
-            content: openUrl,
-            btn: [$.lang("close",'关闭')]
-            , yes: function (index, layero) {
-                layer.close(index);
-            }
-            , cancel: function () {
-                //右上角关闭回调
-
-                //return false 开启该代码可禁止点击该按钮关闭
-            }
-        });
     }
     function refreshList()
     {

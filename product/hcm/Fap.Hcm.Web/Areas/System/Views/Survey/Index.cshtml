@@ -1,0 +1,125 @@
+﻿@model Fap.AspNetCore.ViewModel.JqGridViewModel
+@using Fap.AspNetCore.Controls.JqGrid
+@{
+    //增加操作列
+    Column column = new Column("oper");
+    column.SetLabel("操作");
+    column.SetWidth(210);
+}
+<title><fap-multilang lang-key="survey" default-content="调查问卷"></fap-multilang></title>
+
+<div class="row">
+    <div class="col-xs-12">
+        <div class="widget-box">
+            <div class="widget-header widget-header-flat">
+                <h4 class="widget-title"><fap-multilang lang-key="survey" default-content="调查问卷"></fap-multilang></h4>
+
+                <div class="widget-toolbar">
+                    <a href="#" data-action="fullscreen" class="orange2">
+                        <i class="ace-icon fa fa-expand"></i>
+                    </a>
+                </div>
+                <div class="widget-toolbar">
+                    <fap-button btn-tag="link" id="btnCopySurvey" content="复制" icon-before="fa fa-copy"></fap-button>
+
+                </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    <fap-grid id="survey" attach-column="column" grid-model="Model" auto-width="true" wrapper="widget-main" shrink-fit="false" on-grid-complete="initMenu"></fap-grid>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var scripts = [null,"/Content/Survey/js/clipboard.min.js","/Content/js/qrcode/jquery.qrcode.js","/Content/js/qrcode/qrcode.js",null]
+    $('.page-content-area').ace_ajax('loadScripts', scripts, function () {
+        jQuery(function ($) {
+            $("#btnCopySurvey").on(ace.click_event, function () {
+                var rw = getSelectedRow("grid-survey");
+                if (rw === null) {
+                    return;
+                }
+                bootbox.prompt({
+                    title: $.lang("please input your survey title!", "请输入调查问卷的标题"),
+                    inputType: 'text',
+                    value:rw.SurName,
+                    callback: function (result) {
+                        if (result !== null && result !== "") {
+                            $.post(basePath + "/System/Api/Survey/Copy", { fid: rw.Fid, surName: result }, function (rv) {
+                                if (rv.success) {
+                                    refreshGrid("grid-survey");
+                                } else {
+                                    $.msg("未找到此问卷");
+                                }
+                            })
+                        }
+                    }
+                });
+            });
+        })
+    })
+    var initMenu = function () {
+        var ids = jQuery("#grid-survey").jqGrid('getDataIDs');
+        for (var i = 0; i < ids.length; i++) {
+            var de = '';
+            var cl = ids[i];
+            var ret = jQuery('#grid-survey').jqGrid('getRowData', cl);
+            var fid = ret.Fid;
+            if (ret.SurStatus < 3) {
+                //de += "<a target='_blank' href='" + basePath + "/Survey/Survey/SurveyView/" + fid + "'>查看 </a> ";
+                de += "<a target='_blank' href='" + basePath + "/System/Survey/Design/" + fid + "'>设计 </a> ";
+                de += "<a href='javascript:void(0)' onclick='publishSurvey(\"" + fid + "\")'>发布 </a> ";
+            }
+            else if (ret.SurStatus == 5) {
+                //已完成
+                de += "<a target='_blank' href='" + basePath + "/System/Survey/Details/" + fid + "'>查看 </a>";
+                de += "<a target='_blank' href='" + basePath + "/System/Survey/Report/" + fid + "'>报表 </a>";
+            }
+            else {
+                de += "<a target='_blank' href='" + basePath + "/System/Survey/Details/" + fid + "'>查看 </a>";
+                de += "<a target='_blank' href='" + basePath + "/System/Survey/Report/" + fid + "'>报表 </a>";
+                de += "<a  href='javascript:void(0)' onclick='closeSurvey(\"" + fid + "\")'>关闭 </a>";
+            }
+            jQuery('#grid-survey').jqGrid('setRowData', ids[i], { oper: de });
+        }
+    }
+    function publishSurvey(surveyUid) {
+        bootboxWindow($.lang("publish_survey", "发布调查问卷"), basePath + "/System/Survey/Filter", {
+            publish: {
+                label: $.lang("publish", "发布"),
+                className: "btn-primary btn-link",
+                callback: function () {
+                    collectionSurvey(surveyUid, function () {
+                        refreshGrid("grid-survey");
+                    });
+                    return true;
+                }
+            },
+
+        }, { surveyUid: surveyUid }, function () {
+                setTimeout(function () {
+                    initEmployee();
+                    initQrCode(surveyUid);
+                }, 0);
+        })
+    }
+
+    var closeSurvey = function (fid) {
+        bootbox.confirm("项目关闭后，调研链接失效，数据将停止收集。", function (result) {
+            if (result) {
+                $.get("@Url.Content("~/System/Api/Survey/Close/")" + fid, function (rv) {
+                    if (rv.success) {
+                        $.msg(rv.msg);
+                        refreshGrid("grid-survey"); //重新载入
+                    } else {
+                        bootbox.alert(rv.msg);
+                    }
+                })
+            }
+        })
+    }
+
+</script>

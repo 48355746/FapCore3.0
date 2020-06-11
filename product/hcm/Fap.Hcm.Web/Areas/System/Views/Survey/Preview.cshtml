@@ -1,0 +1,294 @@
+﻿@model Fap.Core.Infrastructure.Model.Survey
+@{
+    ViewBag.Title = "预览问卷";
+    Layout = "~/Views/Shared/_Layout_blank.cshtml";
+}
+<link href="~/Content/Survey/survey.min.css" rel="stylesheet" asp-append-version="true" />
+<script src="~/Content/Survey/survey.min.js" asp-append-version="true"></script>
+<script src="~/Content/Survey/survey_preview.min.js" asp-append-version="true"></script>
+<div id="content-wrapper">
+    <input type="hidden" id="project-platform" value="4" />
+    <div class="content common-task-content ng-scope" ng-app="survey">
+        <div class="alert alert-block alert-warning" style="width: 980px; margin: 0 auto; margin-bottom: 20px">
+            <button type="button" class="close" data-dismiss="alert">
+                <i class="ace-icon fa fa-times"></i>
+            </button>
+
+            <i class="ace-icon fa fa-check orange"></i>
+
+            问卷当前为
+            <strong class="orange">
+                编辑
+            </strong>,
+            状态，填写答案不会记录系统，请勿将页面分享他人填答
+        </div>
+
+        <div class="survey-self-wrap">
+            <div class="survey-theme-blue">
+                <div class="survey-outer-wrap clearfix" ng-class="{'survey-vote-outer-wrap': type==1}" ng-controller="SurveyDetailController" ng-init="init(@Model.JSONPreview.Replace("\r","").Replace("\n",""))" ng-cloak>
+                    <a class="survey-paper-clip"></a>
+                    <div ng-if="type != 1">
+                        <div class="survey-progress-bar" ng-if="process.total > 0">
+                            <div class="survey-progress-activebar" ng-style="{width: process.percent + '%'}">
+                                <span ng-if="process.percent > 15" ng-bind="process.percent + '%'"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div ng-switch="type">
+                        <div ng-switch-when="1">
+                            <div class="survey-wrap">
+                                <div class="survey-title" ng-bind="project.pro_name"></div>
+                                <div class="survey-desciption-tip clearfix">
+                                    <div class="fl">参与人数：<span ng-bind="project.tester_count"></span>人</div>
+                                    <div class="fr" ng-if="project.status >= 4">发布时间：<span ng-bind="formatDate(project.publish_time)"></span></div>
+                                </div>
+                                <div class="survey-desciption mt20">
+                                    <div ng-bind-html="trustAsHtml(project.test_content)"></div>
+                                    <div></div>
+                                </div>
+                                <div class="survey-vote-wrap">
+                                    <div class="survey-vote-question-wrap" ng-class="{'disabled': project.isClosed,'view-result': project.isClosed && project.viewResult}">
+                                        <div class="survey-page" ng-repeat="page in pages" ng-show="page.index==selectedPage">
+                                            <div class="survey-question" ng-repeat="question in page.list" ng-hide="question.logic_hide>0">
+                                                <div class="survey-question-tip" ng-if="question.type_id == 8 && question.tip" ng-bind="question.tip"></div>
+                                                <div class="must-do" ng-show="question.passed==false">请按要求作答</div>
+                                                <div class="survey-question-content" ng-if="question.type_id!=10">
+
+                                                    <div class="survey-question-radio" ng-if="question.vote_type_id == 1">
+                                                        <div class="survey-question-radio-choice" ng-repeat="choice in question.choice" ng-click="radioSelect(question, $index, choice)">
+                                                            <div ng-class="{false: 'radio-image', true: 'radio-image-check'}[question.value==$index]"></div>
+                                                            <label class="survey-show-as-html" ng-bind-html="trustAsHtml(choice.content)"></label>
+                                                            <div class="survey-question-progress-wrap" ng-class="{'survey-question-progress-vote-wrap': question.vote_type_id==3 || question.vote_type_id==4}" ng-if="project.isClosed && project.viewResult">
+                                                                <div class="survey-question-progress-bar">
+                                                                    <div class="survey-question-progress-activebar" ng-style="{width: choice.userPercent + '%'}"></div>
+                                                                </div>
+                                                                <div class="survey-question-progress-detail">
+                                                                    <span class="survey-question-proccess-percent"><span ng-bind="choice.userPercent"></span>%</span>
+                                                                    <span>(<span ng-bind="choice.userCount"></span>)</span>
+                                                                    <div class="survey-question-proccess-desc" ng-if="isChoiceSelect(question, $index, choice)">
+                                                                        <img src="~/Content/Survey/images/check.png">
+                                                                        <span>您的选项</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="survey-question-checkbox" ng-if="question.vote_type_id == 2">
+                                                        <div></div>
+                                                        <div class="survey-question-checkbox-choice" ng-repeat="choice in question.choice" ng-click="checkboxSelect(question, $index, choice)">
+                                                            <div ng-class="{false: 'checkbox-image', true: 'checkbox-image-check'}[question.value[$index]==true]"></div>
+                                                            <label class="survey-show-as-html" ng-bind-html="trustAsHtml(choice.content)"></label>
+                                                            <div class="survey-question-progress-wrap" ng-class="{'survey-question-progress-vote-wrap': question.vote_type_id==3 || question.vote_type_id==4}" ng-if="project.isClosed && project.viewResult">
+                                                                <div class="survey-question-progress-bar">
+                                                                    <div class="survey-question-progress-activebar" ng-style="{width: choice.userPercent + '%'}"></div>
+                                                                </div>
+                                                                <div class="survey-question-progress-detail">
+                                                                    <span class="survey-question-proccess-percent"><span ng-bind="choice.userPercent"></span>%</span>
+                                                                    <span>(<span ng-bind="choice.userCount"></span>)</span>
+                                                                    <div class="survey-question-proccess-desc" ng-if="isChoiceSelect(question, $index, choice)">
+                                                                        <img src="~/Content/Survey/images/check.png">
+                                                                        <span>您的选项</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="survey-question-radio-vote" ng-if="question.vote_type_id == 3">
+                                                        <div class="survey-question-radio-choice" ng-repeat="choice in question.choice" ng-class="{'survey-question-choice-check':question.value==$index}">
+                                                            <div class="survey-question-radio-choice-img"><img ng-src="{{choice.contentArr[1]}}"></div>
+                                                            <div class="survey-question-radio-choice-text" ng-click="radioSelect(question, $index, choice)">
+                                                                <div ng-class="{false: 'radio-image', true: 'radio-image-check'}[question.value==$index]"></div>
+                                                                <label class="survey-show-as-html" ng-bind-html="trustAsHtml(choice.contentArr[0])" title="{{choice.contentArr[0]}}"></label>
+                                                            </div>
+                                                            <div class="survey-question-progress-wrap" ng-class="{'survey-question-progress-vote-wrap': question.vote_type_id==3 || question.vote_type_id==4}" ng-if="project.isClosed && project.viewResult">
+                                                                <div class="survey-question-progress-bar">
+                                                                    <div class="survey-question-progress-activebar" ng-style="{width: choice.userPercent + '%'}"></div>
+                                                                </div>
+                                                                <div class="survey-question-progress-detail">
+                                                                    <span class="survey-question-proccess-percent"><span ng-bind="choice.userPercent"></span>%</span>
+                                                                    <span>(<span ng-bind="choice.userCount"></span>)</span>
+                                                                    <div class="survey-question-proccess-desc" ng-if="isChoiceSelect(question, $index, choice)">
+                                                                        <img src="~/Content/Survey/images/check.png">
+                                                                        <span>您的选项</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="survey-question-checkbox-vote" ng-if="question.vote_type_id == 4">
+                                                        <div class="survey-question-checkbox-choice" ng-repeat="choice in question.choice" ng-class="{'survey-question-choice-check':question.value[$index]==true}">
+                                                            <div class="survey-question-checkbox-choice-img"><img ng-src="{{choice.contentArr[1]}}"></div>
+                                                            <div class="survey-question-checkbox-choice-text" ng-click="checkboxSelect(question, $index, choice)">
+                                                                <div ng-class="{false: 'checkbox-image', true: 'checkbox-image-check'}[question.value[$index]==true]"></div>
+                                                                <label class="survey-show-as-html" ng-bind-html="trustAsHtml(choice.contentArr[0])" title="{{choice.contentArr[0]}}"></label>
+                                                            </div>
+                                                            <div class="survey-question-progress-wrap" ng-class="{'survey-question-progress-vote-wrap': question.vote_type_id==3 || question.vote_type_id==4}" ng-if="project.isClosed && project.viewResult">
+                                                                <div class="survey-question-progress-bar">
+                                                                    <div class="survey-question-progress-activebar" ng-style="{width: choice.userPercent + '%'}"></div>
+                                                                </div>
+                                                                <div class="survey-question-progress-detail">
+                                                                    <span class="survey-question-proccess-percent"><span ng-bind="choice.userPercent"></span>%</span>
+                                                                    <span>(<span ng-bind="choice.userCount"></span>)</span>
+                                                                    <div class="survey-question-proccess-desc" ng-if="isChoiceSelect(question, $index, choice)">
+                                                                        <img src="~/Content/Survey/images/check.png">
+                                                                        <span>您的选项</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="survey-page-bottom">
+                                                <div class="survey-submit-page" ng-show="(page.index==pageCount)&&(!isClosed)&&(!isDisabled)" ng-click="submitSelf(page.list)" ng-class="{'survey-btn-disabled': project.status!=4}">投票</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div ng-switch-default>
+                            <div class="survey-wrap">
+                                <div class="survey-title" ng-bind="project.pro_name"></div>
+                                <div class="survey-desciption mt20">
+                                    <div ng-bind-html="trustAsHtml(project.test_content)"></div>
+                                    <div></div>
+                                </div>
+                                <div class="survey-question-wrap">
+                                    <div class="survey-page" ng-repeat="page in pages" ng-show="page.index==selectedPage">
+                                        <div class="survey-question" id="survey-question-{{question.page}}-{{question.order}}" ng-repeat="question in page.list" ng-hide="question.logic_hide>0">
+                                            <div class="survey-question-title" ng-class="{'survey-question-paragraph-title': question.type_id == 10, 'active': currentQuestion != null && currentQuestion.id == question.id}">
+                                                <div class="survey-show-as-html" ng-bind-html="trustAsHtml(question.content)" ng-if="question.title_quote != 'Y'"></div>
+                                                <div class="survey-show-as-html" ng-bind-html="trustAsHtml(replaceTitleQuote(question.content))" ng-if="question.title_quote == 'Y'"></div>
+                                                <span class="must-do" ng-bind="question.tip"></span>
+                                            </div>
+                                            <div class="must-do" ng-show="question.passed==false && question.type_id!=9 && question.type_id!=13">请按要求作答</div>
+                                            <div class="survey-question-content" ng-if="question.type_id!=10 && question.content_show==1">
+                                                <div class="survey-question-text" ng-if="question.type_id==1">
+                                                    <input type="text" ng-model="question.value" ng-disabled="isClosed" ng-blur="answerQuestion(question)" ng-focus="changeQuestion(question);" />
+                                                </div>
+                                                <div class="survey-question-textarea" ng-if="question.type_id==2">
+                                                    <textarea ng-model="question.value" ng-disabled="isClosed" ng-blur="answerQuestion(question)" ng-focus="changeQuestion(question);"></textarea>
+                                                </div>
+                                                <div class="survey-question-radio" ng-if="question.type_id==6">
+                                                    <div class="survey-question-radio-choice" ng-class="{'survey-question-radio-choice-other': choice.is_other=='Y'}" ng-hide="choice.hide === 1" ng-repeat="choice in question.choice" ng-click="answerQuestion(question, $index, choice)">
+                                                        <div ng-class="{false: 'radio-image', true: 'radio-image-check'}[question.value==$index]"></div>
+                                                        <label class="survey-show-as-html" ng-bind-html="trustAsHtml(choice.content)"></label>
+                                                        <input data-role="none" type="text" ng-if="choice.is_other=='Y'" class="survey-question-other" ng-value="choice.other_content" ng-model="choice.other_content" />
+                                                        <span ng-if="choice.is_other=='Y' && choice.required == 1">(必填)</span>
+                                                    </div>
+                                                </div>
+                                                <div class="survey-question-select" ng-if="question.type_id==7">
+                                                    <select style="width: 200px" ng-model="question.value" ng-options="choice.content for choice in filterHide(question.choice)" ng-change="answerQuestion(question, 0, choice)" ng-disabled="isClosed"></select>
+                                                </div>
+                                                <div class="survey-question-checkbox" ng-if="question.type_id==8">
+                                                    <div class="survey-question-checkbox-choice" ng-class="{'survey-question-checkbox-choice-other': choice.is_other=='Y'}" ng-hide="choice.hide === 1" ng-repeat="choice in question.choice" ng-click="answerQuestion(question, $index, choice)">
+                                                        <div ng-class="{false: 'checkbox-image', true: 'checkbox-image-check'}[question.value[$index]==true]"></div>
+                                                        <label class="survey-show-as-html" ng-bind-html="trustAsHtml(choice.content)"></label>
+                                                        <input data-role="none" type="text" ng-if="choice.is_other=='Y'" class="survey-question-other" ng-value="choice.other_content" ng-model="choice.other_content" ng-click="stopPropagation($event)" />
+                                                        <span ng-if="choice.is_other=='Y' && choice.required == 1">(必填)</span>
+                                                    </div>
+                                                </div>
+                                                <div class="survey-question-matrix" ng-if="question.type_id==9">
+                                                    <table style="font-size: 14px; width: 100%;">
+                                                        <tr>
+                                                            <td></td>
+                                                            <td ng-repeat="choice in question.choice" ng-bind-html="trustAsHtml(choice.content)"></td>
+                                                        </tr>
+                                                        <tr ng-repeat="(row,subQuestion) in question.radio_array_title" class="survey-question-matrix-choice">
+                                                            <td>
+                                                                <span ng-bind-html="trustAsHtml(subQuestion.content)" class="survey-question-matrix-title"></span>
+                                                                <div class="must-do" ng-show="subQuestion.passed==false" style="padding-left: 40px">请按要求作答</div>
+                                                            </td>
+                                                            <td ng-repeat="choice in question.choice" ng-click="answerQuestion(question, $index, row)">
+                                                                <div ng-class="{false: 'radio-image', true: 'radio-image-check'}[question.value[row]==$index]"></div>
+                                                                <input type="text" ng-if="choice.is_other=='Y'" class="survey-question-other" ng-value="subQuestion.other_content[$index]" ng-model="subQuestion.other_content[$index]" ng-disabled="isClosed" ng-click="stopPropagation($event)" />
+                                                                <span ng-if="choice.is_other=='Y' && choice.required == 1">(必填)</span>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                                <div class="survey-question-matrix" ng-if="question.type_id==13">
+                                                    <table style="font-size: 14px; width: 100%;">
+                                                        <tr>
+                                                            <td></td>
+                                                            <td ng-repeat="choice in question.choice" ng-bind-html="trustAsHtml(choice.content)"></td>
+                                                        </tr>
+                                                        <tr ng-repeat="(row,subQuestion) in question.checkbox_array_title" class="survey-question-matrix-choice">
+                                                            <td>
+                                                                <span ng-bind-html="trustAsHtml(subQuestion.content)" class="survey-question-matrix-title"></span>
+                                                                <div class="must-do" ng-show="subQuestion.passed==false" style="padding-left: 40px">请按要求作答</div>
+                                                            </td>
+                                                            <td ng-repeat="choice in question.choice" ng-click="answerQuestion(question, $index, row)">
+                                                                <div ng-class="{false: 'checkbox-image', true: 'checkbox-image-check'}[question.value[row][$index]==true]"></div>
+                                                                <input type="text" ng-if="choice.is_other=='Y'" class="survey-question-other" ng-value="subQuestion.other_content[$index]" ng-model="subQuestion.other_content[$index]" ng-disabled="isClosed" ng-click="stopPropagation($event)" />
+                                                                <span ng-if="choice.is_other=='Y' && choice.required == 1">(必填)</span>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                                <div class="survey-question-upload" ng-if="question.type_id==12">
+                                                    <div class="survey-question-upload-item" ng-repeat="item in question.value">
+                                                        <div ng-mouseenter="item.active=true" ng-mouseleave="item.active=false">
+                                                            <img ng-src="{{item.value}}" class="survey-question-upload-img">
+                                                            <a class="survey-question-upload-img-close" ng-show="item.active" ng-click="deleteQuestionItem(question, question.value, $index)"></a>
+                                                        </div>
+                                                    </div>
+                                                    <div class="survey-question-upload-item" ng-if="question.value.length < question.max">
+                                                        <div class="survey-question-upload-btn">
+                                                            <div class="survey-question-upload-inner">
+                                                                @*<img src="/static/home/img/survey/retain/add.png">*@
+                                                            </div>
+                                                            <input type="file" class="survey-question-upload-file" nv-file-select uploader="fileUploader" options="{question:question}" multiple ng-click="answerQuestion(question)" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="survey-question-radio-img" ng-if="question.type_id==14">
+                                                    <div class="survey-question-radio-choice" ng-repeat="choice in question.choice" ng-class="{'survey-question-choice-check':question.value==$index}">
+                                                        <div class="survey-question-radio-choice-img"><img ng-src="{{choice.contentArr[1]}}"></div>
+                                                        <div class="survey-question-radio-choice-text" ng-click="answerQuestion(question, $index, choice)">
+                                                            <div ng-class="{false: 'radio-image', true: 'radio-image-check'}[question.value==$index]"></div>
+                                                            <label class="survey-show-as-html" ng-bind-html="trustAsHtml(choice.contentArr[0])" title="{{choice.contentArr[0]}}"></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="survey-question-checkbox-img" ng-if="question.type_id==15">
+                                                    <div class="survey-question-checkbox-choice" ng-repeat="choice in question.choice" ng-class="{'survey-question-choice-check':question.value[$index]==true}">
+                                                        <div class="survey-question-checkbox-choice-img"><img ng-src="{{choice.contentArr[1]}}"></div>
+                                                        <div class="survey-question-checkbox-choice-text" ng-click="answerQuestion(question, $index, choice)">
+                                                            <div ng-class="{false: 'checkbox-image', true: 'checkbox-image-check'}[question.value[$index]==true]"></div>
+                                                            <label class="survey-show-as-html" ng-bind-html="trustAsHtml(choice.contentArr[0])" title="{{choice.contentArr[0]}}"></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="survey-choice-quote-tip" ng-if="question.content_show==0" ng-bind-html="trustAsHtml(getQuoteTip(question))"></div>
+                                        </div>
+                                        <div class="survey-page-bottom" ng-switch="scene">
+                                            <div ng-switch-when="1">
+                                                <div class="survey-last-page" ng-click="selectPage(selectedPage-1)" ng-show="selectedPage>1">上一页</div>
+                                                <div class="survey-timer" ng-show="page.restTime>0"><span ng-bind="page.restTime"></span>s</div>
+                                                <div class="survey-next-page" ng-click="checkNextPage(page.list)" ng-hide="page.index==pageCount||page.restTime!=0">下一页</div>
+                                                <div class="survey-submit-page" ng-show="(page.index==pageCount)&&(!isClosed)&&page.restTime==0" ng-click="submit(page.list)">提交</div>
+                                                <div class="survey-page-index"><span ng-bind="selectedPage"></span>/<span ng-bind="pageCount"></span>页</div>
+                                            </div>
+                                            <div ng-switch-when="2">
+                                                <div class="survey-last-page" ng-click="selectPage(selectedPage-1)" ng-show="selectedPage>1 && (!isDisabled)">上一页</div>
+                                                <div class="survey-next-page" ng-click="checkNextPage(page.list)" ng-hide="page.index==pageCount">下一页</div>
+                                                <div class="survey-submit-page" ng-show="(page.index==pageCount)&&(!isDisabled)" ng-click="submitSelf(page.list)">提交</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

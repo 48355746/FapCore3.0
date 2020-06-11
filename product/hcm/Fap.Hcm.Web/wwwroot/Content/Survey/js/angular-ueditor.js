@@ -1,8 +1,4 @@
-/**
- Created by Dio on 17-9.
- http://inhu.net
- */
-
+;
 (function () {
     "use strict";
     (function () {

@@ -2,24 +2,21 @@
     Layout = null;
     string xmlContent = ViewBag.Xml;
 }
-<!DOCTYPE html>
-<html>
-<head>
-    <title>流程监控</title>
-    <!-- Sets the basepath for the library if not in same directory -->
-    <script type="text/javascript">
-        mxBasePath = '../../../Content/mxGraph/src';
-    </script>
 
-    <!-- Loads and initializes the library -->
-    <script type="text/javascript" src="~/Content/mxGraph/mxClient.js" asp-append-version="true"></script>
+<!-- Sets the basepath for the library if not in same directory -->
+<script type="text/javascript">
+    mxBasePath = '../../../Content/mxGraph/src';
+</script>
 
-    <!-- Example code -->
-    <script type="text/javascript">
+<!-- Loads and initializes the library -->
+<script type="text/javascript" src="~/Content/mxGraph/mxClient.js" asp-append-version="true"></script>
+
+<!-- Example code -->
+<script type="text/javascript">
         // Program starts here. Creates a sample graph in the
         // DOM node with the specified ID. This function is invoked
         // from the onLoad event handler of the document (see below).
-        function main(container) {
+        (function(container) {
             // Checks if the browser is supported
             if (!mxClient.isBrowserSupported()) {
                 // Displays an error message if the browser is not supported.
@@ -41,7 +38,7 @@
                 // string with randomized states to demonstrate the idea of the workflow monitor
                 var xml = '@Html.Raw(ViewBag.UpdateXml)';
                 update(graph, xml);
-        };
+        })(document.getElementById('graphContainer'));
 
         /**
          * Updates the display of the given graph using the XML data
@@ -160,10 +157,10 @@
                 if (cell != null) {
                     var style = previous.apply(this, arguments);
 
-                    if (this.isEdge(cell)) {                    
+                    if (this.isEdge(cell)) {
                     }
                     else if (this.isVertex(cell)) {
-                        
+
                         var geometry = this.getGeometry(cell);
                         if (geometry.width == 14) {
                             //嵌套的小方块不显示
@@ -172,7 +169,7 @@
                             //开始结束路由不显示文字
                             style += ';fontSize=0';
                         }
-                       
+
                     }
 
                     return style;
@@ -195,9 +192,9 @@
             style[mxConstants.STYLE_FONTSTYLE] = 1;
 
             style = graph.getStylesheet().getDefaultEdgeStyle();
-            //edgeStyle = elbowEdgeStyle; rounded = 1; html = 1; entryX = 0; entryY = 0.5; shadow = 1; 
+            //edgeStyle = elbowEdgeStyle; rounded = 1; html = 1; entryX = 0; entryY = 0.5; shadow = 1;
             //endArrow = classicThin; endFill = 1; jettySize = auto; orthogonalLoop = 1; strokeColor =#808080;
-         
+
             style[mxConstants.STYLE_EDGE] = mxEdgeStyle.ElbowConnector;
             style[mxConstants.STYLE_STROKECOLOR] = '#808080';
             style[mxConstants.STYLE_ROUNDED] = true;
@@ -206,7 +203,7 @@
             style["endArrow"] = 'classicThin';
             style["endFill"] = true;
             style["jettySize"] = "auto";
-           
+
 
             style = [];
             style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_SWIMLANE;
@@ -248,14 +245,14 @@
             style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_MIDDLE;
             style[mxConstants.STYLE_FONTSIZE] = 12;
             graph.getStylesheet().putCellStyle('image', style);
-            
+
 
             style = [];
             style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_ELLIPSE;
             style[mxConstants.STYLE_PERIMETER] = mxPerimeter.EllipsePerimeter;
             style[mxConstants.STYLE_FONTSIZE] = 12;
             graph.getStylesheet().putCellStyle('ellipse', style);
-            
+
 
             //style = mxUtils.clone(style);
             //style[mxConstants.STYLE_FILLCOLOR] = '#DACCBC';
@@ -284,15 +281,12 @@
 
             return state;
         };
-    </script>
-</head>
+</script>
 
-<!-- Page passes the container and control to the main function -->
-<body onload="main(document.getElementById('graphContainer'));">
 
-    <!-- Acts as a container for the graph -->
-    <div id="graphContainer" style="overflow:auto;position:relative;cursor:default;">
-    </div>
-    <br>
-</body>
-</html>
+
+<!-- Acts as a container for the graph -->
+<div id="graphContainer" style="overflow:auto;position:relative;cursor:default;">
+</div>
+<br>
+

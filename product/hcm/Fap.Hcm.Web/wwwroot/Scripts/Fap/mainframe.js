@@ -116,8 +116,7 @@ var getBadge = function () {
 //加载我的伙伴,菜单，多语言日期控件
 (function () {
     buildPartner();
-    buildMenus('0');
-    moment.locale(language.toLowerCase());
+    buildMenus('0');    
 })();
 function buildPartner() {
     $.get(basePath + "/SelfService/Api/Partner", function (rv) {
@@ -131,6 +130,16 @@ function buildPartner() {
     })
 }
 function buildMenus(roleUid) {
+    if (roleUid !== "0") {
+        $(".user-sysmenu .role").each(function () {
+            var $this = $(this);
+            if ($this.data("role") === roleUid) {
+                $this.find("i").removeClass("fa-circle").addClass("fa-check")
+            } else {
+                $this.find("i").removeClass("fa-check").addClass("fa-circle");
+            }
+        });
+    }
     $.get(basePath + "/Home/ChangeRole/" + roleUid, function (rv) {
         $(".nav.nav-list.menus").html(rv);
     })

@@ -9,7 +9,7 @@ function (e) {
 surveyModule.controller("SurveyResponse", ["$http", "$scope", "$q",
 function (e, t) {
     function a(e) {
-        var t = basePath + "api/Survey/exportReportData?" + $.param(e);
+        var t = basePath + "/System/Api/Survey/ExportUserReport?" + $.param(e);
         return angular.copy(t)
     }
     var r = {
@@ -32,7 +32,7 @@ function (e, t) {
     t.downloadUrl = basePath + "home/getSurveyDataDownload/survey_id/" + t.surveyId,
     t.exportStatus = 0;
     var i = function () {
-        var a = basePath + "api/Survey/getResponseList/"+t.surveyId; //location.href.replace(/userSurveyList/, "getResponseList");
+        var a = basePath + "/System/Api/Survey/Tester/"+t.surveyId; //location.href.replace(/userSurveyList/, "getResponseList");
         e.get(a).success(function (e) {
             if (0 === e.error_code) {
                 t.count = parseInt(e.count, 10),
@@ -44,7 +44,7 @@ function (e, t) {
                 function (e) {
                     e.index = a,
                     a += 1,
-                    e.openUrl = basePath + "Survey/Survey/ReviewTesterResponse?resuid=" + e.res_id + "&suruid=" + t.surveyId + "&resorder=" + e.index
+                        e.openUrl = basePath + "/System/Survey/TesterReview?resuid=" + e.res_id + "&suruid=" + t.surveyId + "&resorder=" + e.index
                 }),
                 t.responseList = n,
                 t.itemCount = n.length,
@@ -60,7 +60,7 @@ function (e, t) {
             r.show("导出数据耗时较长，请【不要】跳转或关闭页面！", "知道啦", null).then(function () {
                 //location.href = t.exportUrl
                 e.get(t.exportUrl).success(function (e) {
-                    0 === e.error_code ? (t.exportStatus = 1, $("#export-data").val("导出统计报告").removeAttr("disabled").removeClass("disabled"), location.href = basePath + "UploadFiles/" + e.fn) : require.async(["home:static/js/survey/widget/operate_popup.js"],
+                    0 === e.error_code ? (t.exportStatus = 1, $("#export-data").val("导出统计报告").removeAttr("disabled").removeClass("disabled"), location.href = basePath + "/" + e.fn) : require.async(["home:static/js/survey/widget/operate_popup.js"],
                     function (e) {
                         e.show("导出数据请求失败，请重新导出！", "确定", null)
                     })
@@ -75,7 +75,7 @@ function (e, t) {
             r.show("导出数据耗时较长，请【不要】跳转或关闭页面！", "知道啦", null).then(function () {
                 //location.href = t.exportSpssUrl
                 e.get(t.exportSpssUrl).success(function (e) {
-                    0 === e.error_code ? (t.exportStatus = 1, $("#export-data").val("导出统计报告").removeAttr("disabled").removeClass("disabled"), location.href = basePath + "UploadFiles/" + e.fn) : require.async(["home:static/js/survey/widget/operate_popup.js"],
+                    0 === e.error_code ? (t.exportStatus = 1, $("#export-data").val("导出统计报告").removeAttr("disabled").removeClass("disabled"), location.href = basePath + "/" + e.fn) : require.async(["home:static/js/survey/widget/operate_popup.js"],
                     function (e) {
                         e.show("导出数据请求失败，请重新导出！", "确定", null)
                     })
