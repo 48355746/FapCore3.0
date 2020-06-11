@@ -19,7 +19,7 @@
         @foreach (var role in roles)
         {
             <li>
-                <a  href="javascript:void(0)" data-role="@role.Fid" onclick="buildMenus('@role.Fid')">
+                <a  href="javascript:void(0)" class="role" data-role="@role.Fid" onclick="buildMenus('@role.Fid')">
                     @if (role.Fid == cr.Fid)
                     {
                         <i class="ace-icon green fa fa-check"></i>
