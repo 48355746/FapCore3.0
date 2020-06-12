@@ -5,9 +5,12 @@ using System.Net.Mime;
 using System.Threading.Tasks;
 using Ardalis.GuardClauses;
 using Dapper;
+using Fap.AspNetCore.Binder;
 using Fap.AspNetCore.Infrastructure;
+using Fap.Core.Extensions;
 using Fap.AspNetCore.ViewModel;
 using Fap.Hcm.Service.Recruit;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -48,7 +51,7 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
             return Json(ResponseViewModelUtils.Sueecss());
         }
         [HttpPost("ResumeToDept")]
-        public JsonResult SendResumeToDept(List<string> resumeUids,string demandUid)
+        public JsonResult SendResumeToDept(List<string> resumeUids, string demandUid)
         {
             _recruitService.SendResumeToDept(resumeUids, demandUid);
             return Json(ResponseViewModelUtils.Sueecss());
@@ -67,7 +70,7 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
         [HttpPost("InterviewNotice")]
         public JsonResult InterviewNotice(InterviewNoticeViewModel interviewNotice)
         {
-            Guard.Against.Null(interviewNotice,nameof(interviewNotice));
+            Guard.Against.Null(interviewNotice, nameof(interviewNotice));
             _recruitService.InterviewNotice(interviewNotice);
             return Json(ResponseViewModelUtils.Sueecss());
         }
@@ -78,20 +81,37 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
             _recruitService.OfferNotice(offerNotice);
             return Json(ResponseViewModelUtils.Sueecss());
         }
-        [HttpPost("OfferStatus")]
-        public JsonResult OfferStatus(string fid,string status)
+        [AllowAnonymous]
+        [HttpPost("CollectionInfo")]
+        public async Task<JsonResult> CollectionInfo(FormModel frmModel)
         {
-            _dbContext.Execute("Update RcrtBizOffer set OfferStatus =@Status where Fid = @Fid", new DynamicParameters(new { Fid = fid,Status=status }));
+            Guard.Against.Null(frmModel, nameof(frmModel));
+            var rv = await _gridFormService.PersistenceAsync(frmModel).ConfigureAwait(false);
+            if (rv.success)
+            {
+                var offerUid = (rv.data as Fap.Core.Infrastructure.Metadata.FapDynamicObject).GetValueOrDefault("OfferUid");
+                if (offerUid != null && offerUid.ToString().IsPresent())
+                {
+                    _dbContext.Execute("Update RcrtBizOffer set OfferStatus =@Status where Fid = @Fid", new DynamicParameters(new { Fid = offerUid, Status = "InfoMaintenance" }));
+
+                }
+            }
+            return Json(rv);
+        }
+        [HttpPost("OfferStatus")]
+        public JsonResult OfferStatus(string fid, string status)
+        {
+            _dbContext.Execute("Update RcrtBizOffer set OfferStatus =@Status where Fid = @Fid", new DynamicParameters(new { Fid = fid, Status = status }));
             return Json(ResponseViewModelUtils.Sueecss());
         }
         [HttpPost("Entry")]
-        public JsonResult Entry(string offerUid,string entryUid)
+        public JsonResult Entry(string offerUid, string entryUid)
         {
             _recruitService.Entry(offerUid, entryUid);
             return Json(ResponseViewModelUtils.Sueecss());
         }
         [HttpPost("LinkJob")]
-        public JsonResult LinkJob(List<string> fids,string jobName)
+        public JsonResult LinkJob(List<string> fids, string jobName)
         {
             Guard.Against.Null(fids, nameof(fids));
             if (fids.Any())

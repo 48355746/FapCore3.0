@@ -103,16 +103,15 @@ var GetFapChildGridData = function (formid) {
     }
     return null;
 };
-//持久化{success:true,data:obj}noPrompt--是否弹框
-var Persistence = function (formid, tableName, beforeSaveCallback, afterSaveCallback) {
+function validateForm(formid) {
     if (!$("#" + formid).valid()) {
-        $.msg($.lang("form_validation_failed",'表单校验失败')+":" + $(".error").html());
+        $.msg($.lang("form_validation_failed", '表单校验失败') + ":" + $(".error").html());
         return false;
     } else {
         //富文本编辑控件
         var richtext = $("#" + formid).find(".wysiwyg-editor");
         if (richtext !== '' && richtext.first().data("nullable") === 0 && richtext.first().html() === '') {
-            $.msg($.lang("richtext_required","富文本内容不能为空！"));
+            $.msg($.lang("richtext_required", "富文本内容不能为空！"));
             return false;
         }
         //校验附件是否上传
@@ -132,70 +131,80 @@ var Persistence = function (formid, tableName, beforeSaveCallback, afterSaveCall
                 }
             });
             if (!result) {
-                $.msg($.lang("file_required","必须要上传附件！"));
+                $.msg($.lang("file_required", "必须要上传附件！"));
                 return false;
             }
         }
-        var entityData = {};
-        //主表单数据
-        entityData.mainData = GetFapFormData(formid);
-        entityData.tableName = tableName;
-        //子表数据
-        var childTableDatas = GetFapChildGridData(formid);
-        if (childTableDatas === false) {
-            //校验失败
-            return false;
-        }
-        if (childTableDatas !== null) {
-            entityData.childDataList = childTableDatas;
-        }
-        //干预赋值
-        if (beforeSaveCallback !== undefined && $.isFunction(beforeSaveCallback)) {
-            beforeSaveCallback(entityData.mainData);
-        }
-        //判断Id的值
-        if (entityData.mainData["Id"] !== "") {
-            entityData.oper = "edit";
-        } else {
-            entityData.oper = "add";
-        }
-        entityData.avoid_repeat_token = entityData.mainData["avoid_repeat_token"];
-        var rv = { success: false };
-        $.ajax({
-            type: "post",
-            url: basePath + '/Core/Api/Persistence?from=form',//这里不用带tn 因为 表单中有tn值
-            data: entityData,
-            async: false,
-            dataType: "json",
-            headers: {
-                //CSRF攻击
-                'RequestVerificationToken': $("input[name='__RequestVerificationToken']").val()
-            },
-            success: function (result) {
-                rv = result;
-                if (result.success === true) {
-                    //赋值给ID 为了防止重复增加
-                    if (rv.data) {
-                        var resultData = rv.data;// JSON.parse(rv.data);
+    }
+    return true;
+}
+function collectionFromData(formid, tableName, beforeSaveCallback) {
+    var entityData = {};
+    //主表单数据
+    entityData.mainData = GetFapFormData(formid);
+    entityData.tableName = tableName;
+    //子表数据
+    var childTableDatas = GetFapChildGridData(formid);
+    if (childTableDatas === false) {
+        //校验失败
+        return false;
+    }
+    if (childTableDatas !== null) {
+        entityData.childDataList = childTableDatas;
+    }
+    //干预赋值
+    if (beforeSaveCallback !== undefined && $.isFunction(beforeSaveCallback)) {
+        beforeSaveCallback(entityData.mainData);
+    }
+    //判断Id的值
+    if (entityData.mainData["Id"] !== "") {
+        entityData.oper = "edit";
+    } else {
+        entityData.oper = "add";
+    }
+    entityData.avoid_repeat_token = entityData.mainData["avoid_repeat_token"];
+    return entityData;
+}
+//持久化{success:true,data:obj}noPrompt--是否弹框
+var Persistence = function (formid, tableName, beforeSaveCallback, afterSaveCallback) {
+    var validate = validateForm(formid);
+    if (validate === false) {
+        return;
+    }
+    var entityData=collectionFromData(formid, tableName, beforeSaveCallback);
+    var rv = { success: false };
+    $.ajax({
+        type: "post",
+        url: basePath + '/Core/Api/Persistence?from=form',//这里不用带tn 因为 表单中有tn值
+        data: entityData,
+        async: false,
+        dataType: "json",
+        headers: {
+            //CSRF攻击
+            'RequestVerificationToken': $("input[name='__RequestVerificationToken']").val()
+        },
+        success: function (result) {
+            rv = result;
+            if (result.success === true) {
+                //赋值给ID 为了防止重复增加
+                if (rv.data) {
+                    var resultData = rv.data;// JSON.parse(rv.data);
 
-                        $("#" + formid + " .form-control#Id").val(resultData.Id);
-                        $("#" + formid + " .form-control#Ts").val(resultData.Ts);
-                        //保存成功后事件
-                        if (afterSaveCallback !== undefined && $.isFunction(afterSaveCallback)) {
-                            afterSaveCallback(resultData);
-                        }
+                    $("#" + formid + " .form-control#Id").val(resultData.Id);
+                    $("#" + formid + " .form-control#Ts").val(resultData.Ts);
+                    //保存成功后事件
+                    if (afterSaveCallback !== undefined && $.isFunction(afterSaveCallback)) {
+                        afterSaveCallback(resultData);
                     }
                 }
-                if (result.msg) {
-                    $.msg(result.msg);
-                }
             }
-        });
-
-        return rv;
-    }
-}
-    ;
+            if (result.msg) {
+                $.msg(result.msg);
+            }
+        }
+    });
+    return rv;
+};
 $(function () {
     //设置弹出参照框的显示头样式
     $.widget("ui.dialog", $.extend({}, $.ui.dialog.prototype, {

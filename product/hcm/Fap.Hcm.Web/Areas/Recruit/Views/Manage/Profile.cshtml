@@ -3,17 +3,40 @@
     ViewBag.Title = "个人信息";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-@section specificcss{
-    @{await Html.RenderPartialAsync("_ControlCssPartial"); }
+@section beforecss{
 }
-@section specificscript{
-    @{await Html.RenderPartialAsync("_ControlJsPartial"); }
+@section afterscript{
     <script>
     $(function () {
         $("body").prepend($("#navbar").get(0));
         $(".main-content").wrap("<div class=\"main-container container\"></div>");
         $("#btnEntryInfoSave").on(ace.click_event, function () {
-            Persistence("frm-profile", "EmpEntryInfo", null, function () {
+            var validate = validateForm("frm-profile");
+            if (validate === false) {
+                return;
+            }
+            var formData = collectionFromData("frm-profile", "EmpEntryInfo");
+            $.ajax({
+                type: "post",
+                url: basePath + '/Recruit/Api/CollectionInfo',
+                data: formData,
+                async: false,
+                dataType: "json",
+                headers: {
+                    //CSRF攻击
+                    'RequestVerificationToken': $("input[name='__RequestVerificationToken']").val()
+                },
+                success: function (result) {
+                    rv = result;
+                    if (result.success === true) {
+                        location.href = basePath + "/Home/Success";
+                    } else {
+                        bootbox.alert(rv.msg);
+                    }
+                }
+            });
+
+            @*Persistence("frm-profile", "EmpEntryInfo", null, function () {
                 $.post(basePath + "/Recruit/Api/OfferStatus", { fid: '@ViewBag.OfferUid', status: 'InfoMaintenance' }, function (rv) {
                     if (rv.success) {
                         location.href = basePath + "/Home/Success";
@@ -21,7 +44,7 @@
                         bootbox.alert(rv.msg);
                     }
                 })
-            });
+            });*@
         })
     })
     </script>

@@ -1,6 +1,15 @@
 ﻿<environment include="Development">
+    <link rel="stylesheet" href="~/Content/css/bootstrap.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Content/css/font-awesome.css" />
+    <link rel="stylesheet" href="~/Content/css/ace-fonts.css" />
+</environment>
+<environment exclude="Development">
+    <link rel="stylesheet" href="~/Content/css/bootstrap.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/acefont.min.css" asp-append-version="true" />
+</environment>
+<environment include="Development">
     <link rel="stylesheet" href="~/Content/css/jquery-ui.css" />
-    <link rel="stylesheet" href="~/Content/JqGrid/css/ui.jqgrid.css" />
+    <link rel="stylesheet" href="~/Content/JqGrid/css/ui.jqgrid.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Content/css/jquery-ui.custom.css" />
     <link rel="stylesheet" href="~/Content/Handsontable/css/handsontable.full.min.css" />
     <link rel="stylesheet" href="~/Content/css/jquery.gritter.css" />
@@ -12,7 +21,7 @@
     <link rel="stylesheet" href="~/Content/date-time-h5/css/mobiscroll.android-ics-2.6.2.css" />
     <link rel="stylesheet" href="~/Content/css/chosen.css" />
     <link rel="stylesheet" href="~/Content/css/bootstrap-duallistbox.css" />
-    <link rel="stylesheet" href="~/Content/css/fileinput.css" />
+    <link rel="stylesheet" href="~/Content/fileinput/css/fileinput.css"  asp-append-version="true" />
     <link rel="stylesheet" href="~/Content/Select2/css/select2.css" />
     <link rel="stylesheet" href="~/Content/js/JsTree/themes/default/style.css" />
     <link rel="stylesheet" href="~/Content/css/colorpicker.css" />
@@ -22,4 +31,13 @@
 </environment>
 <environment exclude="Development">
     <link rel="stylesheet" href="~/css/control.min.css" asp-append-version="true" />
+</environment>
+<environment include="Development">
+    <link rel="stylesheet" href="~/Content/nprogress/nprogress.css" />
+    <link rel="stylesheet" href="~/Content/css/ace.css" class="ace-main-stylesheet" id="main-ace-style" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Content/Site.css" class="ace-main-stylesheet" id="main-ace-style" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Content/chat/chat.css" asp-append-version="true" />
+</environment>
+<environment exclude="Development">
+    <link rel="stylesheet" href="~/css/ace.min.css" asp-append-version="true" />
 </environment>

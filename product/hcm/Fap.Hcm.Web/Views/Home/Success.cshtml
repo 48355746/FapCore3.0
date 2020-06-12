@@ -3,14 +3,14 @@
     ViewData["Title"] = "Success";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-@section specificcss2{
+@section beforecss{
     <style>
         body {
             background: #E4E6E9;
         }
     </style>
 }
-@section specificscript{
+@section afterscript{
     <script>
         $(function () {
             $("body").prepend($("#navbar").get(0));
@@ -32,19 +32,30 @@
             </span>
             <a href="#" class="navbar-brand">
                 <small>
-                    &nbsp;<i class="fa fa-user"></i>&nbsp;
-                    个人信息
+                 success
                 </small>
             </a><!-- /.brand -->
         </div>
-        <div class="navbar-header pull-right ace-navbar-buttons">
-            <ul class="nav ace-nav" style="">
-                <li class="margin-2 no-border">
-                    <a href="#" id="help-move-prev"><i class="ace-icon fa fa-chevron-left"></i></a>
-                </li>
-            </ul>
-        </div>
+      
     </div>
 </div>
-<h2 class="page-header text-primary">Success</h2>
+<div class="alert alert-block alert-success">
+
+
+    <p class="h1">
+        <strong>
+            <i class="ace-icon fa fa-check"></i>
+            做的好!
+        </strong>
+        你成功的完成了此操作。
+    </p>
+    <p class="h5">
+        <strong>
+           
+            Well done!
+        </strong>
+        You successfully completed the operation
+    </p>
+
+</div>
 

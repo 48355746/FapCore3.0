@@ -8,14 +8,9 @@
     }
     Select2Model selModel=    new Select2Model { IdField = "TableName", NameField = "TableComment", TableName = "FapTable", Where = "TableFeature like '%BillFeature%'" };
 }
-@section specificcss{
-    <link href="~/Content/Select2/css/select2.min.css" rel="stylesheet" />
-    <link href="~/Content/layer/skin/layer.css" rel="stylesheet" />
+@section beforecss{
 }
-@section specificscript{
-    <script src="~/Content/Select2/js/select2.js"></script>
-    <script src="~/Content/js/jquery.hotkeys.js"></script>
-    <script src="~/Content/js/bootstrap-wysiwyg.js"></script>
+@section afterscript{
     <script>
         //初始化富文本编辑框事件
         var initRichText = function (props) {

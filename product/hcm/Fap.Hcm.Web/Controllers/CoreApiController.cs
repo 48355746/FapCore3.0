@@ -275,8 +275,8 @@ namespace Fap.Hcm.Web.Controllers
         /// <param name="currcol">当前列</param>
         /// <param name="orivalue">原始值</param>
         /// <returns></returns>
-        [HttpGet]
-        [Route("UniqueCheck")]
+        [AllowAnonymous]
+        [HttpGet("UniqueCheck")]
         public JsonResult GetUniqueCheck(string chktable, string chkcolumn, string orivalue, string currcol, string fid, string currTable)
         {
             string currValue = "";

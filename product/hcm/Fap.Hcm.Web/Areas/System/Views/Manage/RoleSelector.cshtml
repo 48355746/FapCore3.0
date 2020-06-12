@@ -7,79 +7,78 @@
 
     ViewBag.Title = "用户管理";
 }
-@section specificcss{
-    @{await Html.RenderPartialAsync("_ControlCssPartial"); }
+@section beforecss{
 }
-@section specificscript{
-    @{await Html.RenderPartialAsync("_ControlJsPartial"); }
-}
-<script>
-    $(function () {
-        $(document).off(ace.click_event, '[data-ctrl=widgetAction]').on(ace.click_event, '[data-ctrl=widgetAction]', function (ev) {
-            ev.preventDefault();
+@section afterscript{
 
-            var $this = $(this);           
-            var $action = $this.data('action');
-            var ref = $('#tree-rolegroup').jstree(true),
-                            sel = ref.get_selected();
-            if ($action == 'refresh') {
-                ref.refresh();
-                return;
-            }
-            if (!sel.length) { return false; }
-            sel = sel[0];
-            if ($action == 'add') {
-                sel = ref.create_node(sel);
+    <script>
+        $(function () {
+            $(document).off(ace.click_event, '[data-ctrl=widgetAction]').on(ace.click_event, '[data-ctrl=widgetAction]', function (ev) {
+                ev.preventDefault();
 
-            } else if ($action == 'edit') {
-                ref.edit(sel);
-            } else if ($action == 'delete') {
-                ref.delete_node(sel)
-            }
-
-        })
-        $('#tree-rolegroup').on("changed.jstree", function (e, data) {
-            if (data && data.selected && data.selected.length) {
-                var roleGroupId = data.selected[0];
-                //显示所有角色组的角色
-                if (roleGroupId == "0") {
-                    $("#grid-role").jqGrid('setGridParam', {
-                        datatype: 'json',
-                        postData: { filters: {}}, //发送数据
-                        page: 1
-                    }).trigger("reloadGrid"); //重新载入
+                var $this = $(this);
+                var $action = $this.data('action');
+                var ref = $('#tree-rolegroup').jstree(true),
+                    sel = ref.get_selected();
+                if ($action == 'refresh') {
+                    ref.refresh();
                     return;
                 }
-               
-                var filter = '{"groupOp":"AND","rules":[{"field":"RoleGroupUid","op":"eq","data":"' + roleGroupId + '"}]}'
-                $("#grid-role").jqGrid('setGridParam', {
-                    datatype: 'json',
-                    postData: { 'filters': filter}, //发送数据
-                    page: 1
-                }).trigger("reloadGrid"); //重新载入
-            }
-            //console.log(data.selected);
+                if (!sel.length) { return false; }
+                sel = sel[0];
+                if ($action == 'add') {
+                    sel = ref.create_node(sel);
+
+                } else if ($action == 'edit') {
+                    ref.edit(sel);
+                } else if ($action == 'delete') {
+                    ref.delete_node(sel)
+                }
+
+            })
+            $('#tree-rolegroup').on("changed.jstree", function (e, data) {
+                if (data && data.selected && data.selected.length) {
+                    var roleGroupId = data.selected[0];
+                    //显示所有角色组的角色
+                    if (roleGroupId == "0") {
+                        $("#grid-role").jqGrid('setGridParam', {
+                            datatype: 'json',
+                            postData: { filters: {} }, //发送数据
+                            page: 1
+                        }).trigger("reloadGrid"); //重新载入
+                        return;
+                    }
+
+                    var filter = '{"groupOp":"AND","rules":[{"field":"RoleGroupUid","op":"eq","data":"' + roleGroupId + '"}]}'
+                    $("#grid-role").jqGrid('setGridParam', {
+                        datatype: 'json',
+                        postData: { 'filters': filter }, //发送数据
+                        page: 1
+                    }).trigger("reloadGrid"); //重新载入
+                }
+                //console.log(data.selected);
+            });
         });
-    });
 
-    function getRole() {
-        var selectedIds = $("#grid-role").jqGrid("getGridParam", "selarrrow");
-        if (!selectedIds || selectedIds.length == 0) {
-            alert("请选择角色");
-            return;
-        }
-
-        var roles = [];
-        if (selectedIds.length) {
-            for (var i = 0; i < selectedIds.length; i++) {
-                var rowData = jQuery("#grid-role").jqGrid('getRowData', selectedIds[i]);
-                roles.push(rowData);
+        function getRole() {
+            var selectedIds = $("#grid-role").jqGrid("getGridParam", "selarrrow");
+            if (!selectedIds || selectedIds.length == 0) {
+                alert("请选择角色");
+                return;
             }
+
+            var roles = [];
+            if (selectedIds.length) {
+                for (var i = 0; i < selectedIds.length; i++) {
+                    var rowData = jQuery("#grid-role").jqGrid('getRowData', selectedIds[i]);
+                    roles.push(rowData);
+                }
+            }
+            //var idsStr = selectedIds.join(',');
+            return roles;
         }
-        //var idsStr = selectedIds.join(',');
-        return roles;
-    }
-</script>
+    </script>
+}
 <div class="row">
     <div class="col-xs-12 col-sm-3">
         <div class="widget-box">
@@ -124,7 +123,7 @@
             </div>
             <div class="widget-body">
                 <div class="widget-main">
-                    <fap-grid id="role" grid-model="Model" auto-width="true"  view-records="true" multi-box-only="true" multi-select="true" oper-cud="true"></fap-grid>
+                    <fap-grid id="role" grid-model="Model" auto-width="true" view-records="true" multi-box-only="true" multi-select="true" oper-cud="true"></fap-grid>
 
                 </div>
             </div>

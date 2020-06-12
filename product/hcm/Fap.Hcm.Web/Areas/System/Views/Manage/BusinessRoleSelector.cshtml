@@ -6,58 +6,54 @@
 
     ViewBag.Title = "业务角色";
 }
-@section specificcss{
-  @{await Html.RenderPartialAsync("_ControlCssPartial"); }
+@section beforecss{
 }
-@section specificscript{
-@{await Html.RenderPartialAsync("_ControlJsPartial"); }
-}
-<script>
-    var roles = [];
-    $(function () {
-        $('#tree-bizrole').on("changed.jstree", function (e, data) {
-            if (data && data.selected && data.selected.length) {
-                var roleId = data.selected[0];
-                //显示所有角色组的角色
-                if (roleId == "0")
-                {
-                    return;
+@section afterscript{
+
+
+    <script>
+        var roles = [];
+        $(function () {
+            $('#tree-bizrole').on("changed.jstree", function (e, data) {
+                if (data && data.selected && data.selected.length) {
+                    var roleId = data.selected[0];
+                    //显示所有角色组的角色
+                    if (roleId == "0") {
+                        return;
+                    }
+
+                    roles = [];
+                    var role = {};
+                    role.Fid = roleId;
+                    role.RoleName = data.node.text;
+
+                    roles.push(role);
                 }
+            });
+        })
 
-                roles = [];
-                var role = {};
-                role.Fid = roleId;
-                role.RoleName = data.node.text;
-
-                roles.push(role);
+        function getRole() {
+            if (roles.length == 0) {
+                alert('请选择业务角色');
+                return;
             }
-        });
-    })
 
-    function getRole() {
-        if (roles.length==0) {
-            alert('请选择业务角色');
-            return;
+            return roles;
         }
-
-        return roles;
-    }
-</script>
+    </script>
+}
 <div class="row">
     <div class="col-xs-12 col-sm-12">
         <div class="widget-box">
             <div class="widget-header widget-header-flat">
                 <h4 class="widget-title">角色</h4>
-
-              
             </div>
-
             <div class="widget-body">
                 <div class="widget-main">
-                    <fap-tree id="bizrole" is-async="true" get-url="/System/Api/Manage/BusinessRole/" edit-url="/System/Api/Manage/OperBusinessRole" ></fap-tree>
+                    <fap-tree id="bizrole" is-async="true" get-url="/System/Api/Manage/BusinessRole/" edit-url="/System/Api/Manage/OperBusinessRole"></fap-tree>
                 </div>
             </div>
         </div>
     </div>
-    
+
 </div>

@@ -11,68 +11,51 @@
     <meta name="description" content="" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
     <!-- page specific plugin styles -->
-    @RenderSection("specificcss", required: false)
-    <environment include="Development">
-        <link rel="stylesheet" href="~/Content/css/bootstrap.css" asp-append-version="true" />
-        <link rel="stylesheet" href="~/Content/css/font-awesome.css" />
-        <link rel="stylesheet" href="~/Content/css/ace-fonts.css" />
-        <link rel="stylesheet" href="~/Content/css/jquery.gritter.css" />
-        <link rel="stylesheet" href="~/Content/Handsontable/css/handsontable.full.css" />
-        <link rel="stylesheet" href="~/Content/css/ace.css" class="ace-main-stylesheet" id="main-ace-style" asp-append-version="true" />
-    </environment>
-    <environment exclude="Development">
-        <link rel="stylesheet" href="~/Content/css/bootstrap.min.css" asp-append-version="true" />
-        <link rel="stylesheet" href="~/css/acefont.min.css" asp-append-version="true" />
-        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
-        <link rel="stylesheet" href="~/css/ace.min.css" asp-append-version="true" />
-    </environment>
-    <!--[if lte IE 9]>
-        <link rel="stylesheet" href="@Url.Content("~/Content/css/ace-part2.css")" class="ace-main-stylesheet" />
-    <![endif]-->
-    <!--[if lte IE 9]>
-      <link rel="stylesheet" href="@Url.Content("~/Content/css/ace-ie.css")" />
-    <![endif]-->
-    <!-- page specific plugin styles -->
-    @RenderSection("specificcss2", required: false)
+    @{await Html.RenderPartialAsync("_ControlCssPartial"); }
+    @RenderSection("beforecss", required: false)
     <style>
         .error .help-block {
             color: #d16e6c;
             font-size: 14px;
         }
     </style>
-    <!-- inline styles related to this page -->
-    <!-- ace settings handler -->
-    <script src="@Url.Content("~/Content/js/ace-extra.js")"></script>
-
-    <!-- HTML5shiv and Respond.js for IE8 to support HTML5 elements and media queries -->
-    <!--[if lte IE 8]>
-    <script src="@Url.Content("~/Content/js/html5shiv.js")"></script>
-    <script src="@Url.Content("~/Content/js/respond.js")"></script>
+    <!--[if lte IE 9]>
+        <link rel="stylesheet" href="/Content/css/ace-part2.css" class="ace-main-stylesheet" />
     <![endif]-->
+    <!--[if lte IE 9]>
+      <link rel="stylesheet" href="/Content/css/ace-ie.css" />
+    <![endif]-->
+    <!-- page specific plugin styles -->
+    <!--实时IM的样式-->
+    @*<link href="/Content/chat/Css/ChatCore.css" rel="stylesheet" />*@
+    <!-- inline styles related to this page -->
     <!-- basic scripts -->
     <!--[if !IE]> -->
     <script type="text/javascript">
-        window.jQuery || document.write("<script src='@Url.Content("~/Content/js/jquery.js")'>" + "<" + "/script>");
+        window.jQuery || document.write("<script src='/Content/js/jquery.js'>" + "<" + "/script>");
     </script>
-
+    <script src="~/Content/nprogress/nprogress.js"></script>
     <!-- <![endif]-->
     <!--[if IE]>
     <script type="text/javascript">
-     window.jQuery || document.write("<script src='@Url.Content("~/Content/js/jquery1x.js")'>"+"<"+"/script>");
+     window.jQuery || document.write("<script src='/Content/js/jquery1x.js'>"+"<"+"/script>");
     </script>
     <![endif]-->
-    <script type="text/javascript">
-        if ('ontouchstart' in document.documentElement) document.write("<script src='@Url.Content("~/Content/js/jquery.mobile.custom.js")'>" + "<" + "/script>");
-    </script>
-
-    <!-- page specific plugin scripts -->
+    <!-- ace settings handler -->
+    <script src="/Content/js/ace-extra.js"></script>
+    <!-- HTML5shiv and Respond.js for IE8 to support HTML5 elements and media queries -->
     <!--[if lte IE 8]>
-          <script src="@Url.Content("~/Content/js/excanvas.js")"></script>
+    <script src="/Content/js/html5shiv.js"></script>
+    <script src="/Content/js/respond.js"></script>
+    <![endif]-->
+    <!--[if lte IE 8]>
+          <script src="/Content/js/excanvas.js"></script>
       <![endif]-->
-    @RenderSection("userscript", required: false)
+    <!--多语资源-->
     <script src="/Scripts/MultiLanguage.js" asp-append-version="true"></script>
     <script>
-        var basePath = window.location.protocol + "//" + window.location.host;
+        //全局根路径
+        var basePath = window.location.protocol+ "//" + window.location.host;
         var language = '@currLanguage'; //当前语种
         MultiLangHelper.initLang(language);
         if (language === "ZhTW") {
@@ -85,7 +68,6 @@
             language = "zh-CN";
         }
     </script>
-    <script src="@Url.Content("~/Scripts/Fap/common.js")"></script>
 </head>
 <body class="no-skin">
     <div class="main-content">
@@ -100,48 +82,8 @@
         </div>
     </div>
     <!-- ace scripts -->
-    <environment include="Development">
-        <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
-        <!-- ace scripts -->
-        <script src="~/Content/js/ace/elements.scroller.js" asp-append-version="true"></script>
-        <script src="~/Content/js/ace/elements.colorpicker.js" asp-append-version="true"></script>
-        <script src="~/Content/js/ace/elements.fileinput.js" asp-append-version="true"></script>
-        <script src="~/Content/js/ace/elements.typeahead.js" asp-append-version="true"></script>
-        <script src="~/Content/js/ace/elements.wysiwyg.js" asp-append-version="true"></script>
-        <script src="~/Content/js/ace/elements.spinner.js" asp-append-version="true"></script>
-        <script src="~/Content/js/ace/elements.treeview.js" asp-append-version="true"></script>
-        <script src="~/Content/js/ace/elements.wizard.js" asp-append-version="true"></script>
-        <script src="~/Content/js/ace/elements.aside.js" asp-append-version="true"></script>
-        <script src="~/Content/js/ace/ace.js" asp-append-version="true"></script>
-        <script src="~/Content/js/ace/ace.ajax-content.js" asp-append-version="true"></script>
-        <script src="~/Content/js/ace/ace.touch-drag.js" asp-append-version="true"></script>
-        <script src="~/Content/js/ace/ace.sidebar.js" asp-append-version="true"></script>
-        <script src="~/Content/js/ace/ace.sidebar-scroll-1.js" asp-append-version="true"></script>
-        <script src="~/Content/js/ace/ace.submenu-hover.js" asp-append-version="true"></script>
-        <script src="~/Content/js/ace/ace.widget-box.js" asp-append-version="true"></script>
-        <script src="~/Content/js/ace/ace.settings.js" asp-append-version="true"></script>
-        <script src="~/Content/js/ace/ace.settings-rtl.js" asp-append-version="true"></script>
-        <script src="~/Content/js/ace/ace.settings-skin.js" asp-append-version="true"></script>
-        <script src="~/Content/js/ace/ace.widget-on-reload.js" asp-append-version="true"></script>
-    </environment>
-    <environment exclude="Development">
-        <script src="~/lib/bootstrap/dist/js/bootstrap.min.js" asp-append-version="true"></script>
-        <script src="~/js/ace.min.js" asp-append-version="true"></script>
-    </environment>
-    <script src="~/Content/js/jquery.tmpl.js" asp-append-version="true"></script>
-    <script src="~/Content/layer/layer.js"></script>
-    <script src="~/Content/js/date-time/moment.js"></script>
-    <!--多语资源-->
-    <script src="~/Scripts/MultiLanguage.js" asp-append-version="true"></script>
-    @RenderSection("specificscript", required: false)
-    <script>
-        $(function () {
-            //解决bootbox多弹出框focus 死循环问题
-            $.fn.modal.Constructor.prototype.enforceFocus = function () { };
-            $('[data-rel=tooltip]').tooltip();
-            $('[data-rel=popover]').popover({ html: true });
-            moment.locale(language.toLowerCase());
-        })
-    </script>
+    @{await Html.RenderPartialAsync("_ControlJsPartial"); }
+    @RenderSection("afterscript", required: false)
+
 </body>
 </html>

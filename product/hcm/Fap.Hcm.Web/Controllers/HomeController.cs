@@ -361,48 +361,12 @@ namespace Fap.Hcm.Web.Controllers
                     + statusCodeReExecuteFeature.OriginalQueryString;
             }
             #endregion
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier, ErrorStatusCode=code, OriginalURL= originalUrl });
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier, ErrorStatusCode = code, OriginalURL = originalUrl });
         }
-        #region 游客
+        #region success page
         [AllowAnonymous]
-        public IActionResult Tourist(string fid)
-        {
-            LoginTourist(fid);
-            return Redirect("~/Recruit/Manage/Profile/" + fid);
-            void LoginTourist(string fid)
-            {
-                //初始化身份卡片
-                var claims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, fid),//用户名
-                    new Claim(ClaimTypes.NameIdentifier,fid),//员工Fid
-                    new Claim(ClaimTypes.UserData,fid),//用户Fid
-                    new Claim(ClaimTypes.Surname,"准员工"),//员工姓名
-                    new Claim(ClaimTypes.PrimarySid,"-"),//员工部门
-                    new Claim(ClaimTypes.PrimaryGroupSid,"-"),//部门编码
-                    new Claim(ClaimTypes.System,"-"),//部门名称
-                    new Claim(ClaimTypes.DenyOnlyPrimaryGroupSid,""),//集团
-                    new Claim(ClaimTypes.DenyOnlyPrimarySid,""),//组织
-                    new Claim(ClaimTypes.Sid,"ZhCn"),//语言
-                    new Claim(ClaimTypes.Actor,"-"),//用户图像
-                    new Claim(ClaimTypes.Role,"-1")//角色普通用户
-                };
-                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
-                var authenticationProperties = new AuthenticationProperties
-                {
-                    ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30),
-                    RedirectUri = "~/Home/Tourist/" + fid
-                };
-                HttpContext.SignInAsync(
-                    CookieAuthenticationDefaults.AuthenticationScheme,
-                    claimsPrincipal, authenticationProperties).ConfigureAwait(false);
-            }
-        }
         public async Task<IActionResult> Success()
         {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme).ConfigureAwait(false);
-            _applicationContext.Session.Clear();
             return View();
         }
         #endregion

@@ -14,6 +14,7 @@ using Fap.Core.Infrastructure.Domain;
 using Fap.Core.Infrastructure.Enums;
 using Dapper;
 using Fap.AspNetCore.Controls.DataForm;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Fap.Hcm.Web.Areas.Recruit.Controllers
 {
@@ -233,7 +234,7 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
                 _dbContext.InsertDynamicData(fdo);
                 entryFid = fdo.Get("Fid").ToString();
             }
-            ViewBag.Url = _applicationContext.BaseUrl + "/Home/Tourist/" + entryFid;
+            ViewBag.Url = _applicationContext.BaseUrl + "/Recruit/Manage/Profile/" + entryFid.ToBase64String();
             ViewBag.MailBox = _dbContext.ExecuteScalar<string>("select Emails from RcrtResume where Fid=@Fid", new Dapper.DynamicParameters(new { Fid = offer["ResumeUid"]?.ToString() }));
             return PartialView(mailTemplates);
         }
@@ -250,8 +251,10 @@ namespace Fap.Hcm.Web.Areas.Recruit.Controllers
         /// </summary>
         /// <param name="fid"></param>
         /// <returns></returns>
+        [AllowAnonymous]
         public IActionResult Profile(string fid)
         {
+            fid = fid.FromBase64String();
             var offerUid = _dbContext.ExecuteScalar<string>("select OfferUid from  EmpEntryInfo where Fid=@Fid", new DynamicParameters(new { Fid = fid }));
 
             if (offerUid.IsMissing())
