@@ -461,6 +461,7 @@ if (typeof(mxLoadStylesheets) == 'undefined')
  * When using a relative path, the path is relative to the URL of the page that
  * contains the assignment. Trailing slashes are automatically removed.
  */
+mxBasePath = '/Content/mxGraph/src';
 if (typeof(mxBasePath) != 'undefined' && mxBasePath.length > 0)
 {
 	// Adds a trailing slash if required
