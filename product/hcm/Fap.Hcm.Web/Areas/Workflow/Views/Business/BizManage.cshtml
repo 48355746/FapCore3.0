@@ -1,31 +1,34 @@
 ﻿@model IEnumerable<Fap.Workflow.Model.WfBusiness>
 
 <title><fap-multilang lang-key="business_management" default-content="业务管理"></fap-multilang></title>
-
 <div class="row">
     <div class="col-xs-12">
-        @foreach (var bizGrp in Model.GroupBy(b => b.BizTypeUidMC))
-        {
-            <h4 class="smaller lighter green">@bizGrp.Key</h4>
-
-            <ul class="list-inline bizprocess nav nav-pills">
-                @foreach (var biz in bizGrp.AsEnumerable())
+        <div class="row">
+            <div class="col-xs-12">
+                @foreach (var bizGrp in Model.GroupBy(b => b.BizTypeUidMC))
                 {
-                <li>
-                    <a href="javascript:void(0)" data-business="@biz.Fid" data-bill="@biz.BillEntity">
-                        <i class="ace-icon fa fa-suitcase green bigger-110"></i>
-                        @biz.BizName
-                    </a>
-                </li>
+                    <h4 class="smaller lighter green">@bizGrp.Key</h4>
+
+                    <ul class="list-inline bizprocess nav nav-pills">
+                        @foreach (var biz in bizGrp.AsEnumerable())
+                        {
+                            <li>
+                                <a href="javascript:void(0)" data-business="@biz.Fid" data-bill="@biz.BillEntity">
+                                    <i class="ace-icon fa fa-suitcase green bigger-110"></i>
+                                    @biz.BizName
+                                </a>
+                            </li>
+                        }
+                    </ul>
                 }
-            </ul>
-        }       
-    </div>
-</div>
-<hr />
-<div class="row">
-    <div class="col-xs-12" id="myApplyContent">
-        @*动态加载我的申请列表*@
+            </div>
+        </div>
+        <hr />
+        <div class="row">
+            <div class="col-xs-12" id="myApplyContent">
+                @*动态加载我的申请列表*@
+            </div>
+        </div>
     </div>
 </div>
 <script>
