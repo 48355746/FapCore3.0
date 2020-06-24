@@ -1,0 +1,8 @@
+version: '1.0'
+
+services:
+  fapcorehcm:
+    image: fapcore/hcm
+    build:
+      context: .
+      dockerfile: product/hcm/Fap.Hcm.Web/Dockerfile

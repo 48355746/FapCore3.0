@@ -1,0 +1,13 @@
+version: '3.4'
+services:
+ fapcorehcm:
+   environment:
+     - ASPNETCORE_ENVIRONMENT=Development
+     - ASPNETCORE_URLS=http://+:80
+   ports:
+     - "5000:80"
+     - "5001:443"
+   volumes:
+     - /etc/localtime:/etc/localtime
+     - /usr/docker/fapcorehcm/logs:/var/fapcore/logs
+     - /usr/docker/fapcorehcm/annex:/var/fapcore/annex
