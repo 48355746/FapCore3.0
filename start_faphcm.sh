@@ -18,4 +18,5 @@ cd /var/lib/jenkins-home/workspace/fapcore30
 #docker-compose up
 #rm Tag<none> images
 #docker rmi $(docker images | awk '/^<none>/ { print $3 }')
-docker-compose -f docker-compose.yml -f docker-compose.override.yml
+docker-compose -f docker-compose.yml -f docker-compose.override.yml build
+docker-compose up

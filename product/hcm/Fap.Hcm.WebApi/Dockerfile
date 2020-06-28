@@ -2,6 +2,7 @@
 
 FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-buster-slim AS base
 WORKDIR /app
+RUN apt-get update
 EXPOSE 80
 EXPOSE 443
 
