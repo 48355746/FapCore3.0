@@ -6,3 +6,8 @@ services:
     build:
       context: .
       dockerfile: product/hcm/Fap.Hcm.Web/Dockerfile
+  fapcorehcmapi:
+    image: fapcore/hcmapi
+    build:
+      context: .
+      dockerfile: product/hcm/Fap.Hcm.WebApi/Dockerfile

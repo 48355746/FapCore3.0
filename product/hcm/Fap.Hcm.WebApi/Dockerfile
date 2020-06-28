@@ -5,18 +5,17 @@ WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
-WORKDIR /src
-COPY ["product/hcm/Fap.Hcm.WebApi/Fap.Hcm.WebApi.csproj", "product/hcm/Fap.Hcm.WebApi/"]
-RUN dotnet restore "product/hcm/Fap.Hcm.WebApi/Fap.Hcm.WebApi.csproj"
+COPY *.sln .
 COPY . .
-WORKDIR "/src/product/hcm/Fap.Hcm.WebApi"
-RUN dotnet build "Fap.Hcm.WebApi.csproj" -c Release -o /app/build
+WORKDIR /app/product/hcm/Fap.Hcm.WebApi
+RUN dotnet restore
 
-FROM build AS publish
-RUN dotnet publish "Fap.Hcm.WebApi.csproj" -c Release -o /app/publish
+RUN dotnet publish -c Release -o out
 
-FROM base AS final
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.1 AS runtime
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --from=build /app/product/hcm/Fap.Hcm.WebApi/out ./
+
+# Optional: Set this here if not setting it from docker-compose.yml
+# ENV ASPNETCORE_ENVIRONMENT Development
 ENTRYPOINT ["dotnet", "Fap.Hcm.WebApi.dll"]
