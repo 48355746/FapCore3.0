@@ -30,8 +30,8 @@ namespace Fap.Hcm.WebApi.Controllers
             Guard.Against.Null(activity, nameof(activity));
             if (!activity.UserSchedules.Any())
             {
-                var sp= activity.EndDate - activity.StartDate+1;
-                return Enumerable.Range(0, sp.Days).Select(d => new Schedule
+                var sp= activity.EndDate - activity.StartDate;
+                return Enumerable.Range(0, sp.Days + 1).Select(d => new Schedule
                 {
                     StartDateTime = Convert.ToDateTime($"{activity.StartDate.AddDays(d)} {activity.StartTime}"),
                     EndDateTime= Convert.ToDateTime($"{activity.StartDate.AddDays(d)} {activity.EndTime}")
