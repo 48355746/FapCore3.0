@@ -1,14 +1,14 @@
 #cd fapcore
 cd /var/lib/jenkins-home/workspace/fapcore30
 #stop web container [fapcorehcm]
-sudo docker stop fapcorehcm
-sudo docker stop fapcorehcmapi
+#sudo docker stop fapcorehcm
+#sudo docker stop fapcorehcmapi
 #remove web container [fapcorehcm]
-sudo docker rm -f fapcorehcm
-sudo docker rm -f fapcorehcmapi
+#sudo docker rm -f fapcorehcm
+#sudo docker rm -f fapcorehcmapi
 #remove web image [fapcore/hcm]
-sudo docker rmi -f fapcore/hcm
-sudo docker rmi -f fapcore/hcmapi
+#sudo docker rmi -f fapcore/hcm
+#sudo docker rmi -f fapcore/hcmapi
 #build web image [fapcore/hcm]
 #sudo docker build --pull -t fapcore/hcm -f product/hcm/Fap.Hcm.Web/Dockerfile .
 #docker run container,数据卷如下：-v 时区,-v logs,-v 附件。说明：设置appsetting.json日志路径为LogPath（/var/fapcore/logs），设置附件路径为（/var/fapcore/annex）
