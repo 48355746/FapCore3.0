@@ -49,8 +49,8 @@ namespace Fap.Hcm.WebApi
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Version = "v1",
-                    Title = "HCM Web API",
-                    Description = "RESTful API for HCM Web API",
+                    Title = "Engine Model API",
+                    Description = "RESTful API for Engine Model API",
                     TermsOfService = new Uri("https://hrsoft.club"),
                     Contact = new OpenApiContact { Name = "wangyfb", Email = "", Url = new Uri("https://hrsoft.club") },
                     License = new OpenApiLicense
@@ -81,7 +81,7 @@ namespace Fap.Hcm.WebApi
             // specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "HCM Web API V1");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Engine Model API V1");
             });
             //app.UseHttpsRedirection();
 
@@ -100,7 +100,12 @@ public class DateTimeJsonConvert : JsonConverter<DateTime>
 {
     public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        return Convert.ToDateTime(reader.GetString());
+        if (reader.TokenType == JsonTokenType.String)
+        {
+            if (DateTime.TryParse(reader.GetString(), out DateTime date))
+                return date;
+        }
+        return reader.GetDateTime();
     }
 
     public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)

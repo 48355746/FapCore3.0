@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Ardalis.GuardClauses;
 using Fap.Hcm.WebApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -19,19 +20,25 @@ namespace Fap.Hcm.WebApi.Controllers
             _logger = logger;
         }
         /// <summary>
-        /// 计算用户日程空闲
+        /// 活动时间匹配
         /// </summary>
-        /// <param name="userSchedules"></param>
+        /// <param name="activity">活动</param>
         /// <returns></returns>
         [HttpPost("Calculate")]
-        public IEnumerable<Schedule> CalculateSchedule(IEnumerable<UserSchedule> userSchedules)
+        public IEnumerable<Schedule> CalculateSchedule(Activity activity)
         {
-            if (!userSchedules.Any())
+            Guard.Against.Null(activity, nameof(activity));
+            if (!activity.UserSchedules.Any())
             {
-                return Enumerable.Empty<Schedule>();
+                var sp= activity.EndDate - activity.StartDate+1;
+                return Enumerable.Range(0, sp.Days).Select(d => new Schedule
+                {
+                    StartDateTime = Convert.ToDateTime($"{activity.StartDate.AddDays(d)} {activity.StartTime}"),
+                    EndDateTime= Convert.ToDateTime($"{activity.StartDate.AddDays(d)} {activity.EndTime}")
+                });
             }
 
-            return from usches in userSchedules.Select(c => c.Schedules)
+            return from usches in activity.UserSchedules.Select(c => c.Schedules)
                    from us in usches
                    select us;
         }
