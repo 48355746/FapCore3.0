@@ -16,7 +16,7 @@ sudo docker rmi -f fapcore/hcmapi
 sudo docker build --pull -t fapcore/hcmapi -f product/hcm/Fap.Hcm.WebApi/Dockerfile .
 sudo docker run --name fapcorehcmapi -d -p 5002:80 -p 5003:443 -v /etc/localtime:/etc/localtime -v /usr/docker/fapcorehcm/logs:/var/fapcore/logs -v /usr/docker/fapcorehcm/annex:/var/fapcore/annex fapcore/hcmapi
 #rm Tag<none> images
-docker rmi $(docker images | awk '/^<none>/ { print $3 }')
+#docker rmi $(docker images | awk '/^<none>/ { print $3 }')
 
 #从根目录运行所有容器用下面两行替换上面两行
 #docker-compose build
