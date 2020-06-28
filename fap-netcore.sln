@@ -41,6 +41,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UEditorNetCore", "thirdpart
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fap.ExcelReport", "src\Fap.ExcelReport\Fap.ExcelReport.csproj", "{FF8EFF7A-BB5A-4C25-A9CD-AADCD27BB550}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fap.Hcm.WebApi", "product\hcm\Fap.Hcm.WebApi\Fap.Hcm.WebApi.csproj", "{F599E1D9-22CA-44C7-83E1-F45E1A66F6FE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,10 @@ Global
 		{FF8EFF7A-BB5A-4C25-A9CD-AADCD27BB550}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FF8EFF7A-BB5A-4C25-A9CD-AADCD27BB550}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FF8EFF7A-BB5A-4C25-A9CD-AADCD27BB550}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F599E1D9-22CA-44C7-83E1-F45E1A66F6FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F599E1D9-22CA-44C7-83E1-F45E1A66F6FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F599E1D9-22CA-44C7-83E1-F45E1A66F6FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F599E1D9-22CA-44C7-83E1-F45E1A66F6FE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -98,6 +104,7 @@ Global
 		{43994168-CF9F-4994-9694-C81408939B85} = {B10864B6-D325-4345-AB3F-BF37B1379878}
 		{01A60121-72CC-4893-8754-8E5DBD589B2F} = {CFA4CB9A-8CBF-4F54-914B-5F2B96CAC57C}
 		{FF8EFF7A-BB5A-4C25-A9CD-AADCD27BB550} = {F090AD1C-246B-49B8-A787-0BC76378B0BC}
+		{F599E1D9-22CA-44C7-83E1-F45E1A66F6FE} = {B10864B6-D325-4345-AB3F-BF37B1379878}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {44AE87F0-7178-43D6-81AB-3D9AB237BD1C}
