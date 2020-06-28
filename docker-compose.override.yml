@@ -1,9 +1,18 @@
 version: '3.4'
 services:
+ mssql:
+    environment:
+      - SA_PASSWORD=Pass@word
+      - ACCEPT_EULA=Y
+    ports:
+      - "5433:1433"
+    volumes:
+      - /usr/docker/fapcoredata:/var/opt/mssql
  fapcorehcm:
    environment:
      - ASPNETCORE_ENVIRONMENT=Development
      - ASPNETCORE_URLS=http://+:80
+     - ConnectionString=${ESHOP_AZURE_IDENTITY_DB:-Server=mssql;Database=FapCore30;User Id=sa;Password=Pass@word}
    ports:
      - "5000:80"
      - "5001:443"
