@@ -82,5 +82,9 @@ namespace Fap.Hcm.WebApi.Models
         [Required]
         [DataType(DataType.DateTime)]
         public DateTime EndDateTime { get; set; }
+        /// <summary>
+        /// 优先级
+        /// </summary>        
+        public bool Priority { get; set; }
     }
 }

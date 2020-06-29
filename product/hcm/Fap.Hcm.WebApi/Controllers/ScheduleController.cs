@@ -41,7 +41,13 @@ namespace Fap.Hcm.WebApi.Controllers
             var schedules = from usches in activity.UserSchedules.Select(c => c.Schedules)
                             from us in usches
                             select us;
-            return Calculate();
+            IEnumerable<Schedule> result = Calculate();
+            if (!result.Any())
+            {
+                schedules= schedules.Where(d => d.Priority == true);
+                return Calculate();
+            }
+            return result;
             IEnumerable<Schedule> Calculate()
             {
                 foreach (var day in Enumerable.Range(0, days))
@@ -85,19 +91,18 @@ namespace Fap.Hcm.WebApi.Controllers
                                     yield return new Schedule { StartDateTime = st, EndDateTime = et };
                                 }
                             }
+                          
                         }
-                        else
+                        var firstH = colls.First();
+                        var lastH = colls.Last();
+                        if (firstH.StartDateTime > sd && (firstH.StartDateTime - sd).TotalHours > activity.Duration)
                         {
-                            var firstH = colls.First();
-                            if (firstH.StartDateTime > sd && (firstH.StartDateTime - sd).TotalHours > activity.Duration)
-                            {
-                                yield return new Schedule { StartDateTime = sd, EndDateTime = firstH.StartDateTime };
-                            }
-                            if (firstH.EndDateTime < ed && (ed - firstH.EndDateTime).TotalHours > activity.Duration)
-                            {
-                                yield return new Schedule { StartDateTime = firstH.EndDateTime, EndDateTime =ed };
-                            }
+                            yield return new Schedule { StartDateTime = sd, EndDateTime = firstH.StartDateTime };
                         }
+                        if (lastH.EndDateTime < ed && (ed - lastH.EndDateTime).TotalHours > activity.Duration)
+                        {
+                            yield return new Schedule { StartDateTime = lastH.EndDateTime, EndDateTime = ed };
+                        }                        
 
                     }
                 }
