@@ -83,8 +83,26 @@ namespace Fap.Hcm.WebApi.Models
         [DataType(DataType.DateTime)]
         public DateTime EndDateTime { get; set; }
         /// <summary>
-        /// 优先级
+        ///推荐级别
         /// </summary>        
         public bool Priority { get; set; }
+    }
+    /// <summary>
+    ///空闲日程
+    /// </summary>
+    public class IdleSchedule
+    {
+        /// <summary>
+        /// 开始时间(yyyy-MM-dd HH:mm)
+        /// </summary>
+        [Required]
+        [DataType(DataType.DateTime)]
+        public DateTime StartDateTime { get; set; }
+        /// <summary>
+        /// 结束时间(yyyy-MM-dd HH:mm)
+        /// </summary>
+        [Required]
+        [DataType(DataType.DateTime)]
+        public DateTime EndDateTime { get; set; }        
     }
 }

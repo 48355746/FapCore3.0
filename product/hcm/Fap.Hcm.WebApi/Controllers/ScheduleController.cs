@@ -25,14 +25,14 @@ namespace Fap.Hcm.WebApi.Controllers
         /// <param name="activity">活动</param>
         /// <returns></returns>
         [HttpPost("Calculate")]
-        public IEnumerable<Schedule> CalculateSchedule(Activity activity)
+        public IEnumerable<IdleSchedule> CalculateSchedule(Activity activity)
         {
             Guard.Against.Null(activity, nameof(activity));
             var sp = activity.EndDate - activity.StartDate;
             int days = sp.Days + 1;
             if (!activity.UserSchedules.Any())
             {
-                return Enumerable.Range(0, days).Select(d => new Schedule
+                return Enumerable.Range(0, days).Select(d => new IdleSchedule
                 {
                     StartDateTime = Convert.ToDateTime($"{activity.StartDate.AddDays(d).ToString("yyyy-MM-dd")} {activity.StartTime}"),
                     EndDateTime = Convert.ToDateTime($"{activity.StartDate.AddDays(d).ToString("yyyy-MM-dd")} {activity.EndTime}")
@@ -41,14 +41,14 @@ namespace Fap.Hcm.WebApi.Controllers
             var schedules = from usches in activity.UserSchedules.Select(c => c.Schedules)
                             from us in usches
                             select us;
-            IEnumerable<Schedule> result = Calculate();
+            IEnumerable<IdleSchedule> result = Calculate();
             if (!result.Any())
             {
                 schedules= schedules.Where(d => d.Priority == true);
                 return Calculate();
             }
             return result;
-            IEnumerable<Schedule> Calculate()
+            IEnumerable<IdleSchedule> Calculate()
             {
                 foreach (var day in Enumerable.Range(0, days))
                 {
@@ -58,7 +58,7 @@ namespace Fap.Hcm.WebApi.Controllers
                     var currSchedules = schedules.Where(sch => sch.StartDateTime <= ed && sch.EndDateTime >= sd);
                     if (!currSchedules.Any())
                     {
-                        yield return new Schedule
+                        yield return new IdleSchedule
                         {
                             StartDateTime = sd,
                             EndDateTime = ed
@@ -88,7 +88,7 @@ namespace Fap.Hcm.WebApi.Controllers
                                 }
                                 if ((st - et).TotalHours >=activity.Duration)
                                 {
-                                    yield return new Schedule { StartDateTime = st, EndDateTime = et };
+                                    yield return new IdleSchedule { StartDateTime = st, EndDateTime = et };
                                 }
                             }
                           
@@ -97,11 +97,11 @@ namespace Fap.Hcm.WebApi.Controllers
                         var lastH = colls.Last();
                         if (firstH.StartDateTime > sd && (firstH.StartDateTime - sd).TotalHours > activity.Duration)
                         {
-                            yield return new Schedule { StartDateTime = sd, EndDateTime = firstH.StartDateTime };
+                            yield return new IdleSchedule { StartDateTime = sd, EndDateTime = firstH.StartDateTime };
                         }
                         if (lastH.EndDateTime < ed && (ed - lastH.EndDateTime).TotalHours > activity.Duration)
                         {
-                            yield return new Schedule { StartDateTime = lastH.EndDateTime, EndDateTime = ed };
+                            yield return new IdleSchedule { StartDateTime = lastH.EndDateTime, EndDateTime = ed };
                         }                        
 
                     }
