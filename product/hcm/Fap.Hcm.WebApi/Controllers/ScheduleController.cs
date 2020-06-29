@@ -45,9 +45,9 @@ namespace Fap.Hcm.WebApi.Controllers
             if (!result.Any())
             {
                 schedules= schedules.Where(d => d.Priority == true);
-                return Calculate();
+                return Calculate().OrderBy(d=>d.StartDateTime);
             }
-            return result;
+            return result.OrderBy(d => d.StartDateTime);
             IEnumerable<IdleSchedule> Calculate()
             {
                 foreach (var day in Enumerable.Range(0, days))
