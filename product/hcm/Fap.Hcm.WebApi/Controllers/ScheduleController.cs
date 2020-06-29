@@ -34,8 +34,8 @@ namespace Fap.Hcm.WebApi.Controllers
             {
                 return Enumerable.Range(0, days).Select(d => new Schedule
                 {
-                    StartDateTime = Convert.ToDateTime($"{activity.StartDate.AddDays(d)} {activity.StartTime}"),
-                    EndDateTime = Convert.ToDateTime($"{activity.StartDate.AddDays(d)} {activity.EndTime}")
+                    StartDateTime = Convert.ToDateTime($"{activity.StartDate.AddDays(d).ToString("yyyy-MM-dd")} {activity.StartTime}"),
+                    EndDateTime = Convert.ToDateTime($"{activity.StartDate.AddDays(d).ToString("yyyy-MM-dd")} {activity.EndTime}")
                 });
             }
             var schedules = from usches in activity.UserSchedules.Select(c => c.Schedules)
@@ -46,8 +46,8 @@ namespace Fap.Hcm.WebApi.Controllers
             {
                 foreach (var day in Enumerable.Range(0, days))
                 {
-                    var sd = Convert.ToDateTime($"{activity.StartDate.AddDays(day)} {activity.StartTime}");
-                    var ed = Convert.ToDateTime($"{activity.StartDate.AddDays(day)} {activity.EndTime}");
+                    var sd = Convert.ToDateTime($"{activity.StartDate.AddDays(day).ToString("yyyy-MM-dd")} {activity.StartTime}");
+                    var ed = Convert.ToDateTime($"{activity.StartDate.AddDays(day).ToString("yyyy-MM-dd")} {activity.EndTime}");
                     //得到今天的所有日程
                     var currSchedules = schedules.Where(sch => sch.StartDateTime <= ed && sch.EndDateTime >= sd);
                     if (!currSchedules.Any())
