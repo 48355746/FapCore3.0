@@ -62,7 +62,7 @@ namespace Fap.Core.DataAccess
                 var result = func(parameters);
                 timer.Stop();//结束点
                 message = $"SQL语句为：{sql},{Environment.NewLine}参数:{(parameters != null ? string.Join(",", parameters.ParameterNames.Select((key) => $"{key}={parameters.Get<object>(key)}")) : "")}{Environment.NewLine}执行时间：{ timer.ElapsedMilliseconds}毫秒";
-                _logger.LogTrace(message);
+                _logger.LogDebug(message);
                 return result;
             }
             catch (Exception ex)
@@ -83,7 +83,7 @@ namespace Fap.Core.DataAccess
                 timer.Stop();//结束点
                 message = $"SQL语句为：{sql},{Environment.NewLine}参数:{(parameters != null ? parameters.ToString() : "")}";
                 message += $"{Environment.NewLine}执行时间：{ timer.ElapsedMilliseconds}毫秒";
-                _logger.LogTrace(message);
+                _logger.LogDebug(message);
                 return tsv;
             }
             catch (Exception ex)

@@ -61,13 +61,13 @@ namespace Fap.Core.DataAccess
 
             string ParseFapSql(string sqlOri, bool withMC = false, bool withId = false)
             {
-                _logger.LogTrace($"wrap前的sql:{sqlOri}");
+                _logger.LogDebug($"wrap前的sql:{sqlOri}");
                 FapSqlParser parse = new FapSqlParser(_fapPlatformDomain, sqlOri, withMC, withId)
                 {
                     CurrentLang = _applicationContext.Language.ToString()
                 };
                 var sql = parse.ParserSqlStatement();
-                _logger.LogTrace($"wrap后的sql:{sql}");
+                _logger.LogDebug($"wrap后的sql:{sql}");
                 return sql;
             }
         }
@@ -1279,7 +1279,7 @@ namespace Fap.Core.DataAccess
         {
             if (ActiveTransactionNumber.Value == 0)
             {
-                _logger.LogTrace($"当前线程ID{Thread.CurrentThread.ManagedThreadId},开启事务");
+                _logger.LogDebug($"当前线程ID{Thread.CurrentThread.ManagedThreadId},开启事务");
                 _dbSession.BeginTransaction();
             }
             ActiveTransactionNumber.Value++;
@@ -1291,7 +1291,7 @@ namespace Fap.Core.DataAccess
             {
                 try
                 {
-                    _logger.LogTrace($"当前线程ID{Thread.CurrentThread.ManagedThreadId},提交事务");
+                    _logger.LogDebug($"当前线程ID{Thread.CurrentThread.ManagedThreadId},提交事务");
                     _dbSession.Commit();
 
                 }
@@ -1317,7 +1317,7 @@ namespace Fap.Core.DataAccess
                 ActiveTransactionNumber.Value = 0;
                 try
                 {
-                    _logger.LogTrace($"当前线程ID{Thread.CurrentThread.ManagedThreadId},回滚事务");
+                    _logger.LogDebug($"当前线程ID{Thread.CurrentThread.ManagedThreadId},回滚事务");
                     _dbSession.Rollback();
 
                 }
